@@ -42,28 +42,83 @@
     </div>
 
     <!-- Stats Row — clickable links to pages -->
-    <div v-if="!stats" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div v-if="!stats" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
       <div v-for="i in 4" :key="'sk-'+i" class="glass rounded-xl p-5 admin-fade-in" :class="'admin-stagger-'+i">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg skeleton" :class="isDark ? 'bg-brand-900/50' : 'bg-gray-100'" />
-          <div class="flex-1 space-y-2">
-            <div class="h-7 w-14 rounded skeleton" :class="isDark ? 'bg-brand-900/50' : 'bg-gray-100'" />
-            <div class="h-3 w-20 rounded skeleton" :class="isDark ? 'bg-brand-900/30' : 'bg-gray-100'" />
+        <div class="flex items-start justify-between gap-3 mb-5">
+          <div class="space-y-2 flex-1">
+            <div class="h-3 w-24 rounded skeleton" :class="isDark ? 'bg-brand-900/50' : 'bg-gray-100'" />
+            <div class="h-8 w-20 rounded skeleton" :class="isDark ? 'bg-brand-900/50' : 'bg-gray-100'" />
           </div>
+          <div class="w-10 h-10 rounded-xl skeleton" :class="isDark ? 'bg-brand-900/50' : 'bg-gray-100'" />
+        </div>
+        <div class="grid grid-cols-7 gap-1 items-end h-12">
+          <div v-for="j in 7" :key="'sk-bar-' + i + '-' + j" class="rounded-full skeleton"
+            :class="isDark ? 'bg-brand-900/40' : 'bg-gray-100'"
+            :style="{ height: `${18 + (j % 4) * 8}px` }" />
         </div>
       </div>
     </div>
-    <div v-else class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <NuxtLink v-for="(stat, idx) in statCards" :key="stat.label" :to="stat.to" class="glass rounded-xl p-5 transition-all hover:scale-[1.02] cursor-pointer group admin-fade-in" :class="'admin-stagger-'+(idx+1)">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg flex items-center justify-center transition-colors" :class="stat.bg">
-            <UIcon :name="stat.icon" class="w-5 h-5" :class="stat.color" />
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+      <NuxtLink
+        v-for="(stat, idx) in statCards"
+        :key="stat.label"
+        :to="stat.to"
+        class="glass rounded-xl p-5 transition-all hover:scale-[1.02] cursor-pointer group admin-fade-in"
+        :class="'admin-stagger-'+(idx+1)"
+      >
+        <div class="flex items-start justify-between gap-3 mb-5">
+          <div class="min-w-0">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.18em]" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+              {{ stat.label }}
+            </p>
+            <p class="mt-2 text-3xl font-bold leading-none" :class="isDark ? 'text-white' : 'text-gray-900'">
+              {{ stat.value }}
+            </p>
+            <p class="mt-2 text-xs leading-relaxed" :class="isDark ? 'text-silver-400 group-hover:text-silver-300' : 'text-gray-500 group-hover:text-gray-700'">
+              {{ stat.meta }}
+            </p>
           </div>
-          <div class="flex-1">
-            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ stat.value }}</p>
-            <p class="text-xs" :class="isDark ? 'text-silver-500 group-hover:text-silver-300' : 'text-gray-500 group-hover:text-gray-700'">{{ stat.label }}</p>
+
+          <div class="flex flex-col items-end gap-2 flex-shrink-0">
+            <span class="w-10 h-10 rounded-xl flex items-center justify-center transition-colors" :class="stat.bg">
+              <UIcon :name="stat.icon" class="w-5 h-5" :class="stat.color" />
+            </span>
+            <span
+              v-if="stat.trend !== null"
+              class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold"
+              :class="stat.trend >= 0 ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10'"
+            >
+              <UIcon :name="stat.trend >= 0 ? 'i-heroicons-arrow-trending-up' : 'i-heroicons-arrow-trending-down'" class="w-3.5 h-3.5" />
+              {{ Math.abs(stat.trend) }}%
+            </span>
           </div>
-          <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" :class="isDark ? 'text-silver-600' : 'text-gray-400'" />
+        </div>
+
+        <div v-if="stat.series?.length" class="flex items-end gap-1 h-12 mb-4">
+          <div
+            v-for="(point, pointIdx) in stat.series"
+            :key="stat.label + '-' + pointIdx"
+            class="flex-1 rounded-t-md transition-all duration-200 group-hover:opacity-100"
+            :class="stat.seriesColor"
+            :style="{ height: `${miniBarHeight(point, stat.seriesMax)}%`, minHeight: point > 0 ? '8px' : '4px' }"
+          />
+        </div>
+
+        <div v-else class="grid grid-cols-3 gap-2 mb-4">
+          <div
+            v-for="chip in stat.chips"
+            :key="chip.label"
+            class="rounded-lg px-2.5 py-2"
+            :class="isDark ? 'bg-white/[0.04] border border-white/6' : 'bg-gray-50 border border-gray-100'"
+          >
+            <p class="text-[10px] uppercase tracking-[0.14em]" :class="isDark ? 'text-silver-600' : 'text-gray-400'">{{ chip.label }}</p>
+            <p class="mt-1 text-sm font-semibold" :class="isDark ? 'text-silver-200' : 'text-gray-800'">{{ chip.value }}</p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-3">
+          <span class="text-[11px]" :class="isDark ? 'text-silver-600' : 'text-gray-400'">{{ stat.footer }}</span>
+          <UIcon name="i-heroicons-arrow-up-right" class="w-4 h-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" :class="isDark ? 'text-silver-500' : 'text-gray-400'" />
         </div>
       </NuxtLink>
     </div>
@@ -293,17 +348,91 @@ interface Stats {
   profiles: number; wowupStrings: number; layouts: number; changelogs: number
   copiesLast7Days: number; uniqueVisitors: number; recentActivity: any[]
   dailyCopies: Array<{ day: string; count: number }>
+  dailyPageViews?: Array<{ day: string; count: number }>
   totalPageViews?: number; pageViewsLast7Days?: number; pageViewTrend?: number
+  copyTrend?: number; users?: number
 }
 const stats = ref<Stats | null>(null)
 const refreshing = ref(false)
 
-const statCards = computed(() => [
-  { label: 'Addon Profiles', value: stats.value?.profiles ?? '—', icon: 'i-heroicons-cube', bg: 'bg-blue-500/10', color: 'text-blue-400', to: '/admin/strings/profiles' },
-  { label: 'WowUp', value: stats.value?.wowupStrings ?? '—', icon: 'i-heroicons-arrow-down-tray', bg: 'bg-green-500/10', color: 'text-green-400', to: '/admin/strings/wowup' },
-  { label: 'Character Layouts', value: stats.value?.layouts ?? '—', icon: 'i-heroicons-user-circle', bg: 'bg-purple-500/10', color: 'text-purple-400', to: '/admin/strings/layouts' },
-  { label: 'Changelog', value: stats.value?.changelogs ?? '—', icon: 'i-heroicons-document-text', bg: 'bg-amber-500/10', color: 'text-amber-400', to: '/admin/content/changelog' },
-])
+const statCards = computed(() => {
+  const data = stats.value
+  if (!data) return []
+
+  const copySeries = (data.dailyCopies || []).slice(-7).map(day => day.count)
+  const pageViewSeries = (data.dailyPageViews || []).slice(-7).map(day => day.count)
+
+  return [
+    {
+      label: 'Import Inventory',
+      value: data.profiles + data.wowupStrings + data.layouts,
+      meta: 'Everything currently available across profiles, packages and layouts.',
+      icon: 'i-heroicons-cube',
+      bg: 'bg-blue-500/10',
+      color: 'text-blue-400',
+      to: '/admin/strings/profiles',
+      trend: null,
+      series: null,
+      seriesColor: '',
+      seriesMax: 0,
+      chips: [
+        { label: 'Profiles', value: data.profiles },
+        { label: 'WowUp', value: data.wowupStrings },
+        { label: 'Layouts', value: data.layouts },
+      ],
+      footer: 'Open content inventory',
+    },
+    {
+      label: 'Published Updates',
+      value: data.changelogs,
+      meta: 'Release notes and visible update history available to visitors.',
+      icon: 'i-heroicons-document-text',
+      bg: 'bg-amber-500/10',
+      color: 'text-amber-400',
+      to: '/admin/content/changelog',
+      trend: null,
+      series: null,
+      seriesColor: '',
+      seriesMax: 0,
+      chips: [
+        { label: 'Users', value: data.users || 0 },
+        { label: 'Views', value: data.totalPageViews || 0 },
+        { label: 'Visitors', value: data.uniqueVisitors || 0 },
+      ],
+      footer: 'Review release feed',
+    },
+    {
+      label: 'Copies 7d',
+      value: data.copiesLast7Days,
+      meta: 'Import activity over the last 7 days.',
+      icon: 'i-heroicons-bolt',
+      bg: 'bg-emerald-500/10',
+      color: 'text-emerald-400',
+      to: '/admin/system/stats',
+      trend: data.copyTrend ?? null,
+      series: copySeries,
+      seriesColor: isDark.value ? 'bg-emerald-400/75 group-hover:bg-emerald-400' : 'bg-emerald-500/65 group-hover:bg-emerald-500',
+      seriesMax: Math.max(1, ...copySeries, 1),
+      chips: [],
+      footer: 'Traffic and copy analytics',
+    },
+    {
+      label: 'Page Views 7d',
+      value: data.pageViewsLast7Days || 0,
+      meta: 'Page traffic trend across the last 7 days.',
+      icon: 'i-heroicons-chart-bar',
+      bg: 'bg-violet-500/10',
+      color: 'text-violet-400',
+      to: '/admin/system/stats',
+      trend: data.pageViewTrend ?? null,
+      series: pageViewSeries,
+      seriesColor: isDark.value ? 'bg-violet-400/75 group-hover:bg-violet-400' : 'bg-violet-500/65 group-hover:bg-violet-500',
+      seriesMax: Math.max(1, ...pageViewSeries, 1),
+      chips: [],
+      footer: 'Open analytics detail',
+    },
+  ]
+})
 
 // Mini 7-day trend chart
 const last7Copies = computed(() => {
@@ -325,6 +454,11 @@ const trendPercent = computed(() => {
 function barHeight(val: number, max: number): number {
   if (!val || !max) return 2
   return Math.max(8, (val / max) * 100)
+}
+
+function miniBarHeight(val: number, max: number): number {
+  if (!val || !max) return 10
+  return Math.max(18, (val / max) * 100)
 }
 
 function shortDay(dateStr: string): string {

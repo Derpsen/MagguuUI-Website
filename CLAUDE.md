@@ -456,6 +456,7 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 - Public-Admin-Leiste soll dieselbe Breite/Hierarchie wie der Header haben, keine separate große Card im Content-Bereich
 
 ### Admin Content Editors
+- **Dashboard (`admin/index.vue`):** Quick Actions, aufgefrischte Stats-Cards mit Inventory-/Update-/Traffic-Fokus, Mini-Graphs für 7-Tage-Copies und 7-Tage-Page-Views, Version-Check, Notifications, Activity und Status-Leiste
 - **Homepage Editor (`admin/content/home.vue`):** Hero-Text + 3 Feature-Card Editoren, Edit/Preview Toggle
 - **Guide Editor (`admin/content/guide.vue`):** Dynamische Steps mit TipTap, Drag-Reorder, eigener Preview-Tab mit vertikaler Timeline und Bottom-Cards Preview. Preview ist aktuell nicht 1:1 identisch zur neuen Public-Guide-Ansicht.
 - **Changelog Editor (`admin/content/changelog.vue`):** CRUD mit TipTap, Pagination (UButton)
@@ -464,7 +465,6 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 - kontextbasierter Header mit Section-Chip, Titel und Hint statt klassischer Breadcrumb-Leiste
 - Keyboard Shortcuts (`?` Taste öffnet Modal, `g d`/`g p`/`g w`/`g l`/`g s`/`g a` Navigation)
 - Sidebar mit Content, Data, System Sections
-- kompakte globale Stats-Leiste direkt unter dem Admin-Header (Profiles, Layouts, Copies 7d, Page Views 7d)
 - `<UApp>` Wrapper für NuxtUI v4 Teleportation
 
 ---
@@ -486,7 +486,6 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 - [x] **Sticky Public Admin Bar:** eingeloggte Session-Leiste sitzt im sticky Public-Header und läuft beim Scrollen mit
 - [x] **Public Breadcrumb Removal:** Breadcrumbs im Public-Layout wieder entfernt
 - [x] **Mobile Menu Overlay:** Hamburger öffnet im Mobile-Breakpoint ein sichtbares Overlay statt eines unauffälligen In-Flow-Blocks
-- [x] **Global Admin Stats Rail:** kompakte Stats-Zahlen direkt unter dem Admin-Header auf allen Admin-Seiten
 
 ### VERBLEIBEND
 - [ ] **OG-Image als PNG:** SVG erstellt, aber Social-Media-Crawler brauchen PNG — manuelle Konvertierung nötig

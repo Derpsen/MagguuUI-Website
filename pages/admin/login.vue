@@ -3,45 +3,100 @@
 -->
 
 <template>
-  <div class="min-h-screen flex items-center justify-center px-4 transition-colors duration-300"
-    :class="isDark ? 'bg-brand-900' : 'bg-[#f0f4f8]'">
-    <div class="w-full max-w-sm">
-      <div class="text-center mb-8">
-        <img :src="'/logo.svg'" alt="MagguuUI" class="w-20 h-20 mx-auto mb-4 glow-blue" />
-        <h1 class="text-2xl font-bold text-gradient">MagguuUI Admin</h1>
-        <p class="text-sm mt-1" :class="isDark ? 'text-silver-600' : 'text-gray-400'">Sign in to continue</p>
-      </div>
+  <div class="admin-shell min-h-screen flex items-center px-4 py-8 transition-colors duration-300"
+    :class="isDark ? 'bg-brand-950 text-silver-200' : 'bg-[#eef4fb] text-gray-800'">
+    <div class="admin-grid-overlay" />
 
-      <div class="rounded-xl p-6" :class="isDark ? 'glass' : 'bg-white shadow-lg border border-gray-200'">
-        <!-- Passkey Button -->
-        <div v-if="passkeySupported" class="mb-4">
-          <UButton block size="lg" variant="subtle" color="success" :loading="passkeyLoading" @click="handlePasskeyLogin"
-            :disabled="!hasPasskeys && !passkeyLoading">
-            <template #leading>
-              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-                <path d="M8 18.5a6 6 0 0 1 4-5.65" />
-                <path d="M16 15h.01" />
-                <path d="M18 18l2-2" />
-                <path d="M16 15a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z" />
-                <path d="M20 13v-1a2 2 0 0 0-2-2h-1" />
-              </svg>
-            </template>
-            Sign in with Passkey
-          </UButton>
-          <p v-if="!hasPasskeys && !passkeyLoading" class="text-[11px] text-center mt-1.5" :class="isDark ? 'text-silver-700' : 'text-gray-300'">
-            No passkeys registered yet
+    <div class="relative z-10 w-full max-w-6xl mx-auto grid gap-6 lg:grid-cols-[1.05fr_0.95fr] items-center">
+      <section class="hidden lg:block pr-6">
+        <span class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] mb-5"
+          :class="isDark ? 'bg-white/[0.04] border border-white/8 text-brand-300' : 'bg-white border border-blue-100 text-blue-700 shadow-sm'">
+          <UIcon name="i-heroicons-shield-check" class="w-4 h-4" />
+          Admin Access
+        </span>
+
+        <h1 class="text-4xl lg:text-5xl font-bold leading-tight mb-4">
+          <span class="text-gradient">Modern control,</span><br>
+          <span :class="isDark ? 'text-white' : 'text-gray-900'">without admin clutter.</span>
+        </h1>
+        <p class="text-base lg:text-lg max-w-xl leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+          Manage content, imports and system settings from one place. Passkeys are first-class, the shell stays fast, and the workflow remains focused on publishing instead of digging through menus.
+        </p>
+
+        <div class="grid gap-3 mt-8 max-w-xl">
+          <div v-for="item in loginHighlights" :key="item.title"
+            class="surface-panel rounded-2xl p-4 flex items-start gap-3">
+            <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl flex-shrink-0"
+              :class="isDark ? 'bg-white/[0.05] border border-white/8 text-brand-300' : 'bg-blue-50 border border-blue-100 text-blue-700'">
+              <UIcon :name="item.icon" class="w-5 h-5" />
+            </span>
+            <div>
+              <p class="text-sm font-semibold mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ item.title }}</p>
+              <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ item.text }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="surface-panel rounded-[2rem] p-6 sm:p-8 lg:p-10 max-w-md lg:max-w-none mx-auto w-full">
+        <div class="flex items-center justify-between gap-3 mb-6">
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center justify-center w-14 h-14 rounded-[1.35rem]"
+              :class="isDark ? 'bg-white/[0.05] border border-white/8' : 'bg-white border border-blue-100 shadow-sm'">
+              <img :src="'/logo.svg'" alt="MagguuUI" class="w-9 h-9" />
+            </span>
+            <div>
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em]" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Control Center</p>
+              <h1 class="text-2xl font-bold text-gradient">MagguuUI Admin</h1>
+            </div>
+          </div>
+
+          <button class="admin-icon-button"
+            :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-500 hover:text-gray-900 hover:bg-white border border-blue-100 shadow-sm'"
+            @click="toggleTheme">
+            <UIcon :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'" class="w-4.5 h-4.5" />
+          </button>
+        </div>
+
+        <div class="mb-6">
+          <h2 class="text-xl font-semibold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Sign in to continue</h2>
+          <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+            Use your passkey when available or fall back to password login. Security features and rate limits stay active either way.
           </p>
         </div>
 
-        <!-- Divider -->
-        <div v-if="passkeySupported" class="flex items-center gap-3 mb-4">
-          <div class="flex-1 h-px" :class="isDark ? 'bg-brand-400/10' : 'bg-gray-200'" />
-          <span class="text-xs font-medium" :class="isDark ? 'text-silver-600' : 'text-gray-400'">or use password</span>
-          <div class="flex-1 h-px" :class="isDark ? 'bg-brand-400/10' : 'bg-gray-200'" />
+        <div v-if="passkeySupported" class="rounded-2xl p-4 mb-5"
+          :class="isDark ? 'bg-emerald-500/8 border border-emerald-400/15' : 'bg-emerald-50 border border-emerald-200'">
+          <div class="flex items-start gap-3">
+            <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl flex-shrink-0"
+              :class="isDark ? 'bg-emerald-500/12 text-emerald-300' : 'bg-white text-emerald-700 border border-emerald-200'">
+              <UIcon name="i-heroicons-finger-print" class="w-5 h-5" />
+            </span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">Passkey sign-in</p>
+              <p class="text-xs sm:text-sm mb-3" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+                Faster sign-in with biometric or device-backed credentials.
+              </p>
+              <UButton block size="lg" variant="subtle" color="success" :loading="passkeyLoading" @click="handlePasskeyLogin"
+                :disabled="!hasPasskeys && !passkeyLoading">
+                <template #leading>
+                  <UIcon name="i-heroicons-finger-print" class="w-5 h-5" />
+                </template>
+                Sign in with Passkey
+              </UButton>
+              <p v-if="!hasPasskeys && !passkeyLoading" class="text-[11px] text-center mt-2" :class="isDark ? 'text-silver-600' : 'text-gray-500'">
+                No passkeys registered yet
+              </p>
+            </div>
+          </div>
         </div>
 
-        <!-- Password Form -->
+        <div v-if="passkeySupported" class="flex items-center gap-3 mb-5">
+          <div class="flex-1 h-px" :class="isDark ? 'bg-white/8' : 'bg-blue-100'" />
+          <span class="text-xs font-medium uppercase tracking-[0.14em]" :class="isDark ? 'text-silver-600' : 'text-gray-400'">Or use password</span>
+          <div class="flex-1 h-px" :class="isDark ? 'bg-white/8' : 'bg-blue-100'" />
+        </div>
+
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Username</label>
@@ -54,21 +109,18 @@
           <UAlert v-if="error" :color="isLocked ? 'warning' : 'error'" variant="subtle" :icon="isLocked ? 'i-heroicons-lock-closed' : 'i-heroicons-exclamation-circle'" :title="error" />
           <UButton block size="lg" :loading="loading" @click="handleLogin">Sign In</UButton>
         </div>
-      </div>
 
-      <div class="flex items-center justify-between mt-6 px-2">
-        <NuxtLink to="/" class="text-sm transition-colors" :class="isDark ? 'text-silver-600 hover:text-brand-400' : 'text-gray-400 hover:text-brand-500'">
-          ← Back to website
-        </NuxtLink>
-        <div class="flex items-center gap-2">
-          <button class="p-2 rounded-lg transition-all"
-            :class="isDark ? 'text-silver-500 hover:text-brand-400 hover:bg-white/5' : 'text-gray-400 hover:text-brand-500 hover:bg-gray-100'"
-            @click="toggleTheme">
-            <svg v-if="isDark" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" /></svg>
-            <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
-          </button>
+        <div class="flex items-center justify-between gap-3 mt-6 pt-5 border-t"
+          :class="isDark ? 'border-white/8' : 'border-blue-100'">
+          <NuxtLink to="/" class="text-sm transition-colors"
+            :class="isDark ? 'text-silver-500 hover:text-white' : 'text-gray-500 hover:text-gray-900'">
+            ← Back to website
+          </NuxtLink>
+          <span class="text-[11px] font-medium uppercase tracking-[0.14em]" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
+            Secure access
+          </span>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </template>
@@ -88,6 +140,23 @@ const passkeyLoading = ref(false)
 const error = ref('')
 const isLocked = computed(() => error.value === 'Account temporarily locked. Try again in 30 minutes.')
 const hasPasskeys = ref(false)
+const loginHighlights = [
+  {
+    icon: 'i-heroicons-finger-print',
+    title: 'Passkey-ready access',
+    text: 'Biometric and device-backed login is available as soon as passkeys are registered.',
+  },
+  {
+    icon: 'i-heroicons-shield-check',
+    title: 'Protected by default',
+    text: 'Rate limits and session checks stay active so admin access does not drift into weak defaults.',
+  },
+  {
+    icon: 'i-heroicons-bolt',
+    title: 'Focused workflow',
+    text: 'Jump straight into content, data and system operations without a cluttered first screen.',
+  },
+]
 
 // Check WebAuthn support
 const passkeySupported = ref(false)

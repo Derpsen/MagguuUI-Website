@@ -1,193 +1,307 @@
 <!--
-  Guide Page — Installation instructions with numbered steps
-  Unified heading style (blue icon + text-gradient), wider layout, edit mode toggle
+  Guide Page — Installation instructions with improved hierarchy and markdown rendering
 -->
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-
-    <!-- Admin toolbar -->
-    <div v-if="isAdmin" class="flex items-center justify-end gap-2 mb-4 fade-in">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+    <div v-if="isAdmin" class="flex items-center justify-end gap-2 mb-5 fade-in">
       <template v-if="editMode">
-        <button @click="saveAll" :disabled="saving"
+        <button
+          @click="saveAll"
+          :disabled="saving"
           class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all"
-          :class="saving ? 'bg-brand-400/60 cursor-wait' : 'bg-brand-400 hover:bg-brand-500'">
-          <svg v-if="saving" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          :class="saving ? 'bg-brand-400/60 cursor-wait' : 'bg-brand-400 hover:bg-brand-500'"
+        >
+          <svg v-if="saving" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
           <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
           Save
         </button>
-        <button @click="cancelEdit"
+        <button
+          @click="cancelEdit"
           class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
-          :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/5 border border-brand-400/15' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-gray-200'">
+          :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/5 border border-brand-400/15' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-gray-200'"
+        >
           Cancel
         </button>
       </template>
       <template v-else>
-        <button @click="editMode = true"
+        <button
+          @click="editMode = true"
           class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-          :class="isDark ? 'bg-brand-400/10 text-brand-400 hover:bg-brand-400/20 border border-brand-400/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'">
+          :class="isDark ? 'bg-brand-400/10 text-brand-400 hover:bg-brand-400/20 border border-brand-400/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'"
+        >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
           Edit Page
         </button>
-        <NuxtLink to="/admin/content/guide"
+        <NuxtLink
+          to="/admin/content/guide"
           class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
-          :class="isDark ? 'bg-white/5 text-silver-400 hover:text-white hover:bg-white/10 border border-brand-400/15' : 'bg-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-200 border border-gray-200'">
+          :class="isDark ? 'bg-white/5 text-silver-400 hover:text-white hover:bg-white/10 border border-brand-400/15' : 'bg-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-200 border border-gray-200'"
+        >
           Full Editor
         </NuxtLink>
       </template>
     </div>
 
-    <!-- Edit mode indicator -->
     <Transition name="bar">
-      <div v-if="editMode" class="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg"
-        :class="isDark ? 'bg-brand-400/10 border border-brand-400/20' : 'bg-blue-50 border border-blue-200'">
+      <div
+        v-if="editMode"
+        class="flex items-center gap-2 mb-5 px-3 py-2 rounded-lg"
+        :class="isDark ? 'bg-brand-400/10 border border-brand-400/20' : 'bg-blue-50 border border-blue-200'"
+      >
         <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
         <span class="text-xs font-medium" :class="isDark ? 'text-brand-400' : 'text-blue-600'">Edit mode — change text below, then click Save</span>
       </div>
     </Transition>
 
-    <!-- Saved toast -->
     <Transition name="toast">
-      <div v-if="showSaved"
+      <div
+        v-if="showSaved"
         class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg border backdrop-blur-xl"
-        :class="isDark ? 'bg-emerald-900/80 border-emerald-400/20 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700'">
+        :class="isDark ? 'bg-emerald-900/80 border-emerald-400/20 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700'"
+      >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
         <span class="text-sm font-medium">Changes saved</span>
       </div>
     </Transition>
 
-    <!-- ═══ HEADER (unified with strings/changelog) ═══ -->
-    <div class="text-center mb-12 fade-in heading-glow">
-      <!-- Display mode -->
-      <template v-if="!editMode">
-        <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
-          <svg class="w-8 h-8 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-          </svg>
-          <span class="text-gradient">{{ editableTitle || 'Installation Guide' }}</span>
-        </h1>
-        <p class="text-lg" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-          {{ editableSubtitle || 'Set up MagguuUI in just a few minutes.' }}
-        </p>
-      </template>
-      <!-- Edit mode -->
-      <template v-else>
-        <div class="max-w-2xl mx-auto space-y-3">
-          <div>
-            <label class="block text-xs font-medium mb-1.5 text-left" :class="isDark ? 'text-silver-500' : 'text-gray-400'">Page Title</label>
-            <input v-model="editableTitle"
-              class="w-full text-2xl font-bold text-center rounded-lg px-4 py-2 border-2 transition-colors outline-none"
-              :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-blue-200 focus:border-blue-500'" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium mb-1.5 text-left" :class="isDark ? 'text-silver-500' : 'text-gray-400'">Subtitle</label>
-            <textarea v-model="editableSubtitle" rows="2"
-              class="w-full text-base text-center rounded-lg px-4 py-2 border-2 transition-colors outline-none resize-none"
-              :class="isDark ? 'bg-brand-800/50 text-silver-300 border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-600 border-blue-200 focus:border-blue-500'" />
-          </div>
+    <section class="guide-hero relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] mb-10 sm:mb-12 fade-in">
+      <div class="guide-hero-orb guide-hero-orb-a" />
+      <div class="guide-hero-orb guide-hero-orb-b" />
+      <div class="guide-hero-grid" />
+
+      <div class="relative z-10 px-6 py-8 sm:px-10 sm:py-12 lg:px-12 lg:py-14">
+        <div class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] mb-6"
+          :class="isDark ? 'bg-white/6 text-brand-300 border border-white/8' : 'bg-white/90 text-blue-700 border border-blue-100 shadow-sm'">
+          <UIcon name="i-heroicons-book-open" class="w-3.5 h-3.5" />
+          Installation Playbook
         </div>
-      </template>
-    </div>
 
-    <!-- Section Divider -->
-    <div v-if="steps.length" class="section-divider mb-8" />
+        <div class="max-w-3xl">
+          <template v-if="!editMode">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-4 sm:mb-5 flex items-start gap-3 sm:gap-4">
+              <span class="guide-hero-icon">
+                <UIcon name="i-heroicons-book-open" class="w-7 h-7 sm:w-8 sm:h-8" />
+              </span>
+              <span class="text-gradient">{{ editableTitle || 'Installation Guide' }}</span>
+            </h1>
+            <p class="text-base sm:text-lg lg:text-xl max-w-2xl leading-relaxed"
+              :class="isDark ? 'text-silver-300' : 'text-gray-600'">
+              {{ editableSubtitle || 'Set up MagguuUI once on your main character, then let alts load the same profiles automatically.' }}
+            </p>
+          </template>
 
-    <!-- ═══ STEPS ═══ -->
-    <div v-if="steps.length" class="relative">
-      <!-- Vertical connector line -->
-      <div class="absolute left-5 sm:left-6 top-8 bottom-8 w-px"
-        :class="isDark ? 'bg-gradient-to-b from-brand-400/30 via-brand-400/15 to-transparent' : 'bg-gradient-to-b from-blue-300/50 via-blue-200/30 to-transparent'" />
-
-      <div class="space-y-4">
-        <div v-for="(step, idx) in steps" :key="step.num"
-          class="group relative flex gap-4 sm:gap-5 pl-1 fade-in"
-          :style="{ animationDelay: `${idx * 80}ms`, animationFillMode: 'both' }">
-
-          <!-- Step number circle — gray by default, glow on hover -->
-          <div class="relative z-10 flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300"
-            :class="stepCircleClass()">
-            <span>{{ idx + 1 }}</span>
-          </div>
-
-          <!-- Step content card -->
-          <div class="flex-1 min-w-0 pb-3 -mt-0.5">
-            <div class="glass-card rounded-2xl p-5 sm:p-7 transition-all hover:border-brand-400/15 hover:shadow-lg hover:shadow-brand-400/5">
-
-              <!-- DISPLAY MODE -->
-              <template v-if="!editMode">
-                <h3 v-if="step.editableTitle" class="font-semibold text-base sm:text-lg mb-2"
-                  :class="isDark ? 'text-white' : 'text-gray-900'">
-                  {{ step.editableTitle }}
-                </h3>
-                <div class="guide-content text-sm leading-relaxed"
-                  :class="isDark ? 'text-silver-400' : 'text-gray-600'"
-                  v-html="step.editableContent" />
-              </template>
-
-              <!-- EDIT MODE (TipTapEditor wrapped in ClientOnly for SSR safety) -->
-              <template v-else>
-                <div class="space-y-3">
-                  <div>
-                    <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-silver-500' : 'text-gray-400'">Step {{ idx + 1 }} Title</label>
-                    <input v-model="step.editableTitle"
-                      class="w-full font-semibold rounded-lg px-3 py-2 border-2 transition-colors outline-none"
-                      :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-blue-200 focus:border-blue-500'" />
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-silver-500' : 'text-gray-400'">Content</label>
-                    <ClientOnly>
-                      <TipTapEditor v-model="step.editableContent" placeholder="Step content..." min-height="100px" />
-                    </ClientOnly>
-                  </div>
-                </div>
-              </template>
+          <template v-else>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Page Title</label>
+                <input
+                  v-model="editableTitle"
+                  class="w-full text-2xl sm:text-3xl font-bold rounded-2xl px-4 py-3 border-2 transition-colors outline-none"
+                  :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-blue-200 focus:border-blue-500'"
+                >
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Subtitle</label>
+                <textarea
+                  v-model="editableSubtitle"
+                  rows="3"
+                  class="w-full text-base rounded-2xl px-4 py-3 border-2 transition-colors outline-none resize-none"
+                  :class="isDark ? 'bg-brand-800/50 text-silver-300 border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-700 border-blue-200 focus:border-blue-500'"
+                ></textarea>
+              </div>
             </div>
+          </template>
+        </div>
+
+        <div v-if="!editMode" class="grid sm:grid-cols-3 gap-3 mt-8 sm:mt-10 max-w-4xl">
+          <div
+            v-for="stat in setupStats"
+            :key="stat.label"
+            class="guide-stat-card rounded-2xl px-4 py-4"
+            :class="isDark ? 'bg-white/[0.04] border border-white/8' : 'bg-white/90 border border-blue-100 shadow-sm'"
+          >
+            <p class="text-[11px] font-semibold uppercase tracking-[0.2em] mb-2" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ stat.label }}</p>
+            <p class="text-xl sm:text-2xl font-bold mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ stat.value }}</p>
+            <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-500'">{{ stat.text }}</p>
           </div>
         </div>
       </div>
+    </section>
+
+    <div v-if="steps.length" class="grid xl:grid-cols-[minmax(0,1fr)_320px] gap-8 xl:gap-10 items-start">
+      <div class="space-y-5">
+        <article
+          v-for="(step, idx) in steps"
+          :id="`step-${idx + 1}`"
+          :key="step.num"
+          class="guide-step group relative overflow-hidden rounded-[2rem] p-[1px] fade-in"
+          :style="{ animationDelay: `${idx * 70}ms`, animationFillMode: 'both' }"
+        >
+          <div class="guide-step-aura" :style="stepAuraStyle(idx)" />
+
+          <div
+            class="relative rounded-[calc(2rem-1px)] p-5 sm:p-7 lg:p-8 transition-all"
+            :class="isDark
+              ? 'bg-[linear-gradient(160deg,rgba(10,20,40,0.96),rgba(9,18,35,0.92))] border border-brand-400/10 group-hover:border-brand-400/20'
+              : 'bg-[linear-gradient(160deg,rgba(255,255,255,0.98),rgba(247,250,255,0.96))] border border-blue-100 group-hover:border-blue-200 group-hover:shadow-xl group-hover:shadow-blue-100/50'"
+          >
+            <div class="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-6">
+              <div class="sm:w-24 sm:flex-shrink-0">
+                <div class="flex items-center gap-3 sm:block">
+                  <div class="guide-step-number" :style="stepNumberStyle(idx)">
+                    {{ idx + 1 }}
+                  </div>
+                  <div class="sm:mt-4">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.22em] mb-1" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+                      {{ stepStage(idx) }}
+                    </p>
+                    <UIcon :name="stepIcon(idx)" class="w-4 h-4 hidden sm:block" :style="{ color: stepAccent(idx).solid }" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
+                  <div class="min-w-0">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] mb-2" :style="{ color: stepAccent(idx).solid }">
+                      Step {{ String(idx + 1).padStart(2, '0') }}
+                    </p>
+                    <h3 class="text-xl sm:text-2xl font-bold leading-tight" :class="isDark ? 'text-white' : 'text-gray-900'">
+                      {{ step.editableTitle || `Step ${idx + 1}` }}
+                    </h3>
+                  </div>
+                  <span
+                    class="guide-step-chip inline-flex items-center self-start rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em]"
+                    :style="stepChipStyle(idx)"
+                  >
+                    {{ idx === 0 ? 'Start Here' : idx === steps.length - 1 ? 'Finish' : 'Next Up' }}
+                  </span>
+                </div>
+
+                <template v-if="!editMode">
+                  <div
+                    class="guide-content guide-step-body text-[15px] sm:text-base leading-relaxed"
+                    :class="isDark ? 'text-silver-300' : 'text-gray-600'"
+                    v-html="renderGuideContent(step.editableContent)"
+                  />
+                </template>
+
+                <template v-else>
+                  <div class="space-y-3">
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-silver-500' : 'text-gray-400'">Step {{ idx + 1 }} Title</label>
+                      <input
+                        v-model="step.editableTitle"
+                        class="w-full font-semibold rounded-xl px-3 py-2 border-2 transition-colors outline-none"
+                        :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-blue-200 focus:border-blue-500'"
+                      >
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-silver-500' : 'text-gray-400'">Content</label>
+                      <ClientOnly>
+                        <TipTapEditor v-model="step.editableContent" placeholder="Step content..." min-height="120px" />
+                      </ClientOnly>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="space-y-4 xl:sticky xl:top-28">
+        <div class="glass-card rounded-[1.75rem] p-5 sm:p-6 fade-in">
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] mb-2" :class="isDark ? 'text-brand-300' : 'text-blue-600'">Quick Flow</p>
+          <h2 class="text-xl font-bold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Jump to any step</h2>
+          <p class="text-sm leading-relaxed mb-5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+            Use this as a fast checklist while setting up your first character or re-checking a specific step.
+          </p>
+
+          <div class="space-y-2.5">
+            <a
+              v-for="(step, idx) in steps"
+              :key="`jump-${step.num}`"
+              :href="`#step-${idx + 1}`"
+              class="guide-jump-link flex items-center gap-3 rounded-2xl px-3 py-3 transition-all"
+              :class="isDark ? 'hover:bg-white/[0.04] border border-white/6' : 'hover:bg-blue-50 border border-blue-100'"
+            >
+              <span class="guide-jump-number" :style="stepNumberMiniStyle(idx)">
+                {{ String(idx + 1).padStart(2, '0') }}
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block text-sm font-semibold truncate" :class="isDark ? 'text-white' : 'text-gray-900'">{{ step.editableTitle || `Step ${idx + 1}` }}</span>
+                <span class="block text-[11px] uppercase tracking-[0.16em]" :class="isDark ? 'text-silver-600' : 'text-gray-400'">{{ stepStage(idx) }}</span>
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <div class="guide-help-card rounded-[1.75rem] p-5 sm:p-6 fade-in">
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] mb-2" :class="isDark ? 'text-emerald-300' : 'text-emerald-700'">After Setup</p>
+          <h2 class="text-xl font-bold mb-3" :class="isDark ? 'text-white' : 'text-gray-900'">Where to go next</h2>
+          <div class="space-y-3">
+            <NuxtLink to="/strings" class="guide-mini-link">
+              <UIcon name="i-heroicons-bolt" class="w-4 h-4" />
+              <span>Browse import strings</span>
+            </NuxtLink>
+            <NuxtLink to="/strings?addon=WowUp" class="guide-mini-link">
+              <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
+              <span>Grab the WowUp package</span>
+            </NuxtLink>
+            <NuxtLink to="/faq" class="guide-mini-link">
+              <UIcon name="i-heroicons-question-mark-circle" class="w-4 h-4" />
+              <span>Check the FAQ</span>
+            </NuxtLink>
+          </div>
+        </div>
+      </aside>
     </div>
 
-    <!-- Empty state -->
-    <div v-else class="text-center py-16 fade-in">
-      <p :class="isDark ? 'text-silver-600' : 'text-gray-400'">No guide steps available yet.</p>
+    <div v-else class="glass-card rounded-3xl p-14 text-center fade-in">
+      <UIcon name="i-heroicons-book-open" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700' : 'text-gray-300'" />
+      <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">No guide steps available yet.</p>
       <NuxtLink v-if="isAdmin" to="/admin/content/guide" class="inline-flex items-center gap-1.5 mt-3 text-brand-400 hover:underline text-sm">
-        Add steps in the editor →
+        Add steps in the editor
       </NuxtLink>
     </div>
 
-    <!-- Bottom Cards -->
     <div v-if="steps.length && !editMode" class="mt-14 fade-in">
       <div class="section-divider mb-10" />
-      <div class="text-center mb-8">
-        <p class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
-          That's it — enjoy your new UI! 🎉
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] mb-2" :class="isDark ? 'text-brand-300' : 'text-blue-600'">Next Moves</p>
+          <h2 class="text-2xl sm:text-3xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Your setup is ready. Now make it yours.</h2>
+        </div>
+        <p class="text-sm max-w-md" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+          Explore the strings, install the recommended addon pack, or answer the usual setup questions without leaving the site.
         </p>
-        <p class="text-sm mt-1" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Here's what to do next</p>
       </div>
+
       <div class="grid md:grid-cols-3 gap-4">
-        <NuxtLink to="/strings"
-          class="feature-card rounded-2xl p-6 group transition-all block">
-          <div class="w-12 h-12 rounded-xl bg-brand-400/10 flex items-center justify-center mb-4 group-hover:bg-brand-400/15 transition-colors">
-            <span class="text-xl">⚡</span>
+        <NuxtLink to="/strings" class="guide-next-card group">
+          <div class="guide-next-icon" :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-blue-50 text-blue-600'">
+            <UIcon name="i-heroicons-bolt" class="w-5 h-5" />
           </div>
-          <h3 class="text-base font-semibold text-gradient-subtle mb-2">Import Strings</h3>
-          <p class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Browse and copy pre-configured addon profiles for ElvUI, Plater, BigWigs & more.</p>
+          <h3 class="text-lg font-semibold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Import Strings</h3>
+          <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Browse ready-to-use addon profiles for ElvUI, Plater, BigWigs, Details and more.</p>
         </NuxtLink>
-        <NuxtLink to="/strings?addon=WowUp"
-          class="feature-card rounded-2xl p-6 group transition-all block">
-          <div class="w-12 h-12 rounded-xl bg-brand-400/10 flex items-center justify-center mb-4 group-hover:bg-brand-400/15 transition-colors">
-            <span class="text-xl">📦</span>
+
+        <NuxtLink to="/strings?addon=WowUp" class="guide-next-card group">
+          <div class="guide-next-icon" :class="isDark ? 'bg-emerald-400/12 text-emerald-300' : 'bg-emerald-50 text-emerald-700'">
+            <UIcon name="i-heroicons-archive-box-arrow-down" class="w-5 h-5" />
           </div>
-          <h3 class="text-base font-semibold text-gradient-subtle mb-2">WowUp Packages</h3>
-          <p class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Install the complete addon package with one click via WowUp.</p>
+          <h3 class="text-lg font-semibold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">WowUp Packages</h3>
+          <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Install the recommended addon stack in one pass and keep your setup consistent.</p>
         </NuxtLink>
-        <NuxtLink to="/faq"
-          class="feature-card rounded-2xl p-6 group transition-all block">
-          <div class="w-12 h-12 rounded-xl bg-brand-400/10 flex items-center justify-center mb-4 group-hover:bg-brand-400/15 transition-colors">
-            <span class="text-xl">❓</span>
+
+        <NuxtLink to="/faq" class="guide-next-card group">
+          <div class="guide-next-icon" :class="isDark ? 'bg-amber-400/12 text-amber-300' : 'bg-amber-50 text-amber-700'">
+            <UIcon name="i-heroicons-question-mark-circle" class="w-5 h-5" />
           </div>
-          <h3 class="text-base font-semibold text-gradient-subtle mb-2">Need Help?</h3>
-          <p class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Check the FAQ for common questions or reach out for support.</p>
+          <h3 class="text-lg font-semibold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Need Help?</h3>
+          <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Open the FAQ for the common follow-up questions after your first install.</p>
         </NuxtLink>
       </div>
     </div>
@@ -195,15 +309,19 @@
 </template>
 
 <script setup lang="ts">
+import { marked } from 'marked'
+
 const toast = useToast()
 const { apiFetch } = useApi()
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
-const isAdmin = computed(() => { if (import.meta.server) return false; return isLoggedIn.value })
+const isAdmin = computed(() => {
+  if (import.meta.server) return false
+  return isLoggedIn.value
+})
 
 useHead({ title: 'Installation Guide — MagguuUI' })
 
-// ─── SSR-safe data fetch (like strings.vue, changelog.vue) ───
 const { data: guideData, refresh: refreshGuide } = await useFetch('/api/v1/content/guide')
 
 const guideContent = computed(() => {
@@ -211,30 +329,70 @@ const guideContent = computed(() => {
   return raw?.en || raw?.de || raw || {}
 })
 
-// ─── Editable state ───
 const editableTitle = ref('')
 const editableSubtitle = ref('')
 const editMode = ref(false)
 const saving = ref(false)
 const showSaved = ref(false)
 
-function stripHtml(str: string): string { return str.replace(/<[^>]*>/g, '').trim() }
+function stripHtml(str: string): string {
+  return str.replace(/<[^>]*>/g, '').trim()
+}
 
-interface EditableStep { num: number; editableTitle: string; editableContent: string }
+interface EditableStep {
+  num: number
+  editableTitle: string
+  editableContent: string
+}
+
 const steps = ref<EditableStep[]>([])
+
+const STEP_META = [
+  { label: 'Prepare', icon: 'i-heroicons-wrench-screwdriver' },
+  { label: 'Install', icon: 'i-heroicons-arrow-down-tray' },
+  { label: 'Launch', icon: 'i-heroicons-play' },
+  { label: 'Apply', icon: 'i-heroicons-sparkles' },
+  { label: 'Alt Sync', icon: 'i-heroicons-users' },
+  { label: 'Finish', icon: 'i-heroicons-check-badge' },
+] as const
+
+const STEP_ACCENTS = [
+  { solid: '#3B8BFF', soft: 'rgba(59, 139, 255, 0.14)', glow: 'rgba(59, 139, 255, 0.24)', border: 'rgba(59, 139, 255, 0.35)' },
+  { solid: '#14b8a6', soft: 'rgba(20, 184, 166, 0.14)', glow: 'rgba(20, 184, 166, 0.24)', border: 'rgba(20, 184, 166, 0.35)' },
+  { solid: '#f59e0b', soft: 'rgba(245, 158, 11, 0.14)', glow: 'rgba(245, 158, 11, 0.22)', border: 'rgba(245, 158, 11, 0.35)' },
+  { solid: '#8b5cf6', soft: 'rgba(139, 92, 246, 0.14)', glow: 'rgba(139, 92, 246, 0.22)', border: 'rgba(139, 92, 246, 0.35)' },
+] as const
+
+const estimatedMinutes = computed(() => Math.max(8, steps.value.length * 3))
+
+const setupStats = computed(() => [
+  { label: 'Steps', value: String(steps.value.length), text: 'A clean sequence from first install to alt-ready setup.' },
+  { label: 'Time', value: `~${estimatedMinutes.value} min`, text: 'Most users can finish the first pass in a single session.' },
+  { label: 'Result', value: 'Ready to Play', text: 'Profiles, addon pack and follow-up links in one place.' },
+])
 
 function parseSteps(raw: Record<string, string> | undefined): EditableStep[] {
   if (!raw || typeof raw !== 'object') return []
+
   const keys = Object.keys(raw)
-  const nums = [...new Set(keys.map(k => { const m = k.match(/^step_(\d+)/); return m ? parseInt(m[1]) : 0 }).filter(n => n > 0))].sort((a, b) => a - b)
-  return nums.map(n => ({
-    num: n,
-    editableTitle: stripHtml(raw[`step_${n}_title`] || ''),
-    editableContent: raw[`step_${n}`] || raw[`step_${n}_content`] || '',
-  })).filter(s => s.editableContent || s.editableTitle)
+  const nums = [...new Set(
+    keys
+      .map((key) => {
+        const match = key.match(/^step_(\d+)/)
+        return match ? parseInt(match[1]) : 0
+      })
+      .filter((num) => num > 0),
+  )].sort((a, b) => a - b)
+
+  return nums
+    .map((num) => ({
+      num,
+      editableTitle: stripHtml(raw[`step_${num}_title`] || ''),
+      editableContent: raw[`step_${num}`] || raw[`step_${num}_content`] || '',
+    }))
+    .filter((step) => step.editableContent || step.editableTitle)
 }
 
-// Sync editable fields when data arrives/changes (but not during edit mode)
 watch(guideContent, (src) => {
   if (!editMode.value) {
     editableTitle.value = stripHtml(src?.intro?.title || '')
@@ -243,14 +401,77 @@ watch(guideContent, (src) => {
   }
 }, { immediate: true })
 
-// ─── Step circle style: all gray, glow only on hover ───
-function stepCircleClass() {
-  return isDark.value
-    ? 'bg-brand-900 border-2 border-brand-400/20 text-silver-600 group-hover:border-brand-400 group-hover:text-brand-400 group-hover:shadow-lg group-hover:shadow-brand-400/30'
-    : 'bg-white border-2 border-gray-200 text-gray-400 shadow-sm group-hover:border-blue-500 group-hover:text-blue-600 group-hover:shadow-lg group-hover:shadow-blue-200'
+let clientSanitize: ((html: string) => string) | null = null
+if (import.meta.client) {
+  const mod = await import('dompurify')
+  clientSanitize = (html: string) => mod.default.sanitize(html)
 }
 
-// ─── Admin edit functions ───
+function sanitizeHtmlSSR(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
+    .replace(/<iframe[\s\S]*?>[\s\S]*?<\/iframe>/gi, '')
+    .replace(/<object[\s\S]*?>[\s\S]*?<\/object>/gi, '')
+    .replace(/<embed[\s\S]*?>[\s\S]*?<\/embed>/gi, '')
+    .replace(/<form[\s\S]*?>[\s\S]*?<\/form>/gi, '')
+    .replace(/\son\w+=(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/\s(href|src)\s*=\s*(['"])\s*javascript:[\s\S]*?\2/gi, ' $1="#"')
+}
+
+function renderGuideContent(text: string): string {
+  if (!text) return ''
+  const html = marked.parse(text, { async: false, breaks: true }) as string
+  return clientSanitize ? clientSanitize(html) : sanitizeHtmlSSR(html)
+}
+
+function stepAccent(idx: number) {
+  return STEP_ACCENTS[idx % STEP_ACCENTS.length]
+}
+
+function stepStage(idx: number) {
+  return STEP_META[idx]?.label || `Phase ${idx + 1}`
+}
+
+function stepIcon(idx: number) {
+  return STEP_META[idx]?.icon || 'i-heroicons-chevron-right'
+}
+
+function stepAuraStyle(idx: number) {
+  const accent = stepAccent(idx)
+  return {
+    background: `radial-gradient(circle at top right, ${accent.glow} 0%, transparent 56%)`,
+  }
+}
+
+function stepNumberStyle(idx: number) {
+  const accent = stepAccent(idx)
+  return {
+    color: accent.solid,
+    borderColor: accent.border,
+    background: isDark.value ? 'rgba(8, 16, 30, 0.92)' : 'rgba(255, 255, 255, 0.96)',
+    boxShadow: `0 0 0 6px ${accent.soft}`,
+  }
+}
+
+function stepChipStyle(idx: number) {
+  const accent = stepAccent(idx)
+  return {
+    color: accent.solid,
+    background: accent.soft,
+    border: `1px solid ${accent.border}`,
+  }
+}
+
+function stepNumberMiniStyle(idx: number) {
+  const accent = stepAccent(idx)
+  return {
+    color: accent.solid,
+    background: accent.soft,
+    border: `1px solid ${accent.border}`,
+  }
+}
+
 function cancelEdit() {
   const src = guideContent.value
   editableTitle.value = stripHtml(src?.intro?.title || '')
@@ -266,39 +487,359 @@ async function saveAll() {
       { page: 'guide', section: 'intro', key: 'title', value: editableTitle.value, locale: 'en' },
       { page: 'guide', section: 'intro', key: 'text', value: editableSubtitle.value, locale: 'en' },
     ]
+
     steps.value.forEach((step, idx) => {
-      const n = idx + 1
-      items.push({ page: 'guide', section: 'steps', key: `step_${n}_title`, value: step.editableTitle, locale: 'en' })
-      items.push({ page: 'guide', section: 'steps', key: `step_${n}`, value: step.editableContent, locale: 'en' })
+      const num = idx + 1
+      items.push({ page: 'guide', section: 'steps', key: `step_${num}_title`, value: step.editableTitle, locale: 'en' })
+      items.push({ page: 'guide', section: 'steps', key: `step_${num}`, value: step.editableContent, locale: 'en' })
     })
+
     await apiFetch('/api/v1/admin/content/bulk', { method: 'POST', body: { items } })
     editMode.value = false
     showSaved.value = true
     setTimeout(() => { showSaved.value = false }, 2500)
     await refreshGuide()
-  } catch { toast.add({ title: 'Error saving', color: 'error' }) }
-  finally { saving.value = false }
+  } catch {
+    toast.add({ title: 'Error saving', color: 'error' })
+  } finally {
+    saving.value = false
+  }
 }
 </script>
 
 <style scoped>
-.guide-content :deep(p) { margin-bottom: 0.4em; }
-.guide-content :deep(p:last-child) { margin-bottom: 0; }
-.guide-content :deep(strong) { font-weight: 600; }
-.guide-content :deep(a) { color: var(--brand-400, #4e9eff); text-decoration: underline; text-underline-offset: 2px; }
-.guide-content :deep(a:hover) { opacity: 0.8; }
-.guide-content :deep(ul), .guide-content :deep(ol) { padding-left: 1.25em; margin: 0.4em 0; }
-.guide-content :deep(li) { margin-bottom: 0.2em; }
-.guide-content :deep(li)::marker { color: rgba(127, 127, 127, 0.5); }
-.guide-content :deep(h1), .guide-content :deep(h2), .guide-content :deep(h3), .guide-content :deep(h4) { font-weight: 600; margin-top: 0.6em; margin-bottom: 0.3em; }
-.guide-content :deep(h1) { font-size: 1.25em; }
-.guide-content :deep(h2) { font-size: 1.125em; }
-.guide-content :deep(h3) { font-size: 1em; }
-.guide-content :deep(code) { padding: 0.15em 0.35em; border-radius: 4px; font-size: 0.85em; background: rgba(127, 127, 127, 0.12); }
-.guide-content :deep(blockquote) { border-left: 3px solid rgba(127, 127, 127, 0.3); padding-left: 0.75em; margin: 0.5em 0; opacity: 0.85; }
+.guide-hero {
+  background:
+    linear-gradient(145deg, rgba(9, 20, 40, 0.98), rgba(7, 16, 33, 0.94)),
+    radial-gradient(circle at top left, rgba(59, 139, 255, 0.18), transparent 34%);
+  border: 1px solid rgba(59, 139, 255, 0.12);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28);
+}
 
-.bar-enter-active, .bar-leave-active { transition: all 0.25s ease; }
-.bar-enter-from, .bar-leave-to { opacity: 0; transform: translateY(-8px); }
-.toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
-.toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, 20px); }
+:global(.light) .guide-hero,
+:global(html.light) .guide-hero {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.96)),
+    radial-gradient(circle at top left, rgba(59, 139, 255, 0.12), transparent 34%);
+  border-color: rgba(59, 139, 255, 0.12);
+  box-shadow: 0 28px 70px rgba(37, 99, 235, 0.08);
+}
+
+.guide-hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent 85%);
+  pointer-events: none;
+}
+
+.guide-hero-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(18px);
+  pointer-events: none;
+}
+
+.guide-hero-orb-a {
+  top: -5rem;
+  right: -2rem;
+  width: 18rem;
+  height: 18rem;
+  background: radial-gradient(circle, rgba(59, 139, 255, 0.22), transparent 68%);
+}
+
+.guide-hero-orb-b {
+  bottom: -6rem;
+  left: 12%;
+  width: 14rem;
+  height: 14rem;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.14), transparent 68%);
+}
+
+.guide-hero-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1rem;
+  color: #60a5fa;
+  background: rgba(59, 139, 255, 0.12);
+  border: 1px solid rgba(59, 139, 255, 0.18);
+  box-shadow: 0 0 40px rgba(59, 139, 255, 0.12);
+  flex-shrink: 0;
+}
+
+.guide-stat-card {
+  backdrop-filter: blur(14px);
+}
+
+.guide-step {
+  scroll-margin-top: 7rem;
+}
+
+.guide-step-aura {
+  position: absolute;
+  inset: 0;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.guide-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 1.25rem;
+  border: 1px solid transparent;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.guide-step-chip {
+  backdrop-filter: blur(12px);
+}
+
+.guide-jump-link {
+  backdrop-filter: blur(12px);
+}
+
+.guide-jump-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.6rem;
+  height: 2.1rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.guide-help-card {
+  background: linear-gradient(160deg, rgba(9, 34, 31, 0.88), rgba(8, 25, 24, 0.94));
+  border: 1px solid rgba(16, 185, 129, 0.16);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+}
+
+:global(.light) .guide-help-card,
+:global(html.light) .guide-help-card {
+  background: linear-gradient(160deg, rgba(236, 253, 245, 0.94), rgba(255, 255, 255, 0.98));
+  border-color: rgba(16, 185, 129, 0.2);
+  box-shadow: 0 18px 50px rgba(16, 185, 129, 0.08);
+}
+
+.guide-mini-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  transition: all 0.2s ease;
+  color: #d7e0ea;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.guide-mini-link:hover {
+  transform: translateY(-1px);
+  color: white;
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+:global(.light) .guide-mini-link,
+:global(html.light) .guide-mini-link {
+  color: #111827;
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(16, 185, 129, 0.12);
+}
+
+:global(.light) .guide-mini-link:hover,
+:global(html.light) .guide-mini-link:hover {
+  color: #065f46;
+  background: white;
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.guide-next-card {
+  display: block;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  transition: all 0.25s ease;
+  background: linear-gradient(160deg, rgba(11, 24, 45, 0.95), rgba(9, 18, 34, 0.92));
+  border: 1px solid rgba(59, 139, 255, 0.1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+}
+
+.guide-next-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(59, 139, 255, 0.18);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.24);
+}
+
+:global(.light) .guide-next-card,
+:global(html.light) .guide-next-card {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.98), rgba(245, 248, 255, 0.96));
+  border-color: rgba(59, 139, 255, 0.12);
+  box-shadow: 0 16px 40px rgba(37, 99, 235, 0.08);
+}
+
+:global(.light) .guide-next-card:hover,
+:global(html.light) .guide-next-card:hover {
+  border-color: rgba(59, 139, 255, 0.2);
+  box-shadow: 0 22px 50px rgba(37, 99, 235, 0.12);
+}
+
+.guide-next-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+}
+
+.guide-step-body {
+  font-size: 1rem;
+}
+
+.guide-content :deep(p) {
+  margin-bottom: 0.7em;
+}
+
+.guide-content :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.guide-content :deep(strong) {
+  font-weight: 700;
+  color: inherit;
+}
+
+.guide-content :deep(a) {
+  color: var(--brand-400, #4e9eff);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.guide-content :deep(a:hover) {
+  opacity: 0.82;
+}
+
+.guide-content :deep(ul),
+.guide-content :deep(ol) {
+  padding-left: 1.25em;
+  margin: 0.75em 0;
+}
+
+.guide-content :deep(li) {
+  margin-bottom: 0.35em;
+}
+
+.guide-content :deep(li)::marker {
+  color: rgba(59, 139, 255, 0.7);
+}
+
+.guide-content :deep(h1),
+.guide-content :deep(h2),
+.guide-content :deep(h3),
+.guide-content :deep(h4) {
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 1em;
+  margin-bottom: 0.45em;
+  color: inherit;
+}
+
+.guide-content :deep(h1) {
+  font-size: 1.35em;
+}
+
+.guide-content :deep(h2) {
+  font-size: 1.18em;
+}
+
+.guide-content :deep(h3) {
+  font-size: 1.05em;
+}
+
+.guide-content :deep(code) {
+  padding: 0.18em 0.42em;
+  border-radius: 0.45rem;
+  font-size: 0.85em;
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(59, 139, 255, 0.12);
+  color: #93bbff;
+}
+
+.guide-content :deep(pre) {
+  margin: 0.9em 0;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  overflow-x: auto;
+  background: rgba(4, 10, 20, 0.55);
+  border: 1px solid rgba(59, 139, 255, 0.1);
+}
+
+.guide-content :deep(pre code) {
+  padding: 0;
+  background: transparent;
+}
+
+.guide-content :deep(blockquote) {
+  border-left: 3px solid rgba(59, 139, 255, 0.35);
+  padding-left: 1rem;
+  margin: 0.8em 0;
+  color: inherit;
+  opacity: 0.9;
+}
+
+.guide-content :deep(hr) {
+  margin: 1rem 0;
+  border-color: rgba(59, 139, 255, 0.15);
+}
+
+.bar-enter-active,
+.bar-leave-active {
+  transition: all 0.25s ease;
+}
+
+.bar-enter-from,
+.bar-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 20px);
+}
+
+@media (max-width: 640px) {
+  .guide-hero-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.9rem;
+  }
+
+  .guide-step-number {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 1rem;
+  }
+}
 </style>

@@ -5,7 +5,7 @@
 **Name:** MagguuUI v3.0.0
 **Zweck:** WoW UI Configuration Manager — öffentliche Website + Admin Panel + REST API für Import Strings (ElvUI, Plater, BigWigs, Details etc.)
 **Live-URL:** https://ui.magguu.xyz
-**GitHub:** https://github.com/Derpsen/MagguuUI
+**GitHub:** https://github.com/Derpsen/MagguuUI-Website
 **Port:** 3000 (intern), 3100 (Proxy via Zoraxy)
 
 ---
@@ -51,13 +51,9 @@
 │
 ├── components/                 # Vue Components
 │   ├── CommandPalette.vue      # Cmd+K Navigation (nutzt UModal #content Slot)
-│   ├── DynamicFields.vue       # Custom Field Renderer
 │   ├── FaqItem.vue             # FAQ Accordion
-│   ├── InlineEdit.vue          # Inline Editing
 │   ├── KeyboardShortcuts.vue   # Admin Keyboard Shortcuts Modal (? Taste)
-│   ├── TipTapEditor.vue        # Rich Text Editor
-│   └── public/
-│       └── StringCard.vue      # Import String Karte
+│   └── TipTapEditor.vue        # Rich Text Editor
 │
 ├── composables/                # Vue Composables
 │   ├── useApi.ts               # Auth-API-Wrapper
@@ -103,7 +99,8 @@
 │   │
 │   ├── plugins/
 │   │   ├── init.ts             # DB Init & Setup
-│   │   └── admin-sync.ts       # Admin State Sync
+│   │   ├── security-headers.ts # Security / Hardening Headers
+│   │   └── session-cleanup.ts  # Session / Challenge Cleanup
 │   │
 │   └── utils/
 │       ├── auth.ts             # createToken, verifyToken, requireAuth
@@ -134,7 +131,7 @@
 ├── Dockerfile                  # Docker Build (Node 24)
 ├── .env.example                # Env-Vorlage
 ├── rebuild.sh                  # Docker Rebuild (Unraid)
-└── update.sh                   # Quick-Update Einzeiler
+└── README.md                   # Kurz-Doku / Setup-Hinweise
 ```
 
 **Hinweis:** `tailwind.config.ts` existiert NICHT mehr — Tailwind v4 nutzt CSS-first Konfiguration via `@theme` in `assets/css/main.css`.
@@ -157,16 +154,40 @@ npm run db:seed          # Seed-Daten einfügen
 
 ## Deployment (Unraid Docker)
 
-**ZIP-Name:** Immer `nuxt-update.zip` (fester Name, kein Timestamp!)
+**Aktueller Stand:** Deploy erfolgt per Git-Checkout auf Unraid, nicht mehr per ZIP-Update.
 
-**ZIP erstellen:** Gesamtes Projektverzeichnis als `nuxt-update.zip` nach `C:\Users\Magguu\Documents\MagguuUI Webseite\` packen. Ausgeschlossen: `.nuxt`, `node_modules`, `.output`, `data`, `uploads`, `.git`, `.env`, `.claude`, `*.zip`
+**Warum:** Gelöschte getrackte Dateien werden sauber entfernt, `rebuild.sh` aktualisiert sich automatisch mit dem Repo, und der Deploy-Ordner bleibt identisch zum Stand auf GitHub.
 
-**Deploy-Einzeiler:**
+**Voraussetzungen auf Unraid:**
+- `git` ist installiert/verfügbar
+- Zugriff auf das private GitHub-Repo via Fine-Grained PAT oder SSH
+- `/mnt/user/appdata/nuxt` ist eine reine Deploy-Kopie ohne lokale Code-Änderungen
+
+**Einmalige Migration von ZIP/Manuell auf Git:**
 ```bash
-cd /mnt/user/appdata/nuxt && unzip -o nuxt-update.zip && bash rebuild.sh && rm nuxt-update.zip
+cd /mnt/user/appdata
+mv nuxt nuxt_backup_$(date +%F_%H-%M-%S)
+git clone https://github.com/Derpsen/MagguuUI-Website.git /mnt/user/appdata/nuxt
+cp /mnt/user/appdata/nuxt_backup_*/.env /mnt/user/appdata/nuxt/ 2>/dev/null || true
+cp -a /mnt/user/appdata/nuxt_backup_*/data /mnt/user/appdata/nuxt/ 2>/dev/null || true
+cp -a /mnt/user/appdata/nuxt_backup_*/uploads /mnt/user/appdata/nuxt/ 2>/dev/null || true
+cd /mnt/user/appdata/nuxt
+bash rebuild.sh
 ```
 
-Der User überträgt die ZIP manuell auf den Unraid-Server und führt den Einzeiler aus.
+**Normales Update danach:**
+```bash
+cd /mnt/user/appdata/nuxt
+git fetch origin main
+git reset --hard origin/main
+bash rebuild.sh
+```
+
+**Wichtig:**
+- `.env`, `data/` und `uploads/` werden nur beim ersten Umstieg aus dem Backup zurückkopiert
+- diese Laufzeitdaten liegen absichtlich **nicht** im Deploy-Repo
+- `git reset --hard origin/main` ist nur safe, wenn im Unraid-Ordner keine lokalen Code-Änderungen liegen
+- wenn nach einem frischen Clone Login/Daten fehlen, wurde meist `data/` noch nicht aus dem Backup zurückgespielt
 
 ---
 
@@ -178,6 +199,7 @@ Der User überträgt die ZIP manuell auf den Unraid-Server und führt den Einzei
 - **WebAuthn/Passkeys:** Biometrische Authentifizierung via SimpleWebAuthn (Registration + Login)
 - **Rate Limiting:** Login auf 5 Versuche pro 15 Minuten pro IP begrenzt
 - **Monolithisch:** Ein Nuxt-App für Public + Admin + API
+- **Runtime-Daten bleiben lokal:** `.env`, `data/`, `uploads/` werden nicht in dasselbe Deploy-Repo committed
 - **Keine Tests:** Kein Testing-Framework konfiguriert
 - **Kein Linter/Formatter:** Kein ESLint, Prettier oder Biome konfiguriert
 
@@ -415,13 +437,13 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 
 ### Public Pages
 - **Homepage (`index.vue`):** Hero mit Badge, Titel, Stats, Supported Addons, Scroll-Indikator (sticky bottom-4 z-10 mit backdrop-blur Overlay), Features Section (1 primary full-width + 2 grid-cols-2 = 3 `feature-card`)
-- **Guide (`guide.vue`):** Vertikale Timeline mit Step-Circles (Hover-Glow), Connector-Line, `glass-card` Steps, Admin-Inline-Edit-Modus, 3 Bottom-Cards (`feature-card` mit Links zu /strings, /strings?addon=WowUp, /faq)
+- **Guide (`guide.vue`):** Hero-"Installation Playbook" mit Stats, card-basierte Step-Panels statt alter Timeline, Sticky "Quick Flow"-Sidebar, "After Setup"-Links, Admin-Inline-Edit-Modus. Step-Content wird als Markdown via `marked` gerendert und vor `v-html` sanitisiert (Client via DOMPurify, SSR via eigener Sanitize-Funktion), damit Inhalte wie `**WowUp Required**` korrekt formatiert erscheinen.
 - **Strings (`strings.vue`):** Addon-Tabs + StringCard Grid mit Copy-Tracking
 - **Changelog (`changelog.vue`):** Timeline mit Pagination
 
 ### Admin Content Editors
 - **Homepage Editor (`admin/content/home.vue`):** Hero-Text + 3 Feature-Card Editoren, Edit/Preview Toggle
-- **Guide Editor (`admin/content/guide.vue`):** Dynamische Steps mit TipTap, Drag-Reorder, Preview mit vertikaler Timeline (spiegelt Public Page), Bottom-Cards Preview
+- **Guide Editor (`admin/content/guide.vue`):** Dynamische Steps mit TipTap, Drag-Reorder, eigener Preview-Tab mit vertikaler Timeline und Bottom-Cards Preview. Preview ist aktuell nicht 1:1 identisch zur neuen Public-Guide-Ansicht.
 - **Changelog Editor (`admin/content/changelog.vue`):** CRUD mit TipTap, Pagination (UButton)
 
 ### Admin Layout Features (`layouts/admin.vue`)
@@ -439,7 +461,7 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 - [x] **Light-Mode Fixes:** Modal Borders, Table Headers, Table Borders in profiles/wowup/layouts
 - [x] **Admin Breadcrumbs:** Automatisch aus Route generiert in admin.vue
 - [x] **Keyboard Shortcuts:** `?` öffnet Modal, `g d`/`g p` etc. für Navigation
-- [x] **Guide Admin Preview:** Vertikale Timeline wie Public Page
+- [x] **Guide Admin Preview:** Preview-Tab im Guide-Editor mit eigener Timeline-Darstellung vorhanden
 - [x] **Guide Bottom Cards:** 3 feature-card Links (Strings, WowUp, FAQ) mit Hover-Highlighting
 - [x] **Homepage Scroll-Indikator:** Sticky overlay mit backdrop-blur, immer sichtbar
 - [x] **Changelog Pagination:** UButton statt raw `<button>`

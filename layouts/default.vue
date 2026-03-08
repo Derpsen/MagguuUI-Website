@@ -234,11 +234,12 @@
         </div>
       </Transition>
 
-      <div v-if="isLoggedIn" class="px-4 sm:px-6 lg:px-8 mt-3">
-        <div class="max-w-7xl mx-auto rounded-2xl px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-          :class="isDark ? 'bg-brand-400/[0.08] border border-brand-400/12' : 'bg-white/90 border border-blue-100 shadow-sm'">
+      <div v-if="isLoggedIn" class="px-4 sm:px-6 lg:px-8 mt-2">
+        <div class="max-w-7xl mx-auto px-1 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b"
+          :class="isDark ? 'border-white/8' : 'border-blue-100'">
           <div class="flex items-center gap-3">
-            <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex-shrink-0">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0"
+              :class="isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-700'">
               <UIcon name="i-heroicons-shield-check" class="w-4.5 h-4.5" />
             </span>
             <div>
@@ -253,14 +254,14 @@
 
           <div class="flex items-center gap-2">
             <NuxtLink to="/admin"
-              class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all"
-              :class="isDark ? 'text-brand-300 hover:text-white hover:bg-white/[0.06]' : 'text-blue-700 hover:text-blue-800 hover:bg-blue-50'">
+              class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all"
+              :class="isDark ? 'text-brand-300 hover:text-white hover:bg-white/[0.05]' : 'text-blue-700 hover:text-blue-800 hover:bg-white/70'">
               <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4" />
               Admin Panel
             </NuxtLink>
             <button @click="handleLogout"
-              class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all"
-              :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.06]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'">
+              class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all"
+              :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.05]' : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'">
               <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4" />
               Logout
             </button>

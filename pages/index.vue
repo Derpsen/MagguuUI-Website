@@ -4,10 +4,9 @@
 -->
 
 <template>
-  <div class="home-page relative">
-    <div class="home-page-background" />
+  <div>
     <!-- Hero Section — full viewport, fade in on load -->
-    <section class="relative overflow-hidden flex flex-col" style="min-height: calc(100dvh - 5rem);">
+    <section class="relative flex flex-col" style="min-height: calc(100dvh - 5rem);">
       <!-- Admin Edit Button -->
       <div v-if="isLoggedIn" class="absolute top-4 right-4 sm:right-8 z-10">
         <NuxtLink to="/admin/content/home"
@@ -17,14 +16,7 @@
           Edit Page
         </NuxtLink>
       </div>
-      <div class="absolute inset-0" :class="isDark ? 'bg-gradient-to-b from-brand-800/30 via-transparent to-transparent' : 'bg-gradient-to-b from-blue-50 via-transparent to-transparent'" />
-      <div v-if="isDark" class="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[700px] bg-brand-400/[0.04] rounded-full blur-[150px]" />
-
       <div class="relative max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-4">
-        <div class="home-hero-grid" />
-        <div class="home-hero-orb home-hero-orb-a" />
-        <div class="home-hero-orb home-hero-orb-b" />
-
         <div class="relative px-6 py-8 sm:px-10 sm:py-12 lg:px-12 lg:py-14">
           <div class="max-w-4xl mx-auto flex flex-col items-center text-center">
             <!-- Badge — links to changelog, shows last change -->

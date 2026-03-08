@@ -81,7 +81,7 @@
                 {{ primaryAction.label }}
               </NuxtLink>
 
-              <button class="lg:hidden admin-icon-button"
+              <button class="md:hidden admin-icon-button"
                 :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-600 hover:text-gray-900 hover:bg-white/90 border border-blue-100 shadow-sm'"
                 :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
                 @click="mobileOpen = !mobileOpen">
@@ -125,7 +125,7 @@
           leave-from-class="opacity-100 translate-y-0"
           leave-to-class="opacity-0 -translate-y-2"
         >
-          <div v-if="mobileOpen" class="mt-3 public-nav-shell rounded-[1.6rem] p-4 lg:hidden">
+          <div v-if="mobileOpen" class="mt-3 public-nav-shell rounded-[1.6rem] p-4 md:hidden">
             <div class="flex justify-end mb-4">
               <NuxtLink :to="primaryAction.to"
                 class="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold text-white whitespace-nowrap btn-gradient"

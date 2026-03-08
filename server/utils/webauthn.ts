@@ -17,7 +17,7 @@ import type {
   VerifiedRegistrationResponse,
   VerifiedAuthenticationResponse,
 } from '@simplewebauthn/server'
-import { eq, and, lt } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
 import { passkeys, webauthnChallenges, users } from '~/server/database/schema'
 
@@ -32,7 +32,7 @@ const utf8ToUint8Array = (str: string): Uint8Array => new TextEncoder().encode(s
  * Get Relying Party configuration from runtimeConfig or request.
  * Falls back to auto-detection from the request URL.
  */
-export function getRpConfig(event?: any) {
+function getRpConfig(event?: any) {
   const config = useRuntimeConfig()
   let rpId = config.webauthnRpId
   let origin = config.webauthnOrigin
@@ -58,7 +58,7 @@ export function getRpConfig(event?: any) {
  * Store a WebAuthn challenge in the database.
  * Expires after 5 minutes.
  */
-export function storeChallenge(challenge: string, type: 'register' | 'authenticate', userId?: number) {
+function storeChallenge(challenge: string, type: 'register' | 'authenticate', userId?: number) {
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000) // 5 min
   return db.insert(webauthnChallenges).values({
     challenge,
@@ -66,28 +66,6 @@ export function storeChallenge(challenge: string, type: 'register' | 'authentica
     userId: userId ?? null,
     expiresAt,
   }).returning().get()
-}
-
-/**
- * Retrieve and consume a challenge (one-time use).
- * Returns null if expired or not found.
- */
-export function consumeChallenge(challenge: string, type: 'register' | 'authenticate') {
-  const row = sqlite.prepare(
-    'SELECT * FROM webauthn_challenges WHERE challenge = ? AND type = ? AND expires_at > ?'
-  ).get(challenge, type, Math.floor(Date.now() / 1000)) as any
-
-  if (!row) return null
-
-  // Delete after use (one-time)
-  sqlite.prepare('DELETE FROM webauthn_challenges WHERE id = ?').run(row.id)
-
-  return {
-    id: row.id,
-    challenge: row.challenge,
-    type: row.type as 'register' | 'authenticate',
-    userId: row.user_id as number | null,
-  }
 }
 
 /**
@@ -316,14 +294,6 @@ export function getUserPasskeyCount(userId: number): number {
 }
 
 /**
- * Get total passkey count across all users.
- */
-export function getTotalPasskeyCount(): number {
-  const result = sqlite.prepare('SELECT COUNT(*) as count FROM passkeys').get() as any
-  return result?.count || 0
-}
-
-/**
  * Rename a passkey.
  */
 export function renamePasskey(id: number, userId: number, newName: string) {
@@ -361,20 +331,4 @@ export function deletePasskey(id: number, userId: number) {
 export function hasAnyPasskeys(): boolean {
   const result = sqlite.prepare('SELECT COUNT(*) as count FROM passkeys').get() as any
   return (result?.count || 0) > 0
-}
-
-// ─── Helpers ───────────────────────────────────────
-
-/**
- * Extract challenge from clientDataJSON (for manual lookup).
- * Not typically needed since @simplewebauthn handles this internally.
- */
-function extractChallengeFromClientData(credential: any): string {
-  try {
-    const clientDataJSON = credential.response.clientDataJSON
-    const decoded = JSON.parse(Buffer.from(clientDataJSON, 'base64url').toString())
-    return decoded.challenge || ''
-  } catch {
-    return ''
-  }
 }

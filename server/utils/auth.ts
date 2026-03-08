@@ -74,18 +74,3 @@ export function requireAuth(event: H3Event): JwtPayload {
 
   return payload
 }
-
-/**
- * Require valid API key — throws 401 if invalid
- */
-export async function requireApiKey(event: H3Event): Promise<void> {
-  const apiKey = getHeader(event, 'x-api-key')
-  if (!apiKey) {
-    throw createError({ statusCode: 401, message: 'API key required' })
-  }
-
-  const config = useRuntimeConfig()
-  if (apiKey !== config.apiKey) {
-    throw createError({ statusCode: 401, message: 'Invalid API key' })
-  }
-}

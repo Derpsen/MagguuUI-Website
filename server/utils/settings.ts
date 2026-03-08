@@ -17,7 +17,7 @@ const CACHE_TTL = 60_000 // 60 seconds — stale settings are OK for a minute
  * Get a single setting value from DB (with cache).
  * Returns the fallback if the key doesn't exist.
  */
-export function getSetting(key: string, fallback: string = ''): string {
+function getSetting(key: string, fallback: string = ''): string {
   const now = Date.now()
   const cached = cache.get(key)
   if (cached && now - cached.fetchedAt < CACHE_TTL) {
@@ -37,7 +37,7 @@ export function getSetting(key: string, fallback: string = ''): string {
 /**
  * Get a setting as a number.
  */
-export function getSettingNumber(key: string, fallback: number): number {
+function getSettingNumber(key: string, fallback: number): number {
   const val = getSetting(key, String(fallback))
   const num = Number(val)
   return isNaN(num) ? fallback : num
@@ -46,7 +46,7 @@ export function getSettingNumber(key: string, fallback: number): number {
 /**
  * Get a setting as a boolean ('true' → true, anything else → false).
  */
-export function getSettingBool(key: string, fallback: boolean): boolean {
+function getSettingBool(key: string, fallback: boolean): boolean {
   const val = getSetting(key, String(fallback))
   return val === 'true'
 }

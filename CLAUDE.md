@@ -25,7 +25,7 @@
 | Editor | TipTap (ProseMirror) |
 | Markdown | Marked |
 | Fonts | Plus Jakarta Sans, JetBrains Mono (via @theme in CSS) |
-| Icons | Heroicons, Simple Icons, Lucide (via @iconify-json) |
+| Icons | Heroicons, Simple Icons (via @iconify-json) |
 | Deployment | Docker (Node 24-bookworm) |
 
 ---
@@ -62,9 +62,7 @@
 ├── composables/                # Vue Composables
 │   ├── useApi.ts               # Auth-API-Wrapper
 │   ├── useAuth.ts              # Auth State (JWT in localStorage)
-│   ├── useFields.ts            # Dynamic Fields
 │   ├── useIsDark.ts            # Dark Mode Helper
-│   ├── useDragSort.ts          # Drag & Drop Sortierung
 │   ├── useScrollReveal.ts      # Scroll-Animationen
 │   └── useAdminNotifications.ts
 │

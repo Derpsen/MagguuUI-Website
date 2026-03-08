@@ -256,7 +256,7 @@ export function checkAndLockIfNeeded(username: string): boolean {
   return false
 }
 
-export function lockAccount(userId: number, durationSeconds: number) {
+function lockAccount(userId: number, durationSeconds: number) {
   const lockedUntil = new Date(Date.now() + durationSeconds * 1000)
   db.update(users)
     .set({ isLocked: true, lockedUntil })

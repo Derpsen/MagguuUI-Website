@@ -67,14 +67,6 @@
 
     <section class="mb-8 sm:mb-10 fade-in">
       <div v-if="!editMode" class="max-w-4xl mx-auto text-center mb-7 sm:mb-8 heading-glow">
-        <div
-          class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] mb-4"
-          :class="isDark ? 'bg-white/6 text-brand-300 border border-white/8' : 'bg-white/85 text-blue-700 border border-blue-100 shadow-sm'"
-        >
-          <UIcon name="i-heroicons-book-open" class="w-3.5 h-3.5" />
-          Installation Playbook
-        </div>
-
         <h1 class="text-4xl sm:text-5xl font-bold leading-tight mb-4 flex items-center justify-center gap-3">
           <span class="guide-heading-icon">
             <UIcon name="i-heroicons-book-open" class="w-7 h-7 sm:w-8 sm:h-8" />

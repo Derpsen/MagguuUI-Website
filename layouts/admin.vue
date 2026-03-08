@@ -22,7 +22,7 @@
       <div class="px-3 pt-3 pb-2">
         <div class="rounded-[1.35rem] px-3 py-3 relative"
           :class="isDark ? 'bg-white/[0.04] border border-white/8' : 'bg-white/90 border border-blue-100 shadow-sm'">
-          <div class="flex" :class="collapsed ? 'flex-col items-center gap-2' : 'items-center gap-3'">
+          <div class="flex" :class="collapsed ? 'justify-center' : 'items-center gap-3'">
             <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl flex-shrink-0"
               :class="isDark ? 'bg-white/[0.06] border border-white/8' : 'bg-blue-50 border border-blue-100'">
               <img :src="'/logo.svg'" alt="MagguuUI" class="w-7 h-7" />
@@ -33,11 +33,6 @@
                 <p class="text-sm font-semibold truncate" :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI Control Center</p>
               </div>
             </template>
-            <button class="hidden lg:flex items-center justify-center w-9 h-9 rounded-full flex-shrink-0 transition-all"
-              :class="isDark ? 'text-silver-500 hover:text-white hover:bg-white/[0.06]' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100'"
-              @click="collapsed = !collapsed" :title="collapsed ? 'Expand sidebar' : 'Collapse sidebar'">
-              <UIcon name="i-heroicons-chevron-double-left" class="w-4 h-4 transition-transform" :class="collapsed ? 'rotate-180' : ''" />
-            </button>
           </div>
 
           <div v-if="!collapsed" class="flex items-center gap-2 mt-3">

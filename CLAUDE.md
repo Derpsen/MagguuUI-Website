@@ -63,7 +63,7 @@
 │   └── useAdminNotifications.ts
 │
 ├── layouts/
-│   ├── default.vue             # Public Layout (Navbar, Footer) — <UApp> Wrapper
+│   ├── default.vue             # Public Layout (sticky Navbar, Breadcrumbs, Footer, Public-Admin-Leiste) — <UApp> Wrapper
 │   └── admin.vue               # Admin Layout (Sidebar, Header) — <UApp> Wrapper
 │
 ├── server/
@@ -181,6 +181,11 @@ cd /mnt/user/appdata/nuxt
 git fetch origin main
 git reset --hard origin/main
 bash rebuild.sh
+```
+
+**Deploy-Einzeiler:**
+```bash
+cd /mnt/user/appdata/nuxt && git fetch origin main && git reset --hard origin/main && bash rebuild.sh
 ```
 
 **Wichtig:**
@@ -393,6 +398,8 @@ logActivity({
 
 ### Custom CSS Klassen (assets/css/main.css)
 - `.glass`, `.glass-hover`, `.glass-card` — Glassmorphism-Effekte
+- `.surface-panel` — größere Surface-Container für Footer, Banner und statische Infoblöcke
+- `.public-nav-shell`, `.public-header-backdrop`, `.public-quick-card` — Public-Header-, Mobile-Menü- und Footer-Surfaces
 - `.feature-card` — Feature-Cards mit Hover-Effekt (translateY, Border-Glow, Shadow) — genutzt auf Homepage + Guide Bottom Cards
 - `.text-gradient`, `.text-gradient-subtle` — Brand Gradient Text
 - `.btn-gradient`, `.btn-gradient-green` — Animierte Gradient Buttons
@@ -436,10 +443,17 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 ## Seiten-Architektur
 
 ### Public Pages
-- **Homepage (`index.vue`):** Hero mit Badge, Titel, Stats, Supported Addons, Scroll-Indikator (sticky bottom-4 z-10 mit backdrop-blur Overlay), Features Section (1 primary full-width + 2 grid-cols-2 = 3 `feature-card`)
-- **Guide (`guide.vue`):** Hero-"Installation Playbook" mit Stats, card-basierte Step-Panels statt alter Timeline, Sticky "Quick Flow"-Sidebar, "After Setup"-Links, Admin-Inline-Edit-Modus. Step-Content wird als Markdown via `marked` gerendert und vor `v-html` sanitisiert (Client via DOMPurify, SSR via eigener Sanitize-Funktion), damit Inhalte wie `**WowUp Required**` korrekt formatiert erscheinen.
+- **Homepage (`index.vue`):** Hero mit Badge, Titel, Stats, Supported Addons, Scroll-Indikator (sticky bottom-4 z-10 mit backdrop-blur Overlay), Features Section (1 primary full-width + 2 grid-cols-2 = 3 `feature-card`). Wichtig: kein eigener Hero-Glass-Wrapper mehr, sondern derselbe Seitenhintergrund wie auf `strings.vue`, `guide.vue` etc.
+- **Guide (`guide.vue`):** Oberer Bereich nutzt denselben Seitenhintergrund wie `strings.vue` und keine separate Hero-Box mehr. Stattdessen zentrierter Titel/Subtitel + kompakter Stats-Block, darunter card-basierte Step-Panels, Sticky "Quick Flow"-Sidebar, "After Setup"-Links und Admin-Inline-Edit-Modus. Step-Content wird als Markdown via `marked` gerendert und vor `v-html` sanitisiert (Client via DOMPurify, SSR via eigener Sanitize-Funktion), damit Inhalte wie `**WowUp Required**` korrekt formatiert erscheinen.
 - **Strings (`strings.vue`):** Addon-Tabs + StringCard Grid mit Copy-Tracking
 - **Changelog (`changelog.vue`):** Timeline mit Pagination
+
+### Public Layout Features (`layouts/default.vue`)
+- Sticky Public-Header mit `public-nav-shell` und zusätzlichem `public-header-backdrop`
+- Hamburger-Menü ist bewusst nur auf Mobile sichtbar; Desktop/Tablet nutzt normale Navigation
+- Breadcrumbs sind zentriert oberhalb des Seiteninhalts
+- Wenn eingeloggt, sitzt die Public-Admin-Leiste direkt im Header-Container und scrollt sticky mit der Navbar mit
+- Public-Admin-Leiste soll dieselbe Breite/Hierarchie wie der Header haben, keine separate große Card im Content-Bereich
 
 ### Admin Content Editors
 - **Homepage Editor (`admin/content/home.vue`):** Hero-Text + 3 Feature-Card Editoren, Edit/Preview Toggle
@@ -465,6 +479,10 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 - [x] **Guide Bottom Cards:** 3 feature-card Links (Strings, WowUp, FAQ) mit Hover-Highlighting
 - [x] **Homepage Scroll-Indikator:** Sticky overlay mit backdrop-blur, immer sichtbar
 - [x] **Changelog Pagination:** UButton statt raw `<button>`
+- [x] **Public Header Cleanup:** Mobile-Hamburger nur noch auf Mobile, Breadcrumbs zentriert, Footer ausgedünnt
+- [x] **Shared Public Backgrounds:** Homepage und Guide nutzen jetzt denselben Page-Background-Ansatz wie Strings/weitere Public-Seiten
+- [x] **Guide Top Simplified:** Install-Guide oben ohne eigene Hero-Glassbox, nur noch Heading + Stats auf normalem Seitenhintergrund
+- [x] **Sticky Public Admin Bar:** eingeloggte Session-Leiste sitzt im sticky Public-Header und läuft beim Scrollen mit
 
 ### VERBLEIBEND
 - [ ] **OG-Image als PNG:** SVG erstellt, aber Social-Media-Crawler brauchen PNG — manuelle Konvertierung nötig

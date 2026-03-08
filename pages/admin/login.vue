@@ -11,16 +11,16 @@
       <section class="hidden lg:block pr-6">
         <span class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] mb-5"
           :class="isDark ? 'bg-white/[0.04] border border-white/8 text-brand-300' : 'bg-white border border-blue-100 text-blue-700 shadow-sm'">
-          <UIcon name="i-heroicons-shield-check" class="w-4 h-4" />
-          Admin Access
+          <UIcon name="i-heroicons-sparkles" class="w-4 h-4" />
+          MagguuUI Setup
         </span>
 
         <h1 class="text-4xl lg:text-5xl font-bold leading-tight mb-4">
-          <span class="text-gradient">Modern control,</span><br>
-          <span :class="isDark ? 'text-white' : 'text-gray-900'">without admin clutter.</span>
+          <span class="text-gradient">Strings, guides</span><br>
+          <span :class="isDark ? 'text-white' : 'text-gray-900'">and updates in one place.</span>
         </h1>
         <p class="text-base lg:text-lg max-w-xl leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-          Manage content, imports and system settings from one place. Passkeys are first-class, the shell stays fast, and the workflow remains focused on publishing instead of digging through menus.
+          The public side stays focused on what players actually need: clean addon imports, clear install steps and changelog updates that are easy to scan.
         </p>
 
         <div class="grid gap-3 mt-8 max-w-xl">
@@ -46,7 +46,7 @@
               <img :src="'/logo.svg'" alt="MagguuUI" class="w-9 h-9" />
             </span>
             <div>
-              <p class="text-[11px] font-semibold uppercase tracking-[0.18em]" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Control Center</p>
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em]" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Secure Sign-In</p>
               <h1 class="text-2xl font-bold text-gradient">MagguuUI Admin</h1>
             </div>
           </div>
@@ -142,19 +142,19 @@ const isLocked = computed(() => error.value === 'Account temporarily locked. Try
 const hasPasskeys = ref(false)
 const loginHighlights = [
   {
-    icon: 'i-heroicons-finger-print',
-    title: 'Passkey-ready access',
-    text: 'Biometric and device-backed login is available as soon as passkeys are registered.',
-  },
-  {
-    icon: 'i-heroicons-shield-check',
-    title: 'Protected by default',
-    text: 'Rate limits and session checks stay active so admin access does not drift into weak defaults.',
+    icon: 'i-heroicons-book-open',
+    title: 'Guided setup',
+    text: 'Follow a clean install flow for your main character and keep alt setup predictable.',
   },
   {
     icon: 'i-heroicons-bolt',
-    title: 'Focused workflow',
-    text: 'Jump straight into content, data and system operations without a cluttered first screen.',
+    title: 'Curated imports',
+    text: 'Profiles, packages and copy-ready strings stay organized instead of scattered across tools.',
+  },
+  {
+    icon: 'i-heroicons-sparkles',
+    title: 'Clear updates',
+    text: 'Latest changes stay visible so you know what changed before importing again.',
   },
 ]
 

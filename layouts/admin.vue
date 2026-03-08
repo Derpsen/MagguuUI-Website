@@ -22,7 +22,7 @@
       <div class="px-3 pt-3 pb-2">
         <div class="rounded-[1.35rem] px-3 py-3 relative"
           :class="isDark ? 'bg-white/[0.04] border border-white/8' : 'bg-white/90 border border-blue-100 shadow-sm'">
-          <div class="flex items-center gap-3">
+          <div class="flex" :class="collapsed ? 'flex-col items-center gap-2' : 'items-center gap-3'">
             <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl flex-shrink-0"
               :class="isDark ? 'bg-white/[0.06] border border-white/8' : 'bg-blue-50 border border-blue-100'">
               <img :src="'/logo.svg'" alt="MagguuUI" class="w-7 h-7" />
@@ -35,7 +35,7 @@
             </template>
             <button class="hidden lg:flex items-center justify-center w-9 h-9 rounded-full flex-shrink-0 transition-all"
               :class="isDark ? 'text-silver-500 hover:text-white hover:bg-white/[0.06]' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100'"
-              @click="collapsed = !collapsed" :title="'Collapse sidebar'">
+              @click="collapsed = !collapsed" :title="collapsed ? 'Expand sidebar' : 'Collapse sidebar'">
               <UIcon name="i-heroicons-chevron-double-left" class="w-4 h-4 transition-transform" :class="collapsed ? 'rotate-180' : ''" />
             </button>
           </div>
@@ -124,33 +124,33 @@
 
     <div class="flex-1 transition-all duration-300" :class="collapsed ? 'lg:ml-20' : 'lg:ml-72'">
       <header class="sticky top-0 z-20 px-3 sm:px-4 lg:px-6 pt-3">
-        <div class="admin-toolbar-shell rounded-[1.75rem] px-3 sm:px-4 lg:px-5 py-3">
-          <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-            <div class="flex items-start gap-3 min-w-0">
-              <UButton class="lg:hidden mt-1" icon="i-heroicons-bars-3" variant="ghost" color="neutral" @click="sidebarOpen = !sidebarOpen" />
+        <div class="admin-toolbar-shell rounded-[1.5rem] px-3 sm:px-4 lg:px-5 py-2.5">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <UButton class="lg:hidden mt-0.5" icon="i-heroicons-bars-3" variant="ghost" color="neutral" @click="sidebarOpen = !sidebarOpen" />
+              <button
+                class="hidden lg:inline-flex admin-icon-button"
+                :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-500 hover:text-gray-900 hover:bg-white border border-blue-100 shadow-sm'"
+                @click="collapsed = !collapsed"
+                :title="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+              >
+                <UIcon name="i-heroicons-chevron-double-left" class="w-4 h-4 transition-transform" :class="collapsed ? 'rotate-180' : ''" />
+              </button>
 
-              <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl flex-shrink-0"
-                :class="isDark ? 'bg-white/[0.06] border border-white/8 text-brand-300' : 'bg-blue-50 border border-blue-100 text-blue-700'">
-                <UIcon :name="currentContext.icon" class="w-5 h-5" />
+              <div class="hidden lg:block h-7 w-px flex-shrink-0" :class="isDark ? 'bg-white/8' : 'bg-blue-100'" />
+              <span class="admin-context-chip shrink-0"
+                :class="isDark ? 'bg-brand-400/10 border border-brand-400/15 text-brand-300' : 'bg-blue-50 border border-blue-100 text-blue-700'">
+                {{ currentContext.section }}
               </span>
-
-              <div class="min-w-0">
-                <div class="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em]">
-                  <span :class="isDark ? 'text-brand-300' : 'text-blue-700'">{{ currentContext.section }}</span>
-                  <span class="admin-context-chip" :class="isDark ? 'bg-white/[0.04] border border-white/8 text-silver-500' : 'bg-white border border-blue-100 text-gray-500'">
-                    {{ contextTrail }}
-                  </span>
-                </div>
-                <h1 class="text-lg sm:text-xl font-semibold mt-1" :class="isDark ? 'text-white' : 'text-gray-900'">
-                  {{ currentContext.title }}
-                </h1>
-                <p class="text-xs sm:text-sm mt-1" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-                  {{ currentContext.hint }}
-                </p>
-              </div>
+              <h1 class="min-w-0 truncate text-base sm:text-lg font-semibold whitespace-nowrap" :class="isDark ? 'text-white' : 'text-gray-900'">
+                {{ currentContext.title }}
+              </h1>
+              <p class="hidden 2xl:block min-w-0 truncate text-sm whitespace-nowrap" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+                {{ currentContext.hint }}
+              </p>
             </div>
 
-            <div class="flex items-center gap-2 sm:gap-3 self-end xl:self-auto">
+            <div class="flex items-center gap-2 sm:gap-3 self-end lg:self-auto">
               <NuxtLink to="/"
                 class="hidden sm:inline-flex admin-icon-button"
                 :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-500 hover:text-gray-900 hover:bg-white border border-blue-100 shadow-sm'"
@@ -164,7 +164,8 @@
                 @click="cmdPalette?.open()"
               >
                 <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4" />
-                <span class="flex-1 text-left">Search pages, actions and tools</span>
+                <span class="flex-1 text-left hidden lg:inline whitespace-nowrap">Search pages, actions and tools</span>
+                <span class="flex-1 text-left lg:hidden whitespace-nowrap">Search</span>
                 <kbd class="px-1.5 py-0.5 text-[10px] font-medium rounded"
                   :class="isDark ? 'bg-brand-950/70 text-silver-500 border border-white/8' : 'bg-gray-50 text-gray-500 border border-gray-200'">
                   {{ searchShortcut }}
@@ -230,16 +231,15 @@
                 <UIcon :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'" class="w-4.5 h-4.5" />
               </button>
 
-              <div class="hidden lg:flex items-center gap-3 px-3 py-2 admin-user-chip"
+              <div class="hidden xl:block h-8 w-px" :class="isDark ? 'bg-white/8' : 'bg-blue-100'" />
+
+              <div class="hidden xl:flex items-center gap-2 px-3 py-2 admin-user-chip"
                 :class="isDark ? 'bg-white/[0.04] border border-white/8' : 'bg-white border border-blue-100 shadow-sm'">
                 <span class="inline-flex items-center justify-center w-9 h-9 rounded-full"
                   :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-blue-50 text-blue-700'">
                   {{ userInitial }}
                 </span>
-                <div>
-                  <p class="text-sm font-semibold leading-none" :class="isDark ? 'text-white' : 'text-gray-900'">{{ user?.username || 'Admin' }}</p>
-                  <p class="text-[11px] mt-1" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Admin session</p>
-                </div>
+                <span class="text-sm font-semibold whitespace-nowrap" :class="isDark ? 'text-white' : 'text-gray-900'">{{ user?.username || 'Admin' }}</span>
               </div>
 
               <UButton icon="i-heroicons-arrow-right-on-rectangle" variant="ghost" color="neutral" size="sm" @click="handleLogout">
@@ -342,11 +342,6 @@ const currentContext = computed(() => {
     icon: 'i-heroicons-squares-2x2',
     hint: 'Track site health, publishing activity and operational status.',
   }
-})
-
-const contextTrail = computed(() => {
-  const parents = breadcrumbs.value.slice(0, -1).map(crumb => crumb.label)
-  return parents.length ? parents.join(' / ') : 'Workspace'
 })
 
 const activeStyle = computed(() => isDark.value

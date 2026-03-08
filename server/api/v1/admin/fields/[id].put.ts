@@ -1,0 +1,32 @@
+/**
+ * PUT /api/v1/admin/fields/:id
+ */
+
+import { eq } from 'drizzle-orm'
+import { db } from '~/server/database'
+import { fieldDefinitions } from '~/server/database/schema'
+
+export default defineEventHandler(async (event) => {
+  const id = Number(getRouterParam(event, 'id'))
+  if (isNaN(id)) throw createError({ statusCode: 400, message: 'Invalid ID' })
+
+  const existing = db.select().from(fieldDefinitions).where(eq(fieldDefinitions.id, id)).get()
+  if (!existing) throw createError({ statusCode: 404, message: 'Field not found' })
+
+  const body = await readBody(event)
+
+  const result = db.update(fieldDefinitions)
+    .set({
+      ...(body.fieldLabel !== undefined && { fieldLabel: body.fieldLabel }),
+      ...(body.fieldType !== undefined && { fieldType: body.fieldType }),
+      ...(body.fieldOptions !== undefined && { fieldOptions: body.fieldOptions ? JSON.stringify(body.fieldOptions) : null }),
+      ...(body.isRequired !== undefined && { isRequired: body.isRequired }),
+      ...(body.sortOrder !== undefined && { sortOrder: body.sortOrder }),
+      updatedAt: new Date(),
+    })
+    .where(eq(fieldDefinitions.id, id))
+    .returning()
+    .get()
+
+  return { success: true, data: result }
+})

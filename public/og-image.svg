@@ -1,0 +1,31 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a1628;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f1c34;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3B8BFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#60a5fa;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" style="stop-color:#3B8BFF;stop-opacity:0.08" />
+      <stop offset="100%" style="stop-color:#3B8BFF;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <rect width="1200" height="630" fill="url(#glow)" />
+  <!-- Border accent -->
+  <rect x="0" y="626" width="1200" height="4" fill="url(#textGrad)" />
+  <!-- Logo placeholder circle -->
+  <circle cx="600" cy="220" r="60" fill="none" stroke="url(#textGrad)" stroke-width="3" opacity="0.5"/>
+  <text x="600" y="235" text-anchor="middle" fill="url(#textGrad)" font-size="48" font-weight="bold" font-family="sans-serif">M</text>
+  <!-- Title -->
+  <text x="600" y="340" text-anchor="middle" fill="url(#textGrad)" font-size="64" font-weight="800" font-family="'Plus Jakarta Sans', sans-serif">MagguuUI</text>
+  <!-- Subtitle -->
+  <text x="600" y="400" text-anchor="middle" fill="#94a3b8" font-size="28" font-weight="500" font-family="'Plus Jakarta Sans', sans-serif">Dein WoW Interface, perfektioniert.</text>
+  <!-- Description -->
+  <text x="600" y="460" text-anchor="middle" fill="#64748b" font-size="20" font-family="'Plus Jakarta Sans', sans-serif">Import Strings für ElvUI, Plater, BigWigs, Details &amp; mehr</text>
+  <!-- URL -->
+  <text x="600" y="560" text-anchor="middle" fill="#475569" font-size="18" font-family="'JetBrains Mono', monospace">ui.magguu.xyz</text>
+</svg>

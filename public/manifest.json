@@ -1,0 +1,21 @@
+{
+  "name": "MagguuUI — WoW UI Profiles & Import Strings",
+  "short_name": "MagguuUI",
+  "description": "High-quality import strings for ElvUI, Plater, BigWigs, Details & more.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a1628",
+  "theme_color": "#0c1b35",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

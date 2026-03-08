@@ -1,0 +1,29 @@
+# Dependencies & build output
+.nuxt
+node_modules
+.output
+
+# Runtime data (mounted as volumes)
+data
+uploads
+
+# Version control
+.git
+.gitignore
+
+# Environment & secrets
+.env
+.env.*
+
+# IDE & tooling
+.claude
+.vscode
+.idea
+
+# Archives & docs
+*.zip
+*.md
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -182,6 +182,51 @@
             </div>
           </div>
         </Transition>
+
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="opacity-0 -translate-y-2"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="opacity-100 translate-y-0"
+          leave-to-class="opacity-0 -translate-y-2"
+        >
+          <div
+            v-if="isLoggedIn"
+            class="mt-3 px-1 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b"
+            :class="isDark ? 'border-white/8' : 'border-blue-100'"
+          >
+            <div class="flex items-center gap-3">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0"
+                :class="isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-700'">
+                <UIcon name="i-heroicons-shield-check" class="w-4.5 h-4.5" />
+              </span>
+              <div>
+                <p class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+                  Admin session active
+                </p>
+                <p class="text-xs sm:text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+                  Logged in as <strong class="font-semibold" :class="isDark ? 'text-brand-300' : 'text-blue-700'">{{ user?.username }}</strong>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <NuxtLink to="/admin"
+                class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all"
+                :class="isDark ? 'text-brand-300 hover:text-white hover:bg-white/[0.05]' : 'text-blue-700 hover:text-blue-800 hover:bg-white/70'">
+                <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4" />
+                Admin Panel
+              </NuxtLink>
+              <button @click="handleLogout"
+                class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all"
+                :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.05]' : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'">
+                <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          </div>
+        </Transition>
       </div>
     </header>
 
@@ -233,41 +278,6 @@
           </div>
         </div>
       </Transition>
-
-      <div v-if="isLoggedIn" class="px-4 sm:px-6 lg:px-8 mt-2">
-        <div class="max-w-7xl mx-auto px-1 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b"
-          :class="isDark ? 'border-white/8' : 'border-blue-100'">
-          <div class="flex items-center gap-3">
-            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0"
-              :class="isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-700'">
-              <UIcon name="i-heroicons-shield-check" class="w-4.5 h-4.5" />
-            </span>
-            <div>
-              <p class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
-                Admin session active
-              </p>
-              <p class="text-xs sm:text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-                Logged in as <strong class="font-semibold" :class="isDark ? 'text-brand-300' : 'text-blue-700'">{{ user?.username }}</strong>
-              </p>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <NuxtLink to="/admin"
-              class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all"
-              :class="isDark ? 'text-brand-300 hover:text-white hover:bg-white/[0.05]' : 'text-blue-700 hover:text-blue-800 hover:bg-white/70'">
-              <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4" />
-              Admin Panel
-            </NuxtLink>
-            <button @click="handleLogout"
-              class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all"
-              :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.05]' : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'">
-              <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4" />
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
 
       <div v-if="breadcrumbLabel" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 flex justify-center">
         <nav class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm mx-auto"

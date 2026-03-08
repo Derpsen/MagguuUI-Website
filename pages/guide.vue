@@ -65,66 +65,61 @@
       </div>
     </Transition>
 
-    <section class="guide-hero relative overflow-hidden rounded-[1.8rem] sm:rounded-[2.2rem] mb-8 sm:mb-10 fade-in">
-      <div class="guide-hero-orb guide-hero-orb-a" />
-      <div class="guide-hero-orb guide-hero-orb-b" />
-      <div class="guide-hero-grid" />
-
-      <div class="relative z-10 px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-9">
-        <div class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] mb-4"
-          :class="isDark ? 'bg-white/6 text-brand-300 border border-white/8' : 'bg-white/90 text-blue-700 border border-blue-100 shadow-sm'">
+    <section class="mb-8 sm:mb-10 fade-in">
+      <div v-if="!editMode" class="max-w-4xl mx-auto text-center mb-7 sm:mb-8 heading-glow">
+        <div
+          class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] mb-4"
+          :class="isDark ? 'bg-white/6 text-brand-300 border border-white/8' : 'bg-white/85 text-blue-700 border border-blue-100 shadow-sm'"
+        >
           <UIcon name="i-heroicons-book-open" class="w-3.5 h-3.5" />
           Installation Playbook
         </div>
 
-        <div class="max-w-2xl">
-          <template v-if="!editMode">
-            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-3 sm:mb-4 flex items-start gap-2.5 sm:gap-3">
-              <span class="guide-hero-icon">
-                <UIcon name="i-heroicons-book-open" class="w-7 h-7 sm:w-8 sm:h-8" />
-              </span>
-              <span class="text-gradient">{{ editableTitle || 'Installation Guide' }}</span>
-            </h1>
-            <p class="text-[15px] sm:text-lg max-w-xl leading-relaxed"
-              :class="isDark ? 'text-silver-300' : 'text-gray-600'">
-              {{ editableSubtitle || 'Set up MagguuUI once on your main character, then let alts load the same profiles automatically.' }}
-            </p>
-          </template>
+        <h1 class="text-4xl sm:text-5xl font-bold leading-tight mb-4 flex items-center justify-center gap-3">
+          <span class="guide-heading-icon">
+            <UIcon name="i-heroicons-book-open" class="w-7 h-7 sm:w-8 sm:h-8" />
+          </span>
+          <span class="text-gradient">{{ editableTitle || 'Installation Guide' }}</span>
+        </h1>
 
-          <template v-else>
-            <div class="space-y-3">
-              <div>
-                <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Page Title</label>
-                <input
-                  v-model="editableTitle"
-                  class="w-full text-2xl sm:text-3xl font-bold rounded-2xl px-4 py-3 border-2 transition-colors outline-none"
-                  :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-blue-200 focus:border-blue-500'"
-                >
-              </div>
-              <div>
-                <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Subtitle</label>
-                <textarea
-                  v-model="editableSubtitle"
-                  rows="3"
-                  class="w-full text-base rounded-2xl px-4 py-3 border-2 transition-colors outline-none resize-none"
-                  :class="isDark ? 'bg-brand-800/50 text-silver-300 border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-700 border-blue-200 focus:border-blue-500'"
-                ></textarea>
-              </div>
-            </div>
-          </template>
-        </div>
+        <p
+          class="text-lg max-w-2xl mx-auto leading-relaxed"
+          :class="isDark ? 'text-silver-400' : 'text-gray-500'"
+        >
+          {{ editableSubtitle || 'Set up MagguuUI once on your main character, then let alts load the same profiles automatically.' }}
+        </p>
+      </div>
 
-        <div v-if="!editMode" class="grid sm:grid-cols-3 gap-2.5 mt-6 sm:mt-7 max-w-4xl">
-          <div
-            v-for="stat in setupStats"
-            :key="stat.label"
-            class="guide-stat-card rounded-[1.1rem] px-3.5 py-3.5"
-            :class="isDark ? 'bg-white/[0.04] border border-white/8' : 'bg-white/90 border border-blue-100 shadow-sm'"
+      <div v-else class="max-w-3xl mx-auto space-y-3">
+        <div>
+          <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Page Title</label>
+          <input
+            v-model="editableTitle"
+            class="w-full text-2xl sm:text-3xl font-bold rounded-2xl px-4 py-3 border-2 transition-colors outline-none"
+            :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-blue-200 focus:border-blue-500'"
           >
-            <p class="text-[10px] font-semibold uppercase tracking-[0.2em] mb-1.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ stat.label }}</p>
-            <p class="text-lg sm:text-xl font-bold mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ stat.value }}</p>
-            <p class="text-xs leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-500'">{{ stat.text }}</p>
-          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Subtitle</label>
+          <textarea
+            v-model="editableSubtitle"
+            rows="3"
+            class="w-full text-base rounded-2xl px-4 py-3 border-2 transition-colors outline-none resize-none"
+            :class="isDark ? 'bg-brand-800/50 text-silver-300 border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-700 border-blue-200 focus:border-blue-500'"
+          ></textarea>
+        </div>
+      </div>
+
+      <div v-if="!editMode" class="grid sm:grid-cols-3 gap-2.5 max-w-4xl mx-auto">
+        <div
+          v-for="stat in setupStats"
+          :key="stat.label"
+          class="guide-stat-card rounded-[1.1rem] px-3.5 py-3.5"
+          :class="isDark ? 'bg-white/[0.04] border border-white/8' : 'bg-white/90 border border-blue-100 shadow-sm'"
+        >
+          <p class="text-[10px] font-semibold uppercase tracking-[0.2em] mb-1.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ stat.label }}</p>
+          <p class="text-lg sm:text-xl font-bold mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ stat.value }}</p>
+          <p class="text-xs leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-500'">{{ stat.text }}</p>
         </div>
       </div>
     </section>
@@ -527,75 +522,7 @@ async function saveAll() {
 </script>
 
 <style scoped>
-.guide-hero {
-  background:
-    linear-gradient(145deg, rgba(9, 20, 40, 0.98), rgba(7, 16, 33, 0.94)),
-    radial-gradient(circle at top left, rgba(59, 139, 255, 0.18), transparent 34%);
-  border: 1px solid rgba(59, 139, 255, 0.12);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28);
-}
-
-:global(.light) .guide-hero,
-:global(html.light) .guide-hero {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.96)),
-    radial-gradient(circle at top left, rgba(59, 139, 255, 0.08), transparent 34%);
-  border-color: rgba(59, 139, 255, 0.1);
-  box-shadow: 0 20px 50px rgba(37, 99, 235, 0.07);
-}
-
-.guide-hero-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent 85%);
-  pointer-events: none;
-}
-
-.guide-hero-orb {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(18px);
-  pointer-events: none;
-}
-
-.guide-hero-orb-a {
-  top: -5rem;
-  right: -2rem;
-  width: 18rem;
-  height: 18rem;
-  background: radial-gradient(circle, rgba(59, 139, 255, 0.22), transparent 68%);
-}
-
-.guide-hero-orb-b {
-  bottom: -6rem;
-  left: 12%;
-  width: 14rem;
-  height: 14rem;
-  background: radial-gradient(circle, rgba(20, 184, 166, 0.14), transparent 68%);
-}
-
-:global(.light) .guide-hero-grid,
-:global(html.light) .guide-hero-grid {
-  background-image:
-    linear-gradient(rgba(37, 99, 235, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37, 99, 235, 0.03) 1px, transparent 1px);
-}
-
-:global(.light) .guide-hero-orb-a,
-:global(html.light) .guide-hero-orb-a {
-  background: radial-gradient(circle, rgba(96, 165, 250, 0.14), transparent 68%);
-}
-
-:global(.light) .guide-hero-orb-b,
-:global(html.light) .guide-hero-orb-b {
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.08), transparent 68%);
-}
-
-.guide-hero-icon {
+.guide-heading-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -609,8 +536,8 @@ async function saveAll() {
   flex-shrink: 0;
 }
 
-:global(.light) .guide-hero-icon,
-:global(html.light) .guide-hero-icon {
+:global(.light) .guide-heading-icon,
+:global(html.light) .guide-heading-icon {
   color: #2563eb;
   background: rgba(255, 255, 255, 0.92);
   border-color: rgba(59, 139, 255, 0.14);
@@ -917,7 +844,7 @@ async function saveAll() {
 }
 
 @media (max-width: 640px) {
-  .guide-hero-icon {
+  .guide-heading-icon {
     width: 2.75rem;
     height: 2.75rem;
     border-radius: 0.9rem;

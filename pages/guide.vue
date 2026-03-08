@@ -102,18 +102,6 @@
         </div>
       </div>
 
-      <div v-if="!editMode" class="grid sm:grid-cols-3 gap-2.5 max-w-4xl mx-auto">
-        <div
-          v-for="stat in setupStats"
-          :key="stat.label"
-          class="guide-stat-card rounded-[1.1rem] px-3.5 py-3.5"
-          :class="isDark ? 'bg-white/[0.04] border border-white/8' : 'bg-white/90 border border-blue-100 shadow-sm'"
-        >
-          <p class="text-[10px] font-semibold uppercase tracking-[0.2em] mb-1.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ stat.label }}</p>
-          <p class="text-lg sm:text-xl font-bold mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ stat.value }}</p>
-          <p class="text-xs leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-500'">{{ stat.text }}</p>
-        </div>
-      </div>
     </section>
 
     <div v-if="steps.length" class="grid xl:grid-cols-[minmax(0,1fr)_320px] gap-8 xl:gap-10 items-start">
@@ -352,14 +340,6 @@ const STEP_ACCENTS = [
   { solid: '#8b5cf6', soft: 'rgba(139, 92, 246, 0.14)', glow: 'rgba(139, 92, 246, 0.22)', border: 'rgba(139, 92, 246, 0.35)' },
 ] as const
 
-const estimatedMinutes = computed(() => Math.max(8, steps.value.length * 3))
-
-const setupStats = computed(() => [
-  { label: 'Steps', value: String(steps.value.length), text: 'A clean sequence from first install to alt-ready setup.' },
-  { label: 'Time', value: `~${estimatedMinutes.value} min`, text: 'Most users can finish the first pass in a single session.' },
-  { label: 'Result', value: 'Ready to Play', text: 'Profiles, addon pack and follow-up links in one place.' },
-])
-
 function parseSteps(raw: Record<string, string> | undefined): EditableStep[] {
   if (!raw || typeof raw !== 'object') return []
 
@@ -534,10 +514,6 @@ async function saveAll() {
   background: rgba(255, 255, 255, 0.92);
   border-color: rgba(59, 139, 255, 0.14);
   box-shadow: 0 12px 30px rgba(37, 99, 235, 0.08);
-}
-
-.guide-stat-card {
-  backdrop-filter: blur(14px);
 }
 
 .guide-step {

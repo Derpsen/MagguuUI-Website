@@ -125,7 +125,62 @@
           leave-from-class="opacity-100 translate-y-0"
           leave-to-class="opacity-0 -translate-y-2"
         >
-          <div v-if="mobileOpen" class="mt-3 public-nav-shell rounded-[1.6rem] p-4 md:hidden">
+          <div
+            v-if="isLoggedIn"
+            class="mt-3 px-1 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b"
+            :class="isDark ? 'border-white/8' : 'border-blue-100'"
+          >
+            <div class="flex items-center gap-3">
+              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0"
+                :class="isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-700'">
+                <UIcon name="i-heroicons-shield-check" class="w-4.5 h-4.5" />
+              </span>
+              <div>
+                <p class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+                  Admin session active
+                </p>
+                <p class="text-xs sm:text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+                  Logged in as <strong class="font-semibold" :class="isDark ? 'text-brand-300' : 'text-blue-700'">{{ user?.username }}</strong>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <NuxtLink to="/admin"
+                class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all"
+                :class="isDark ? 'text-brand-300 hover:text-white hover:bg-white/[0.05]' : 'text-blue-700 hover:text-blue-800 hover:bg-white/70'">
+                <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4" />
+                Admin Panel
+              </NuxtLink>
+              <button @click="handleLogout"
+                class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all"
+                :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.05]' : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'">
+                <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </div>
+    </header>
+
+    <Transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="mobileOpen" class="fixed inset-0 z-[65] md:hidden">
+        <button
+          class="absolute inset-0 bg-brand-950/55 backdrop-blur-sm"
+          aria-label="Close mobile menu"
+          @click="mobileOpen = false"
+        />
+
+        <div class="absolute inset-x-3 top-[5.4rem]">
+          <div class="public-nav-shell rounded-[1.6rem] p-4 shadow-2xl">
             <div class="flex justify-end mb-4">
               <NuxtLink :to="primaryAction.to"
                 class="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold text-white whitespace-nowrap btn-gradient"
@@ -181,54 +236,9 @@
               </NuxtLink>
             </div>
           </div>
-        </Transition>
-
-        <Transition
-          enter-active-class="transition duration-200 ease-out"
-          enter-from-class="opacity-0 -translate-y-2"
-          enter-to-class="opacity-100 translate-y-0"
-          leave-active-class="transition duration-150 ease-in"
-          leave-from-class="opacity-100 translate-y-0"
-          leave-to-class="opacity-0 -translate-y-2"
-        >
-          <div
-            v-if="isLoggedIn"
-            class="mt-3 px-1 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b"
-            :class="isDark ? 'border-white/8' : 'border-blue-100'"
-          >
-            <div class="flex items-center gap-3">
-              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0"
-                :class="isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-700'">
-                <UIcon name="i-heroicons-shield-check" class="w-4.5 h-4.5" />
-              </span>
-              <div>
-                <p class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
-                  Admin session active
-                </p>
-                <p class="text-xs sm:text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-                  Logged in as <strong class="font-semibold" :class="isDark ? 'text-brand-300' : 'text-blue-700'">{{ user?.username }}</strong>
-                </p>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <NuxtLink to="/admin"
-                class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all"
-                :class="isDark ? 'text-brand-300 hover:text-white hover:bg-white/[0.05]' : 'text-blue-700 hover:text-blue-800 hover:bg-white/70'">
-                <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4" />
-                Admin Panel
-              </NuxtLink>
-              <button @click="handleLogout"
-                class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all"
-                :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.05]' : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'">
-                <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </Transition>
+        </div>
       </div>
-    </header>
+    </Transition>
 
     <div class="relative z-20">
       <Transition
@@ -279,20 +289,6 @@
         </div>
       </Transition>
 
-      <div v-if="breadcrumbLabel" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 flex justify-center">
-        <nav class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm mx-auto"
-          :class="isDark ? 'bg-white/[0.03] border border-white/8 text-silver-500' : 'bg-white/90 border border-blue-100 text-gray-500 shadow-sm'"
-          aria-label="Breadcrumb">
-          <NuxtLink to="/" class="hover:text-brand-400 transition-colors">Home</NuxtLink>
-          <UIcon name="i-heroicons-chevron-right" class="w-3.5 h-3.5 opacity-60" />
-          <NuxtLink v-if="breadcrumbSub" :to="breadcrumbParentPath" class="hover:text-brand-400 transition-colors">{{ breadcrumbLabel }}</NuxtLink>
-          <span v-else class="font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ breadcrumbLabel }}</span>
-          <template v-if="breadcrumbSub">
-            <UIcon name="i-heroicons-chevron-right" class="w-3.5 h-3.5 opacity-60" />
-            <span class="font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ breadcrumbSub }}</span>
-          </template>
-        </nav>
-      </div>
     </div>
 
     <main id="main-content" class="public-main-shell flex-1"><slot /></main>
@@ -521,27 +517,6 @@ async function ensureSiteSettings() {
     // Non-blocking for public pages.
   }
 }
-
-const breadcrumbLabel = computed(() => {
-  const match = navLinks.find(l => l.to !== '/' && route.path.startsWith(l.to))
-  return match?.label || null
-})
-
-const breadcrumbSub = computed(() => {
-  if (route.path !== '/strings') return null
-  const tabMap: Record<string, string> = {
-    layouts: 'Cooldown Layouts',
-    profiles: 'Addon Profiles',
-    wowup: 'WowUp Import String',
-  }
-  const tab = (route.query.tab as string) || 'layouts'
-  return tabMap[tab] || null
-})
-
-const breadcrumbParentPath = computed(() => {
-  if (route.path === '/strings') return '/strings'
-  return route.path
-})
 
 function isActive(path: string): boolean {
   if (path === '/') return route.path === '/'

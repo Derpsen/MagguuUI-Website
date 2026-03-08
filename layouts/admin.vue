@@ -245,6 +245,61 @@
         </div>
       </header>
 
+      <div class="px-3 sm:px-4 lg:px-6 pt-3">
+        <div v-if="adminStatsLoading && !adminStats" class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+          <div
+            v-for="i in 4"
+            :key="'admin-layout-stat-skeleton-' + i"
+            class="admin-toolbar-shell rounded-[1.35rem] px-4 py-3"
+          >
+            <div class="h-3 w-20 rounded mb-3" :class="isDark ? 'bg-white/8' : 'bg-blue-100'" />
+            <div class="h-7 w-16 rounded mb-2" :class="isDark ? 'bg-white/10' : 'bg-blue-50'" />
+            <div class="h-3 w-24 rounded" :class="isDark ? 'bg-white/6' : 'bg-blue-50'" />
+          </div>
+        </div>
+
+        <div v-else-if="adminTopStats.length" class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+          <NuxtLink
+            v-for="stat in adminTopStats"
+            :key="stat.label"
+            :to="stat.to"
+            class="admin-toolbar-shell rounded-[1.35rem] px-4 py-3 transition-all hover:-translate-y-0.5"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em]" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+                  {{ stat.label }}
+                </p>
+                <p class="mt-2 text-2xl font-bold leading-none" :class="isDark ? 'text-white' : 'text-gray-900'">
+                  {{ stat.value }}
+                </p>
+                <p class="mt-2 text-xs leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+                  {{ stat.meta }}
+                </p>
+              </div>
+
+              <div class="flex flex-col items-end gap-2">
+                <span
+                  class="inline-flex items-center justify-center w-10 h-10 rounded-xl flex-shrink-0"
+                  :class="stat.iconWrap"
+                >
+                  <UIcon :name="stat.icon" class="w-4.5 h-4.5" :class="stat.iconColor" />
+                </span>
+
+                <span
+                  v-if="stat.trend !== null"
+                  class="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold"
+                  :class="stat.trendClass"
+                >
+                  <UIcon :name="stat.trend >= 0 ? 'i-heroicons-arrow-trending-up' : 'i-heroicons-arrow-trending-down'" class="w-3.5 h-3.5" />
+                  {{ Math.abs(stat.trend) }}%
+                </span>
+              </div>
+            </div>
+          </NuxtLink>
+        </div>
+      </div>
+
       <main class="admin-main-shell p-3 sm:p-4 lg:p-6"><slot /></main>
     </div>
 
@@ -259,6 +314,7 @@
 
 <script setup lang="ts">
 const { user, logout } = useAuth()
+const { apiFetch } = useApi()
 const colorMode = useColorMode()
 const route = useRoute()
 const sidebarOpen = ref(false)
@@ -273,9 +329,90 @@ const isMac = ref(false)
 const isDark = useIsDark()
 function toggleTheme() { colorMode.preference = isDark.value ? 'light' : 'dark' }
 
+interface AdminLayoutStats {
+  profiles: number
+  wowupStrings: number
+  layouts: number
+  changelogs: number
+  users: number
+  copiesLast7Days: number
+  copyTrend: number
+  pageViewsLast7Days: number
+  pageViewTrend: number
+}
+
+const adminStats = ref<AdminLayoutStats | null>(null)
+const adminStatsLoading = ref(false)
+
 const { notifications: notifItems, count: notifCount, refresh: notifRefresh, dismiss: notifDismiss } = useAdminNotifications()
 const searchShortcut = computed(() => isMac.value ? '⌘K' : 'Ctrl K')
 const userInitial = computed(() => (user.value?.username || 'A').charAt(0).toUpperCase())
+
+const adminTopStats = computed(() => {
+  if (!adminStats.value) return []
+
+  return [
+    {
+      label: 'Profiles',
+      value: adminStats.value.profiles,
+      meta: `${adminStats.value.wowupStrings} WowUp strings live`,
+      to: '/admin/strings/profiles',
+      icon: 'i-heroicons-cube',
+      iconWrap: isDark.value ? 'bg-brand-400/10 text-brand-300' : 'bg-blue-50 text-blue-700',
+      iconColor: '',
+      trend: null,
+      trendClass: '',
+    },
+    {
+      label: 'Layouts',
+      value: adminStats.value.layouts,
+      meta: `${adminStats.value.changelogs} changelog entries published`,
+      to: '/admin/strings/layouts',
+      icon: 'i-heroicons-user-circle',
+      iconWrap: isDark.value ? 'bg-violet-500/10 text-violet-300' : 'bg-violet-50 text-violet-700',
+      iconColor: '',
+      trend: null,
+      trendClass: '',
+    },
+    {
+      label: 'Copies 7d',
+      value: adminStats.value.copiesLast7Days,
+      meta: 'Import activity from the last 7 days',
+      to: '/admin/system/stats',
+      icon: 'i-heroicons-bolt',
+      iconWrap: isDark.value ? 'bg-emerald-500/10 text-emerald-300' : 'bg-emerald-50 text-emerald-700',
+      iconColor: '',
+      trend: adminStats.value.copyTrend,
+      trendClass: adminStats.value.copyTrend >= 0
+        ? isDark.value ? 'bg-emerald-500/10 text-emerald-300' : 'bg-emerald-50 text-emerald-700'
+        : isDark.value ? 'bg-rose-500/10 text-rose-300' : 'bg-rose-50 text-rose-700',
+    },
+    {
+      label: 'Page Views 7d',
+      value: adminStats.value.pageViewsLast7Days,
+      meta: `${adminStats.value.users} admin user${adminStats.value.users === 1 ? '' : 's'} configured`,
+      to: '/admin/system/stats',
+      icon: 'i-heroicons-chart-bar',
+      iconWrap: isDark.value ? 'bg-amber-500/10 text-amber-300' : 'bg-amber-50 text-amber-700',
+      iconColor: '',
+      trend: adminStats.value.pageViewTrend,
+      trendClass: adminStats.value.pageViewTrend >= 0
+        ? isDark.value ? 'bg-amber-500/10 text-amber-300' : 'bg-amber-50 text-amber-700'
+        : isDark.value ? 'bg-rose-500/10 text-rose-300' : 'bg-rose-50 text-rose-700',
+    },
+  ]
+})
+
+async function refreshAdminStats() {
+  adminStatsLoading.value = true
+  try {
+    adminStats.value = await apiFetch<AdminLayoutStats>('/api/v1/admin/stats')
+  } catch {
+    // Keep layout resilient if stats cannot be loaded.
+  } finally {
+    adminStatsLoading.value = false
+  }
+}
 
 function onDocumentClick(event: Event) {
   const target = event.target as Node | null
@@ -283,33 +420,6 @@ function onDocumentClick(event: Event) {
   if (notifWrapRef.value?.contains(target) || notifButtonRef.value?.contains(target) || notifPanelRef.value?.contains(target)) return
   notifOpen.value = false
 }
-
-// ─── Breadcrumbs ───────────────────────
-const segmentLabels: Record<string, string> = {
-  content: 'Content', strings: 'Data', system: 'System',
-  home: 'Homepage', guide: 'Guide', faq: 'FAQ', changelog: 'Changelog',
-  profiles: 'Addon Profiles', wowup: 'WowUp', layouts: 'Character Layouts',
-  settings: 'Settings', stats: 'Statistics', users: 'Users',
-  'api-keys': 'API Keys', github: 'GitHub Sync', activity: 'Activity Log', fields: 'Custom Fields',
-}
-
-// Paths that don't have an actual page (just grouping segments)
-const nonNavigable = new Set(['/admin/content', '/admin/strings', '/admin/system'])
-
-const breadcrumbs = computed(() => {
-  const segments = route.path.replace(/^\/admin\/?/, '').split('/').filter(Boolean)
-  const crumbs = [{ label: 'Dashboard', to: '/admin', navigable: true }]
-  let currentPath = '/admin'
-  for (const seg of segments) {
-    currentPath += '/' + seg
-    crumbs.push({
-      label: segmentLabels[seg] || seg.charAt(0).toUpperCase() + seg.slice(1),
-      to: currentPath,
-      navigable: !nonNavigable.has(currentPath),
-    })
-  }
-  return crumbs
-})
 
 const contextMap = [
   { path: '/admin/content/home', title: 'Homepage Editor', section: 'Content', icon: 'i-heroicons-home-modern', hint: 'Update hero messaging, feature highlights and landing-page content.' },
@@ -395,6 +505,7 @@ onMounted(() => {
     collapsed.value = storedCollapsed === '1'
   }
 
+  refreshAdminStats()
   document.addEventListener('click', onDocumentClick)
 })
 

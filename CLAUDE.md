@@ -63,7 +63,7 @@
 │   └── useAdminNotifications.ts
 │
 ├── layouts/
-│   ├── default.vue             # Public Layout (sticky Navbar, Breadcrumbs, Footer, Public-Admin-Leiste) — <UApp> Wrapper
+│   ├── default.vue             # Public Layout (sticky Navbar, Footer, Public-Admin-Leiste, Mobile-Overlay-Menü) — <UApp> Wrapper
 │   └── admin.vue               # Admin Layout (Sidebar, Header) — <UApp> Wrapper
 │
 ├── server/
@@ -444,14 +444,14 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 
 ### Public Pages
 - **Homepage (`index.vue`):** Hero mit Badge, Titel, Stats, Supported Addons, Scroll-Indikator (sticky bottom-4 z-10 mit backdrop-blur Overlay), Features Section (1 primary full-width + 2 grid-cols-2 = 3 `feature-card`). Wichtig: kein eigener Hero-Glass-Wrapper mehr, sondern derselbe Seitenhintergrund wie auf `strings.vue`, `guide.vue` etc.
-- **Guide (`guide.vue`):** Oberer Bereich nutzt denselben Seitenhintergrund wie `strings.vue` und keine separate Hero-Box mehr. Stattdessen zentrierter Titel/Subtitel + kompakter Stats-Block, darunter card-basierte Step-Panels, Sticky "Quick Flow"-Sidebar, "After Setup"-Links und Admin-Inline-Edit-Modus. Step-Content wird als Markdown via `marked` gerendert und vor `v-html` sanitisiert (Client via DOMPurify, SSR via eigener Sanitize-Funktion), damit Inhalte wie `**WowUp Required**` korrekt formatiert erscheinen.
+- **Guide (`guide.vue`):** Oberer Bereich nutzt denselben Seitenhintergrund wie `strings.vue` und keine separate Hero-Box mehr. Stattdessen nur noch zentrierter Titel/Subtitel, darunter card-basierte Step-Panels, Sticky "Quick Flow"-Sidebar, "After Setup"-Links und Admin-Inline-Edit-Modus. Step-Content wird als Markdown via `marked` gerendert und vor `v-html` sanitisiert (Client via DOMPurify, SSR via eigener Sanitize-Funktion), damit Inhalte wie `**WowUp Required**` korrekt formatiert erscheinen.
 - **Strings (`strings.vue`):** Addon-Tabs + StringCard Grid mit Copy-Tracking
 - **Changelog (`changelog.vue`):** Timeline mit Pagination
 
 ### Public Layout Features (`layouts/default.vue`)
 - Sticky Public-Header mit `public-nav-shell` und zusätzlichem `public-header-backdrop`
-- Hamburger-Menü ist bewusst nur auf Mobile sichtbar; Desktop/Tablet nutzt normale Navigation
-- Breadcrumbs sind zentriert oberhalb des Seiteninhalts
+- Hamburger-Menü ist bewusst nur auf Mobile sichtbar und öffnet dort als klares Overlay-Panel
+- Breadcrumbs sind im Public-Bereich bewusst entfernt, um die kleine Seitenstruktur ruhiger zu halten
 - Wenn eingeloggt, sitzt die Public-Admin-Leiste direkt im Header-Container und scrollt sticky mit der Navbar mit
 - Public-Admin-Leiste soll dieselbe Breite/Hierarchie wie der Header haben, keine separate große Card im Content-Bereich
 
@@ -461,9 +461,10 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 - **Changelog Editor (`admin/content/changelog.vue`):** CRUD mit TipTap, Pagination (UButton)
 
 ### Admin Layout Features (`layouts/admin.vue`)
-- Breadcrumbs (automatisch aus Route generiert)
+- kontextbasierter Header mit Section-Chip, Titel und Hint statt klassischer Breadcrumb-Leiste
 - Keyboard Shortcuts (`?` Taste öffnet Modal, `g d`/`g p`/`g w`/`g l`/`g s`/`g a` Navigation)
 - Sidebar mit Content, Data, System Sections
+- kompakte globale Stats-Leiste direkt unter dem Admin-Header (Profiles, Layouts, Copies 7d, Page Views 7d)
 - `<UApp>` Wrapper für NuxtUI v4 Teleportation
 
 ---
@@ -473,16 +474,19 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 ### ERLEDIGT
 - [x] **UModal #content Slot Fix:** Alle 22 Modals in 9 Admin-Dateien auf `<template #content>` umgestellt
 - [x] **Light-Mode Fixes:** Modal Borders, Table Headers, Table Borders in profiles/wowup/layouts
-- [x] **Admin Breadcrumbs:** Automatisch aus Route generiert in admin.vue
+- [x] **Admin Header Context:** Header arbeitet mit Section-/Title-Kontext statt klassischer Breadcrumb-Leiste
 - [x] **Keyboard Shortcuts:** `?` öffnet Modal, `g d`/`g p` etc. für Navigation
 - [x] **Guide Admin Preview:** Preview-Tab im Guide-Editor mit eigener Timeline-Darstellung vorhanden
 - [x] **Guide Bottom Cards:** 3 feature-card Links (Strings, WowUp, FAQ) mit Hover-Highlighting
 - [x] **Homepage Scroll-Indikator:** Sticky overlay mit backdrop-blur, immer sichtbar
 - [x] **Changelog Pagination:** UButton statt raw `<button>`
-- [x] **Public Header Cleanup:** Mobile-Hamburger nur noch auf Mobile, Breadcrumbs zentriert, Footer ausgedünnt
+- [x] **Public Header Cleanup:** Mobile-Hamburger nur noch auf Mobile, Breadcrumbs entfernt, Footer ausgedünnt
 - [x] **Shared Public Backgrounds:** Homepage und Guide nutzen jetzt denselben Page-Background-Ansatz wie Strings/weitere Public-Seiten
-- [x] **Guide Top Simplified:** Install-Guide oben ohne eigene Hero-Glassbox, nur noch Heading + Stats auf normalem Seitenhintergrund
+- [x] **Guide Top Simplified:** Install-Guide oben ohne eigene Hero-Glassbox oder Stat-Strip, nur noch Heading auf normalem Seitenhintergrund
 - [x] **Sticky Public Admin Bar:** eingeloggte Session-Leiste sitzt im sticky Public-Header und läuft beim Scrollen mit
+- [x] **Public Breadcrumb Removal:** Breadcrumbs im Public-Layout wieder entfernt
+- [x] **Mobile Menu Overlay:** Hamburger öffnet im Mobile-Breakpoint ein sichtbares Overlay statt eines unauffälligen In-Flow-Blocks
+- [x] **Global Admin Stats Rail:** kompakte Stats-Zahlen direkt unter dem Admin-Header auf allen Admin-Seiten
 
 ### VERBLEIBEND
 - [ ] **OG-Image als PNG:** SVG erstellt, aber Social-Media-Crawler brauchen PNG — manuelle Konvertierung nötig

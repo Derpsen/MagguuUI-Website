@@ -268,8 +268,8 @@
         </div>
       </div>
 
-      <div v-if="breadcrumbLabel" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
-        <nav class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm"
+      <div v-if="breadcrumbLabel" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 flex justify-center">
+        <nav class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm mx-auto"
           :class="isDark ? 'bg-white/[0.03] border border-white/8 text-silver-500' : 'bg-white/90 border border-blue-100 text-gray-500 shadow-sm'"
           aria-label="Breadcrumb">
           <NuxtLink to="/" class="hover:text-brand-400 transition-colors">Home</NuxtLink>
@@ -286,40 +286,35 @@
 
     <main id="main-content" class="public-main-shell flex-1"><slot /></main>
 
-    <footer class="mt-20 px-4 sm:px-6 lg:px-8 pb-8 sm:pb-10">
+    <footer class="mt-16 px-4 sm:px-6 lg:px-8 pb-8 sm:pb-10">
       <div class="max-w-7xl mx-auto">
-        <div class="surface-panel rounded-[2rem] p-6 sm:p-8 lg:p-10">
-          <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:gap-10">
+        <div class="surface-panel rounded-[2rem] p-5 sm:p-6 lg:p-7">
+          <div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8">
             <div>
-              <span class="public-status-chip mb-4" :class="siteStatusClasses">
-                <span class="inline-block w-2 h-2 rounded-full" :class="siteStatusDot" />
-                {{ siteStatusLabel }}
-              </span>
-
-              <h2 class="text-2xl sm:text-3xl font-bold mb-3" :class="isDark ? 'text-white' : 'text-gray-900'">
+              <h2 class="text-xl sm:text-2xl font-bold mb-2.5" :class="isDark ? 'text-white' : 'text-gray-900'">
                 One place for setup, imports and upkeep.
               </h2>
-              <p class="text-sm sm:text-base max-w-2xl leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+              <p class="text-sm max-w-xl leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
                 MagguuUI is built to get your main character ready fast and make alt setup repeatable. The website stays focused: quick copy flows, install guidance and clear updates.
               </p>
 
-              <div class="grid sm:grid-cols-3 gap-3 mt-6">
-                <div v-for="item in footerHighlights" :key="item.label" class="public-quick-card rounded-2xl p-4">
-                  <p class="text-[11px] font-semibold uppercase tracking-[0.18em] mb-2" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+              <div class="grid sm:grid-cols-3 gap-2.5 mt-5">
+                <div v-for="item in footerHighlights" :key="item.label" class="public-quick-card rounded-[1.15rem] px-3.5 py-3.5">
+                  <p class="text-[10px] font-semibold uppercase tracking-[0.18em] mb-1.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
                     {{ item.label }}
                   </p>
-                  <p class="text-lg font-semibold mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ item.value }}</p>
-                  <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ item.text }}</p>
+                  <p class="text-base sm:text-[1.05rem] font-semibold mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ item.value }}</p>
+                  <p class="text-xs leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ item.text }}</p>
                 </div>
               </div>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-5">
               <div v-for="group in footerGroups" :key="group.title">
-                <p class="text-xs font-semibold uppercase tracking-[0.22em] mb-4" :class="isDark ? 'text-white' : 'text-gray-900'">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.22em] mb-3" :class="isDark ? 'text-white' : 'text-gray-900'">
                   {{ group.title }}
                 </p>
-                <div class="footer-link-stack flex flex-col gap-2.5">
+                <div class="footer-link-stack flex flex-col gap-2">
                   <template v-for="link in group.links" :key="link.label">
                     <NuxtLink
                       v-if="link.to"
@@ -347,12 +342,12 @@
             </div>
           </div>
 
-          <div class="mt-8 pt-6 border-t flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+          <div class="mt-6 pt-5 border-t flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
             :class="isDark ? 'border-white/8' : 'border-blue-100'">
             <div class="flex items-center gap-3">
-              <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl"
+              <span class="inline-flex items-center justify-center w-9 h-9 rounded-[1rem]"
                 :class="isDark ? 'bg-white/[0.05] border border-white/8' : 'bg-white border border-blue-100 shadow-sm'">
-                <img :src="'/logo.svg'" alt="MagguuUI" class="w-6 h-6" />
+                <img :src="'/logo.svg'" alt="MagguuUI" class="w-5 h-5" />
               </span>
               <div>
                 <p class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI</p>
@@ -360,7 +355,7 @@
               </div>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5">
               <a v-if="socialLinks.github" :href="socialLinks.github" target="_blank" rel="noopener noreferrer"
                 class="admin-icon-button"
                 :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-500 hover:text-gray-900 hover:bg-white border border-blue-100 shadow-sm'"

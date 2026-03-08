@@ -65,27 +65,27 @@
       </div>
     </Transition>
 
-    <section class="guide-hero relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] mb-10 sm:mb-12 fade-in">
+    <section class="guide-hero relative overflow-hidden rounded-[1.8rem] sm:rounded-[2.2rem] mb-8 sm:mb-10 fade-in">
       <div class="guide-hero-orb guide-hero-orb-a" />
       <div class="guide-hero-orb guide-hero-orb-b" />
       <div class="guide-hero-grid" />
 
-      <div class="relative z-10 px-6 py-8 sm:px-10 sm:py-12 lg:px-12 lg:py-14">
-        <div class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] mb-6"
+      <div class="relative z-10 px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-9">
+        <div class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] mb-4"
           :class="isDark ? 'bg-white/6 text-brand-300 border border-white/8' : 'bg-white/90 text-blue-700 border border-blue-100 shadow-sm'">
           <UIcon name="i-heroicons-book-open" class="w-3.5 h-3.5" />
           Installation Playbook
         </div>
 
-        <div class="max-w-3xl">
+        <div class="max-w-2xl">
           <template v-if="!editMode">
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-4 sm:mb-5 flex items-start gap-3 sm:gap-4">
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-3 sm:mb-4 flex items-start gap-2.5 sm:gap-3">
               <span class="guide-hero-icon">
                 <UIcon name="i-heroicons-book-open" class="w-7 h-7 sm:w-8 sm:h-8" />
               </span>
               <span class="text-gradient">{{ editableTitle || 'Installation Guide' }}</span>
             </h1>
-            <p class="text-base sm:text-lg lg:text-xl max-w-2xl leading-relaxed"
+            <p class="text-[15px] sm:text-lg max-w-xl leading-relaxed"
               :class="isDark ? 'text-silver-300' : 'text-gray-600'">
               {{ editableSubtitle || 'Set up MagguuUI once on your main character, then let alts load the same profiles automatically.' }}
             </p>
@@ -114,16 +114,16 @@
           </template>
         </div>
 
-        <div v-if="!editMode" class="grid sm:grid-cols-3 gap-3 mt-8 sm:mt-10 max-w-4xl">
+        <div v-if="!editMode" class="grid sm:grid-cols-3 gap-2.5 mt-6 sm:mt-7 max-w-4xl">
           <div
             v-for="stat in setupStats"
             :key="stat.label"
-            class="guide-stat-card rounded-2xl px-4 py-4"
+            class="guide-stat-card rounded-[1.1rem] px-3.5 py-3.5"
             :class="isDark ? 'bg-white/[0.04] border border-white/8' : 'bg-white/90 border border-blue-100 shadow-sm'"
           >
-            <p class="text-[11px] font-semibold uppercase tracking-[0.2em] mb-2" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ stat.label }}</p>
-            <p class="text-xl sm:text-2xl font-bold mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ stat.value }}</p>
-            <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-500'">{{ stat.text }}</p>
+            <p class="text-[10px] font-semibold uppercase tracking-[0.2em] mb-1.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ stat.label }}</p>
+            <p class="text-lg sm:text-xl font-bold mb-1" :class="isDark ? 'text-white' : 'text-gray-900'">{{ stat.value }}</p>
+            <p class="text-xs leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-500'">{{ stat.text }}</p>
           </div>
         </div>
       </div>
@@ -148,15 +148,17 @@
           >
             <div class="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-6">
               <div class="sm:w-24 sm:flex-shrink-0">
-                <div class="flex items-center gap-3 sm:block">
+                <div class="guide-step-side flex flex-col items-center text-center gap-3">
                   <div class="guide-step-number" :style="stepNumberStyle(idx)">
                     {{ idx + 1 }}
                   </div>
-                  <div class="sm:mt-4">
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.22em] mb-1" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+                  <div class="guide-step-meta">
+                    <p class="guide-step-stage text-[11px] font-semibold uppercase tracking-[0.22em]" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
                       {{ stepStage(idx) }}
                     </p>
-                    <UIcon :name="stepIcon(idx)" class="w-4 h-4 hidden sm:block" :style="{ color: stepAccent(idx).solid }" />
+                    <span class="guide-step-icon" :style="stepIconStyle(idx)">
+                      <UIcon :name="stepIcon(idx)" class="w-4 h-4" />
+                    </span>
                   </div>
                 </div>
               </div>
@@ -447,10 +449,27 @@ function stepAuraStyle(idx: number) {
 function stepNumberStyle(idx: number) {
   const accent = stepAccent(idx)
   return {
+    '--step-solid': accent.solid,
+    '--step-soft': accent.soft,
+    '--step-glow': accent.glow,
+    '--step-border': accent.border,
     color: accent.solid,
     borderColor: accent.border,
     background: isDark.value ? 'rgba(8, 16, 30, 0.92)' : 'rgba(255, 255, 255, 0.96)',
     boxShadow: `0 0 0 6px ${accent.soft}`,
+  }
+}
+
+function stepIconStyle(idx: number) {
+  const accent = stepAccent(idx)
+  return {
+    '--step-solid': accent.solid,
+    '--step-soft': accent.soft,
+    '--step-glow': accent.glow,
+    '--step-border': accent.border,
+    color: accent.solid,
+    background: accent.soft,
+    border: `1px solid ${accent.border}`,
   }
 }
 
@@ -519,10 +538,10 @@ async function saveAll() {
 :global(.light) .guide-hero,
 :global(html.light) .guide-hero {
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.96)),
-    radial-gradient(circle at top left, rgba(59, 139, 255, 0.12), transparent 34%);
-  border-color: rgba(59, 139, 255, 0.12);
-  box-shadow: 0 28px 70px rgba(37, 99, 235, 0.08);
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.96)),
+    radial-gradient(circle at top left, rgba(59, 139, 255, 0.08), transparent 34%);
+  border-color: rgba(59, 139, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(37, 99, 235, 0.07);
 }
 
 .guide-hero-grid {
@@ -559,6 +578,23 @@ async function saveAll() {
   background: radial-gradient(circle, rgba(20, 184, 166, 0.14), transparent 68%);
 }
 
+:global(.light) .guide-hero-grid,
+:global(html.light) .guide-hero-grid {
+  background-image:
+    linear-gradient(rgba(37, 99, 235, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.03) 1px, transparent 1px);
+}
+
+:global(.light) .guide-hero-orb-a,
+:global(html.light) .guide-hero-orb-a {
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.14), transparent 68%);
+}
+
+:global(.light) .guide-hero-orb-b,
+:global(html.light) .guide-hero-orb-b {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.08), transparent 68%);
+}
+
 .guide-hero-icon {
   display: inline-flex;
   align-items: center;
@@ -571,6 +607,14 @@ async function saveAll() {
   border: 1px solid rgba(59, 139, 255, 0.18);
   box-shadow: 0 0 40px rgba(59, 139, 255, 0.12);
   flex-shrink: 0;
+}
+
+:global(.light) .guide-hero-icon,
+:global(html.light) .guide-hero-icon {
+  color: #2563eb;
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(59, 139, 255, 0.14);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.08);
 }
 
 .guide-stat-card {
@@ -599,10 +643,53 @@ async function saveAll() {
   font-size: 1.1rem;
   font-weight: 800;
   line-height: 1;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
 .guide-step-chip {
   backdrop-filter: blur(12px);
+}
+
+.guide-step-side {
+  min-width: 5rem;
+}
+
+.guide-step-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.guide-step-stage {
+  line-height: 1;
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+.guide-step-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.guide-step:hover .guide-step-number {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 0 0 7px var(--step-soft), 0 0 26px var(--step-glow);
+}
+
+.guide-step:hover .guide-step-stage {
+  color: var(--step-solid);
+  transform: translateY(-1px);
+}
+
+.guide-step:hover .guide-step-icon {
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px var(--step-glow);
 }
 
 .guide-jump-link {

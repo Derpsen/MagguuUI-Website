@@ -19,74 +19,80 @@
       <div class="absolute inset-0" :class="isDark ? 'bg-gradient-to-b from-brand-800/30 via-transparent to-transparent' : 'bg-gradient-to-b from-blue-50 via-transparent to-transparent'" />
       <div v-if="isDark" class="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[700px] bg-brand-400/[0.04] rounded-full blur-[150px]" />
 
-      <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center pt-16 sm:pt-20 pb-8">
-        <!-- Badge — links to changelog, shows last change -->
-        <NuxtLink to="/changelog" class="hero-badge inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium mb-10 fade-in cursor-pointer transition-all hover:scale-105"
-          :style="isDark
-            ? 'background: rgba(59, 139, 255, 0.08); border: 1px solid rgba(59, 139, 255, 0.15); color: #60a5fa;'
-            : 'background: rgba(59, 139, 255, 0.06); border: 1px solid rgba(59, 139, 255, 0.15); color: #2563EB;'">
-          <span>🚀</span>
-          <span>{{ latestBadgeText }}</span>
-        </NuxtLink>
+      <div class="relative max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-4">
+        <div class="home-hero-shell relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem]">
+          <div class="home-hero-grid" />
+          <div class="home-hero-orb home-hero-orb-a" />
+          <div class="home-hero-orb home-hero-orb-b" />
 
-        <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.1] mb-8 fade-in fade-in-delay-1">
-          <span class="text-gradient">{{ content?.hero?.title || 'Your WoW Interface,' }}</span> <br />
-          <span class="text-gradient">{{ content?.hero?.title2 || 'perfected.' }}</span>
-        </h1>
+          <div class="relative px-6 py-8 sm:px-10 sm:py-12 lg:px-12 lg:py-14">
+            <div class="max-w-4xl mx-auto flex flex-col items-center text-center">
+              <!-- Badge — links to changelog, shows last change -->
+              <NuxtLink to="/changelog" class="hero-badge inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium mb-10 fade-in cursor-pointer transition-all hover:scale-105"
+                :style="isDark
+                  ? 'background: rgba(59, 139, 255, 0.08); border: 1px solid rgba(59, 139, 255, 0.15); color: #60a5fa;'
+                  : 'background: rgba(59, 139, 255, 0.06); border: 1px solid rgba(59, 139, 255, 0.15); color: #2563EB;'">
+                <span>🚀</span>
+                <span>{{ latestBadgeText }}</span>
+              </NuxtLink>
 
-        <p class="text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed fade-in fade-in-delay-2"
-          :class="isDark ? 'text-silver-400' : 'text-gray-500'">
-          {{ content?.hero?.description || 'High-quality import strings for cooldowns, addon profiles, and more. Simply copy and paste into WoW.' }}
-        </p>
+              <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.1] mb-8 fade-in fade-in-delay-1">
+                <span class="text-gradient">{{ content?.hero?.title || 'Your WoW Interface,' }}</span> <br />
+                <span class="text-gradient">{{ content?.hero?.title2 || 'perfected.' }}</span>
+              </h1>
 
-        <div class="flex items-center justify-center gap-4 fade-in fade-in-delay-3">
-          <NuxtLink to="/strings" class="btn-gradient px-8 py-4 rounded-xl text-white font-semibold text-lg inline-flex items-center gap-2">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
-            Import Strings
-          </NuxtLink>
-          <NuxtLink to="/guide"
-            class="glass glass-hover px-8 py-4 rounded-xl font-semibold text-lg inline-flex items-center gap-2 transition-all"
-            :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-            📖 Guides
-          </NuxtLink>
-        </div>
+              <p class="text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed fade-in fade-in-delay-2"
+                :class="isDark ? 'text-silver-400' : 'text-gray-500'">
+                {{ content?.hero?.description || 'High-quality import strings for cooldowns, addon profiles, and more. Simply copy and paste into WoW.' }}
+              </p>
 
-        <!-- Stats — with divider lines above and below -->
-        <div class="mt-14 w-full fade-in fade-in-delay-4">
-          <div class="w-full max-w-md mx-auto h-px mb-10"
-            :class="isDark ? 'bg-gradient-to-r from-transparent via-brand-400/20 to-transparent' : 'bg-gradient-to-r from-transparent via-blue-200 to-transparent'" />
-          <div class="flex items-center justify-center gap-16 sm:gap-24">
-            <div v-for="stat in stats" :key="stat.label" class="text-center">
-              <div class="text-4xl sm:text-5xl font-extrabold text-gradient mb-1.5">{{ stat.value }}</div>
-              <div class="text-sm font-medium" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ stat.label }}</div>
+              <div class="flex items-center justify-center gap-4 fade-in fade-in-delay-3">
+                <NuxtLink to="/strings" class="btn-gradient px-8 py-4 rounded-xl text-white font-semibold text-lg inline-flex items-center gap-2">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
+                  Import Strings
+                </NuxtLink>
+                <NuxtLink to="/guide"
+                  class="glass glass-hover px-8 py-4 rounded-xl font-semibold text-lg inline-flex items-center gap-2 transition-all"
+                  :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+                  📖 Guides
+                </NuxtLink>
+              </div>
+
+              <div class="mt-14 w-full fade-in fade-in-delay-4">
+                <div class="w-full max-w-md mx-auto h-px mb-10"
+                  :class="isDark ? 'bg-gradient-to-r from-transparent via-brand-400/20 to-transparent' : 'bg-gradient-to-r from-transparent via-blue-200 to-transparent'" />
+                <div class="flex items-center justify-center gap-16 sm:gap-24">
+                  <div v-for="stat in stats" :key="stat.label" class="text-center">
+                    <div class="text-4xl sm:text-5xl font-extrabold text-gradient mb-1.5">{{ stat.value }}</div>
+                    <div class="text-sm font-medium" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ stat.label }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-12 pt-10 border-t"
+              :class="isDark ? 'border-white/8' : 'border-blue-100'">
+              <div ref="addonsHeading" class="text-center mb-8 scroll-reveal">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.addons?.title || 'Supported Addons' }}</span></h2>
+                <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'Profiles for the most popular WoW addons' }}</p>
+              </div>
+              <div v-if="addonNames.length" ref="addonPills" class="scroll-reveal scroll-reveal-delay-1">
+                <div class="flex flex-wrap justify-center gap-3 py-1">
+                  <NuxtLink v-for="addon in addonNames" :key="addon" :to="`/strings?addon=${encodeURIComponent(addon)}`"
+                    class="addon-pill px-5 py-3 rounded-xl text-sm font-medium transition-all group inline-flex items-center gap-2"
+                    :class="isDark ? 'text-silver-300 hover:text-brand-400' : 'text-gray-600 hover:text-brand-500'">
+                    <span class="w-2 h-2 rounded-full bg-brand-400/40 group-hover:bg-brand-400 transition-colors" />
+                    {{ addon }}
+                    <svg class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                  </NuxtLink>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="w-full max-w-md mx-auto h-px mt-10"
-            :class="isDark ? 'bg-gradient-to-r from-transparent via-brand-400/20 to-transparent' : 'bg-gradient-to-r from-transparent via-blue-200 to-transparent'" />
         </div>
       </div>
-
-      <!-- Supported Addons — inside hero, above scroll indicator -->
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-4">
-        <div ref="addonsHeading" class="text-center mb-8 scroll-reveal">
-          <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.addons?.title || 'Supported Addons' }}</span></h2>
-          <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'Profiles for the most popular WoW addons' }}</p>
-        </div>
-        <div v-if="addonNames.length" ref="addonPills" class="scroll-reveal scroll-reveal-delay-1">
-          <div class="flex flex-wrap justify-center gap-3 py-1">
-            <NuxtLink v-for="addon in addonNames" :key="addon" :to="`/strings?addon=${encodeURIComponent(addon)}`"
-              class="addon-pill px-5 py-3 rounded-xl text-sm font-medium transition-all group inline-flex items-center gap-2"
-              :class="isDark ? 'text-silver-300 hover:text-brand-400' : 'text-gray-600 hover:text-brand-500'">
-              <span class="w-2 h-2 rounded-full bg-brand-400/40 group-hover:bg-brand-400 transition-colors" />
-              {{ addon }}
-              <svg class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
-            </NuxtLink>
-          </div>
-        </div>
-      </div>
-
     </section>
 
     <!-- Scroll indicator — fixed overlay, fades out on scroll -->

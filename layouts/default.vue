@@ -15,8 +15,9 @@
       <div class="public-progress-bar" :style="{ transform: `scaleX(${scrollProgress})` }" />
     </div>
 
-    <header class="sticky top-0 z-50 px-3 sm:px-5 pt-3">
-      <div class="max-w-6xl mx-auto">
+    <header class="relative sticky top-0 z-50 px-3 sm:px-5 pt-3 pb-4">
+      <div class="public-header-backdrop" />
+      <div class="relative max-w-6xl mx-auto">
         <div class="public-nav-shell rounded-[1.45rem] px-3 sm:px-4 py-3">
           <div class="flex items-center justify-between gap-3 lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-center">
             <NuxtLink to="/" class="flex items-center gap-3 min-w-0 group">
@@ -75,12 +76,12 @@
               </NuxtLink>
 
               <NuxtLink :to="primaryAction.to"
-                class="hidden lg:inline-flex items-center gap-2 btn-gradient rounded-full px-4.5 py-2.5 text-sm font-semibold text-white whitespace-nowrap">
+                class="hidden lg:inline-flex items-center justify-center gap-2 btn-gradient rounded-full min-h-[2.5rem] px-4 py-2 text-sm font-semibold text-white whitespace-nowrap">
                 <UIcon :name="primaryAction.icon" class="w-4 h-4" />
                 {{ primaryAction.label }}
               </NuxtLink>
 
-              <button class="md:hidden admin-icon-button"
+              <button class="lg:hidden admin-icon-button"
                 :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-600 hover:text-gray-900 hover:bg-white/90 border border-blue-100 shadow-sm'"
                 :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
                 @click="mobileOpen = !mobileOpen">
@@ -109,7 +110,7 @@
             </nav>
 
             <NuxtLink :to="primaryAction.to"
-              class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold text-white whitespace-nowrap btn-gradient">
+              class="inline-flex items-center justify-center gap-2 rounded-full min-h-[2.5rem] px-4 py-2 text-sm font-semibold text-white whitespace-nowrap btn-gradient">
               <UIcon :name="primaryAction.icon" class="w-4 h-4" />
               {{ primaryAction.label }}
             </NuxtLink>
@@ -124,7 +125,7 @@
           leave-from-class="opacity-100 translate-y-0"
           leave-to-class="opacity-0 -translate-y-2"
         >
-          <div v-if="mobileOpen" class="mt-3 public-nav-shell rounded-[1.6rem] p-4 md:hidden">
+          <div v-if="mobileOpen" class="mt-3 public-nav-shell rounded-[1.6rem] p-4 lg:hidden">
             <div class="flex justify-end mb-4">
               <NuxtLink :to="primaryAction.to"
                 class="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold text-white whitespace-nowrap btn-gradient"

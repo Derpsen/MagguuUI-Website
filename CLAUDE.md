@@ -6,7 +6,7 @@
 **Zweck:** WoW UI Configuration Manager — öffentliche Website + Admin Panel + REST API für Import Strings (ElvUI, Plater, BigWigs, Details etc.)
 **Live-URL:** https://ui.magguu.xyz
 **GitHub:** https://github.com/Derpsen/MagguuUI-Website
-**Port:** 3000 (intern), 3100 (Proxy via Zoraxy)
+**Port:** 3000 (intern), öffentlich via Cloudflare Tunnel
 
 ---
 
@@ -155,6 +155,8 @@ npm run db:seed          # Seed-Daten einfügen
 ## Deployment (Unraid Docker)
 
 **Aktueller Stand:** Deploy erfolgt per Git-Checkout auf Unraid, nicht mehr per ZIP-Update.
+
+**Ingress:** Keine Zoraxy-Proxy-Kette mehr. Die öffentliche Erreichbarkeit läuft über einen Cloudflare Tunnel.
 
 **Warum:** Gelöschte getrackte Dateien werden sauber entfernt, `rebuild.sh` aktualisiert sich automatisch mit dem Repo, und der Deploy-Ordner bleibt identisch zum Stand auf GitHub.
 

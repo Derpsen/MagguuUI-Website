@@ -38,6 +38,8 @@ This repository contains the public website for MagguuUI, the internal admin are
 - `pages/`
   - public pages such as `index`, `strings`, `guide`, `faq`, `changelog`
   - admin pages under `pages/admin/`
+- `components/admin/` and `composables/useAdminNavigation.ts`
+  - shared admin primitives for headers, panels, metrics, empty states, sticky save bars, and navigation context
 - `server/api/`
   - public API routes
   - admin API routes under `server/api/v1/admin/`
@@ -45,8 +47,20 @@ This repository contains the public website for MagguuUI, the internal admin are
   - schema, DB bootstrap, seed logic
 - `server/plugins/`
   - startup sync, cleanup jobs, security header hooks
+- `assets/css/main.css`
+  - public styling plus the scoped admin design system
 - `public/`
   - static assets such as `logo.svg`, `manifest.json`, `robots.txt`, `sitemap.xml`
+
+## Admin UI
+
+The admin panel was rebuilt around a shared, modern SaaS-style shell while keeping the existing data flows and APIs intact.
+
+- collapsible sidebar with grouped navigation, cleaner active-state handling, and mobile slide-over behavior
+- sticky top toolbar with page context, search trigger, notifications, theme control, and website shortcut
+- command palette and mobile dock powered by the shared navigation data in `useAdminNavigation.ts`
+- reusable admin primitives under `components/admin/` for page headers, panels, metric cards, empty states, and sticky save bars
+- modernized dashboard plus the core content, string, and system screens with consistent spacing, cards, tables, and responsive behavior
 
 ## Local Development
 
@@ -106,32 +120,27 @@ Do not commit `.env`, runtime database files, or uploads.
 
 This project is deployed as a Dockerized Nuxt app on Unraid.
 
+Current deploy flow uses a Git checkout plus Docker rebuild.
+
 Build and runtime files:
 
 - `Dockerfile`
 - `rebuild.sh`
 
-Update package archive:
-
-- fixed filename: `nuxt-update.zip`
-
-Excluded from the update zip:
-
-- `.nuxt`
-- `node_modules`
-- `.output`
-- `data`
-- `uploads`
-- `.git`
-- `.env`
-- `.claude`
-- `*.zip`
-
-Deploy command on the server:
+Deploy/update on the server:
 
 ```bash
-cd /mnt/user/appdata/nuxt && unzip -o nuxt-update.zip && bash rebuild.sh && rm nuxt-update.zip
+cd /mnt/user/appdata/nuxt
+git fetch origin main
+git reset --hard origin/main
+bash rebuild.sh
 ```
+
+Notes:
+
+- Git access on the server must be configured via PAT or SSH
+- `.env`, `data/`, and `uploads/` stay outside Git and should be copied back only when migrating a fresh deploy folder
+- `git reset --hard origin/main` is intended only for a clean deploy copy with no local code changes
 
 ## Data and Runtime Behavior
 
@@ -188,7 +197,8 @@ Line endings are normalized through `.gitattributes` to avoid Windows/Linux depl
 ## Current Status
 
 - private GitHub repository connected
-- `main` branch initialized
-- website source imported
-- Docker rebuild flow in place
+- git-based Docker deploy flow in place on Unraid
+- admin panel rebuilt with a shared navigation and layout system
+- reusable admin UI primitives added for headers, panels, metrics, empty states, and sticky save bars
+- dashboard plus key content, data, and system screens moved onto the new design system
 - FAQ and installation guide synced from code into DB on startup

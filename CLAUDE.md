@@ -19,7 +19,7 @@
 | Datenbank | SQLite (better-sqlite3) mit WAL-Modus |
 | ORM | Drizzle ORM (^0.45.0) |
 | UI Library | NuxtUI v4 (^4.5.0) — basierend auf Reka UI |
-| Styling | Tailwind CSS v4 (CSS-first, @theme Direktive) + Custom CSS (Glassmorphism) |
+| Styling | Tailwind CSS v4 (CSS-first, @theme Direktive) + Custom CSS (Public Brand Styles + Admin Design System) |
 | Auth | JWT (jsonwebtoken) + bcrypt + WebAuthn/Passkeys (SimpleWebAuthn) |
 | Validierung | Zod v4 |
 | Editor | TipTap (ProseMirror) |
@@ -50,21 +50,29 @@
 │       └── system/             # System (settings, stats, users, api-keys, github, fields, activity)
 │
 ├── components/                 # Vue Components
-│   ├── CommandPalette.vue      # Cmd+K Navigation (nutzt UModal #content Slot)
+│   ├── admin/                  # Wiederverwendbare Admin-UI-Primitives
+│   │   ├── EmptyState.vue      # Leerer Zustand für Panels und Tabellen
+│   │   ├── MetricCard.vue      # KPI- und Trend-Karten
+│   │   ├── PageHeader.vue      # Standardisierter Seitenkopf mit Actions/Meta
+│   │   ├── Panel.vue           # Card-/Panel-Container für Admin-Surfaces
+│   │   └── StickyBar.vue       # Sticky Save/Publish Bar für Editor-Seiten
+│   ├── CommandPalette.vue      # Cmd+K Navigation (nutzt shared admin navigation + UModal #content Slot)
 │   ├── FaqItem.vue             # FAQ Accordion
 │   ├── KeyboardShortcuts.vue   # Admin Keyboard Shortcuts Modal (? Taste)
 │   └── TipTapEditor.vue        # Rich Text Editor
 │
 ├── composables/                # Vue Composables
 │   ├── useApi.ts               # Auth-API-Wrapper
+│   ├── useAdminNavigation.ts   # Sections, Context, Active-State-Logik, Command Palette + Mobile Dock
+│   ├── useAdminNotifications.ts # Notification Center für den Admin-Bereich
 │   ├── useAuth.ts              # Auth State (JWT in localStorage)
 │   ├── useIsDark.ts            # Dark Mode Helper
-│   ├── useScrollReveal.ts      # Scroll-Animationen
-│   └── useAdminNotifications.ts
+│   ├── usePageTracking.ts      # Public Analytics / Tracking Hooks
+│   └── useScrollReveal.ts      # Scroll-Animationen
 │
 ├── layouts/
 │   ├── default.vue             # Public Layout (sticky Navbar, Footer, Public-Admin-Leiste, Mobile-Overlay-Menü) — <UApp> Wrapper
-│   └── admin.vue               # Admin Layout (Sidebar, Header) — <UApp> Wrapper
+│   └── admin.vue               # Responsive Admin Shell (Sidebar, Toolbar, Notifications, Mobile Dock) — <UApp> Wrapper
 │
 ├── server/
 │   ├── api/v1/                 # REST API Endpoints
@@ -413,6 +421,12 @@ logActivity({
 - `.drag-handle`, `.drag-row` — Drag & Drop Styles
 - `.tab-active`, `.tab-inactive` — Tab Styling
 - `.admin-fade-in`, `.admin-stagger-{1-6}` — Admin Panel Entrance Animations
+- `.admin-shell`, `.admin-sidebar-shell`, `.admin-toolbar-shell`, `.admin-main-shell` — neues responsives Admin-App-Shell-System
+- `.admin-panel`, `.admin-metric-card`, `.admin-empty-state`, `.admin-inline-note` — standardisierte Karten-, KPI- und Status-Surfaces
+- `.admin-link`, `.admin-context-chip`, `.admin-search-trigger`, `.admin-icon-button`, `.admin-mobile-dock` — Navigation, Toolbar und Mobile-Navigation
+- `.admin-table`, `.admin-table-shell`, `.admin-filterbar`, `.admin-bulkbar`, `.admin-sticky-bar` — Tabellen-, Filter-, Bulk- und Save-Bar-Patterns
+- `.admin-command*` — modernisierte Command Palette
+- Der Großteil der neuen Admin-Styles ist unter `.admin-shell` gescoped, damit der Public-Bereich nicht unbeabsichtigt beeinflusst wird
 
 ### Brand Colors (definiert in @theme static in main.css)
 ```
@@ -458,15 +472,19 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 - Public-Admin-Leiste soll dieselbe Breite/Hierarchie wie der Header haben, keine separate große Card im Content-Bereich
 
 ### Admin Content Editors
-- **Dashboard (`admin/index.vue`):** Quick Actions, aufgefrischte Stats-Cards mit Inventory-/Update-/Traffic-Fokus, Mini-Graphs für 7-Tage-Copies und 7-Tage-Page-Views, Version-Check, Notifications, Activity und Status-Leiste
-- **Homepage Editor (`admin/content/home.vue`):** Hero-Text + 3 Feature-Card Editoren, Edit/Preview Toggle
+- **Dashboard (`admin/index.vue`):** neu strukturierter Operations-Overview mit Quick Actions, KPI-Cards, 7-Tage-Copy-Chart, Version-Check, Notifications, Activity Feed und Status-Leiste
+- **String-Verwaltung (`admin/strings/profiles.vue`, `wowup.vue`, `layouts.vue`):** einheitliche `AdminPageHeader` + `AdminPanel` Struktur, KPI-Leiste, Suche/Filter, modernisierte Tabellen, Bulk-Selection und Empty States
+- **System-/Content-Seiten (`admin/content/home.vue`, `admin/system/settings.vue`, `stats.vue`, `github.vue`, `users.vue`):** standardisierte PageHeader- und StickyBar-Patterns für konsistente Actions, Status-Hinweise und Save-Flows
 - **Guide Editor (`admin/content/guide.vue`):** Dynamische Steps mit TipTap, Drag-Reorder, eigener Preview-Tab mit vertikaler Timeline und Bottom-Cards Preview. Preview ist aktuell nicht 1:1 identisch zur neuen Public-Guide-Ansicht.
 - **Changelog Editor (`admin/content/changelog.vue`):** CRUD mit TipTap, Pagination (UButton)
 
 ### Admin Layout Features (`layouts/admin.vue`)
-- kontextbasierter Header mit Section-Chip, Titel und Hint statt klassischer Breadcrumb-Leiste
+- kollabierbare Desktop-Sidebar plus Mobile-Slide-In mit sauberer Active-State-Logik
+- `useAdminNavigation()` liefert Sections, Seitenkontext, Command-Palette-Items und Mobile-Dock-Links aus einer zentralen Quelle
+- Sticky Top-Toolbar mit Section-Chip, Titel, Hint, Search Trigger, Notification Tray, Theme Toggle und Website Shortcut
+- Mobile Bottom Dock für schnellen Zugriff auf die wichtigsten Admin-Bereiche
+- `CommandPalette.vue` nutzt dieselben Navigationsdaten wie Sidebar und Toolbar
 - Keyboard Shortcuts (`?` Taste öffnet Modal, `g d`/`g p`/`g w`/`g l`/`g s`/`g a` Navigation)
-- Sidebar mit Content, Data, System Sections
 - `<UApp>` Wrapper für NuxtUI v4 Teleportation
 
 ---
@@ -474,6 +492,8 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 ## Bekannte Issues & TODOs
 
 ### ERLEDIGT
+- [x] **Admin Redesign System:** neues responsives Admin-Shell-System mit zentraler Navigation, Command Palette, Mobile Dock und wiederverwendbaren UI-Primitives
+- [x] **Core Admin Screens Refresh:** Dashboard sowie Profiles/WowUp/Layouts/Home/Settings/Stats/GitHub/Users auf konsistente Header-, Panel-, Table- und Sticky-Bar-Patterns umgestellt
 - [x] **UModal #content Slot Fix:** Alle 22 Modals in 9 Admin-Dateien auf `<template #content>` umgestellt
 - [x] **Light-Mode Fixes:** Modal Borders, Table Headers, Table Borders in profiles/wowup/layouts
 - [x] **Admin Header Context:** Header arbeitet mit Section-/Title-Kontext statt klassischer Breadcrumb-Leiste
@@ -492,5 +512,6 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 ### VERBLEIBEND
 - [ ] **OG-Image als PNG:** SVG erstellt, aber Social-Media-Crawler brauchen PNG — manuelle Konvertierung nötig
 - [ ] **Apple Touch Icon PNG:** Nur Link-Tag hinzugefügt, eigentliches PNG muss erstellt werden
+- [ ] **Admin Smoke Tests:** Für den großen Admin-Refactor gibt es weiterhin keine automatisierten Build-/Smoke-Checks
 - [ ] **Tests hinzufügen:** Kein Testing-Framework konfiguriert (Vitest empfohlen)
 - [ ] **Linter/Formatter:** ESLint + Prettier oder Biome einrichten

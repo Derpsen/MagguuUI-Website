@@ -32,7 +32,7 @@ const adminSections: AdminNavSection[] = [
   {
     title: 'Content',
     links: [
-      { to: '/admin/content/home', label: 'Homepage', icon: 'i-heroicons-home-modern', description: 'Landing page copy, features and hero messaging.' },
+      { to: '/admin/content/home', label: 'Home', icon: 'i-heroicons-home-modern', description: 'Landing page copy, features and hero messaging.' },
       { to: '/admin/content/guide', label: 'Guide', icon: 'i-heroicons-book-open', description: 'Onboarding, install steps and walkthrough content.' },
       { to: '/admin/content/faq', label: 'FAQ', icon: 'i-heroicons-question-mark-circle', description: 'Support answers and recurring user questions.' },
       { to: '/admin/content/changelog', label: 'Changelog', icon: 'i-heroicons-document-text', description: 'Release notes and public update history.' },
@@ -41,9 +41,9 @@ const adminSections: AdminNavSection[] = [
   {
     title: 'Data',
     links: [
-      { to: '/admin/strings/profiles', label: 'Addon Profiles', icon: 'i-heroicons-cube', description: 'Addon import strings, sort order and visibility.' },
-      { to: '/admin/strings/wowup', label: 'WowUp Strings', icon: 'i-heroicons-arrow-down-tray', description: 'Package strings for WowUp distribution.' },
-      { to: '/admin/strings/layouts', label: 'Character Layouts', icon: 'i-heroicons-user-circle', description: 'Class and specialization layout imports.' },
+      { to: '/admin/strings/profiles', label: 'Profiles', icon: 'i-heroicons-cube', description: 'Addon import strings, sort order and visibility.' },
+      { to: '/admin/strings/wowup', label: 'WowUp', icon: 'i-heroicons-arrow-down-tray', description: 'Package strings for WowUp distribution.' },
+      { to: '/admin/strings/layouts', label: 'Layouts', icon: 'i-heroicons-user-circle', description: 'Class and specialization layout imports.' },
     ],
   },
   {
@@ -52,10 +52,10 @@ const adminSections: AdminNavSection[] = [
       { to: '/admin/system/settings', label: 'Settings', icon: 'i-heroicons-cog-6-tooth', description: 'Site-wide configuration, tracking and maintenance.' },
       { to: '/admin/system/stats', label: 'Analytics', icon: 'i-heroicons-chart-bar', description: 'Traffic, copies and API usage analytics.' },
       { to: '/admin/system/users', label: 'Users', icon: 'i-heroicons-users', description: 'Accounts, passkeys, sessions and access controls.' },
+      { to: '/admin/system/github', label: 'GitHub', icon: 'i-simple-icons-github', description: 'Repository sync, imports, exports and webhooks.' },
       { to: '/admin/system/api-keys', label: 'API Keys', icon: 'i-heroicons-key', description: 'Secure integration keys and access management.' },
-      { to: '/admin/system/github', label: 'GitHub Sync', icon: 'i-simple-icons-github', description: 'Repository sync, imports, exports and webhooks.' },
-      { to: '/admin/system/activity', label: 'Activity Log', icon: 'i-heroicons-clock', description: 'Audit trail of administrative activity.' },
-      { to: '/admin/system/fields', label: 'Custom Fields', icon: 'i-heroicons-adjustments-horizontal', description: 'Configurable fields and metadata.' },
+      { to: '/admin/system/activity', label: 'Activity', icon: 'i-heroicons-clock', description: 'Audit trail of administrative activity.' },
+      { to: '/admin/system/fields', label: 'Fields', icon: 'i-heroicons-adjustments-horizontal', description: 'Configurable fields and metadata.' },
     ],
   },
 ]

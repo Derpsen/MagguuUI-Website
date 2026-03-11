@@ -5,10 +5,10 @@
         class="fixed inset-y-0 left-0 z-40 px-3 py-3 transition-all duration-300"
         :class="[
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-          collapsed ? 'w-20' : 'w-[16rem]',
+          collapsed ? 'w-[4.5rem]' : 'w-[13rem]',
         ]"
       >
-        <div class="admin-sidebar-shell flex h-full flex-col overflow-hidden rounded-[1.5rem] p-3">
+        <div class="admin-sidebar-shell flex h-full flex-col overflow-hidden rounded-[1.35rem] p-3">
           <div class="admin-sidebar-brand">
             <NuxtLink to="/admin" class="flex min-w-0 items-center gap-3">
               <div class="admin-workspace-card__logo">
@@ -17,7 +17,6 @@
 
               <div v-if="!collapsed" class="min-w-0">
                 <p class="truncate text-sm font-semibold text-slate-950 dark:text-white">MagguuUI</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Admin Panel</p>
               </div>
             </NuxtLink>
 
@@ -43,21 +42,28 @@
               <span v-if="!collapsed" class="truncate">Dashboard</span>
             </NuxtLink>
 
-            <div
-              v-for="section in sections"
-              :key="section.title"
-              class="mt-5"
-            >
+            <div v-for="section in sections" :key="section.title" class="mt-5">
               <div v-if="collapsed" class="mx-auto my-4 h-px w-8 bg-slate-200 dark:bg-white/10" />
 
               <div
                 v-else
-                class="px-2 pb-2"
+                class="pb-2"
               >
-                <span class="admin-section-label">{{ section.title }}</span>
+                <button
+                  class="admin-section-toggle"
+                  :class="openSections[section.title] ? 'admin-section-toggle--open' : ''"
+                  @click="toggleSection(section.title)"
+                >
+                  <span class="admin-section-label">{{ section.title }}</span>
+                  <UIcon
+                    name="i-heroicons-chevron-down"
+                    class="h-3.5 w-3.5 text-slate-400 transition-transform duration-200 dark:text-slate-500"
+                    :class="openSections[section.title] ? '' : '-rotate-90'"
+                  />
+                </button>
               </div>
 
-              <div class="space-y-1">
+              <div v-if="collapsed || openSections[section.title]" class="space-y-1">
                 <NuxtLink
                   v-for="item in section.links"
                   :key="item.to"
@@ -77,16 +83,15 @@
           </nav>
 
           <div class="admin-sidebar-footer">
-            <div class="admin-sidebar-user" :class="collapsed ? 'justify-center' : ''">
+            <div v-if="!collapsed" class="admin-sidebar-user">
               <span class="admin-sidebar-user__avatar">{{ userInitial }}</span>
 
-              <div v-if="!collapsed" class="min-w-0 flex-1">
+              <div class="min-w-0 flex-1">
                 <p class="truncate text-sm font-semibold text-slate-950 dark:text-white">{{ user?.username || 'Admin' }}</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">v{{ appVersion }}</p>
               </div>
             </div>
 
-            <div class="mt-3 grid gap-2" :class="collapsed ? 'grid-cols-1' : 'grid-cols-[auto_1fr]'">
+            <div class="mt-3 grid gap-2" :class="collapsed ? 'grid-cols-1' : 'grid-cols-2'">
               <button
                 class="admin-icon-button"
                 :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
@@ -100,7 +105,7 @@
                 icon="i-heroicons-arrow-right-on-rectangle"
                 color="neutral"
                 variant="subtle"
-                class="flex-1 justify-center"
+                class="justify-center"
                 @click="handleLogout"
               >
                 Logout
@@ -125,7 +130,7 @@
         @click="sidebarOpen = false"
       />
 
-      <div class="admin-main-shell transition-all duration-300" :class="collapsed ? 'lg:pl-20' : 'lg:pl-[16rem]'">
+      <div class="admin-main-shell transition-all duration-300" :class="collapsed ? 'lg:pl-[4.5rem]' : 'lg:pl-[13rem]'">
         <div class="mx-auto flex min-h-screen w-full max-w-[1680px] flex-col px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pb-8">
           <header class="admin-toolbar-shell sticky top-3 z-20 mb-5 rounded-[1.25rem]">
             <div class="flex items-center gap-3">
@@ -283,7 +288,6 @@ const { user, logout } = useAuth()
 const isDark = useIsDark()
 const { notifications: notifItems, count: notifCount, refresh: notifRefresh, dismiss: notifDismiss } = useAdminNotifications()
 const { sections, currentContext, dockLinks } = useAdminNavigation()
-const config = useRuntimeConfig()
 
 const sidebarOpen = ref(false)
 const collapsed = ref(false)
@@ -294,12 +298,32 @@ const notifWrapRef = ref<HTMLElement | null>(null)
 const notifButtonRef = ref<HTMLElement | null>(null)
 const notifPanelRef = ref<HTMLElement | null>(null)
 
-const appVersion = computed(() => config.public.appVersion || '3.0.0')
 const searchShortcut = computed(() => isMac.value ? 'Cmd K' : 'Ctrl K')
 const userInitial = computed(() => (user.value?.username || 'A').charAt(0).toUpperCase())
+const activeSection = computed(() =>
+  sections.find(section => section.links.some(link => isRouteActive(link.to)))?.title ?? sections[0]?.title ?? '',
+)
+const openSections = reactive(
+  Object.fromEntries(sections.map(section => [section.title, false])) as Record<string, boolean>,
+)
 
 function toggleTheme() {
   colorMode.preference = isDark.value ? 'light' : 'dark'
+}
+
+function setOpenSection(title: string) {
+  for (const section of sections) {
+    openSections[section.title] = section.title === title
+  }
+}
+
+function toggleSection(title: string) {
+  if (openSections[title]) {
+    openSections[title] = false
+    return
+  }
+
+  setOpenSection(title)
 }
 
 function isRouteActive(path: string, exact = false) {
@@ -333,6 +357,7 @@ function onDocumentClick(event: Event) {
 
 onMounted(() => {
   notifRefresh(true)
+  if (activeSection.value) setOpenSection(activeSection.value)
 
   if (!import.meta.client) return
 
@@ -352,5 +377,6 @@ watch(collapsed, value => {
 watch(() => route.fullPath, () => {
   notifOpen.value = false
   sidebarOpen.value = false
+  if (activeSection.value) setOpenSection(activeSection.value)
 })
 </script>

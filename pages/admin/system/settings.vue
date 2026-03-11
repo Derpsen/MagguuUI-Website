@@ -3,25 +3,23 @@
 -->
 
 <template>
-  <div>
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gradient">Settings</h1>
-    </div>
+  <div class="space-y-6">
+    <AdminPageHeader
+      icon="i-heroicons-cog-6-tooth"
+      eyebrow="System"
+      title="Settings"
+      description="Site configuration, maintenance behaviour, tracking and operational defaults."
+    >
+      <template #actions>
+        <UButton icon="i-heroicons-check" :loading="saving" @click="save">Save</UButton>
+      </template>
+    </AdminPageHeader>
 
-    <!-- Sticky Save Bar -->
-    <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
-      <div v-if="hasChanges" class="sticky top-16 z-10 mb-4 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3"
-        :class="isDark ? 'bg-brand-900/95 backdrop-blur-xl border-b border-brand-400/10' : 'bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm'">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" /><span class="relative inline-flex rounded-full h-2 w-2 bg-amber-400" /></span>
-            <span class="text-sm font-medium" :class="isDark ? 'text-amber-400' : 'text-amber-600'">Unsaved changes</span>
-          </div>
-          <UButton @click="save" :loading="saving" icon="i-heroicons-check" size="sm">Save</UButton>
-        </div>
-      </div>
-    </Transition>
+    <AdminStickyBar :show="hasChanges" description="There are unsaved settings changes waiting to be applied.">
+      <template #actions>
+        <UButton icon="i-heroicons-check" :loading="saving" @click="save">Save</UButton>
+      </template>
+    </AdminStickyBar>
 
     <div v-if="loading" class="glass rounded-xl p-12 text-center">
       <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-brand-400 animate-spin mx-auto mb-3" />

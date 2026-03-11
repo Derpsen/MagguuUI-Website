@@ -1,184 +1,252 @@
-<!--
-  Admin — WowUp Strings Management
--->
-
 <template>
-  <div>
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-3">
-        <h1 class="text-2xl font-bold text-gradient">WowUp Strings</h1>
-        <UBadge v-if="!loading && isFiltering" color="warning" variant="subtle" size="xs">{{ filtered.length }} results</UBadge>
-        <UBadge v-else-if="!loading" color="info" variant="subtle" size="xs">{{ items.length }} total</UBadge>
-        <span v-if="lastUpdatedText && !loading" class="text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-400'">· {{ lastUpdatedText }}</span>
-      </div>
-      <UButton icon="i-heroicons-plus" @click="openCreate">New String</UButton>
-    </div>
+  <div class="space-y-6">
+    <AdminPageHeader
+      icon="i-heroicons-arrow-down-tray"
+      eyebrow="Data"
+      title="WowUp Strings"
+      description="Keep package strings ordered, visible and ready for one-click addon installation."
+    >
+      <template #badge>
+        <UBadge v-if="!loading && isFiltering" color="warning" variant="subtle">{{ filtered.length }} results</UBadge>
+        <UBadge v-else-if="!loading" color="info" variant="subtle">{{ items.length }} total</UBadge>
+      </template>
 
-    <!-- Stat Cards — Skeleton -->
-    <div v-if="loading" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <div v-for="i in 4" :key="'sk-'+i" class="glass rounded-xl p-5 admin-fade-in" :class="'admin-stagger-'+i">
+      <template #meta>
+        <span v-if="lastUpdatedText && !loading" class="admin-pill">{{ lastUpdatedText }}</span>
+      </template>
+
+      <template #actions>
+        <UButton icon="i-heroicons-plus" @click="openCreate">New String</UButton>
+      </template>
+    </AdminPageHeader>
+
+    <div v-if="loading" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div v-for="i in 4" :key="i" class="admin-metric-card">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg" :class="isDark ? 'bg-brand-900/50 animate-pulse' : 'bg-gray-100 animate-pulse'" />
+          <div class="h-10 w-10 rounded-2xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
           <div class="flex-1 space-y-2">
-            <div class="h-7 w-14 rounded" :class="isDark ? 'bg-brand-900/50 animate-pulse' : 'bg-gray-100 animate-pulse'" />
-            <div class="h-3 w-20 rounded" :class="isDark ? 'bg-brand-900/30 animate-pulse' : 'bg-gray-100 animate-pulse'" />
+            <div class="h-7 w-14 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+            <div class="h-3 w-24 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Stat Cards — Real -->
-    <div v-else class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <div v-for="(stat, idx) in statCards" :key="stat.label" class="glass rounded-xl p-5 admin-fade-in" :class="'admin-stagger-'+(idx+1)">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg flex items-center justify-center" :class="stat.bg">
-            <UIcon :name="stat.icon" class="w-5 h-5" :class="stat.color" />
-          </div>
-          <div>
-            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ stat.value }}</p>
-            <p class="text-xs" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ stat.label }}</p>
-          </div>
+    <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <AdminMetricCard
+        v-for="stat in statCards"
+        :key="stat.label"
+        :label="stat.label"
+        :value="stat.value"
+        :icon="stat.icon"
+        :tone="stat.tone"
+      />
+    </div>
+
+    <div class="admin-filterbar">
+      <UInput v-model="search" icon="i-heroicons-magnifying-glass" placeholder="Search package name" class="min-w-0 flex-1" />
+    </div>
+
+    <div v-if="selected.size" class="admin-bulkbar">
+      <span class="text-sm font-semibold">{{ selected.size }} selected</span>
+      <div class="flex-1" />
+      <UButton size="sm" variant="ghost" color="neutral" @click="selected.clear()">Clear selection</UButton>
+      <UButton size="sm" color="error" variant="subtle" icon="i-heroicons-trash" @click="bulkDelModal = true">
+        Delete {{ selected.size }}
+      </UButton>
+    </div>
+
+    <AdminPanel v-if="loading" title="WowUp inventory" description="Loading package strings from the database." icon="i-heroicons-arrow-down-tray">
+      <div class="py-10 text-center">
+        <UIcon name="i-heroicons-arrow-path" class="mx-auto h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    </AdminPanel>
+
+    <AdminPanel
+      v-else-if="filtered.length"
+      title="WowUp inventory"
+      description="Maintain display visibility, copy actions and drag-and-drop ordering for package strings."
+      icon="i-heroicons-arrow-down-tray"
+    >
+      <div class="admin-table-shell">
+        <div class="overflow-x-auto">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th class="w-10" />
+                <th class="w-12">
+                  <input
+                    type="checkbox"
+                    :checked="allVisibleSelected"
+                    :indeterminate="someVisibleSelected && !allVisibleSelected"
+                    class="rounded border-slate-300 bg-transparent text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
+                    @change="toggleSelectAll"
+                  >
+                </th>
+                <th class="text-left">Name</th>
+                <th class="text-center w-24">Visible</th>
+                <th class="text-right w-36">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(item, idx) in filtered"
+                :key="item.id"
+                class="drag-row"
+                :class="[
+                  selected.has(item.id) ? 'bg-blue-50/70 dark:bg-blue-500/10' : '',
+                  dragOverIdx === idx ? 'drag-over' : '',
+                  dragIdx === idx ? 'dragging' : '',
+                ]"
+                draggable="true"
+                @dragstart="onDragStart($event, idx)"
+                @dragover.prevent="dragOverIdx = idx"
+                @dragleave="dragOverIdx = null"
+                @drop="onDrop($event, idx)"
+                @dragend="resetDrag"
+              >
+                <td class="cursor-grab text-center text-slate-400 active:cursor-grabbing dark:text-slate-500">&#x283F;</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    :checked="selected.has(item.id)"
+                    class="rounded border-slate-300 bg-transparent text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
+                    @change="toggleSelect(item.id)"
+                  >
+                </td>
+                <td>
+                  <div>
+                    <p class="text-sm font-semibold text-slate-950 dark:text-white">{{ item.name }}</p>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ formatBytes(item.string?.length || 0) }}</p>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <USwitch :model-value="item.isVisible" size="sm" @update:model-value="toggleVis(item)" />
+                </td>
+                <td>
+                  <div class="flex items-center justify-end gap-1">
+                    <UTooltip text="Edit">
+                      <UButton icon="i-heroicons-pencil-square" variant="ghost" color="neutral" size="sm" @click="openEdit(item)" />
+                    </UTooltip>
+                    <UTooltip text="Copy String">
+                      <UButton icon="i-heroicons-document-duplicate" variant="ghost" color="neutral" size="sm" @click="copyString(item)" />
+                    </UTooltip>
+                    <UTooltip text="Delete">
+                      <UButton icon="i-heroicons-trash" variant="ghost" color="error" size="sm" @click="confirmDel(item)" />
+                    </UTooltip>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
 
-    <!-- Search -->
-    <div class="flex flex-col sm:flex-row gap-3 mb-6 admin-fade-in admin-stagger-5">
-      <UInput v-model="search" icon="i-heroicons-magnifying-glass" placeholder="Search..." class="flex-1" />
-    </div>
+      <template #footer>
+        <div class="flex w-full flex-wrap items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
+          <span>Showing {{ filtered.length }} of {{ items.length }}</span>
+          <button
+            v-if="isFiltering"
+            class="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
+            @click="search = ''"
+          >
+            Clear filters
+          </button>
+        </div>
+      </template>
+    </AdminPanel>
 
-    <!-- Bulk Bar -->
-    <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
-      <div v-if="selected.size" class="mb-4 flex items-center gap-3 rounded-xl px-4 py-3 bg-brand-400/10 border border-brand-400/20">
-        <span class="text-sm font-medium text-brand-300">{{ `${selected.size} selected` }}</span>
-        <div class="flex-1" />
-        <UButton size="xs" variant="ghost" color="neutral" @click="selected.clear()">Clear selection</UButton>
-        <UButton size="xs" color="error" variant="subtle" icon="i-heroicons-trash" @click="bulkDelModal = true">{{ `Delete ${selected.size}` }}</UButton>
-      </div>
-    </Transition>
+    <AdminPanel v-else title="WowUp inventory" description="No package strings have been created yet." icon="i-heroicons-arrow-down-tray">
+      <AdminEmptyState
+        icon="i-heroicons-arrow-down-tray"
+        title="No WowUp strings yet"
+        description="Add the first package string so visitors can install the required addon bundle with one action."
+      >
+        <template #actions>
+          <UButton icon="i-heroicons-plus" @click="openCreate">Create first string</UButton>
+        </template>
+      </AdminEmptyState>
+    </AdminPanel>
 
-    <!-- Loading Spinner -->
-    <div v-if="loading" class="glass rounded-xl p-12 text-center admin-fade-in admin-stagger-6">
-      <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-brand-400 animate-spin mx-auto mb-3" />
-      <p class="text-silver-500">Loading strings...</p>
-    </div>
-
-    <!-- Table -->
-    <div v-else-if="filtered.length" class="glass rounded-xl overflow-hidden admin-fade-in admin-stagger-6">
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead>
-            <tr :class="isDark ? 'border-b border-brand-400/10' : 'border-b border-gray-200'">
-              <th class="w-8 px-1 py-3" />
-              <th class="w-10 px-4 py-3"><input type="checkbox" :checked="allVisibleSelected" :indeterminate="someVisibleSelected && !allVisibleSelected" class="rounded border-silver-600 bg-transparent text-brand-500 focus:ring-brand-400 focus:ring-offset-0 cursor-pointer" @change="toggleSelectAll" /></th>
-              <th class="text-left px-4 py-3 text-xs font-semibold uppercase" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Name</th>
-              <th class="text-center px-4 py-3 text-xs font-semibold uppercase w-20" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Visible</th>
-              <th class="text-right px-4 py-3 text-xs font-semibold uppercase w-32" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(item, idx) in filtered" :key="item.id"
-              class="transition-colors drag-row"
-              :class="[isDark ? 'border-b border-brand-400/5' : 'border-b border-gray-100', selected.has(item.id) ? 'bg-brand-400/5' : (isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50/50'), dragOverIdx === idx ? 'drag-over' : '', dragIdx === idx ? 'dragging' : '']"
-              draggable="true" @dragstart="onDragStart($event, idx)" @dragover.prevent="dragOverIdx = idx" @dragleave="dragOverIdx = null" @drop="onDrop($event, idx)" @dragend="resetDrag">
-              <td class="px-1 py-3 text-center cursor-grab active:cursor-grabbing" :class="isDark ? 'text-silver-700 hover:text-silver-500' : 'text-gray-300 hover:text-gray-500'">&#x283F;</td>
-              <td class="px-4 py-3"><input type="checkbox" :checked="selected.has(item.id)" class="rounded border-silver-600 bg-transparent text-brand-500 focus:ring-brand-400 focus:ring-offset-0 cursor-pointer" @change="toggleSelect(item.id)" /></td>
-              <td class="px-4 py-3"><span class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ item.name }}</span></td>
-              <td class="px-4 py-3 text-center"><USwitch :model-value="item.isVisible" size="sm" @update:model-value="toggleVis(item)" /></td>
-              <td class="px-4 py-3">
-                <div class="flex items-center justify-end gap-1">
-                  <UTooltip text="Edit"><UButton icon="i-heroicons-pencil-square" variant="ghost" color="neutral" size="xs" @click="openEdit(item)" /></UTooltip>
-                  <UTooltip text="Copy String"><UButton icon="i-heroicons-document-duplicate" variant="ghost" color="neutral" size="xs" @click="copyString(item)" /></UTooltip>
-                  <UTooltip text="Delete"><UButton icon="i-heroicons-trash" variant="ghost" color="error" size="xs" @click="confirmDel(item)" /></UTooltip>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="flex items-center justify-between px-4 py-2.5" :class="isDark ? 'border-t border-brand-400/10' : 'border-t border-gray-100'">
-        <p class="text-[11px] tabular-nums" :class="isDark ? 'text-silver-600' : 'text-gray-400'">Showing {{ filtered.length }} of {{ items.length }}</p>
-        <p v-if="isFiltering" class="text-[11px]">
-          <button class="hover:underline" :class="isDark ? 'text-brand-400' : 'text-brand-600'" @click="search = ''">Clear filters</button>
-        </p>
-      </div>
-    </div>
-
-    <!-- Empty State -->
-    <div v-else class="glass rounded-xl p-12 text-center admin-fade-in admin-stagger-6">
-      <UIcon name="i-heroicons-arrow-down-tray" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700' : 'text-gray-300'" />
-      <p class="text-base font-medium mb-1" :class="isDark ? 'text-silver-400' : 'text-gray-600'">No WowUp strings yet</p>
-      <p class="text-sm mb-5 max-w-sm mx-auto" :class="isDark ? 'text-silver-600' : 'text-gray-400'">WowUp strings help users install the required addon package with a single click.</p>
-      <UButton icon="i-heroicons-plus" @click="openCreate">Create first string</UButton>
-    </div>
-
-    <!-- Create/Edit Modal -->
     <UModal v-model:open="modalOpen">
       <template #content>
         <div class="p-6">
-          <h2 class="text-lg font-semibold mb-6" :class="isDark ? 'text-white' : 'text-gray-900'">{{ editing ? 'Edit String' : 'New WowUp String' }}</h2>
-          <div class="space-y-4">
+          <h2 class="text-lg font-semibold text-slate-950 dark:text-white">{{ editing ? 'Edit String' : 'New WowUp String' }}</h2>
+
+          <div class="mt-6 space-y-4">
             <div>
-              <label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Name *</label>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Name *</label>
               <UInput v-model="form.name" placeholder="e.g. Required Addons" :disabled="saving" />
             </div>
+
             <div>
-              <label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Import String *</label>
-              <UTextarea v-model="form.string" placeholder="WowUp String..." :rows="6" :disabled="saving" class="font-mono text-xs" />
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Import String *</label>
+              <UTextarea v-model="form.string" :rows="6" :disabled="saving" class="font-mono text-xs" placeholder="WowUp String..." />
             </div>
-            <div class="grid grid-cols-2 gap-4">
+
+            <div class="grid gap-4 sm:grid-cols-2">
               <div>
-                <label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Sort Order</label>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Sort Order</label>
                 <UInput v-model.number="form.sortOrder" type="number" placeholder="0" :disabled="saving" />
               </div>
               <div class="flex items-end">
-                <label class="flex items-center gap-2 pb-2"><USwitch v-model="form.isVisible" :disabled="saving" /><span class="text-sm" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Visible</span></label>
+                <label class="flex items-center gap-2 pb-2">
+                  <USwitch v-model="form.isVisible" :disabled="saving" />
+                  <span class="text-sm text-slate-700 dark:text-slate-300">Visible</span>
+                </label>
               </div>
             </div>
+
             <UAlert v-if="formError" color="error" variant="subtle" icon="i-heroicons-exclamation-circle" :title="formError" />
           </div>
-          <div class="flex justify-end gap-3 mt-6 pt-4" :class="isDark ? 'border-t border-brand-400/10' : 'border-t border-gray-100'">
-            <UButton variant="ghost" color="neutral" @click="modalOpen = false" :disabled="saving">Cancel</UButton>
-            <UButton @click="save" :loading="saving">{{ editing ? 'Save' : 'Create' }}</UButton>
+
+          <div class="mt-6 flex justify-end gap-3 border-t border-slate-200 pt-4 dark:border-white/8">
+            <UButton variant="ghost" color="neutral" :disabled="saving" @click="modalOpen = false">Cancel</UButton>
+            <UButton :loading="saving" @click="save">{{ editing ? 'Save' : 'Create' }}</UButton>
           </div>
         </div>
       </template>
     </UModal>
 
-    <!-- Single Delete -->
     <UModal v-model:open="delModal">
       <template #content>
         <div class="p-6">
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0"><UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-red-400" /></div>
+            <div class="admin-empty-state__icon admin-tone-danger h-10 w-10">
+              <UIcon name="i-heroicons-exclamation-triangle" class="h-5 w-5" />
+            </div>
             <div>
-              <h2 class="text-lg font-semibold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Delete string?</h2>
-              <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-500'"><strong>{{ delItem?.name }}</strong> will be permanently deleted.</p>
+              <h2 class="text-lg font-semibold text-slate-950 dark:text-white">Delete string?</h2>
+              <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                <strong class="text-slate-950 dark:text-white">{{ delItem?.name }}</strong> will be permanently deleted.
+              </p>
             </div>
           </div>
-          <div class="flex justify-end gap-3 mt-6 pt-4" :class="isDark ? 'border-t border-brand-400/10' : 'border-t border-gray-100'">
-            <UButton variant="ghost" color="neutral" @click="delModal = false" :disabled="deleting">Cancel</UButton>
-            <UButton color="error" @click="doDelete" :loading="deleting">Delete</UButton>
+
+          <div class="mt-6 flex justify-end gap-3 border-t border-slate-200 pt-4 dark:border-white/8">
+            <UButton variant="ghost" color="neutral" :disabled="deleting" @click="delModal = false">Cancel</UButton>
+            <UButton color="error" :loading="deleting" @click="doDelete">Delete</UButton>
           </div>
         </div>
       </template>
     </UModal>
 
-    <!-- Bulk Delete -->
     <UModal v-model:open="bulkDelModal">
       <template #content>
         <div class="p-6">
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0"><UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-red-400" /></div>
+            <div class="admin-empty-state__icon admin-tone-danger h-10 w-10">
+              <UIcon name="i-heroicons-exclamation-triangle" class="h-5 w-5" />
+            </div>
             <div>
-              <h2 class="text-lg font-semibold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">{{ `Delete ${selected.size} strings?` }}</h2>
-              <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-500'">This action cannot be undone.</p>
+              <h2 class="text-lg font-semibold text-slate-950 dark:text-white">Delete {{ selected.size }} strings?</h2>
+              <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">This action cannot be undone.</p>
             </div>
           </div>
-          <div class="flex justify-end gap-3 mt-6 pt-4" :class="isDark ? 'border-t border-brand-400/10' : 'border-t border-gray-100'">
-            <UButton variant="ghost" color="neutral" @click="bulkDelModal = false" :disabled="bulkDeleting">Cancel</UButton>
-            <UButton color="error" @click="bulkDelete" :loading="bulkDeleting">{{ `Delete ${selected.size}` }}</UButton>
+
+          <div class="mt-6 flex justify-end gap-3 border-t border-slate-200 pt-4 dark:border-white/8">
+            <UButton variant="ghost" color="neutral" :disabled="bulkDeleting" @click="bulkDelModal = false">Cancel</UButton>
+            <UButton color="error" :loading="bulkDeleting" @click="bulkDelete">Delete {{ selected.size }}</UButton>
           </div>
         </div>
       </template>
@@ -188,34 +256,81 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
+
 const toast = useToast()
 const { apiFetch } = useApi()
-const isDark = useIsDark()
 
-interface Item { id: number; name: string; string: string; description: string | null; sortOrder?: number; isVisible: boolean }
-const items = ref<Item[]>([]); const loading = ref(true); const search = ref('')
-const selected = reactive(new Set<number>())
-const modalOpen = ref(false); const editing = ref<Item | null>(null); const saving = ref(false); const formError = ref('')
-const form = reactive({ name: '', string: '', sortOrder: 0, isVisible: true })
-const delModal = ref(false); const delItem = ref<Item | null>(null); const deleting = ref(false)
-const bulkDelModal = ref(false); const bulkDeleting = ref(false)
-
-// Drag & Drop
-const dragIdx = ref<number | null>(null)
-const dragOverIdx = ref<number | null>(null)
-function onDragStart(e: DragEvent, idx: number) { dragIdx.value = idx; if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(idx)) } }
-function resetDrag() { dragIdx.value = null; dragOverIdx.value = null }
-async function onDrop(e: DragEvent, toIdx: number) {
-  e.preventDefault(); const fromIdx = dragIdx.value; resetDrag()
-  if (fromIdx === null || fromIdx === toIdx) return
-  const arr = [...filtered.value]; const [moved] = arr.splice(fromIdx, 1); arr.splice(toIdx, 0, moved)
-  const idOrder = arr.map(i => i.id)
-  items.value = [...items.value].sort((a, b) => { const ai = idOrder.indexOf(a.id); const bi = idOrder.indexOf(b.id); if (ai === -1 && bi === -1) return 0; if (ai === -1) return 1; if (bi === -1) return -1; return ai - bi })
-  try { await apiFetch('/api/v1/admin/wowup/reorder', { method: 'POST', body: { items: arr.map((i, idx) => ({ id: i.id, sortOrder: idx })) } }) } catch { toast.add({ title: 'Error', color: 'error' }) }
+interface Item {
+  id: number
+  name: string
+  string: string
+  description: string | null
+  sortOrder?: number
+  isVisible: boolean
 }
 
-// Stat Cards
-function formatBytes(bytes: number): string {
+const items = ref<Item[]>([])
+const loading = ref(true)
+const search = ref('')
+const selected = reactive(new Set<number>())
+const modalOpen = ref(false)
+const editing = ref<Item | null>(null)
+const saving = ref(false)
+const formError = ref('')
+const form = reactive({ name: '', string: '', sortOrder: 0, isVisible: true })
+const delModal = ref(false)
+const delItem = ref<Item | null>(null)
+const deleting = ref(false)
+const bulkDelModal = ref(false)
+const bulkDeleting = ref(false)
+
+const dragIdx = ref<number | null>(null)
+const dragOverIdx = ref<number | null>(null)
+
+function onDragStart(event: DragEvent, idx: number) {
+  dragIdx.value = idx
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', String(idx))
+  }
+}
+
+function resetDrag() {
+  dragIdx.value = null
+  dragOverIdx.value = null
+}
+
+async function onDrop(event: DragEvent, toIdx: number) {
+  event.preventDefault()
+  const fromIdx = dragIdx.value
+  resetDrag()
+  if (fromIdx === null || fromIdx === toIdx) return
+
+  const ordered = [...filtered.value]
+  const [moved] = ordered.splice(fromIdx, 1)
+  ordered.splice(toIdx, 0, moved)
+
+  const idOrder = ordered.map(item => item.id)
+  items.value = [...items.value].sort((a, b) => {
+    const aIndex = idOrder.indexOf(a.id)
+    const bIndex = idOrder.indexOf(b.id)
+    if (aIndex === -1 && bIndex === -1) return 0
+    if (aIndex === -1) return 1
+    if (bIndex === -1) return -1
+    return aIndex - bIndex
+  })
+
+  try {
+    await apiFetch('/api/v1/admin/wowup/reorder', {
+      method: 'POST',
+      body: { items: ordered.map((item, idx) => ({ id: item.id, sortOrder: idx })) },
+    })
+  } catch {
+    toast.add({ title: 'Error', color: 'error' })
+  }
+}
+
+function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`
   const kb = bytes / 1024
   if (kb < 1024) return `${kb.toFixed(1)} KB`
@@ -224,68 +339,182 @@ function formatBytes(bytes: number): string {
 }
 
 const statCards = computed(() => {
-  const visibleCount = items.value.filter(i => i.isVisible).length
-  const hiddenCount = items.value.filter(i => !i.isVisible).length
-  const totalStringLength = items.value.reduce((sum, i) => sum + (i.string?.length || 0), 0)
-  const avgSize = items.value.length > 0 ? totalStringLength / items.value.length : 0
+  const visibleCount = items.value.filter(item => item.isVisible).length
+  const hiddenCount = items.value.filter(item => !item.isVisible).length
+  const totalLength = items.value.reduce((sum, item) => sum + (item.string?.length || 0), 0)
+  const avgSize = items.value.length > 0 ? totalLength / items.value.length : 0
+
   return [
-    { label: 'Total Strings', value: items.value.length, icon: 'i-heroicons-arrow-down-tray', bg: 'bg-blue-500/10', color: 'text-blue-400' },
-    { label: 'Visible', value: visibleCount, icon: 'i-heroicons-eye', bg: 'bg-green-500/10', color: 'text-green-400' },
-    { label: 'Hidden', value: hiddenCount, icon: 'i-heroicons-eye-slash', bg: 'bg-red-500/10', color: 'text-red-400' },
-    { label: 'Avg String Size', value: formatBytes(avgSize), icon: 'i-heroicons-document-text', bg: 'bg-amber-500/10', color: 'text-amber-400' },
+    { label: 'Total Strings', value: items.value.length, icon: 'i-heroicons-arrow-down-tray', tone: 'brand' as const },
+    { label: 'Visible', value: visibleCount, icon: 'i-heroicons-eye', tone: 'success' as const },
+    { label: 'Hidden', value: hiddenCount, icon: 'i-heroicons-eye-slash', tone: 'danger' as const },
+    { label: 'Avg Size', value: formatBytes(avgSize), icon: 'i-heroicons-document-text', tone: 'warning' as const },
   ]
 })
 
-// Filtering
 const isFiltering = computed(() => search.value.trim() !== '')
-const filtered = computed(() => { if (!search.value) return items.value; const q = search.value.toLowerCase(); return items.value.filter(i => i.name.toLowerCase().includes(q)) })
-const allVisibleSelected = computed(() => filtered.value.length > 0 && filtered.value.every(i => selected.has(i.id)))
-const someVisibleSelected = computed(() => filtered.value.some(i => selected.has(i.id)))
+const filtered = computed(() => {
+  if (!search.value) return items.value
+  const query = search.value.toLowerCase()
+  return items.value.filter(item => item.name.toLowerCase().includes(query))
+})
 
-function toggleSelect(id: number) { selected.has(id) ? selected.delete(id) : selected.add(id) }
-function toggleSelectAll() { if (allVisibleSelected.value) { filtered.value.forEach(i => selected.delete(i.id)) } else { filtered.value.forEach(i => selected.add(i.id)) } }
+const allVisibleSelected = computed(() =>
+  filtered.value.length > 0 && filtered.value.every(item => selected.has(item.id)),
+)
 
-// Last Updated
+const someVisibleSelected = computed(() =>
+  filtered.value.some(item => selected.has(item.id)),
+)
+
+function toggleSelect(id: number) {
+  selected.has(id) ? selected.delete(id) : selected.add(id)
+}
+
+function toggleSelectAll() {
+  if (allVisibleSelected.value) {
+    filtered.value.forEach(item => selected.delete(item.id))
+  } else {
+    filtered.value.forEach(item => selected.add(item.id))
+  }
+}
+
 const lastLoaded = ref<Date | null>(null)
 const lastUpdatedText = ref('')
-function updateLastUpdatedText() {
-  if (!lastLoaded.value) return
-  const s = Math.floor((Date.now() - lastLoaded.value.getTime()) / 1000)
-  if (s < 10) lastUpdatedText.value = 'just now'
-  else if (s < 60) lastUpdatedText.value = `${s}s ago`
-  else if (s < 3600) lastUpdatedText.value = `${Math.floor(s / 60)}m ago`
-  else lastUpdatedText.value = `${Math.floor(s / 3600)}h ago`
-}
 let lastUpdatedTimer: ReturnType<typeof setInterval>
 
-const route = useRoute()
-async function load() { loading.value = true; try { items.value = await apiFetch('/api/v1/admin/wowup'); lastLoaded.value = new Date(); updateLastUpdatedText() } catch { toast.add({ title: 'Error', color: 'error' }) } finally { loading.value = false } }
-onMounted(() => {
-  load(); lastUpdatedTimer = setInterval(updateLastUpdatedText, 10000)
-  if (route.query.action === 'create') { nextTick(() => openCreate()) }
-})
-onUnmounted(() => { clearInterval(lastUpdatedTimer) })
-
-function openCreate() { editing.value = null; formError.value = ''; Object.assign(form, { name: '', string: '', sortOrder: 0, isVisible: true }); modalOpen.value = true }
-function openEdit(i: Item) { editing.value = i; formError.value = ''; Object.assign(form, { name: i.name, string: i.string, sortOrder: i.sortOrder ?? 0, isVisible: i.isVisible }); modalOpen.value = true }
-
-async function save() {
-  if (!form.name.trim() || !form.string.trim()) { formError.value = 'Name and String are required'; return }
-  saving.value = true; formError.value = ''
-  try {
-    if (editing.value) { await apiFetch(`/api/v1/admin/wowup/${editing.value.id}`, { method: 'PUT', body: { ...form } }); toast.add({ title: 'Updated', color: 'success' }) }
-    else { await apiFetch('/api/v1/admin/wowup', { method: 'POST', body: { ...form } }); toast.add({ title: 'Created', color: 'success' }) }
-    modalOpen.value = false; await load()
-  } catch (e: any) { formError.value = e?.data?.message || 'Error' } finally { saving.value = false }
+function updateLastUpdatedText() {
+  if (!lastLoaded.value) return
+  const seconds = Math.floor((Date.now() - lastLoaded.value.getTime()) / 1000)
+  if (seconds < 10) lastUpdatedText.value = 'Updated just now'
+  else if (seconds < 60) lastUpdatedText.value = `Updated ${seconds}s ago`
+  else if (seconds < 3600) lastUpdatedText.value = `Updated ${Math.floor(seconds / 60)}m ago`
+  else lastUpdatedText.value = `Updated ${Math.floor(seconds / 3600)}h ago`
 }
 
-async function toggleVis(i: Item) { try { await apiFetch(`/api/v1/admin/wowup/${i.id}`, { method: 'PATCH', body: { isVisible: !i.isVisible } }); i.isVisible = !i.isVisible } catch { toast.add({ title: 'Error', color: 'error' }) } }
-function confirmDel(i: Item) { delItem.value = i; delModal.value = true }
-async function doDelete() { if (!delItem.value) return; deleting.value = true; try { await apiFetch(`/api/v1/admin/wowup/${delItem.value.id}`, { method: 'DELETE' }); toast.add({ title: 'Deleted', color: 'success' }); delModal.value = false; await load() } catch { toast.add({ title: 'Error', color: 'error' }) } finally { deleting.value = false } }
-async function bulkDelete() { bulkDeleting.value = true; try { await apiFetch('/api/v1/admin/wowup/bulk-delete', { method: 'POST', body: { ids: [...selected] } }); toast.add({ title: `${selected.size} strings deleted`, icon: 'i-heroicons-check-circle', color: 'success' }); selected.clear(); bulkDelModal.value = false; await load() } catch { toast.add({ title: 'Error', color: 'error' }) } finally { bulkDeleting.value = false } }
+async function load() {
+  loading.value = true
+  try {
+    items.value = await apiFetch('/api/v1/admin/wowup')
+    lastLoaded.value = new Date()
+    updateLastUpdatedText()
+  } catch {
+    toast.add({ title: 'Error', color: 'error' })
+  } finally {
+    loading.value = false
+  }
+}
 
-async function copyString(i: Item) {
-  try { await navigator.clipboard.writeText(i.string); toast.add({ title: `${i.name} copied!`, icon: 'i-heroicons-clipboard-document-check', color: 'success' }) }
-  catch { const ta = document.createElement('textarea'); ta.value = i.string; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); toast.add({ title: `${i.name} copied!`, icon: 'i-heroicons-clipboard-document-check', color: 'success' }) }
+const route = useRoute()
+
+onMounted(() => {
+  load()
+  lastUpdatedTimer = setInterval(updateLastUpdatedText, 10000)
+  if (route.query.action === 'create') nextTick(() => openCreate())
+})
+
+onUnmounted(() => {
+  clearInterval(lastUpdatedTimer)
+})
+
+function openCreate() {
+  editing.value = null
+  formError.value = ''
+  Object.assign(form, { name: '', string: '', sortOrder: 0, isVisible: true })
+  modalOpen.value = true
+}
+
+function openEdit(item: Item) {
+  editing.value = item
+  formError.value = ''
+  Object.assign(form, { name: item.name, string: item.string, sortOrder: item.sortOrder ?? 0, isVisible: item.isVisible })
+  modalOpen.value = true
+}
+
+async function save() {
+  if (!form.name.trim() || !form.string.trim()) {
+    formError.value = 'Name and string are required'
+    return
+  }
+
+  saving.value = true
+  formError.value = ''
+
+  try {
+    if (editing.value) {
+      await apiFetch(`/api/v1/admin/wowup/${editing.value.id}`, { method: 'PUT', body: { ...form } })
+      toast.add({ title: 'Updated', color: 'success' })
+    } else {
+      await apiFetch('/api/v1/admin/wowup', { method: 'POST', body: { ...form } })
+      toast.add({ title: 'Created', color: 'success' })
+    }
+
+    modalOpen.value = false
+    await load()
+  } catch (error: any) {
+    formError.value = error?.data?.message || 'Error'
+  } finally {
+    saving.value = false
+  }
+}
+
+async function toggleVis(item: Item) {
+  try {
+    await apiFetch(`/api/v1/admin/wowup/${item.id}`, { method: 'PATCH', body: { isVisible: !item.isVisible } })
+    item.isVisible = !item.isVisible
+  } catch {
+    toast.add({ title: 'Error', color: 'error' })
+  }
+}
+
+function confirmDel(item: Item) {
+  delItem.value = item
+  delModal.value = true
+}
+
+async function doDelete() {
+  if (!delItem.value) return
+  deleting.value = true
+  try {
+    await apiFetch(`/api/v1/admin/wowup/${delItem.value.id}`, { method: 'DELETE' })
+    toast.add({ title: 'Deleted', color: 'success' })
+    delModal.value = false
+    await load()
+  } catch {
+    toast.add({ title: 'Error', color: 'error' })
+  } finally {
+    deleting.value = false
+  }
+}
+
+async function bulkDelete() {
+  bulkDeleting.value = true
+  try {
+    await apiFetch('/api/v1/admin/wowup/bulk-delete', { method: 'POST', body: { ids: [...selected] } })
+    toast.add({ title: `${selected.size} strings deleted`, icon: 'i-heroicons-check-circle', color: 'success' })
+    selected.clear()
+    bulkDelModal.value = false
+    await load()
+  } catch {
+    toast.add({ title: 'Error', color: 'error' })
+  } finally {
+    bulkDeleting.value = false
+  }
+}
+
+async function copyString(item: Item) {
+  try {
+    await navigator.clipboard.writeText(item.string)
+    toast.add({ title: `${item.name} copied`, icon: 'i-heroicons-clipboard-document-check', color: 'success' })
+  } catch {
+    const textarea = document.createElement('textarea')
+    textarea.value = item.string
+    textarea.style.cssText = 'position:fixed;opacity:0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+    toast.add({ title: `${item.name} copied`, icon: 'i-heroicons-clipboard-document-check', color: 'success' })
+  }
 }
 </script>

@@ -4,16 +4,23 @@
 -->
 
 <template>
-  <div>
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-3">
-        <h1 class="text-2xl font-bold text-gradient">Analytics</h1>
-        <span v-if="lastUpdatedText && !loading" class="text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-400'">· {{ lastUpdatedText }}</span>
-      </div>
-      <UButton icon="i-heroicons-arrow-path" variant="subtle" size="sm" @click="refresh" :loading="loading">
-        Refresh
-      </UButton>
-    </div>
+  <div class="space-y-6">
+    <AdminPageHeader
+      icon="i-heroicons-chart-bar"
+      eyebrow="System"
+      title="Analytics"
+      description="Traffic, copy events, API usage and behavioural breakdowns across the admin platform."
+    >
+      <template #meta>
+        <span v-if="lastUpdatedText && !loading" class="admin-pill">{{ lastUpdatedText }}</span>
+      </template>
+
+      <template #actions>
+        <UButton icon="i-heroicons-arrow-path" variant="subtle" size="sm" :loading="loading" @click="refresh">
+          Refresh
+        </UButton>
+      </template>
+    </AdminPageHeader>
 
     <!-- Loading Skeleton -->
     <div v-if="loading && !stats" class="space-y-6">

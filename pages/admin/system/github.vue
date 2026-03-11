@@ -4,13 +4,19 @@
 -->
 
 <template>
-  <div>
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gradient">GitHub Sync</h1>
-      <UButton icon="i-heroicons-arrow-path" variant="subtle" size="sm" @click="loadStatus()" :loading="statusLoading">
-        Refresh
-      </UButton>
-    </div>
+  <div class="space-y-6">
+    <AdminPageHeader
+      icon="i-simple-icons-github"
+      eyebrow="System"
+      title="GitHub Sync"
+      description="Repository connectivity, imports, exports, release checks and webhook activity."
+    >
+      <template #actions>
+        <UButton icon="i-heroicons-arrow-path" variant="subtle" size="sm" :loading="statusLoading" @click="loadStatus()">
+          Refresh
+        </UButton>
+      </template>
+    </AdminPageHeader>
 
     <!-- Connection + Version Row -->
     <div class="grid lg:grid-cols-2 gap-4 mb-6">

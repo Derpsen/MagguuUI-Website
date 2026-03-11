@@ -3,11 +3,17 @@
 -->
 
 <template>
-  <div>
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gradient">Users</h1>
-      <UButton icon="i-heroicons-plus" @click="createModal = true" size="sm">New User</UButton>
-    </div>
+  <div class="space-y-6">
+    <AdminPageHeader
+      icon="i-heroicons-users"
+      eyebrow="System"
+      title="Users"
+      description="Accounts, sessions, passkeys and password controls for the admin workspace."
+    >
+      <template #actions>
+        <UButton icon="i-heroicons-plus" size="sm" @click="createModal = true">New User</UButton>
+      </template>
+    </AdminPageHeader>
 
     <div v-if="loading" class="glass rounded-xl p-12 text-center">
       <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-brand-400 animate-spin mx-auto" />

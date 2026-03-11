@@ -5,44 +5,21 @@
 -->
 
 <template>
-  <div class="max-w-5xl mx-auto">
-    <!-- Sticky Save Bar (appears only when changes exist) -->
-    <Transition
-      enter-active-class="transition duration-200 ease-out"
-      enter-from-class="opacity-0 -translate-y-2"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition duration-150 ease-in"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 -translate-y-2"
-    >
-      <div v-if="hasChanges" class="sticky top-16 z-10 mb-4 -mx-4 lg:-mx-8 px-4 lg:px-8 py-3"
-        :class="isDark ? 'bg-brand-900/95 backdrop-blur-xl border-b border-brand-400/10' : 'bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm'">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
-            </span>
-            <span class="text-sm font-medium" :class="isDark ? 'text-amber-400' : 'text-amber-600'">Unsaved changes</span>
-          </div>
-          <UButton @click="save" :loading="saving" icon="i-heroicons-check" size="sm">Save</UButton>
-        </div>
-      </div>
-    </Transition>
+  <div class="max-w-5xl mx-auto space-y-6">
+    <AdminStickyBar :show="hasChanges" description="Homepage content has changed and can be published now.">
+      <template #actions>
+        <UButton @click="save" :loading="saving" icon="i-heroicons-check" size="sm">Save</UButton>
+      </template>
+    </AdminStickyBar>
 
-    <!-- Header Bar -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 admin-fade-in admin-stagger-1">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-          :class="isDark ? 'bg-blue-500/10' : 'bg-blue-50'">
-          <UIcon name="i-heroicons-home" class="w-5 h-5 text-blue-500" />
-        </div>
-        <div>
-          <h2 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Homepage</h2>
-          <p class="text-xs" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Hero, addons & features</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-2">
+    <AdminPageHeader
+      icon="i-heroicons-home"
+      eyebrow="Content"
+      title="Homepage"
+      description="Hero messaging, supported addons and feature blocks for the landing page."
+    >
+      <template #actions>
+        <div class="flex items-center gap-2">
         <!-- Tab Toggle -->
         <div class="flex items-center gap-0.5 p-0.5 rounded-lg" :class="isDark ? 'bg-white/[0.04]' : 'bg-gray-100'">
           <button @click="tab = 'edit'" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all"
@@ -59,8 +36,9 @@
           </button>
         </div>
         <UButton @click="save" :loading="saving" icon="i-heroicons-check" size="sm">Save</UButton>
-      </div>
-    </div>
+        </div>
+      </template>
+    </AdminPageHeader>
 
     <!-- Loading -->
     <div v-if="loading" class="glass rounded-xl p-12 text-center">

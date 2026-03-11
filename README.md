@@ -101,6 +101,7 @@ Important values include:
 
 Do not commit `.env`, runtime database files, or uploads.
 
+
 ## Deployment
 
 This project is deployed as a Dockerized Nuxt app on Unraid.

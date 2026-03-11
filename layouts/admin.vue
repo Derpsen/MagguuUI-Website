@@ -1,55 +1,36 @@
 <template>
   <UApp>
     <div class="admin-shell">
-      <div class="admin-grid-overlay" />
-
       <aside
         class="fixed inset-y-0 left-0 z-40 px-3 py-3 transition-all duration-300"
         :class="[
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-          collapsed ? 'w-24' : 'w-[19rem]',
+          collapsed ? 'w-20' : 'w-[16rem]',
         ]"
       >
-        <div class="admin-sidebar-shell flex h-full flex-col overflow-hidden rounded-[1.8rem] p-3">
-          <div class="admin-workspace-card">
-            <div class="flex items-start gap-3" :class="collapsed ? 'justify-center' : ''">
+        <div class="admin-sidebar-shell flex h-full flex-col overflow-hidden rounded-[1.5rem] p-3">
+          <div class="admin-sidebar-brand">
+            <NuxtLink to="/admin" class="flex min-w-0 items-center gap-3">
               <div class="admin-workspace-card__logo">
                 <img src="/logo.svg" alt="MagguuUI" class="h-7 w-7">
               </div>
 
-              <div v-if="!collapsed" class="min-w-0 flex-1">
-                <p class="admin-page-eyebrow">Workspace</p>
-                <p class="truncate text-sm font-semibold text-slate-950 dark:text-white">MagguuUI Control Center</p>
-                <div class="mt-3 flex items-center gap-2">
-                  <span class="admin-pill admin-pill--success">
-                    <span class="h-1.5 w-1.5 rounded-full bg-current" />
-                    Live
-                  </span>
-                  <span class="admin-pill">v{{ appVersion }}</span>
-                </div>
+              <div v-if="!collapsed" class="min-w-0">
+                <p class="truncate text-sm font-semibold text-slate-950 dark:text-white">MagguuUI</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Admin Panel</p>
               </div>
-
-              <button
-                v-if="!collapsed"
-                class="admin-icon-button hidden lg:inline-flex"
-                title="Collapse sidebar"
-                @click="collapsed = true"
-              >
-                <UIcon name="i-heroicons-chevron-double-left" class="h-4 w-4" />
-              </button>
-            </div>
+            </NuxtLink>
 
             <button
-              v-if="collapsed"
-              class="admin-icon-button mt-3 hidden w-full justify-center lg:inline-flex"
-              title="Expand sidebar"
-              @click="collapsed = false"
+              class="admin-icon-button hidden lg:inline-flex"
+              :title="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+              @click="collapsed = !collapsed"
             >
-              <UIcon name="i-heroicons-chevron-double-right" class="h-4 w-4" />
+              <UIcon name="i-heroicons-chevron-double-left" class="h-4 w-4" :class="collapsed ? 'rotate-180' : ''" />
             </button>
           </div>
 
-          <nav class="scrollbar-hide mt-4 flex-1 overflow-y-auto px-1 pb-3">
+          <nav class="scrollbar-hide mt-5 flex-1 overflow-y-auto px-1 pb-3">
             <NuxtLink
               to="/admin"
               class="admin-link"
@@ -69,23 +50,14 @@
             >
               <div v-if="collapsed" class="mx-auto my-4 h-px w-8 bg-slate-200 dark:bg-white/10" />
 
-              <button
+              <div
                 v-else
-                class="flex w-full items-center justify-between px-2 pb-2"
-                @click="toggleSection(section.title)"
+                class="px-2 pb-2"
               >
                 <span class="admin-section-label">{{ section.title }}</span>
-                <UIcon
-                  name="i-heroicons-chevron-down"
-                  class="h-3.5 w-3.5 text-slate-400 transition-transform duration-200 dark:text-slate-500"
-                  :class="openSections[section.title] ? '' : '-rotate-90'"
-                />
-              </button>
+              </div>
 
-              <div
-                v-if="collapsed || openSections[section.title]"
-                class="space-y-1"
-              >
+              <div class="space-y-1">
                 <NuxtLink
                   v-for="item in section.links"
                   :key="item.to"
@@ -98,26 +70,23 @@
                   :title="item.label"
                 >
                   <UIcon :name="item.icon" class="h-5 w-5 shrink-0" />
-                  <div v-if="!collapsed" class="min-w-0 flex-1">
-                    <span class="block truncate">{{ item.label }}</span>
-                    <span class="admin-link__description">{{ item.description }}</span>
-                  </div>
+                  <span v-if="!collapsed" class="min-w-0 flex-1 truncate">{{ item.label }}</span>
                 </NuxtLink>
               </div>
             </div>
           </nav>
 
           <div class="admin-sidebar-footer">
-            <div class="admin-sidebar-user">
+            <div class="admin-sidebar-user" :class="collapsed ? 'justify-center' : ''">
               <span class="admin-sidebar-user__avatar">{{ userInitial }}</span>
 
               <div v-if="!collapsed" class="min-w-0 flex-1">
                 <p class="truncate text-sm font-semibold text-slate-950 dark:text-white">{{ user?.username || 'Admin' }}</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Active admin session</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">v{{ appVersion }}</p>
               </div>
             </div>
 
-            <div v-if="!collapsed" class="mt-3 flex items-center gap-2">
+            <div class="mt-3 grid gap-2" :class="collapsed ? 'grid-cols-1' : 'grid-cols-[auto_1fr]'">
               <button
                 class="admin-icon-button"
                 :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
@@ -127,6 +96,7 @@
               </button>
 
               <UButton
+                v-if="!collapsed"
                 icon="i-heroicons-arrow-right-on-rectangle"
                 color="neutral"
                 variant="subtle"
@@ -135,6 +105,15 @@
               >
                 Logout
               </UButton>
+
+              <button
+                v-else
+                class="admin-icon-button"
+                title="Logout"
+                @click="handleLogout"
+              >
+                <UIcon name="i-heroicons-arrow-right-on-rectangle" class="h-4.5 w-4.5" />
+              </button>
             </div>
           </div>
         </div>
@@ -146,34 +125,26 @@
         @click="sidebarOpen = false"
       />
 
-      <div class="admin-main-shell transition-all duration-300" :class="collapsed ? 'lg:pl-24' : 'lg:pl-[19rem]'">
+      <div class="admin-main-shell transition-all duration-300" :class="collapsed ? 'lg:pl-20' : 'lg:pl-[16rem]'">
         <div class="mx-auto flex min-h-screen w-full max-w-[1680px] flex-col px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pb-8">
-          <header class="admin-toolbar-shell sticky top-4 z-20 mb-6 rounded-[1.5rem]">
-            <div class="flex flex-wrap items-center gap-3">
-              <div class="flex min-w-0 flex-1 items-start gap-3">
+          <header class="admin-toolbar-shell sticky top-3 z-20 mb-5 rounded-[1.25rem]">
+            <div class="flex items-center gap-3">
+              <div class="flex min-w-0 flex-1 items-center gap-3">
                 <button class="admin-icon-button lg:hidden" @click="sidebarOpen = !sidebarOpen">
                   <UIcon name="i-heroicons-bars-3" class="h-5 w-5" />
-                </button>
-
-                <button class="admin-icon-button hidden lg:inline-flex" @click="collapsed = !collapsed">
-                  <UIcon name="i-heroicons-chevron-double-left" class="h-4.5 w-4.5" :class="collapsed ? 'rotate-180' : ''" />
                 </button>
 
                 <div class="min-w-0">
                   <div class="flex flex-wrap items-center gap-2">
                     <span class="admin-context-chip">{{ currentContext.section }}</span>
-                    <span class="text-xs text-slate-500 dark:text-slate-400">Control Center</span>
+                    <h1 class="truncate text-sm font-semibold text-slate-950 sm:text-base dark:text-white">
+                      {{ currentContext.label }}
+                    </h1>
                   </div>
-                  <h1 class="mt-2 truncate text-base font-semibold text-slate-950 sm:text-lg dark:text-white">
-                    {{ currentContext.label }}
-                  </h1>
-                  <p class="mt-1 hidden text-sm text-slate-600 sm:block dark:text-slate-400">
-                    {{ currentContext.hint }}
-                  </p>
                 </div>
               </div>
 
-              <div class="flex w-full items-center justify-end gap-2 sm:w-auto">
+              <div class="flex items-center gap-2">
                 <button class="admin-icon-button md:hidden" @click="cmdPalette?.open()">
                   <UIcon name="i-heroicons-magnifying-glass" class="h-4.5 w-4.5" />
                 </button>
@@ -183,14 +154,9 @@
                   @click="cmdPalette?.open()"
                 >
                   <UIcon name="i-heroicons-magnifying-glass" class="h-4 w-4" />
-                  <span class="hidden flex-1 text-left lg:inline">Search pages, actions and tools</span>
-                  <span class="flex-1 text-left lg:hidden">Search</span>
-                  <kbd>{{ searchShortcut }}</kbd>
+                  <span class="flex-1 text-left">Search</span>
+                  <kbd class="hidden lg:inline-flex">{{ searchShortcut }}</kbd>
                 </button>
-
-                <NuxtLink to="/" class="admin-icon-button hidden sm:inline-flex" title="Open website">
-                  <UIcon name="i-heroicons-globe-alt" class="h-4.5 w-4.5" />
-                </NuxtLink>
 
                 <div ref="notifWrapRef" class="relative">
                   <button
@@ -275,20 +241,12 @@
                 </div>
 
                 <button
-                  class="admin-icon-button xl:hidden"
+                  class="admin-icon-button lg:hidden"
                   :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
                   @click="toggleTheme"
                 >
                   <UIcon :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'" class="h-4.5 w-4.5" />
                 </button>
-
-                <div class="admin-user-chip hidden xl:flex">
-                  <span class="admin-user-chip__avatar">{{ userInitial }}</span>
-                  <div class="min-w-0">
-                    <p class="truncate text-sm font-semibold text-slate-950 dark:text-white">{{ user?.username || 'Admin' }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Secure session</p>
-                  </div>
-                </div>
               </div>
             </div>
           </header>
@@ -340,16 +298,8 @@ const appVersion = computed(() => config.public.appVersion || '3.0.0')
 const searchShortcut = computed(() => isMac.value ? 'Cmd K' : 'Ctrl K')
 const userInitial = computed(() => (user.value?.username || 'A').charAt(0).toUpperCase())
 
-const openSections = reactive(
-  Object.fromEntries(sections.map(section => [section.title, true])) as Record<string, boolean>,
-)
-
 function toggleTheme() {
   colorMode.preference = isDark.value ? 'light' : 'dark'
-}
-
-function toggleSection(title: string) {
-  openSections[title] = !openSections[title]
 }
 
 function isRouteActive(path: string, exact = false) {
@@ -381,17 +331,8 @@ function onDocumentClick(event: Event) {
   notifOpen.value = false
 }
 
-function ensureActiveSectionVisible() {
-  const activeSection = sections.find(section =>
-    section.links.some(link => route.path === link.to || route.path.startsWith(`${link.to}/`)),
-  )
-
-  if (activeSection) openSections[activeSection.title] = true
-}
-
 onMounted(() => {
   notifRefresh(true)
-  ensureActiveSectionVisible()
 
   if (!import.meta.client) return
 
@@ -411,6 +352,5 @@ watch(collapsed, value => {
 watch(() => route.fullPath, () => {
   notifOpen.value = false
   sidebarOpen.value = false
-  ensureActiveSectionVisible()
 })
 </script>

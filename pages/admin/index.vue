@@ -1,54 +1,43 @@
 <template>
-  <div class="space-y-6">
-    <AdminPageHeader
-      icon="i-heroicons-squares-2x2"
-      :eyebrow="todayFormatted"
-      :title="`${greeting}, ${user?.username || 'Admin'}`"
-      description="A clean operational view of your content, traffic, releases and platform health."
-    >
-      <template #meta>
-        <span class="admin-pill">{{ nextRefresh }}s until auto refresh</span>
-      </template>
+  <div class="space-y-5">
+    <div class="admin-inline-note justify-between">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="admin-pill">{{ nextRefresh }}s to refresh</span>
+        <span
+          v-if="versionData"
+          class="admin-pill"
+          :class="versionData.isUpToDate ? 'admin-pill--success' : 'admin-pill--warning'"
+        >
+          {{ versionData.isUpToDate ? 'Up to date' : 'Update available' }}
+        </span>
+        <span v-if="notifItems.length" class="admin-pill">{{ notifItems.length }} notifications</span>
+      </div>
 
-      <template #actions>
-        <UButton icon="i-heroicons-arrow-path" color="neutral" variant="subtle" :loading="refreshing" @click="refreshAll">
+      <div class="flex flex-wrap items-center gap-2">
+        <UButton
+          v-for="action in quickActions"
+          :key="action.to"
+          :to="action.to"
+          size="sm"
+          color="neutral"
+          variant="subtle"
+          :icon="action.icon"
+        >
+          {{ action.label }}
+        </UButton>
+
+        <UButton size="sm" icon="i-heroicons-arrow-path" color="neutral" variant="subtle" :loading="refreshing" @click="refreshAll">
           Refresh
         </UButton>
-      </template>
-    </AdminPageHeader>
-
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <NuxtLink
-        v-for="action in quickActions"
-        :key="action.to"
-        :to="action.to"
-        class="admin-panel block p-5 transition hover:-translate-y-0.5"
-      >
-        <div class="flex items-start gap-3">
-          <div class="admin-command__item-icon" :class="action.tone">
-            <UIcon :name="action.icon" class="h-4.5 w-4.5" />
-          </div>
-          <div class="min-w-0">
-            <p class="text-sm font-semibold text-slate-950 dark:text-white">{{ action.label }}</p>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ action.desc }}</p>
-          </div>
-        </div>
-      </NuxtLink>
+      </div>
     </div>
 
     <div v-if="!stats" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <div v-for="i in 4" :key="i" class="admin-metric-card">
-        <div class="space-y-4">
+        <div class="space-y-3">
           <div class="h-3 w-24 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-          <div class="h-8 w-20 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-          <div class="grid h-14 grid-cols-7 items-end gap-1">
-            <div
-              v-for="j in 7"
-              :key="j"
-              class="rounded-full skeleton bg-slate-200/70 dark:bg-slate-800/70"
-              :style="{ height: `${18 + (j % 4) * 8}px` }"
-            />
-          </div>
+          <div class="h-7 w-16 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+          <div class="h-3 w-40 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
         </div>
       </div>
     </div>
@@ -64,208 +53,168 @@
         :trend="stat.trend"
         :tone="stat.tone"
         :to="stat.to"
-      >
-        <div v-if="stat.series?.length" class="flex h-14 items-end gap-1">
-          <div
-            v-for="(point, pointIdx) in stat.series"
-            :key="`${stat.label}-${pointIdx}`"
-            class="flex-1 rounded-t-md transition-all"
-            :class="stat.seriesColor"
-            :style="{ height: `${miniBarHeight(point, stat.seriesMax)}%`, minHeight: point > 0 ? '8px' : '4px' }"
-          />
-        </div>
-
-        <div v-else class="grid grid-cols-3 gap-2">
-          <div
-            v-for="chip in stat.chips"
-            :key="chip.label"
-            class="rounded-xl border border-slate-200/80 bg-slate-50/90 px-3 py-2 dark:border-white/8 dark:bg-white/[0.03]"
-          >
-            <p class="text-[10px] uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">{{ chip.label }}</p>
-            <p class="mt-1 text-sm font-semibold text-slate-950 dark:text-white">{{ chip.value }}</p>
-          </div>
-        </div>
-      </AdminMetricCard>
+      />
     </div>
 
-    <div class="grid gap-6 xl:grid-cols-[1.2fr_1fr_1fr]">
-      <AdminPanel title="Copy Trend" description="Seven day import activity compared to the previous week." icon="i-heroicons-chart-bar">
-        <div class="flex items-end justify-between gap-4">
-          <div>
-            <p class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ stats?.copiesLast7Days || 0 }}</p>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">last 7 days</p>
-          </div>
-
-          <div
-            v-if="trendPercent !== null"
-            class="admin-metric-card__trend"
-            :class="trendPercent >= 0 ? 'admin-metric-card__trend--up' : 'admin-metric-card__trend--down'"
-          >
-            <UIcon :name="trendPercent >= 0 ? 'i-heroicons-arrow-trending-up' : 'i-heroicons-arrow-trending-down'" class="h-3.5 w-3.5" />
-            <span>{{ Math.abs(trendPercent) }}%</span>
-          </div>
-        </div>
-
-        <div v-if="last7Copies.length" class="mt-5">
-          <div class="relative h-32">
-            <div class="absolute inset-0 flex flex-col justify-between">
-              <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
-              <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
-              <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
-              <div />
+    <div class="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.9fr)]">
+      <div class="space-y-5">
+        <AdminPanel title="Copy Trend" description="Seven day import activity compared to the previous week." icon="i-heroicons-chart-bar">
+          <div class="flex items-end justify-between gap-4">
+            <div>
+              <p class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ stats?.copiesLast7Days || 0 }}</p>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">last 7 days</p>
             </div>
 
-            <div class="relative flex h-full items-end gap-2">
-              <div v-for="(day, idx) in last7Copies" :key="idx" class="flex flex-1 flex-col items-center gap-2">
-                <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ day.count }}</span>
-                <div
-                  class="w-full rounded-t-xl bg-blue-500/80 transition hover:bg-blue-500"
-                  :style="{ height: `${barHeight(day.count, maxLast7)}%`, minHeight: day.count > 0 ? '10px' : '4px' }"
-                />
+            <div
+              v-if="trendPercent !== null"
+              class="admin-metric-card__trend"
+              :class="trendPercent >= 0 ? 'admin-metric-card__trend--up' : 'admin-metric-card__trend--down'"
+            >
+              <UIcon :name="trendPercent >= 0 ? 'i-heroicons-arrow-trending-up' : 'i-heroicons-arrow-trending-down'" class="h-3.5 w-3.5" />
+              <span>{{ Math.abs(trendPercent) }}%</span>
+            </div>
+          </div>
+
+          <div v-if="last7Copies.length" class="mt-5">
+            <div class="relative h-32">
+              <div class="absolute inset-0 flex flex-col justify-between">
+                <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
+                <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
+                <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
+                <div />
+              </div>
+
+              <div class="relative flex h-full items-end gap-2">
+                <div v-for="(day, idx) in last7Copies" :key="idx" class="flex flex-1 flex-col items-center gap-2">
+                  <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ day.count }}</span>
+                  <div
+                    class="w-full rounded-t-xl bg-blue-500/80 transition hover:bg-blue-500"
+                    :style="{ height: `${barHeight(day.count, maxLast7)}%`, minHeight: day.count > 0 ? '10px' : '4px' }"
+                  />
+                </div>
               </div>
             </div>
+
+            <div class="mt-2 grid grid-cols-7 gap-2">
+              <span
+                v-for="(day, idx) in last7Copies"
+                :key="`label-${idx}`"
+                class="text-center text-[11px] text-slate-500 dark:text-slate-400"
+              >
+                {{ shortDay(day.day) }}
+              </span>
+            </div>
           </div>
 
-          <div class="mt-2 grid grid-cols-7 gap-2">
-            <span
-              v-for="(day, idx) in last7Copies"
-              :key="`label-${idx}`"
-              class="text-center text-[11px] text-slate-500 dark:text-slate-400"
+          <AdminEmptyState
+            v-else
+            icon="i-heroicons-chart-bar"
+            title="No trend data"
+            description="Traffic and copy charts will appear once events have been recorded."
+          />
+        </AdminPanel>
+
+        <AdminPanel title="Recent Activity" description="The latest content, string and configuration changes." icon="i-heroicons-clock">
+          <div v-if="stats?.recentActivity?.length" class="space-y-2">
+            <div
+              v-for="item in stats.recentActivity.slice(0, 6)"
+              :key="item.id"
+              class="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50/70 px-4 py-3 dark:border-white/8 dark:bg-white/[0.03]"
             >
-              {{ shortDay(day.day) }}
-            </span>
-          </div>
-        </div>
-
-        <AdminEmptyState
-          v-else
-          icon="i-heroicons-chart-bar"
-          title="No trend data"
-          description="Traffic and copy charts will appear once events have been recorded."
-        />
-      </AdminPanel>
-
-      <AdminPanel title="Addon Version" description="Stored GitHub release information compared to your local version." icon="i-simple-icons-github">
-        <template #actions>
-          <UButton size="sm" variant="subtle" color="neutral" icon="i-heroicons-arrow-path" :loading="versionChecking" @click="checkVersion">
-            Check
-          </UButton>
-        </template>
-
-        <div v-if="versionData" class="space-y-4">
-          <div class="flex items-center gap-3">
-            <div class="h-2.5 w-2.5 rounded-full" :class="versionData.isUpToDate ? 'bg-emerald-500' : 'bg-amber-500'" />
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
-              {{ versionData.isUpToDate ? 'Up to date' : 'Update available' }}
-            </span>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div class="rounded-xl border border-slate-200/80 bg-slate-50/90 p-4 dark:border-white/8 dark:bg-white/[0.03]">
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">Local</p>
-              <p class="mt-2 text-xl font-semibold text-slate-950 dark:text-white">
-                <template v-if="versionData.localVersion">v{{ versionData.localVersion }}</template>
-                <span v-else class="text-sm font-normal text-slate-500 dark:text-slate-400">Not configured</span>
-              </p>
-            </div>
-
-            <div class="rounded-xl border border-slate-200/80 bg-slate-50/90 p-4 dark:border-white/8 dark:bg-white/[0.03]">
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">GitHub</p>
-              <p class="mt-2 text-xl font-semibold" :class="versionData.isUpToDate ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'">
-                v{{ versionData.latestVersion }}
-              </p>
+              <div class="admin-command__item-icon" :class="activityTone(item.action)">
+                <UIcon :name="actionIcon(item.action)" class="h-4 w-4" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-semibold text-slate-950 dark:text-white">{{ item.entityName }}</p>
+                <p class="mt-1 text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">{{ typeLabel(item.entityType) }}</p>
+              </div>
+              <span class="text-xs text-slate-500 dark:text-slate-400">{{ timeAgo(item.createdAt) }}</span>
+              <UBadge :color="item.action === 'created' ? 'success' : item.action === 'updated' ? 'info' : 'error'" variant="subtle">
+                {{ item.action }}
+              </UBadge>
             </div>
           </div>
 
-          <NuxtLink
-            v-if="!versionData.isUpToDate"
-            to="/admin/system/github"
-            class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
-          >
-            <UIcon name="i-heroicons-arrow-up-right" class="h-4 w-4" />
-            Open GitHub Sync
-          </NuxtLink>
-        </div>
-
-        <AdminEmptyState
-          v-else
-          icon="i-simple-icons-github"
-          title="No version check yet"
-          description="Run a fresh release check to compare local and remote versions."
-        />
-      </AdminPanel>
-
-      <AdminPanel title="Notifications" description="Latest warnings and operational notices." icon="i-heroicons-bell">
-        <div v-if="notifItems.length" class="space-y-2">
-          <NuxtLink
-            v-for="item in notifItems.slice(0, 4)"
-            :key="item.id"
-            :to="item.link || '#'"
-            class="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 transition hover:-translate-y-0.5 hover:bg-white dark:border-white/8 dark:bg-white/[0.03] dark:hover:bg-white/[0.05]"
-          >
-            <div class="mt-1 h-2.5 w-2.5 rounded-full" :class="item.type === 'error' ? 'bg-red-500' : item.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'" />
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-medium text-slate-950 dark:text-white">{{ item.title }}</p>
-              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ item.message }}</p>
-            </div>
-          </NuxtLink>
-        </div>
-
-        <AdminEmptyState
-          v-else
-          icon="i-heroicons-check-badge"
-          title="All clear"
-          description="No active issues are waiting for attention."
-        />
-      </AdminPanel>
-    </div>
-
-    <AdminPanel title="Recent Activity" description="The latest content, string and configuration changes." icon="i-heroicons-clock">
-      <div v-if="stats?.recentActivity?.length" class="space-y-2">
-        <div
-          v-for="item in stats.recentActivity.slice(0, 6)"
-          :key="item.id"
-          class="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50/70 px-4 py-3 dark:border-white/8 dark:bg-white/[0.03]"
-        >
-          <div class="admin-command__item-icon" :class="activityTone(item.action)">
-            <UIcon :name="actionIcon(item.action)" class="h-4 w-4" />
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-semibold text-slate-950 dark:text-white">{{ item.entityName }}</p>
-            <p class="mt-1 text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">{{ typeLabel(item.entityType) }}</p>
-          </div>
-          <span class="text-xs text-slate-500 dark:text-slate-400">{{ timeAgo(item.createdAt) }}</span>
-          <UBadge :color="item.action === 'created' ? 'success' : item.action === 'updated' ? 'info' : 'error'" variant="subtle">
-            {{ item.action }}
-          </UBadge>
-        </div>
+          <AdminEmptyState
+            v-else
+            icon="i-heroicons-clock"
+            title="No activity yet"
+            description="Administrative actions will appear here as soon as content or settings change."
+          />
+        </AdminPanel>
       </div>
 
-      <AdminEmptyState
-        v-else
-        icon="i-heroicons-clock"
-        title="No activity yet"
-        description="Administrative actions will appear here as soon as content or settings change."
-      />
-    </AdminPanel>
+      <div class="space-y-5">
+        <AdminPanel title="Version Status" description="Stored GitHub release information compared to your local version." icon="i-simple-icons-github">
+          <template #actions>
+            <UButton size="sm" variant="subtle" color="neutral" icon="i-heroicons-arrow-path" :loading="versionChecking" @click="checkVersion">
+              Check
+            </UButton>
+          </template>
 
-    <div class="admin-inline-note justify-between">
-      <div class="flex flex-wrap items-center gap-4">
-        <div class="flex items-center gap-2">
-          <div class="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-          <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Server healthy</span>
-        </div>
+          <div v-if="versionData" class="space-y-4">
+            <div class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <div class="h-2.5 w-2.5 rounded-full" :class="versionData.isUpToDate ? 'bg-emerald-500' : 'bg-amber-500'" />
+              <span>{{ versionData.isUpToDate ? 'Release state is in sync.' : 'A newer GitHub release is available.' }}</span>
+            </div>
 
-        <div class="flex items-center gap-2">
-          <div class="h-2.5 w-2.5 rounded-full" :class="stats ? 'bg-emerald-500' : 'bg-amber-500'" />
-          <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Database connected</span>
-        </div>
-      </div>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between rounded-xl border border-slate-200/80 bg-slate-50/90 px-4 py-3 dark:border-white/8 dark:bg-white/[0.03]">
+                <span class="text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">Local</span>
+                <strong class="text-sm text-slate-950 dark:text-white">
+                  {{ versionData.localVersion ? `v${versionData.localVersion}` : 'Not configured' }}
+                </strong>
+              </div>
 
-      <div v-if="stats" class="flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-        <span><strong class="text-slate-900 dark:text-white">{{ stats.copiesLast7Days || 0 }}</strong> copies</span>
-        <span><strong class="text-slate-900 dark:text-white">{{ stats.pageViewsLast7Days || 0 }}</strong> views</span>
-        <span>last 7 days</span>
+              <div class="flex items-center justify-between rounded-xl border border-slate-200/80 bg-slate-50/90 px-4 py-3 dark:border-white/8 dark:bg-white/[0.03]">
+                <span class="text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">GitHub</span>
+                <strong :class="versionData.isUpToDate ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'">
+                  v{{ versionData.latestVersion }}
+                </strong>
+              </div>
+            </div>
+
+            <NuxtLink
+              v-if="!versionData.isUpToDate"
+              to="/admin/system/github"
+              class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
+            >
+              <UIcon name="i-heroicons-arrow-up-right" class="h-4 w-4" />
+              Open GitHub Sync
+            </NuxtLink>
+          </div>
+
+          <AdminEmptyState
+            v-else
+            icon="i-simple-icons-github"
+            title="No version check yet"
+            description="Run a fresh release check to compare local and remote versions."
+          />
+        </AdminPanel>
+
+        <AdminPanel title="Notifications" description="Latest warnings and operational notices." icon="i-heroicons-bell">
+          <div v-if="notifItems.length" class="space-y-2">
+            <NuxtLink
+              v-for="item in notifItems.slice(0, 4)"
+              :key="item.id"
+              :to="item.link || '#'"
+              class="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 transition hover:bg-white dark:border-white/8 dark:bg-white/[0.03] dark:hover:bg-white/[0.05]"
+            >
+              <div class="mt-1 h-2.5 w-2.5 rounded-full" :class="item.type === 'error' ? 'bg-red-500' : item.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'" />
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-medium text-slate-950 dark:text-white">{{ item.title }}</p>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ item.message }}</p>
+              </div>
+            </NuxtLink>
+          </div>
+
+          <AdminEmptyState
+            v-else
+            icon="i-heroicons-check-badge"
+            title="All clear"
+            description="No active issues are waiting for attention."
+          />
+        </AdminPanel>
       </div>
     </div>
   </div>
@@ -275,31 +224,12 @@
 definePageMeta({ layout: 'admin' })
 
 const { apiFetch } = useApi()
-const { user } = useAuth()
 const { notifications: notifItems, refresh: notifRefresh } = useAdminNotifications()
 
-const greeting = computed(() => {
-  const hour = new Date().getHours()
-  if (hour < 5) return 'Good night'
-  if (hour < 12) return 'Good morning'
-  if (hour < 18) return 'Good afternoon'
-  return 'Good evening'
-})
-
-const todayFormatted = computed(() =>
-  new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }),
-)
-
 const quickActions = [
-  { label: 'New Profile', desc: 'Add or revise an addon import string.', icon: 'i-heroicons-plus-circle', tone: 'admin-tone-brand', to: '/admin/strings/profiles?action=create' },
-  { label: 'New Changelog', desc: 'Publish a clean release update.', icon: 'i-heroicons-document-plus', tone: 'admin-tone-warning', to: '/admin/content/changelog?action=create' },
-  { label: 'View Analytics', desc: 'Inspect current traffic and copies.', icon: 'i-heroicons-chart-bar', tone: 'admin-tone-violet', to: '/admin/system/stats' },
-  { label: 'Settings', desc: 'Adjust platform behaviour and links.', icon: 'i-heroicons-cog-6-tooth', tone: 'admin-tone-success', to: '/admin/system/settings' },
+  { label: 'New profile', icon: 'i-heroicons-plus-circle', to: '/admin/strings/profiles?action=create' },
+  { label: 'Changelog', icon: 'i-heroicons-document-plus', to: '/admin/content/changelog?action=create' },
+  { label: 'Analytics', icon: 'i-heroicons-chart-bar', to: '/admin/system/stats' },
 ]
 
 interface Stats {
@@ -326,43 +256,24 @@ const statCards = computed(() => {
   const data = stats.value
   if (!data) return []
 
-  const copySeries = (data.dailyCopies || []).slice(-7).map(day => day.count)
-  const pageViewSeries = (data.dailyPageViews || []).slice(-7).map(day => day.count)
-
   return [
     {
-      label: 'Import Inventory',
+      label: 'Inventory',
       value: data.profiles + data.wowupStrings + data.layouts,
       icon: 'i-heroicons-cube',
       tone: 'brand' as const,
       to: '/admin/strings/profiles',
       trend: null,
-      series: null,
-      seriesColor: '',
-      seriesMax: 0,
-      chips: [
-        { label: 'Profiles', value: data.profiles },
-        { label: 'WowUp', value: data.wowupStrings },
-        { label: 'Layouts', value: data.layouts },
-      ],
-      footer: 'Open content inventory',
+      footer: `${data.profiles} profiles · ${data.wowupStrings} WowUp · ${data.layouts} layouts`,
     },
     {
-      label: 'Published Updates',
+      label: 'Published updates',
       value: data.changelogs,
       icon: 'i-heroicons-document-text',
       tone: 'warning' as const,
       to: '/admin/content/changelog',
       trend: null,
-      series: null,
-      seriesColor: '',
-      seriesMax: 0,
-      chips: [
-        { label: 'Users', value: data.users || 0 },
-        { label: 'Views', value: data.totalPageViews || 0 },
-        { label: 'Visitors', value: data.uniqueVisitors || 0 },
-      ],
-      footer: 'Review release feed',
+      footer: `${data.users || 0} users · ${data.uniqueVisitors || 0} visitors`,
     },
     {
       label: 'Copies 7d',
@@ -371,24 +282,16 @@ const statCards = computed(() => {
       tone: 'success' as const,
       to: '/admin/system/stats',
       trend: data.copyTrend ?? null,
-      series: copySeries,
-      seriesColor: 'bg-emerald-500/75 hover:bg-emerald-500',
-      seriesMax: Math.max(1, ...copySeries, 1),
-      chips: [],
       footer: 'Traffic and copy analytics',
     },
     {
-      label: 'Page Views 7d',
+      label: 'Page views 7d',
       value: data.pageViewsLast7Days || 0,
       icon: 'i-heroicons-chart-bar',
       tone: 'violet' as const,
       to: '/admin/system/stats',
       trend: data.pageViewTrend ?? null,
-      series: pageViewSeries,
-      seriesColor: 'bg-violet-500/75 hover:bg-violet-500',
-      seriesMax: Math.max(1, ...pageViewSeries, 1),
-      chips: [],
-      footer: 'Open analytics detail',
+      footer: `${data.totalPageViews || 0} total page views`,
     },
   ]
 })
@@ -406,11 +309,6 @@ const trendPercent = computed(() => {
 function barHeight(value: number, max: number) {
   if (!value || !max) return 2
   return Math.max(10, (value / max) * 100)
-}
-
-function miniBarHeight(value: number, max: number) {
-  if (!value || !max) return 10
-  return Math.max(18, (value / max) * 100)
 }
 
 function shortDay(dateStr: string) {

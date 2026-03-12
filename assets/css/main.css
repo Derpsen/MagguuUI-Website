@@ -1016,6 +1016,7 @@ html.dark .admin-user-chip__avatar {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .admin-page-header__content {
@@ -1066,25 +1067,6 @@ html.dark .admin-user-chip__avatar {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.75rem;
-}
-
-.admin-toolbar-pageheader {
-  min-width: 0;
-}
-
-.admin-toolbar-pageheader:empty {
-  display: none;
-}
-
-.admin-toolbar-shell .admin-page-header {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  padding-bottom: 0.25rem;
-  border-top: 1px solid var(--admin-border);
-}
-
-.admin-toolbar-shell .admin-page-description {
-  max-width: 56rem;
 }
 
 .admin-page-shell {

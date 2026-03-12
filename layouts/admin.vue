@@ -230,6 +230,8 @@
                 </button>
               </div>
             </div>
+
+            <div id="admin-page-header-slot" class="admin-toolbar-pageheader" />
           </header>
 
           <main class="flex-1">

@@ -1,14 +1,10 @@
-<!--
-  Admin — Homepage Content Editor
-  Edits hero section (title, subtitle) and 3 feature cards
-  Sticky save bar with change tracking, edit/preview tabs, entrance animations
--->
-
 <template>
-  <div class="max-w-5xl mx-auto space-y-6">
-    <AdminStickyBar :show="hasChanges" description="Homepage content has changed and can be published now.">
+  <div class="space-y-6">
+    <AdminStickyBar :show="hasChanges" description="Homepage changes are ready to publish.">
       <template #actions>
-        <UButton @click="save" :loading="saving" icon="i-heroicons-check" size="sm">Save</UButton>
+        <UButton icon="i-heroicons-check" :loading="saving" @click="save">
+          Save
+        </UButton>
       </template>
     </AdminStickyBar>
 
@@ -16,239 +12,271 @@
       icon="i-heroicons-home"
       eyebrow="Content"
       title="Homepage"
-      description="Hero messaging, supported addons and feature blocks for the landing page."
+      description="Keep the landing page concise: hero, section labels and three feature cards."
     >
       <template #actions>
-        <div class="flex items-center gap-2">
-        <!-- Tab Toggle -->
-        <div class="flex items-center gap-0.5 p-0.5 rounded-lg" :class="isDark ? 'bg-white/[0.04]' : 'bg-gray-100'">
-          <button @click="tab = 'edit'" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all"
-            :class="tab === 'edit'
-              ? (isDark ? 'bg-brand-400/15 text-brand-400' : 'bg-white text-brand-600 shadow-sm')
-              : (isDark ? 'text-silver-500 hover:text-white' : 'text-gray-500 hover:text-gray-900')">
-            Edit
-          </button>
-          <button @click="tab = 'preview'" class="px-3 py-1.5 text-xs font-medium rounded-md transition-all"
-            :class="tab === 'preview'
-              ? (isDark ? 'bg-brand-400/15 text-brand-400' : 'bg-white text-brand-600 shadow-sm')
-              : (isDark ? 'text-silver-500 hover:text-white' : 'text-gray-500 hover:text-gray-900')">
-            Preview
-          </button>
-        </div>
-        <UButton @click="save" :loading="saving" icon="i-heroicons-check" size="sm">Save</UButton>
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="admin-segmented">
+            <button
+              class="admin-segmented__button"
+              :class="tab === 'edit' ? 'admin-segmented__button--active' : ''"
+              @click="tab = 'edit'"
+            >
+              Edit
+            </button>
+            <button
+              class="admin-segmented__button"
+              :class="tab === 'preview' ? 'admin-segmented__button--active' : ''"
+              @click="tab = 'preview'"
+            >
+              Preview
+            </button>
+          </div>
+
+          <UButton icon="i-heroicons-check" :loading="saving" @click="save">
+            Save
+          </UButton>
         </div>
       </template>
     </AdminPageHeader>
 
-    <!-- Loading -->
-    <div v-if="loading" class="glass rounded-xl p-12 text-center">
-      <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-brand-400 animate-spin mx-auto" />
-    </div>
-
-    <!-- EDIT MODE -->
-    <div v-else-if="tab === 'edit'" class="space-y-6">
-      <!-- Hero Section -->
-      <div class="glass rounded-xl p-6 admin-fade-in admin-stagger-2">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-            <UIcon name="i-heroicons-sparkles" class="w-4 h-4 text-purple-400" />
-          </div>
-          <h2 class="text-lg font-semibold text-gradient-subtle">Hero Section</h2>
-        </div>
-        <div class="space-y-4">
-          <div class="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium mb-1.5" :class="labelClass">Heading Line 1</label>
-              <UInput v-model="form.hero.title" :disabled="saving" placeholder="Your WoW Interface," />
-              <p class="text-xs mt-1" :class="(form.hero.title?.length || 0) > 40 ? 'text-amber-400' : (isDark ? 'text-silver-600' : 'text-gray-400')">
-                {{ form.hero.title?.length || 0 }}<span class="opacity-50"> / 40</span>
-              </p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1.5" :class="labelClass">Heading Line 2</label>
-              <UInput v-model="form.hero.title2" :disabled="saving" placeholder="perfected." />
-              <p class="text-xs mt-1" :class="(form.hero.title2?.length || 0) > 30 ? 'text-amber-400' : (isDark ? 'text-silver-600' : 'text-gray-400')">
-                {{ form.hero.title2?.length || 0 }}<span class="opacity-50"> / 30</span>
-              </p>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1.5" :class="labelClass">Subtitle</label>
-            <TipTapEditor v-model="form.hero.description" placeholder="Short description..." min-height="80px" />
-          </div>
-        </div>
+    <AdminPanel v-if="loading" title="Homepage" description="Loading homepage content." icon="i-heroicons-home">
+      <div class="py-12 text-center">
+        <UIcon name="i-heroicons-arrow-path" class="mx-auto h-8 w-8 animate-spin text-blue-500" />
       </div>
+    </AdminPanel>
 
-      <!-- Addons Section Heading -->
-      <div class="glass rounded-xl p-6 admin-fade-in admin-stagger-3">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
-            <UIcon name="i-heroicons-puzzle-piece" class="w-4 h-4 text-cyan-400" />
+    <template v-else-if="tab === 'edit'">
+      <AdminPanel title="Hero" description="This is the only part visitors should notice first." icon="i-heroicons-sparkles">
+        <div class="admin-form-grid admin-form-grid--2">
+          <div class="admin-field">
+            <label class="admin-field__label">Heading line 1</label>
+            <UInput v-model="form.hero.title" :disabled="saving" placeholder="Your WoW Interface," />
+            <p class="admin-field__hint" :class="counterClass(form.hero.title?.length || 0, 40)">
+              {{ form.hero.title?.length || 0 }}/40
+            </p>
           </div>
-          <h2 class="text-lg font-semibold text-gradient-subtle">Supported Addons Section</h2>
-        </div>
-        <div class="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1.5" :class="labelClass">Title</label>
-            <UInput v-model="form.addons.title" :disabled="saving" placeholder="Supported Addons" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1.5" :class="labelClass">Subtitle</label>
-            <UInput v-model="form.addons.subtitle" :disabled="saving" placeholder="Profiles for the most popular WoW addons" />
-          </div>
-        </div>
-      </div>
 
-      <!-- Features Section Heading -->
-      <div class="glass rounded-xl p-6 admin-fade-in admin-stagger-4">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-            <UIcon name="i-heroicons-star" class="w-4 h-4 text-amber-400" />
-          </div>
-          <h2 class="text-lg font-semibold text-gradient-subtle">Features Section Heading</h2>
-        </div>
-        <div class="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1.5" :class="labelClass">Title</label>
-            <UInput v-model="form.features_heading.title" :disabled="saving" placeholder="Why MagguuUI?" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1.5" :class="labelClass">Subtitle</label>
-            <UInput v-model="form.features_heading.subtitle" :disabled="saving" placeholder="Everything you need — in one package" />
+          <div class="admin-field">
+            <label class="admin-field__label">Heading line 2</label>
+            <UInput v-model="form.hero.title2" :disabled="saving" placeholder="perfected." />
+            <p class="admin-field__hint" :class="counterClass(form.hero.title2?.length || 0, 30)">
+              {{ form.hero.title2?.length || 0 }}/30
+            </p>
           </div>
         </div>
-      </div>
 
-      <!-- Feature Cards -->
-      <div class="admin-fade-in admin-stagger-5">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
-            <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4 text-green-400" />
-          </div>
-          <h2 class="text-lg font-semibold text-gradient-subtle">Features</h2>
+        <div class="mt-4 admin-field">
+          <label class="admin-field__label">Subtitle</label>
+          <TipTapEditor v-model="form.hero.description" placeholder="Short description..." min-height="96px" />
         </div>
-        <div class="grid lg:grid-cols-3 gap-4">
-          <div v-for="i in 3" :key="i" class="glass rounded-xl p-6 group transition-all hover:scale-[1.005]">
-            <div class="flex items-center gap-3 mb-4">
-              <span class="text-xs font-bold px-2.5 py-1 rounded-lg" :class="isDark ? 'bg-brand-400/10 text-brand-300' : 'bg-blue-50 text-blue-600'">Feature {{ i }}</span>
-            </div>
-            <div class="space-y-3">
-              <div class="grid grid-cols-[80px_1fr] gap-3">
-                <div>
-                  <label class="block text-xs font-medium mb-1" :class="labelClass">Icon</label>
-                  <UInput v-model="form.features[`feature_${i}_emoji`]" :disabled="saving" class="text-center text-xl" maxlength="2" />
-                </div>
-                <div>
-                  <label class="block text-xs font-medium mb-1" :class="labelClass">Title</label>
-                  <UInput v-model="form.features[`feature_${i}_title`]" :disabled="saving" />
-                </div>
-              </div>
+      </AdminPanel>
+
+      <div class="grid gap-6 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+        <AdminPanel title="Section labels" description="Only keep the labels users actually scan." icon="i-heroicons-rectangle-group">
+          <div class="space-y-4">
+            <div class="admin-subpanel space-y-4">
               <div>
-                <label class="block text-xs font-medium mb-1" :class="labelClass">Description</label>
-                <TipTapEditor v-model="form.features[`feature_${i}_text`]" placeholder="Feature description..." min-height="80px" />
+                <p class="admin-row__eyebrow">Addons</p>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Headline for supported addons.</p>
+              </div>
+
+              <div class="admin-field">
+                <label class="admin-field__label">Title</label>
+                <UInput v-model="form.addons.title" :disabled="saving" placeholder="Supported Addons" />
+              </div>
+
+              <div class="admin-field">
+                <label class="admin-field__label">Subtitle</label>
+                <UInput
+                  v-model="form.addons.subtitle"
+                  :disabled="saving"
+                  placeholder="Profiles for the most popular WoW addons"
+                />
+              </div>
+            </div>
+
+            <div class="admin-subpanel space-y-4">
+              <div>
+                <p class="admin-row__eyebrow">Features</p>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Short heading above the three feature cards.</p>
+              </div>
+
+              <div class="admin-field">
+                <label class="admin-field__label">Title</label>
+                <UInput v-model="form.features_heading.title" :disabled="saving" placeholder="Why MagguuUI?" />
+              </div>
+
+              <div class="admin-field">
+                <label class="admin-field__label">Subtitle</label>
+                <UInput
+                  v-model="form.features_heading.subtitle"
+                  :disabled="saving"
+                  placeholder="Everything you need in one package"
+                />
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </AdminPanel>
 
-    <!-- PREVIEW MODE -->
-    <div v-else-if="tab === 'preview'" class="admin-fade-in admin-stagger-2">
-      <div class="glass rounded-xl p-8 lg:p-12">
-        <!-- Hero Preview -->
-        <div class="text-center mb-10">
-          <h1 class="text-4xl lg:text-5xl font-bold mb-3 leading-tight">
-            <span class="text-gradient">{{ form.hero.title || 'Your WoW Interface,' }}</span>
-            <br />
-            <span :class="isDark ? 'text-white' : 'text-gray-900'">{{ form.hero.title2 || 'perfected.' }}</span>
-          </h1>
-          <div class="prose prose-sm max-w-2xl mx-auto mt-4"
-            :class="isDark ? 'prose-invert text-silver-400' : 'text-gray-500'"
-            v-html="form.hero.description || '<em class=\'opacity-50\'>No subtitle set</em>'" />
-        </div>
+        <AdminPanel title="Feature cards" description="Three cards are enough. Keep each one sharp." icon="i-heroicons-squares-2x2">
+          <div class="grid gap-4 xl:grid-cols-3">
+            <div v-for="index in featureIndices" :key="index" class="admin-subpanel space-y-4">
+              <div class="flex items-center justify-between gap-3">
+                <p class="admin-row__eyebrow">Feature {{ index }}</p>
+                <span class="admin-pill">{{ featureEmoji(index) || "?" }}</span>
+              </div>
 
-        <!-- Addons Section Preview -->
-        <div class="text-center mb-8 mt-10 pt-8" :class="isDark ? 'border-t border-brand-400/10' : 'border-t border-gray-200'">
-          <h2 class="text-2xl font-bold mb-2"><span class="text-gradient">{{ form.addons.title || 'Supported Addons' }}</span></h2>
-          <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ form.addons.subtitle || 'Profiles for the most popular WoW addons' }}</p>
-          <div class="flex flex-wrap justify-center gap-2 mt-4">
-            <span v-for="n in ['ElvUI', 'Plater', 'BigWigs', 'Details']" :key="n"
-              class="px-3 py-1.5 rounded-lg text-xs" :class="isDark ? 'bg-white/5 text-silver-400' : 'bg-gray-100 text-gray-500'">{{ n }}</span>
+              <div class="grid gap-4 sm:grid-cols-[72px_minmax(0,1fr)]">
+                <div class="admin-field">
+                  <label class="admin-field__label">Icon</label>
+                  <UInput
+                    v-model="form.features[`feature_${index}_emoji`]"
+                    :disabled="saving"
+                    maxlength="2"
+                    class="text-center text-lg"
+                  />
+                </div>
+
+                <div class="admin-field">
+                  <label class="admin-field__label">Title</label>
+                  <UInput v-model="form.features[`feature_${index}_title`]" :disabled="saving" />
+                </div>
+              </div>
+
+              <div class="admin-field">
+                <label class="admin-field__label">Description</label>
+                <TipTapEditor
+                  v-model="form.features[`feature_${index}_text`]"
+                  placeholder="Feature description..."
+                  min-height="110px"
+                />
+              </div>
+            </div>
           </div>
+        </AdminPanel>
+      </div>
+    </template>
+
+    <AdminPanel
+      v-else
+      title="Preview"
+      description="A compact approximation of what visitors will see."
+      icon="i-heroicons-eye"
+    >
+      <div class="space-y-6">
+        <div class="admin-preview-shell text-center">
+          <p class="admin-row__eyebrow">Hero</p>
+          <h2 class="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+            {{ form.hero.title || "Your WoW Interface," }}
+            <br>
+            <span class="text-slate-500 dark:text-slate-400">{{ form.hero.title2 || "perfected." }}</span>
+          </h2>
+          <div
+            class="prose prose-sm mx-auto mt-4 max-w-2xl dark:prose-invert"
+            v-html="form.hero.description || '<em>No subtitle set</em>'"
+          />
         </div>
 
-        <!-- Features Heading Preview -->
-        <div class="text-center mb-6 mt-8 pt-8" :class="isDark ? 'border-t border-brand-400/10' : 'border-t border-gray-200'">
-          <h2 class="text-2xl font-bold mb-2"><span class="text-gradient">{{ form.features_heading.title || 'Why MagguuUI?' }}</span></h2>
-          <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ form.features_heading.subtitle || 'Everything you need — in one package' }}</p>
-        </div>
-
-        <!-- Features Preview -->
-        <div class="grid md:grid-cols-3 gap-6">
-          <div v-for="i in 3" :key="i"
-            class="text-center p-6 rounded-xl transition-all"
-            :class="isDark ? 'bg-white/[0.02] border border-brand-400/10' : 'bg-gray-50 border border-gray-200'">
-            <div class="text-4xl mb-3">{{ form.features[`feature_${i}_emoji`] || '✨' }}</div>
-            <h3 class="font-semibold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">
-              {{ form.features[`feature_${i}_title`] || `Feature ${i}` }}
+        <div class="grid gap-6 xl:grid-cols-2">
+          <div class="admin-preview-shell">
+            <p class="admin-row__eyebrow">Supported addons</p>
+            <h3 class="mt-3 text-xl font-semibold text-slate-950 dark:text-white">
+              {{ form.addons.title || "Supported Addons" }}
             </h3>
-            <div class="prose prose-sm max-w-none"
-              :class="isDark ? 'prose-invert text-silver-400' : 'text-gray-500'"
-              v-html="form.features[`feature_${i}_text`] || '<em class=\'opacity-50\'>No description</em>'" />
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              {{ form.addons.subtitle || "Profiles for the most popular WoW addons" }}
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span
+                v-for="name in previewAddons"
+                :key="name"
+                class="admin-pill"
+              >
+                {{ name }}
+              </span>
+            </div>
+          </div>
+
+          <div class="admin-preview-shell">
+            <p class="admin-row__eyebrow">Features heading</p>
+            <h3 class="mt-3 text-xl font-semibold text-slate-950 dark:text-white">
+              {{ form.features_heading.title || "Why MagguuUI?" }}
+            </h3>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              {{ form.features_heading.subtitle || "Everything you need in one package" }}
+            </p>
           </div>
         </div>
 
-        <!-- Preview Note -->
-        <div class="mt-8 pt-6 text-center" :class="isDark ? 'border-t border-brand-400/10' : 'border-t border-gray-200'">
-          <p class="text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
-            <UIcon name="i-heroicons-information-circle" class="w-3.5 h-3.5 inline -mt-0.5 mr-1" />
-            This is an approximate preview. The actual page may look slightly different due to additional styles and layout.
-          </p>
+        <div class="grid gap-4 xl:grid-cols-3">
+          <div v-for="index in featureIndices" :key="`preview-${index}`" class="admin-preview-shell text-center">
+            <div class="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-500/10 text-xl text-blue-500 dark:text-blue-300">
+              {{ featureEmoji(index) || "?" }}
+            </div>
+            <h3 class="mt-4 text-base font-semibold text-slate-950 dark:text-white">
+              {{ featureTitle(index) || `Feature ${index}` }}
+            </h3>
+            <div
+              class="prose prose-sm mt-3 max-w-none text-left dark:prose-invert"
+              v-html="featureText(index) || '<em>No description</em>'"
+            />
+          </div>
         </div>
       </div>
-    </div>
-
+    </AdminPanel>
   </div>
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: 'admin' })
+definePageMeta({ layout: "admin" })
+
 const toast = useToast()
 const { apiFetch } = useApi()
-const isDark = useIsDark()
-const labelClass = computed(() => isDark.value ? 'text-silver-300' : 'text-gray-700')
 
 const loading = ref(true)
 const saving = ref(false)
-const tab = ref<'edit' | 'preview'>('edit')
+const tab = ref<"edit" | "preview">("edit")
+
+const previewAddons = ["ElvUI", "Plater", "BigWigs", "Details"]
+const featureIndices = [1, 2, 3] as const
 
 const form = reactive({
   hero: {
-    title: 'Your WoW Interface,',
-    title2: 'perfected.',
-    description: 'High-quality import strings for cooldowns, addon profiles, and more. Simply copy and paste into WoW.',
+    title: "Your WoW Interface,",
+    title2: "perfected.",
+    description: "High-quality import strings for cooldowns, addon profiles, and more. Simply copy and paste into WoW.",
   } as Record<string, string>,
   addons: {
-    title: 'Supported Addons',
-    subtitle: 'Profiles for the most popular WoW addons',
+    title: "Supported Addons",
+    subtitle: "Profiles for the most popular WoW addons",
   } as Record<string, string>,
   features_heading: {
-    title: 'Why MagguuUI?',
-    subtitle: 'Everything you need — in one package',
+    title: "Why MagguuUI?",
+    subtitle: "Everything you need in one package",
   } as Record<string, string>,
   features: {
-    feature_1_emoji: '⚡', feature_1_title: 'Pre-configured Profiles', feature_1_text: 'Pre-configured profiles for ElvUI, Plater, BigWigs, Details, and more. One click — done.',
-    feature_2_emoji: '🎯', feature_2_title: 'Class Layouts', feature_2_text: 'Optimized cooldown layouts for every class and specialization. Ready to use immediately.',
-    feature_3_emoji: '🔄', feature_3_title: 'Always Up-to-Date', feature_3_text: 'Regular updates with the latest changes and improvements for every addon.',
+    feature_1_emoji: "A",
+    feature_1_title: "Pre-configured Profiles",
+    feature_1_text: "Pre-configured profiles for ElvUI, Plater, BigWigs, Details, and more.",
+    feature_2_emoji: "B",
+    feature_2_title: "Class Layouts",
+    feature_2_text: "Optimized cooldown layouts for every class and specialization.",
+    feature_3_emoji: "C",
+    feature_3_title: "Always Up-to-Date",
+    feature_3_text: "Regular updates with the latest changes and improvements for every addon.",
   } as Record<string, string>,
 })
 
-// Change tracking
-const originalData = ref('')
+const originalData = ref("")
 
 function serializeForm(): string {
-  return JSON.stringify({ hero: { ...form.hero }, addons: { ...form.addons }, features_heading: { ...form.features_heading }, features: { ...form.features } })
+  return JSON.stringify({
+    hero: { ...form.hero },
+    addons: { ...form.addons },
+    features_heading: { ...form.features_heading },
+    features: { ...form.features },
+  })
 }
 
 const hasChanges = computed(() => {
@@ -260,36 +288,72 @@ function snapshotOriginal() {
   originalData.value = serializeForm()
 }
 
+function counterClass(value: number, max: number) {
+  return value > max ? "text-amber-500" : "text-slate-400 dark:text-slate-500"
+}
+
+function featureEmoji(index: typeof featureIndices[number]) {
+  return form.features[`feature_${index}_emoji`]
+}
+
+function featureTitle(index: typeof featureIndices[number]) {
+  return form.features[`feature_${index}_title`]
+}
+
+function featureText(index: typeof featureIndices[number]) {
+  return form.features[`feature_${index}_text`]
+}
+
 async function load() {
   loading.value = true
+
   try {
-    const data = await apiFetch<Record<string, Record<string, Record<string, string>>>>('/api/v1/admin/content/home')
-    // Load 'en' first, fallback to 'de' for existing content
-    const src = data?.en || data?.de
-    if (src?.hero) Object.assign(form.hero, src.hero)
-    if (src?.addons) Object.assign(form.addons, src.addons)
-    if (src?.features_heading) Object.assign(form.features_heading, src.features_heading)
-    if (src?.features) Object.assign(form.features, src.features)
-  } catch {}
-  finally {
+    const data = await apiFetch<Record<string, Record<string, Record<string, string>>>>("/api/v1/admin/content/home")
+    const source = data?.en || data?.de
+
+    if (source?.hero) Object.assign(form.hero, source.hero)
+    if (source?.addons) Object.assign(form.addons, source.addons)
+    if (source?.features_heading) Object.assign(form.features_heading, source.features_heading)
+    if (source?.features) Object.assign(form.features, source.features)
+  } catch {
+    // Keep defaults.
+  } finally {
     loading.value = false
     nextTick(() => snapshotOriginal())
   }
 }
-onMounted(load)
 
 async function save() {
   saving.value = true
-  const items: any[] = []
-  for (const [k, v] of Object.entries(form.hero)) items.push({ page: 'home', section: 'hero', key: k, value: v, locale: 'en' })
-  for (const [k, v] of Object.entries(form.addons)) items.push({ page: 'home', section: 'addons', key: k, value: v, locale: 'en' })
-  for (const [k, v] of Object.entries(form.features_heading)) items.push({ page: 'home', section: 'features_heading', key: k, value: v, locale: 'en' })
-  for (const [k, v] of Object.entries(form.features)) items.push({ page: 'home', section: 'features', key: k, value: v, locale: 'en' })
+
+  const items: Array<{ page: string; section: string; key: string; value: string; locale: string }> = []
+
+  for (const [key, value] of Object.entries(form.hero)) {
+    items.push({ page: "home", section: "hero", key, value, locale: "en" })
+  }
+
+  for (const [key, value] of Object.entries(form.addons)) {
+    items.push({ page: "home", section: "addons", key, value, locale: "en" })
+  }
+
+  for (const [key, value] of Object.entries(form.features_heading)) {
+    items.push({ page: "home", section: "features_heading", key, value, locale: "en" })
+  }
+
+  for (const [key, value] of Object.entries(form.features)) {
+    items.push({ page: "home", section: "features", key, value, locale: "en" })
+  }
+
   try {
-    await apiFetch('/api/v1/admin/content/bulk', { method: 'POST', body: { items } })
-    toast.add({ title: 'Homepage saved', color: 'success' })
+    await apiFetch("/api/v1/admin/content/bulk", { method: "POST", body: { items } })
+    toast.add({ title: "Homepage saved", color: "success" })
     nextTick(() => snapshotOriginal())
-  } catch { toast.add({ title: 'Error', color: 'error' }) }
-  finally { saving.value = false }
+  } catch {
+    toast.add({ title: "Error", color: "error" })
+  } finally {
+    saving.value = false
+  }
 }
+
+onMounted(load)
 </script>

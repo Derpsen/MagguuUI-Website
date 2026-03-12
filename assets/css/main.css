@@ -1077,13 +1077,18 @@ html.dark .admin-user-chip__avatar {
 }
 
 .admin-toolbar-shell .admin-page-header {
-  margin-top: 0.85rem;
-  padding-top: 0.9rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 0.25rem;
   border-top: 1px solid var(--admin-border);
 }
 
 .admin-toolbar-shell .admin-page-description {
   max-width: 56rem;
+}
+
+.admin-page-shell {
+  min-width: 0;
 }
 
 .admin-panel {

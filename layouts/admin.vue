@@ -119,7 +119,7 @@
 
       <div class="admin-main-shell transition-all duration-300" :class="collapsed ? 'lg:pl-[4rem]' : 'lg:pl-[12rem]'">
         <div class="mx-auto flex min-h-screen w-full max-w-[1680px] flex-col px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pb-8">
-          <header class="admin-toolbar-shell sticky top-3 z-20 mb-4 rounded-[1rem]">
+          <header class="admin-toolbar-shell sticky top-3 z-20 mb-5 rounded-[1rem]">
             <div class="flex items-center justify-between gap-3">
               <button class="admin-icon-button lg:hidden" @click="sidebarOpen = !sidebarOpen">
                 <UIcon name="i-heroicons-bars-3" class="h-5 w-5" />
@@ -235,7 +235,9 @@
           </header>
 
           <main class="flex-1">
-            <slot />
+            <div :key="route.fullPath" class="admin-page-shell">
+              <slot />
+            </div>
           </main>
         </div>
       </div>

@@ -1,5 +1,22 @@
 <template>
-  <div class="space-y-5">
+  <div class="space-y-6">
+    <AdminPageHeader
+      icon="i-heroicons-squares-2x2"
+      eyebrow="Overview"
+      title="Dashboard"
+      description="One primary action, the current signals and the latest activity."
+    >
+      <template #meta>
+        <span v-if="stats" class="admin-pill">Auto refresh {{ nextRefresh }}s</span>
+      </template>
+
+      <template #actions>
+        <UButton size="sm" color="neutral" variant="ghost" icon="i-heroicons-arrow-path" :loading="refreshing" @click="refreshAll">
+          Refresh
+        </UButton>
+      </template>
+    </AdminPageHeader>
+
     <div v-if="!stats" class="space-y-5">
       <AdminPanel title="Focus" icon="i-heroicons-bolt">
         <div class="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
@@ -45,34 +62,19 @@
     </div>
 
     <template v-else>
-      <AdminPanel
-        title="Focus"
-        icon="i-heroicons-bolt"
-      >
-        <template #actions>
-          <UButton size="sm" color="neutral" variant="ghost" icon="i-heroicons-arrow-path" :loading="refreshing" @click="refreshAll">
-            Refresh
-          </UButton>
-        </template>
-
+      <AdminPanel title="Focus" icon="i-heroicons-bolt">
         <div class="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
           <div>
             <p class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-[2.25rem]">
               Keep the next release moving.
             </p>
             <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400">
-              This dashboard is intentionally reduced: one primary action, a short signal stack, and the latest activity.
+              This dashboard stays intentionally reduced: one primary action, a short signal stack and the latest changes.
             </p>
 
             <div class="mt-6 flex flex-wrap items-center gap-3">
               <UButton to="/admin/strings/profiles?action=create" icon="i-heroicons-plus-circle">
                 New profile
-              </UButton>
-              <UButton to="/admin/content/changelog?action=create" size="sm" color="neutral" variant="ghost">
-                Changelog
-              </UButton>
-              <UButton to="/admin/system/stats" size="sm" color="neutral" variant="ghost">
-                Analytics
               </UButton>
             </div>
 
@@ -372,7 +374,7 @@ function typeLabel(type: string) {
     profile: 'Addon Profile',
     wowup: 'WowUp String',
     layout: 'Character Layout',
-    changelog: 'Changelog',
+    changelog: 'Update',
     content: 'Content',
   }
   return labels[type] || type

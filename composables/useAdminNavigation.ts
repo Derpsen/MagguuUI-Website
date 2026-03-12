@@ -35,7 +35,7 @@ const adminSections: AdminNavSection[] = [
       { to: '/admin/content/home', label: 'Home', icon: 'i-heroicons-home-modern', description: 'Landing page copy, features and hero messaging.' },
       { to: '/admin/content/guide', label: 'Guide', icon: 'i-heroicons-book-open', description: 'Onboarding, install steps and walkthrough content.' },
       { to: '/admin/content/faq', label: 'FAQ', icon: 'i-heroicons-question-mark-circle', description: 'Support answers and recurring user questions.' },
-      { to: '/admin/content/changelog', label: 'Changelog', icon: 'i-heroicons-document-text', description: 'Release notes and public update history.' },
+      { to: '/admin/content/changelog', label: 'Updates', icon: 'i-heroicons-document-text', description: 'Release notes and public update history.' },
     ],
   },
   {
@@ -53,7 +53,7 @@ const adminSections: AdminNavSection[] = [
       { to: '/admin/system/stats', label: 'Analytics', icon: 'i-heroicons-chart-bar', description: 'Traffic, copies and API usage analytics.' },
       { to: '/admin/system/users', label: 'Users', icon: 'i-heroicons-users', description: 'Accounts, passkeys, sessions and access controls.' },
       { to: '/admin/system/github', label: 'GitHub', icon: 'i-simple-icons-github', description: 'Repository sync, imports, exports and webhooks.' },
-      { to: '/admin/system/api-keys', label: 'API Keys', icon: 'i-heroicons-key', description: 'Secure integration keys and access management.' },
+      { to: '/admin/system/api-keys', label: 'API', icon: 'i-heroicons-key', description: 'Secure integration keys and access management.' },
       { to: '/admin/system/activity', label: 'Activity', icon: 'i-heroicons-clock', description: 'Audit trail of administrative activity.' },
       { to: '/admin/system/fields', label: 'Fields', icon: 'i-heroicons-adjustments-horizontal', description: 'Configurable fields and metadata.' },
     ],
@@ -97,7 +97,7 @@ const dockLinks: AdminNavLink[] = [
 
 const commandActions: AdminCommandItem[] = [
   { group: 'Actions', to: '/admin/strings/profiles?action=create', label: 'New Addon Profile', icon: 'i-heroicons-plus', description: 'Create a new addon import string.' },
-  { group: 'Actions', to: '/admin/content/changelog?action=create', label: 'New Changelog Entry', icon: 'i-heroicons-plus', description: 'Document the latest release.' },
+  { group: 'Actions', to: '/admin/content/changelog?action=create', label: 'New Update', icon: 'i-heroicons-plus', description: 'Document the latest release.' },
   { group: 'Actions', to: '/admin/strings/wowup?action=create', label: 'New WowUp String', icon: 'i-heroicons-plus', description: 'Add a new WowUp package string.' },
   { group: 'Other', to: '/', label: 'View Website', icon: 'i-heroicons-arrow-top-right-on-square', description: 'Open the public website.' },
 ]

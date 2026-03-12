@@ -2,13 +2,13 @@
   <UApp>
     <div class="admin-shell">
       <aside
-        class="fixed inset-y-0 left-0 z-40 px-3 py-3 transition-all duration-300"
+        class="fixed inset-y-0 left-0 z-40 px-2.5 py-2.5 transition-all duration-300"
         :class="[
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-          collapsed ? 'w-[4.5rem]' : 'w-[13rem]',
+          collapsed ? 'w-[4rem]' : 'w-[12rem]',
         ]"
       >
-        <div class="admin-sidebar-shell flex h-full flex-col overflow-hidden rounded-[1.35rem] p-3">
+        <div class="admin-sidebar-shell flex h-full flex-col overflow-hidden rounded-[1.2rem] p-2.5">
           <div class="admin-sidebar-brand">
             <NuxtLink to="/admin" class="flex min-w-0 items-center gap-3">
               <div class="admin-workspace-card__logo">
@@ -29,7 +29,7 @@
             </button>
           </div>
 
-          <nav class="scrollbar-hide mt-5 flex-1 overflow-y-auto px-1 pb-3">
+          <nav class="scrollbar-hide mt-4 flex-1 overflow-y-auto px-0.5 pb-2">
             <NuxtLink
               to="/admin"
               class="admin-link"
@@ -42,8 +42,8 @@
               <span v-if="!collapsed" class="truncate">Dashboard</span>
             </NuxtLink>
 
-            <div v-for="section in sections" :key="section.title" class="mt-5">
-              <div v-if="collapsed" class="mx-auto my-4 h-px w-8 bg-slate-200 dark:bg-white/10" />
+            <div v-for="section in sections" :key="section.title" class="mt-4">
+              <div v-if="collapsed" class="mx-auto my-3 h-px w-6 bg-slate-200 dark:bg-white/10" />
 
               <div
                 v-else
@@ -83,42 +83,29 @@
           </nav>
 
           <div class="admin-sidebar-footer">
-            <div v-if="!collapsed" class="admin-sidebar-user">
-              <span class="admin-sidebar-user__avatar">{{ userInitial }}</span>
-
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-semibold text-slate-950 dark:text-white">{{ user?.username || 'Admin' }}</p>
+            <div class="flex items-center gap-2" :class="collapsed ? 'flex-col' : ''">
+              <div class="admin-sidebar-user min-w-0" :class="collapsed ? 'justify-center' : 'flex-1'">
+                <span class="admin-sidebar-user__avatar">{{ userInitial }}</span>
+                <p v-if="!collapsed" class="truncate text-sm font-medium text-slate-950 dark:text-white">{{ user?.username || 'Admin' }}</p>
               </div>
-            </div>
 
-            <div class="mt-3 grid gap-2" :class="collapsed ? 'grid-cols-1' : 'grid-cols-2'">
-              <button
-                class="admin-icon-button"
-                :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-                @click="toggleTheme"
-              >
-                <UIcon :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'" class="h-4.5 w-4.5" />
-              </button>
+              <div class="grid gap-2" :class="collapsed ? 'w-full grid-cols-1' : 'grid-cols-2'">
+                <button
+                  class="admin-icon-button"
+                  :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+                  @click="toggleTheme"
+                >
+                  <UIcon :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'" class="h-4.5 w-4.5" />
+                </button>
 
-              <UButton
-                v-if="!collapsed"
-                icon="i-heroicons-arrow-right-on-rectangle"
-                color="neutral"
-                variant="subtle"
-                class="justify-center"
-                @click="handleLogout"
-              >
-                Logout
-              </UButton>
-
-              <button
-                v-else
-                class="admin-icon-button"
-                title="Logout"
-                @click="handleLogout"
-              >
-                <UIcon name="i-heroicons-arrow-right-on-rectangle" class="h-4.5 w-4.5" />
-              </button>
+                <button
+                  class="admin-icon-button"
+                  title="Logout"
+                  @click="handleLogout"
+                >
+                  <UIcon name="i-heroicons-arrow-right-on-rectangle" class="h-4.5 w-4.5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -130,26 +117,15 @@
         @click="sidebarOpen = false"
       />
 
-      <div class="admin-main-shell transition-all duration-300" :class="collapsed ? 'lg:pl-[4.5rem]' : 'lg:pl-[13rem]'">
+      <div class="admin-main-shell transition-all duration-300" :class="collapsed ? 'lg:pl-[4rem]' : 'lg:pl-[12rem]'">
         <div class="mx-auto flex min-h-screen w-full max-w-[1680px] flex-col px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pb-8">
-          <header class="admin-toolbar-shell sticky top-3 z-20 mb-5 rounded-[1.25rem]">
-            <div class="flex items-center gap-3">
-              <div class="flex min-w-0 flex-1 items-center gap-3">
-                <button class="admin-icon-button lg:hidden" @click="sidebarOpen = !sidebarOpen">
-                  <UIcon name="i-heroicons-bars-3" class="h-5 w-5" />
-                </button>
+          <header class="admin-toolbar-shell sticky top-3 z-20 mb-4 rounded-[1rem]">
+            <div class="flex items-center justify-between gap-3">
+              <button class="admin-icon-button lg:hidden" @click="sidebarOpen = !sidebarOpen">
+                <UIcon name="i-heroicons-bars-3" class="h-5 w-5" />
+              </button>
 
-                <div class="min-w-0">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span class="admin-context-chip">{{ currentContext.section }}</span>
-                    <h1 class="truncate text-sm font-semibold text-slate-950 sm:text-base dark:text-white">
-                      {{ currentContext.label }}
-                    </h1>
-                  </div>
-                </div>
-              </div>
-
-              <div class="flex items-center gap-2">
+              <div class="ml-auto flex items-center gap-2">
                 <button class="admin-icon-button md:hidden" @click="cmdPalette?.open()">
                   <UIcon name="i-heroicons-magnifying-glass" class="h-4.5 w-4.5" />
                 </button>
@@ -287,7 +263,7 @@ const colorMode = useColorMode()
 const { user, logout } = useAuth()
 const isDark = useIsDark()
 const { notifications: notifItems, count: notifCount, refresh: notifRefresh, dismiss: notifDismiss } = useAdminNotifications()
-const { sections, currentContext, dockLinks } = useAdminNavigation()
+const { sections, dockLinks } = useAdminNavigation()
 
 const sidebarOpen = ref(false)
 const collapsed = ref(false)

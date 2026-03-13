@@ -35,6 +35,7 @@ const ADDON_MAP: AddonConfig[] = [
   { addon: 'BigWigs', file: 'Data/AddOns/BigWigs.lua', style: 'simple', varName: 'bigwigs' },
   { addon: 'Details', file: 'Data/AddOns/Details.lua', style: 'simple', varName: 'details' },
   { addon: 'BetterCooldownManager', file: 'Data/AddOns/BetterCooldownManager.lua', style: 'simple', varName: 'bettercooldownmanager' },
+  { addon: 'Ayije_CDM', file: 'Data/AddOns/Ayije_CDM.lua', style: 'simple', varName: 'ayije_cdm' },
   { addon: 'Blizzard_EditMode', file: 'Data/AddOns/Blizzard_EditMode.lua', style: 'simple', varName: 'blizzardeditmode' },
   { addon: 'WindTools', file: 'Data/AddOns/WindTools.lua', style: 'simple', varName: 'windtools' },
 ]

@@ -173,7 +173,7 @@ export default defineEventHandler(async (event) => {
               // Addon profile Lua files — detect simple vs table style
               const ADDON_SIMPLE: Record<string, string> = {
                 'Plater.lua': 'plater', 'BigWigs.lua': 'bigwigs', 'Details.lua': 'details',
-                'BetterCooldownManager.lua': 'bettercooldownmanager', 'Blizzard_EditMode.lua': 'blizzardeditmode',
+                'BetterCooldownManager.lua': 'bettercooldownmanager', 'Ayije_CDM.lua': 'ayije_cdm', 'Blizzard_EditMode.lua': 'blizzardeditmode',
                 'WindTools.lua': 'windtools',
               }
               const addonName = filename.replace('.lua', '')

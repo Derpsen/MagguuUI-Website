@@ -119,8 +119,8 @@
 
       <div class="admin-main-shell transition-all duration-300" :class="collapsed ? 'lg:pl-[4rem]' : 'lg:pl-[12rem]'">
         <div class="mx-auto flex min-h-screen w-full max-w-[1680px] flex-col px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pb-8">
-          <header class="admin-toolbar-shell sticky top-3 z-20 mb-4 rounded-[1rem]">
-            <div class="flex items-center justify-between gap-3">
+          <header class="admin-toolbar-shell sticky top-3 z-20 mb-5 rounded-[1.15rem]">
+            <div class="admin-toolbar-shell__row">
               <button class="admin-icon-button lg:hidden" @click="sidebarOpen = !sidebarOpen">
                 <UIcon name="i-heroicons-bars-3" class="h-5 w-5" />
               </button>
@@ -231,6 +231,19 @@
               </div>
             </div>
 
+            <div class="admin-toolbar-context">
+              <div class="admin-toolbar-context__main">
+                <div class="admin-toolbar-context__icon">
+                  <UIcon :name="currentContext.icon" class="h-5 w-5" />
+                </div>
+
+                <div class="min-w-0">
+                  <p class="admin-page-eyebrow">{{ currentContext.section }}</p>
+                  <h1 class="admin-page-title">{{ pageHeading }}</h1>
+                  <p class="admin-page-description">{{ currentContext.hint }}</p>
+                </div>
+              </div>
+            </div>
           </header>
 
           <main class="flex-1">
@@ -266,7 +279,7 @@ const colorMode = useColorMode()
 const { user, logout } = useAuth()
 const isDark = useIsDark()
 const { notifications: notifItems, count: notifCount, refresh: notifRefresh, dismiss: notifDismiss } = useAdminNotifications()
-const { sections, dockLinks } = useAdminNavigation()
+const { sections, dockLinks, currentContext } = useAdminNavigation()
 
 const sidebarOpen = ref(false)
 const collapsed = ref(false)
@@ -279,6 +292,7 @@ const notifPanelRef = ref<HTMLElement | null>(null)
 
 const searchShortcut = computed(() => isMac.value ? 'Cmd K' : 'Ctrl K')
 const userInitial = computed(() => (user.value?.username || 'A').charAt(0).toUpperCase())
+const pageHeading = computed(() => currentContext.value.heading || currentContext.value.label)
 const activeSection = computed(() =>
   sections.find(section => section.links.some(link => isRouteActive(link.to)))?.title ?? sections[0]?.title ?? '',
 )

@@ -18,31 +18,32 @@
     </AdminPageHeader>
 
     <div v-if="!stats" class="space-y-5">
-      <AdminPanel title="Focus" icon="i-heroicons-bolt">
-        <div class="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
-          <div class="space-y-4">
-            <div class="h-9 w-72 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-            <div class="h-4 w-full max-w-2xl rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-            <div class="h-4 w-3/4 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-            <div class="flex gap-2 pt-2">
-              <div class="h-10 w-32 rounded-xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-              <div class="h-10 w-28 rounded-xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-            </div>
-          </div>
-
-          <div class="space-y-3">
-            <div v-for="i in 3" :key="`tile-${i}`" class="admin-kpi-tile">
-              <div class="space-y-2">
-                <div class="h-3 w-20 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-                <div class="h-7 w-16 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-                <div class="h-3 w-36 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-              </div>
-            </div>
-          </div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div v-for="item in 4" :key="`metric-${item}`" class="admin-metric-card">
+          <div class="h-24 rounded-2xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
         </div>
-      </AdminPanel>
+      </div>
 
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+      <div class="grid gap-5 xl:grid-cols-[minmax(0,0.88fr)_minmax(320px,0.72fr)]">
+        <AdminPanel title="Primary action" description="Loading release focus." icon="i-heroicons-bolt">
+          <div class="space-y-4">
+            <div class="h-8 w-56 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+            <div class="h-4 w-full max-w-xl rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+            <div class="h-10 w-32 rounded-xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+          </div>
+        </AdminPanel>
+
+        <AdminPanel title="Ops status" description="Loading system signals." icon="i-heroicons-shield-check">
+          <div class="space-y-2">
+            <div v-for="i in 3" :key="`signal-${i}`" class="admin-status-row">
+              <div class="h-3 w-20 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+              <div class="h-3 w-24 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+            </div>
+          </div>
+        </AdminPanel>
+      </div>
+
+      <div class="grid gap-5 xl:grid-cols-[minmax(0,1.12fr)_minmax(320px,0.88fr)]">
         <AdminPanel title="Recent activity" description="Loading the latest changes." icon="i-heroicons-clock">
           <div class="space-y-2">
             <div v-for="i in 4" :key="`activity-${i}`" class="admin-activity-row">
@@ -62,64 +63,68 @@
     </div>
 
     <template v-else>
-      <AdminPanel title="Focus" icon="i-heroicons-bolt">
-        <div class="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
-          <div>
-            <p class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-[2.25rem]">
-              Keep the next release moving.
-            </p>
-            <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400">
-              This dashboard stays intentionally reduced: one primary action, a short signal stack and the latest changes.
-            </p>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <AdminMetricCard
+          v-for="metric in overviewCards"
+          :key="metric.label"
+          :label="metric.label"
+          :value="metric.value"
+          :icon="metric.icon"
+          :hint="metric.hint"
+          :trend="metric.trend"
+          :tone="metric.tone"
+          :to="metric.to"
+        />
+      </div>
 
-            <div class="mt-6 flex flex-wrap items-center gap-3">
+      <div class="grid gap-5 xl:grid-cols-[minmax(0,0.88fr)_minmax(320px,0.72fr)]">
+        <AdminPanel title="Primary action" description="Start the next release from one clean record." icon="i-heroicons-bolt">
+          <div class="space-y-6">
+            <div class="max-w-xl">
+              <p class="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
+                Create the next profile.
+              </p>
+              <p class="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">
+                Profiles are still the cleanest starting point for a release. Add the profile first, then publish the matching update once it is ready.
+              </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
               <UButton to="/admin/strings/profiles?action=create" icon="i-heroicons-plus-circle">
                 New profile
               </UButton>
             </div>
 
-            <div class="admin-status-list mt-6">
-              <div
-                v-for="signal in statusSignals"
-                :key="signal.label"
-                class="admin-status-row"
-                :class="signal.tone === 'warning' ? 'admin-status-row--attention' : ''"
-              >
-                <span class="admin-status-row__label">{{ signal.label }}</span>
-                <span class="admin-status-row__value">{{ signal.value }}</span>
+            <div class="grid gap-3 sm:grid-cols-3">
+              <div v-for="step in releaseSteps" :key="step.title" class="admin-subpanel">
+                <p class="admin-row__eyebrow">{{ step.eyebrow }}</p>
+                <p class="mt-3 text-sm font-semibold text-slate-950 dark:text-white">{{ step.title }}</p>
+                <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ step.description }}</p>
               </div>
             </div>
           </div>
+        </AdminPanel>
 
-          <div class="space-y-3">
-            <NuxtLink
-              v-for="tile in summaryTiles"
-              :key="tile.label"
-              :to="tile.to"
-              class="admin-kpi-tile"
+        <AdminPanel title="Ops status" description="Short signal stack for version, alerts and refresh cadence." icon="i-heroicons-shield-check">
+          <div class="admin-status-list">
+            <div
+              v-for="signal in statusSignals"
+              :key="signal.label"
+              class="admin-status-row"
+              :class="signal.tone === 'warning' ? 'admin-status-row--attention' : ''"
             >
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <p class="admin-kpi-tile__label">{{ tile.label }}</p>
-                  <p class="admin-kpi-tile__value">{{ tile.value }}</p>
-                </div>
-
-                <div class="admin-kpi-tile__icon" :class="tile.tone">
-                  <UIcon :name="tile.icon" class="h-4 w-4" />
-                </div>
-              </div>
-
-              <p class="admin-kpi-tile__note">{{ tile.note }}</p>
-            </NuxtLink>
+              <span class="admin-status-row__label">{{ signal.label }}</span>
+              <span class="admin-status-row__value">{{ signal.value }}</span>
+            </div>
           </div>
-        </div>
-      </AdminPanel>
+        </AdminPanel>
+      </div>
 
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+      <div class="grid gap-5 xl:grid-cols-[minmax(0,1.12fr)_minmax(320px,0.88fr)]">
         <AdminPanel title="Recent activity" description="Latest changes across content and data." icon="i-heroicons-clock">
           <div v-if="stats.recentActivity?.length" class="space-y-2">
             <div
-              v-for="item in stats.recentActivity.slice(0, 5)"
+              v-for="item in stats.recentActivity.slice(0, 6)"
               :key="item.id"
               class="admin-activity-row"
             >
@@ -242,7 +247,7 @@ interface Stats {
 const stats = ref<Stats | null>(null)
 const refreshing = ref(false)
 
-const summaryTiles = computed(() => {
+const overviewCards = computed(() => {
   const data = stats.value
   if (!data) return []
 
@@ -251,28 +256,58 @@ const summaryTiles = computed(() => {
       label: 'Inventory',
       value: data.profiles + data.wowupStrings + data.layouts,
       icon: 'i-heroicons-cube',
-      tone: 'admin-tone-brand',
+      tone: 'brand' as const,
       to: '/admin/strings/profiles',
-      note: `${data.profiles} profiles · ${data.wowupStrings} WowUp · ${data.layouts} layouts`,
+      hint: `${data.profiles} profiles · ${data.wowupStrings} WowUp · ${data.layouts} layouts`,
+      trend: null,
     },
     {
       label: 'Published',
       value: data.changelogs,
       icon: 'i-heroicons-document-text',
-      tone: 'admin-tone-warning',
+      tone: 'warning' as const,
       to: '/admin/content/changelog',
-      note: `${data.changelogs} public updates`,
+      hint: `${data.changelogs} public updates`,
+      trend: null,
     },
     {
       label: 'Copies 7d',
       value: data.copiesLast7Days,
       icon: 'i-heroicons-bolt',
-      tone: 'admin-tone-success',
+      tone: 'success' as const,
       to: '/admin/system/stats',
-      note: `${data.pageViewsLast7Days || 0} page views`,
+      hint: `${data.pageViewsLast7Days || 0} page views`,
+      trend: data.copyTrend ?? null,
+    },
+    {
+      label: 'Views 7d',
+      value: data.pageViewsLast7Days || 0,
+      icon: 'i-heroicons-eye',
+      tone: 'neutral' as const,
+      to: '/admin/system/stats',
+      hint: `${data.uniqueVisitors || 0} unique visitors`,
+      trend: data.pageViewTrend ?? null,
     },
   ]
 })
+
+const releaseSteps = [
+  {
+    eyebrow: 'Step 1',
+    title: 'Draft profile',
+    description: 'Create the profile record before touching the public update log.',
+  },
+  {
+    eyebrow: 'Step 2',
+    title: 'Check signals',
+    description: 'Review version state, alerts and recent traffic before publishing.',
+  },
+  {
+    eyebrow: 'Step 3',
+    title: 'Ship update',
+    description: 'Publish the changelog only once the release data is complete.',
+  },
+]
 
 const last7Copies = computed(() => (stats.value?.dailyCopies || []).slice(-7))
 const prev7Copies = computed(() => (stats.value?.dailyCopies || []).slice(-14, -7))

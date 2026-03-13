@@ -951,7 +951,46 @@ html.dark .admin-shell {
 }
 
 .admin-toolbar-shell {
-  padding: 0.55rem 0.75rem;
+  overflow: hidden;
+  padding: 0.75rem 0.9rem 1rem;
+}
+
+.admin-toolbar-shell__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.admin-toolbar-context {
+  margin-top: 0.9rem;
+  border-top: 1px solid var(--admin-border);
+  padding-top: 0.95rem;
+}
+
+.admin-toolbar-context__main {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.95rem;
+  min-width: 0;
+}
+
+.admin-toolbar-context__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex-shrink: 0;
+  border-radius: 1rem;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  color: var(--admin-accent);
+}
+
+html.dark .admin-toolbar-context__icon {
+  background: rgba(37, 99, 235, 0.16);
+  color: #93c5fd;
 }
 
 .admin-workspace-card,
@@ -1013,17 +1052,21 @@ html.dark .admin-user-chip__avatar {
 
 .admin-page-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-top: -0.15rem;
 }
 
 .admin-page-header__content {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.75rem;
   min-width: 0;
+}
+
+.admin-page-header--actions-only {
+  justify-content: flex-end;
 }
 
 .admin-page-eyebrow,
@@ -1037,8 +1080,8 @@ html.dark .admin-user-chip__avatar {
 }
 
 .admin-page-title {
-  font-size: clamp(1.4rem, 1.1rem + 0.9vw, 1.9rem);
-  line-height: 1.05;
+  font-size: clamp(1.7rem, 1.22rem + 1vw, 2.35rem);
+  line-height: 1;
   font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--admin-text);
@@ -1054,8 +1097,15 @@ html.dark .admin-user-chip__avatar {
   color: var(--admin-muted);
 }
 
+.admin-toolbar-context .admin-page-title {
+  margin-top: 0.18rem;
+}
+
+.admin-toolbar-context .admin-page-description {
+  max-width: 56rem;
+}
+
 .admin-page-meta {
-  margin-top: 0.7rem;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1065,6 +1115,7 @@ html.dark .admin-user-chip__avatar {
 .admin-page-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-end;
   gap: 0.75rem;
 }
@@ -1975,6 +2026,25 @@ html.dark .admin-tone-neutral { color: #cbd5e1; }
 }
 
 @media (max-width: 767px) {
+  .admin-toolbar-shell {
+    padding: 0.7rem 0.8rem 0.85rem;
+  }
+
+  .admin-toolbar-context {
+    margin-top: 0.75rem;
+    padding-top: 0.8rem;
+  }
+
+  .admin-toolbar-context__main {
+    gap: 0.75rem;
+  }
+
+  .admin-toolbar-context__icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.85rem;
+  }
+
   .admin-page-header,
   .admin-savebar__content,
   .admin-command__footer {

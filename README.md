@@ -120,7 +120,7 @@ Do not commit `.env`, runtime database files, or uploads.
 
 This project is deployed as a Dockerized Nuxt app on Unraid.
 
-Current deploy flow uses a Git checkout plus Docker rebuild.
+Current deploy flow uses a Git checkout plus a Docker rebuild script that skips rebuilding when the checked-out commit is already packaged in the local image.
 
 Build and runtime files:
 
@@ -141,6 +141,9 @@ Notes:
 - Git access on the server must be configured via PAT or SSH
 - `.env`, `data/`, and `uploads/` stay outside Git and should be copied back only when migrating a fresh deploy folder
 - `git reset --hard origin/main` is intended only for a clean deploy copy with no local code changes
+- `rebuild.sh` now compares the checked-out Git commit against the image label `org.opencontainers.image.revision` and skips the build when nothing changed
+- `FORCE_REBUILD=1 bash rebuild.sh` forces a fresh rebuild if you explicitly want one
+- the Docker image now carries OCI metadata for commit and build time, and the build no longer does redundant `docker pull` calls outside `docker build --pull`
 
 ## Data and Runtime Behavior
 
@@ -171,7 +174,7 @@ Implemented already:
 
 Still worth improving further:
 
-- add a lockfile and switch to `npm ci`
+- add a lockfile and switch the Docker build from `npm install` to `npm ci`
 - tighten upload limits and validation
 - move admin auth from `localStorage` to HttpOnly cookies in the future
 - add smoke tests for health/auth/content flows

@@ -1,27 +1,13 @@
 <template>
-  <div class="admin-page-header">
-    <div class="admin-page-header__content">
-      <div v-if="icon" class="admin-page-header__icon">
-        <UIcon :name="icon" class="h-5 w-5" />
-      </div>
-
-      <div class="min-w-0">
-        <p v-if="eyebrow" class="admin-page-eyebrow">{{ eyebrow }}</p>
-
-        <div class="flex flex-wrap items-center gap-2">
-          <h1 class="admin-page-title">{{ title }}</h1>
-          <slot name="badge" />
-        </div>
-
-        <p v-if="description" class="admin-page-description">{{ description }}</p>
-
-        <div v-if="$slots.meta" class="admin-page-meta">
-          <slot name="meta" />
-        </div>
+  <div v-if="hasContent" class="admin-page-header" :class="!hasMeta ? 'admin-page-header--actions-only' : ''">
+    <div v-if="hasMeta" class="admin-page-header__content">
+      <div class="admin-page-meta">
+        <slot name="badge" />
+        <slot name="meta" />
       </div>
     </div>
 
-    <div v-if="$slots.actions" class="admin-page-actions">
+    <div v-if="hasActions" class="admin-page-actions">
       <slot name="actions" />
     </div>
   </div>
@@ -34,4 +20,9 @@ defineProps<{
   eyebrow?: string
   icon?: string
 }>()
+
+const slots = useSlots()
+const hasMeta = computed(() => (slots.badge?.().length || 0) > 0 || (slots.meta?.().length || 0) > 0)
+const hasActions = computed(() => (slots.actions?.().length || 0) > 0)
+const hasContent = computed(() => hasMeta.value || hasActions.value)
 </script>

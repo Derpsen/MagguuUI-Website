@@ -1,8 +1,10 @@
 export interface AdminNavLink {
   to: string
   label: string
+  heading?: string
   icon: string
   description: string
+  hint?: string
 }
 
 export interface AdminNavSection {
@@ -22,68 +24,151 @@ export interface AdminCommandItem extends AdminNavLink {
 const dashboardContext: AdminContextItem = {
   to: '/admin',
   label: 'Dashboard',
+  heading: 'Dashboard',
   icon: 'i-heroicons-squares-2x2',
   description: 'Operational overview, publishing activity and site health.',
   section: 'Overview',
-  hint: 'Track site health, publishing activity and operational status.',
+  hint: 'One primary action, the current signals and the latest activity.',
 }
 
 const adminSections: AdminNavSection[] = [
   {
     title: 'Content',
     links: [
-      { to: '/admin/content/home', label: 'Home', icon: 'i-heroicons-home-modern', description: 'Landing page copy, features and hero messaging.' },
-      { to: '/admin/content/guide', label: 'Guide', icon: 'i-heroicons-book-open', description: 'Onboarding, install steps and walkthrough content.' },
-      { to: '/admin/content/faq', label: 'FAQ', icon: 'i-heroicons-question-mark-circle', description: 'Support answers and recurring user questions.' },
-      { to: '/admin/content/changelog', label: 'Updates', icon: 'i-heroicons-document-text', description: 'Release notes and public update history.' },
+      {
+        to: '/admin/content/home',
+        label: 'Home',
+        heading: 'Homepage',
+        icon: 'i-heroicons-home-modern',
+        description: 'Landing page copy, features and hero messaging.',
+        hint: 'Keep the landing page concise: hero, section labels and three feature cards.',
+      },
+      {
+        to: '/admin/content/guide',
+        label: 'Guide',
+        heading: 'Guide',
+        icon: 'i-heroicons-book-open',
+        description: 'Onboarding, install steps and walkthrough content.',
+        hint: 'Keep onboarding linear: one intro and a short set of clear steps.',
+      },
+      {
+        to: '/admin/content/faq',
+        label: 'FAQ',
+        heading: 'FAQ',
+        icon: 'i-heroicons-question-mark-circle',
+        description: 'Support answers and recurring user questions.',
+        hint: 'Keep support answers short, grouped and easy to scan.',
+      },
+      {
+        to: '/admin/content/changelog',
+        label: 'Updates',
+        heading: 'Changelog',
+        icon: 'i-heroicons-document-text',
+        description: 'Release notes and public update history.',
+        hint: 'Publish release notes, keep drafts tidy and archive older updates without noise.',
+      },
     ],
   },
   {
     title: 'Data',
     links: [
-      { to: '/admin/strings/profiles', label: 'Profiles', icon: 'i-heroicons-cube', description: 'Addon import strings, sort order and visibility.' },
-      { to: '/admin/strings/wowup', label: 'WowUp', icon: 'i-heroicons-arrow-down-tray', description: 'Package strings for WowUp distribution.' },
-      { to: '/admin/strings/layouts', label: 'Layouts', icon: 'i-heroicons-user-circle', description: 'Class and specialization layout imports.' },
+      {
+        to: '/admin/strings/profiles',
+        label: 'Profiles',
+        heading: 'Addon Profiles',
+        icon: 'i-heroicons-cube',
+        description: 'Addon import strings, sort order and visibility.',
+        hint: 'Manage addon import strings, visibility states and ordering from one clean inventory.',
+      },
+      {
+        to: '/admin/strings/wowup',
+        label: 'WowUp',
+        heading: 'WowUp Strings',
+        icon: 'i-heroicons-arrow-down-tray',
+        description: 'Package strings for WowUp distribution.',
+        hint: 'Keep package strings ordered, visible and ready for one-click addon installation.',
+      },
+      {
+        to: '/admin/strings/layouts',
+        label: 'Layouts',
+        heading: 'Character Layouts',
+        icon: 'i-heroicons-user-circle',
+        description: 'Class and specialization layout imports.',
+        hint: 'Organize class and specialization layouts with clearer metadata, visibility states and sorting.',
+      },
     ],
   },
   {
     title: 'System',
     links: [
-      { to: '/admin/system/settings', label: 'Settings', icon: 'i-heroicons-cog-6-tooth', description: 'Site-wide configuration, tracking and maintenance.' },
-      { to: '/admin/system/stats', label: 'Analytics', icon: 'i-heroicons-chart-bar', description: 'Traffic, copies and API usage analytics.' },
-      { to: '/admin/system/users', label: 'Users', icon: 'i-heroicons-users', description: 'Accounts, passkeys, sessions and access controls.' },
-      { to: '/admin/system/github', label: 'GitHub', icon: 'i-simple-icons-github', description: 'Repository sync, imports, exports and webhooks.' },
-      { to: '/admin/system/api-keys', label: 'API', icon: 'i-heroicons-key', description: 'Secure integration keys and access management.' },
-      { to: '/admin/system/activity', label: 'Activity', icon: 'i-heroicons-clock', description: 'Audit trail of administrative activity.' },
-      { to: '/admin/system/fields', label: 'Fields', icon: 'i-heroicons-adjustments-horizontal', description: 'Configurable fields and metadata.' },
+      {
+        to: '/admin/system/settings',
+        label: 'Settings',
+        heading: 'Settings',
+        icon: 'i-heroicons-cog-6-tooth',
+        description: 'Site-wide configuration, tracking and maintenance.',
+        hint: 'One place for site defaults, access rules and operational switches.',
+      },
+      {
+        to: '/admin/system/stats',
+        label: 'Analytics',
+        heading: 'Analytics',
+        icon: 'i-heroicons-chart-bar',
+        description: 'Traffic, copies and API usage analytics.',
+        hint: 'Traffic, copies and API usage without the old dashboard noise.',
+      },
+      {
+        to: '/admin/system/users',
+        label: 'Users',
+        heading: 'Users',
+        icon: 'i-heroicons-users',
+        description: 'Accounts, passkeys, sessions and access controls.',
+        hint: 'Accounts, sessions and security controls without the old dashboard clutter.',
+      },
+      {
+        to: '/admin/system/github',
+        label: 'GitHub',
+        heading: 'GitHub Sync',
+        icon: 'i-simple-icons-github',
+        description: 'Repository sync, imports, exports and webhooks.',
+        hint: 'Keep repo connectivity, release checks and import/export workflows in one quiet utility page.',
+      },
+      {
+        to: '/admin/system/api-keys',
+        label: 'API',
+        heading: 'API Keys',
+        icon: 'i-heroicons-key',
+        description: 'Secure integration keys and access management.',
+        hint: 'Keep integrations narrow: name every key clearly and delete unused access fast.',
+      },
+      {
+        to: '/admin/system/activity',
+        label: 'Activity',
+        heading: 'Activity',
+        icon: 'i-heroicons-clock',
+        description: 'Audit trail of administrative activity.',
+        hint: 'Audit changes without turning the log into a dashboard of its own.',
+      },
+      {
+        to: '/admin/system/fields',
+        label: 'Fields',
+        heading: 'Fields',
+        icon: 'i-heroicons-adjustments-horizontal',
+        description: 'Configurable fields and metadata.',
+        hint: 'Custom fields should stay predictable: a clear label, a stable key and one type.',
+      },
     ],
   },
 ]
-
-const contextOverrides: Record<string, { section: string; hint: string }> = {
-  '/admin/content/home': { section: 'Content', hint: 'Update hero messaging, feature highlights and landing-page content.' },
-  '/admin/content/guide': { section: 'Content', hint: 'Maintain the onboarding flow and installation instructions.' },
-  '/admin/content/faq': { section: 'Content', hint: 'Keep support answers tidy and easy to scan.' },
-  '/admin/content/changelog': { section: 'Content', hint: 'Publish updates with a clean version history and release notes.' },
-  '/admin/strings/profiles': { section: 'Data', hint: 'Manage addon import strings, naming and sort order.' },
-  '/admin/strings/wowup': { section: 'Data', hint: 'Maintain download package strings and release bundles.' },
-  '/admin/strings/layouts': { section: 'Data', hint: 'Curate per-class and per-spec layout imports.' },
-  '/admin/system/settings': { section: 'System', hint: 'Configure site-wide behaviour, links and operational toggles.' },
-  '/admin/system/stats': { section: 'System', hint: 'Review usage, traffic and recent trends.' },
-  '/admin/system/users': { section: 'System', hint: 'Control access, authentication methods and team accounts.' },
-  '/admin/system/api-keys': { section: 'System', hint: 'Manage secure integration keys and external access.' },
-  '/admin/system/github': { section: 'System', hint: 'Monitor repository connectivity and sync tooling.' },
-  '/admin/system/activity': { section: 'System', hint: 'Audit changes and recent administrative actions.' },
-  '/admin/system/fields': { section: 'System', hint: 'Maintain custom fields and internal metadata.' },
-}
 
 const contextItems: AdminContextItem[] = [
   dashboardContext,
   ...adminSections.flatMap(section =>
     section.links.map(link => ({
       ...link,
-      section: contextOverrides[link.to]?.section || section.title,
-      hint: contextOverrides[link.to]?.hint || link.description,
+      section: section.title,
+      heading: link.heading || link.label,
+      hint: link.hint || link.description,
     })),
   ),
 ]

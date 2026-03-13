@@ -198,6 +198,13 @@ bash rebuild.sh
 cd /mnt/user/appdata/nuxt && git fetch origin main && git reset --hard origin/main && bash rebuild.sh
 ```
 
+**Skip-Logik im Rebuild:**
+- `rebuild.sh` baut nur noch dann neu, wenn sich der ausgecheckte Git-Commit vom aktuell lokal gebauten Docker-Image unterscheidet
+- die Prüfung läuft über das OCI-Label `org.opencontainers.image.revision`
+- wenn Container und Image schon auf dem aktuellen Commit sind, wird der Build komplett übersprungen
+- `FORCE_REBUILD=1 bash rebuild.sh` erzwingt trotzdem einen frischen Build
+- das Dockerfile schreibt zusätzlich Commit- und Build-Zeit als OCI-Metadaten ins Image
+
 **Wichtig:**
 - `.env`, `data/` und `uploads/` werden nur beim ersten Umstieg aus dem Backup zurückkopiert
 - diese Laufzeitdaten liegen absichtlich **nicht** im Deploy-Repo
@@ -515,3 +522,4 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 - [ ] **Admin Smoke Tests:** Für den großen Admin-Refactor gibt es weiterhin keine automatisierten Build-/Smoke-Checks
 - [ ] **Tests hinzufügen:** Kein Testing-Framework konfiguriert (Vitest empfohlen)
 - [ ] **Linter/Formatter:** ESLint + Prettier oder Biome einrichten
+- [ ] **Lockfile im Repo:** Dann kann der Docker-Build auf `npm ci` umgestellt werden

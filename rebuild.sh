@@ -14,6 +14,7 @@ CONTAINER_NAME="Nuxt"
 IMAGE_NAME="nuxt"
 PROJECT_DIR="/mnt/user/appdata/nuxt"
 TEMPLATE="/boot/config/plugins/dockerMan/templates-user/my-${CONTAINER_NAME}.xml"
+FORCE_REBUILD="${FORCE_REBUILD:-0}"
 
 # ── Farben ─────────────────────────────────────────────────
 GREEN='\033[0;32m'
@@ -26,6 +27,23 @@ log()  { echo -e "${BLUE}[MagguuUI]${NC} $1"; }
 ok()   { echo -e "${GREEN}[✅]${NC} $1"; }
 warn() { echo -e "${YELLOW}[⚠️]${NC}  $1"; }
 err()  { echo -e "${RED}[❌]${NC} $1"; }
+get_image_commit() {
+    local image_commit
+    image_commit="$(
+        docker image inspect "${IMAGE_NAME}" \
+        --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' \
+        2>/dev/null || true
+    )"
+
+    if [ "${image_commit}" = "<no value>" ]; then
+        image_commit=""
+    fi
+
+    echo "${image_commit}"
+}
+container_exists() {
+    docker container inspect "${CONTAINER_NAME}" >/dev/null 2>&1
+}
 
 echo ""
 echo -e "${BLUE}═══════════════════════════════════════════${NC}"
@@ -47,6 +65,16 @@ if [ ! -f "package.json" ]; then
     exit 1
 fi
 
+if ! command -v git >/dev/null 2>&1; then
+    err "git ist nicht installiert/verfügbar"
+    exit 1
+fi
+
+if ! command -v docker >/dev/null 2>&1; then
+    err "docker ist nicht installiert/verfügbar"
+    exit 1
+fi
+
 if [ ! -f "${TEMPLATE}" ]; then
     err "Kein Unraid Template gefunden: ${TEMPLATE}"
     err "Container muss einmal über die Unraid UI erstellt worden sein!"
@@ -55,19 +83,49 @@ fi
 
 ok "Projektdateien + Template vorhanden"
 
-# ── 2. Docker Image bauen ─────────────────────────────────
-log "Ziehe aktuelle Base Images..."
-docker pull node:24-bookworm >/dev/null
-docker pull node:24-bookworm-slim >/dev/null
-ok "Base Images aktualisiert"
+CURRENT_COMMIT="$(git rev-parse HEAD)"
+CURRENT_COMMIT_SHORT="$(git rev-parse --short HEAD)"
+EXISTING_COMMIT="$(get_image_commit)"
+EXISTING_COMMIT_SHORT="${EXISTING_COMMIT:0:7}"
+SHOULD_BUILD=1
 
-log "Baue Docker Image: ${IMAGE_NAME} (mit --pull, --no-cache)..."
-echo ""
+if [ "${FORCE_REBUILD}" = "1" ]; then
+    warn "FORCE_REBUILD=1 gesetzt - Build wird erzwungen"
+elif [ -n "${EXISTING_COMMIT}" ] && [ "${CURRENT_COMMIT}" = "${EXISTING_COMMIT}" ]; then
+    SHOULD_BUILD=0
+    ok "Image ${IMAGE_NAME} ist bereits auf Commit ${CURRENT_COMMIT_SHORT}"
+else
+    if [ -z "${EXISTING_COMMIT}" ]; then
+        warn "Kein buildbares Commit-Label am bestehenden Image gefunden - baue einmal neu"
+    else
+        log "Neuer Commit erkannt: ${EXISTING_COMMIT_SHORT} -> ${CURRENT_COMMIT_SHORT}"
+    fi
+fi
 
-docker build --pull --no-cache -t "${IMAGE_NAME}" .
+# ── 2. Docker Image nur bei neuem Commit bauen ─────────────
+if [ "${SHOULD_BUILD}" = "1" ]; then
+    BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
-echo ""
-ok "Image gebaut: ${IMAGE_NAME}"
+    log "Baue Docker Image: ${IMAGE_NAME} (Commit ${CURRENT_COMMIT_SHORT})..."
+    echo ""
+
+    docker build \
+        --pull \
+        --build-arg VCS_REF="${CURRENT_COMMIT}" \
+        --build-arg BUILD_DATE="${BUILD_DATE}" \
+        -t "${IMAGE_NAME}" \
+        .
+
+    echo ""
+    ok "Image gebaut: ${IMAGE_NAME}"
+else
+    if container_exists; then
+        ok "Kein neuer Commit - Build und Container-Recreate werden übersprungen"
+        exit 0
+    fi
+
+    warn "Kein neuer Commit, aber Container fehlt - erstelle Container aus vorhandenem Image neu"
+fi
 
 # ── 3. Container über Unraid Template neu erstellen ────────
 log "Erstelle Container über Unraid Template neu..."
@@ -79,13 +137,15 @@ log "Erstelle Container über Unraid Template neu..."
 ok "Container neu erstellt (managed, kein 3rd Party)"
 
 # ── 4. Alte Images + Build Cache aufräumen ─────────────────
-log "Räume alte Images auf..."
-IMG_CLEANED=$(docker image prune -f 2>/dev/null | grep "Total reclaimed" || echo "0B")
-ok "Image Cleanup: ${IMG_CLEANED}"
+if [ "${SHOULD_BUILD}" = "1" ]; then
+    log "Räume alte Images auf..."
+    IMG_CLEANED=$(docker image prune -f 2>/dev/null | grep "Total reclaimed" || echo "0B")
+    ok "Image Cleanup: ${IMG_CLEANED}"
 
-log "Räume Build Cache auf..."
-CACHE_CLEANED=$(docker builder prune -f 2>/dev/null | grep -i "total" | tail -1 || echo "0B")
-ok "Build Cache Cleanup: ${CACHE_CLEANED}"
+    log "Räume Build Cache auf..."
+    CACHE_CLEANED=$(docker builder prune -f 2>/dev/null | grep -i "total" | tail -1 || echo "0B")
+    ok "Build Cache Cleanup: ${CACHE_CLEANED}"
+fi
 
 # ── 5. Zusammenfassung ─────────────────────────────────────
 echo ""
@@ -100,4 +160,5 @@ echo ""
 echo -e "  Logs:       docker logs -f ${CONTAINER_NAME}"
 echo -e "  Shell:      docker exec -it ${CONTAINER_NAME} bash"
 echo -e "  Neustart:   docker restart ${CONTAINER_NAME}"
+echo -e "  Force:      FORCE_REBUILD=1 bash rebuild.sh"
 echo ""

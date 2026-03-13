@@ -33,10 +33,10 @@
               <span class="text-gradient">{{ content?.hero?.title2 || 'perfected.' }}</span>
             </h1>
 
-            <p class="text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed fade-in fade-in-delay-2"
-              :class="isDark ? 'text-silver-400' : 'text-gray-500'">
-              {{ content?.hero?.description || 'High-quality import strings for cooldowns, addon profiles, and more. Simply copy and paste into WoW.' }}
-            </p>
+            <div class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed fade-in fade-in-delay-2"
+              :class="isDark ? 'text-silver-400' : 'text-gray-500'"
+              v-html="renderHomeRichText(content?.hero?.description || 'High-quality import strings for cooldowns, addon profiles, and more. Simply copy and paste into WoW.')"
+            />
 
             <div class="flex items-center justify-center gap-4 fade-in fade-in-delay-3">
               <NuxtLink to="/strings" class="btn-gradient px-8 py-4 rounded-xl text-white font-semibold text-lg inline-flex items-center gap-2">
@@ -114,7 +114,11 @@
             <span class="text-2xl">{{ feat.emoji }}</span>
           </div>
           <h3 class="text-lg font-semibold text-gradient-subtle mb-3">{{ feat.title }}</h3>
-          <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ feat.text }}</p>
+          <div
+            class="home-feature-copy text-sm leading-relaxed"
+            :class="isDark ? 'text-silver-500' : 'text-gray-500'"
+            v-html="renderHomeRichText(feat.text)"
+          />
         </div>
       </div>
     </section>
@@ -264,6 +268,29 @@ const stats = computed(() => [
   { value: animatedUpdates.value, label: 'Updates' },
 ])
 
+let clientSanitize: ((html: string) => string) | null = null
+if (import.meta.client) {
+  const mod = await import('dompurify')
+  clientSanitize = (html: string) => mod.default.sanitize(html)
+}
+
+function sanitizeHtmlSSR(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
+    .replace(/<iframe[\s\S]*?>[\s\S]*?<\/iframe>/gi, '')
+    .replace(/<object[\s\S]*?>[\s\S]*?<\/object>/gi, '')
+    .replace(/<embed[\s\S]*?>[\s\S]*?<\/embed>/gi, '')
+    .replace(/<form[\s\S]*?>[\s\S]*?<\/form>/gi, '')
+    .replace(/\son\w+=(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/\s(href|src)\s*=\s*(['"])\s*javascript:[\s\S]*?\2/gi, ' $1="#"')
+}
+
+function renderHomeRichText(text: string): string {
+  if (!text) return ''
+  return clientSanitize ? clientSanitize(text) : sanitizeHtmlSSR(text)
+}
+
 // ─── Scroll Indicator ─────────────────────
 const scrollIndicatorOpacity = ref(1)
 
@@ -294,3 +321,46 @@ onMounted(() => {
   for (const el of targets) { if (el) obs.observe(el) }
 })
 </script>
+
+<style scoped>
+.home-hero-copy :deep(p),
+.home-feature-copy :deep(p) {
+  margin: 0;
+}
+
+.home-hero-copy :deep(p + p),
+.home-feature-copy :deep(p + p) {
+  margin-top: 0.6em;
+}
+
+.home-hero-copy :deep(strong),
+.home-feature-copy :deep(strong) {
+  color: inherit;
+  font-weight: 700;
+}
+
+.home-hero-copy :deep(em),
+.home-feature-copy :deep(em) {
+  color: inherit;
+}
+
+.home-hero-copy :deep(a),
+.home-feature-copy :deep(a) {
+  color: var(--color-brand-300, #90bbff);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.home-feature-copy :deep(ul),
+.home-feature-copy :deep(ol),
+.home-hero-copy :deep(ul),
+.home-hero-copy :deep(ol) {
+  margin: 0.6em 0 0;
+  padding-left: 1.25em;
+}
+
+.home-feature-copy :deep(li),
+.home-hero-copy :deep(li) {
+  margin-top: 0.2em;
+}
+</style>

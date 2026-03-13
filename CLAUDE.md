@@ -20,7 +20,7 @@
 | ORM | Drizzle ORM (^0.45.0) |
 | UI Library | NuxtUI v4 (^4.5.0) — basierend auf Reka UI |
 | Styling | Tailwind CSS v4 (CSS-first, @theme Direktive) + Custom CSS (Public Brand Styles + Admin Design System) |
-| Auth | JWT (jsonwebtoken) + bcrypt + WebAuthn/Passkeys (SimpleWebAuthn) |
+| Auth | JWT (jsonwebtoken) + bcrypt + WebAuthn/Passkeys (SimpleWebAuthn) + HttpOnly Cookie Support |
 | Validierung | Zod v4 |
 | Editor | TipTap (ProseMirror) |
 | Markdown | Marked |
@@ -65,7 +65,7 @@
 │   ├── useApi.ts               # Auth-API-Wrapper
 │   ├── useAdminNavigation.ts   # Sections, Context, Active-State-Logik, Command Palette + Mobile Dock
 │   ├── useAdminNotifications.ts # Notification Center für den Admin-Bereich
-│   ├── useAuth.ts              # Auth State (JWT in localStorage)
+│   ├── useAuth.ts              # Auth State (JWT + Cookie-Session-Fallback)
 │   ├── useIsDark.ts            # Dark Mode Helper
 │   ├── usePageTracking.ts      # Public Analytics / Tracking Hooks
 │   └── useScrollReveal.ts      # Scroll-Animationen
@@ -97,10 +97,9 @@
 │   │       └── ...
 │   │
 │   ├── database/
-│   │   ├── schema.ts           # Drizzle Schema (13+ Tabellen)
+│   │   ├── schema.ts           # Drizzle Schema (inkl. Sessions, Rate Limits, Analytics)
 │   │   ├── index.ts            # DB Connection (WAL-Modus)
 │   │   ├── seed.ts             # Seed Script
-│   │   └── migrations/         # Auto-generierte Migrationen
 │   │
 │   ├── middleware/
 │   │   └── admin-api.ts        # JWT-Validierung für /api/v1/admin/*
@@ -111,10 +110,10 @@
 │   │   └── session-cleanup.ts  # Session / Challenge Cleanup
 │   │
 │   └── utils/
-│       ├── auth.ts             # createToken, verifyToken, requireAuth
-│       ├── response.ts         # apiSuccess, apiError, apiPaginated
+│       ├── auth.ts             # createToken, verifyToken, requireAuth, Cookie-Helfer
+│       ├── response.ts         # apiSuccess, apiError
 │       ├── validation.ts       # Zod Schemas
-│       ├── rateLimit.ts        # Rate Limiting (5/15min Login)
+│       ├── rateLimit.ts        # Persistentes SQLite Rate Limiting (5/15min Login)
 │       ├── activityLog.ts      # Activity Logging + Auto-Changelog
 │       ├── github.ts           # GitHub API Integration
 │       └── syncChangelog.ts    # Changelog Sync
@@ -221,6 +220,7 @@ cd /mnt/user/appdata/nuxt && git fetch origin main && git reset --hard origin/ma
 - **HttpOnly Cookie Support:** Backend setzt zusätzlich ein Same-Origin HttpOnly Session-Cookie, Bearer-Token bleibt für den bestehenden Admin-Client kompatibel
 - **WebAuthn/Passkeys:** Biometrische Authentifizierung via SimpleWebAuthn (Registration + Login)
 - **Rate Limiting:** Login auf 5 Versuche pro 15 Minuten pro IP begrenzt, persistent in SQLite statt nur im Prozessspeicher
+- **Public API Caching:** Öffentliche Read-Endpunkte laufen über `routeRules` mit kurzem SWR-Cache
 - **Monolithisch:** Ein Nuxt-App für Public + Admin + API
 - **Runtime-Daten bleiben lokal:** `.env`, `data/`, `uploads/` werden nicht in dasselbe Deploy-Repo committed
 - **Keine Tests:** Kein Testing-Framework konfiguriert
@@ -456,10 +456,13 @@ Primary: blue | Neutral: slate
 ```bash
 NUXT_ADMIN_PASSWORD=       # Admin Passwort (wird gehashed)
 NUXT_JWT_SECRET=           # JWT Secret (64 Zeichen)
+NUXT_AUTH_COOKIE_NAME=     # Optionaler Cookie-Name für Admin-Session
 NUXT_API_KEY=              # API Key für GitHub Actions
 NUXT_GITHUB_TOKEN=         # GitHub Personal Access Token
 NUXT_GITHUB_REPO=          # GitHub Repo (Owner/Repo)
 NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
+NUXT_WEBAUTHN_RP_ID=       # Optional: RP ID für Passkeys
+NUXT_WEBAUTHN_ORIGIN=      # Optional: erwarteter Origin für Passkeys
 ```
 
 ---
@@ -480,7 +483,7 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 - Public-Admin-Leiste soll dieselbe Breite/Hierarchie wie der Header haben, keine separate große Card im Content-Bereich
 
 ### Admin Content Editors
-- **Dashboard (`admin/index.vue`):** neu strukturierter Operations-Overview mit Quick Actions, KPI-Cards, 7-Tage-Copy-Chart, Version-Check, Notifications, Activity Feed und Status-Leiste
+- **Dashboard (`admin/index.vue`):** reduziertes Operations-Dashboard mit Top-Metrics, einer Primäraktion, kompaktem Ops-Status, Activity Feed und 7-Tage-Trend
 - **String-Verwaltung (`admin/strings/profiles.vue`, `wowup.vue`, `layouts.vue`):** einheitliche `AdminPageHeader` + `AdminPanel` Struktur, KPI-Leiste, Suche/Filter, modernisierte Tabellen, Bulk-Selection und Empty States
 - **System-/Content-Seiten (`admin/content/home.vue`, `admin/system/settings.vue`, `stats.vue`, `github.vue`, `users.vue`):** standardisierte PageHeader- und StickyBar-Patterns für konsistente Actions, Status-Hinweise und Save-Flows
 - **Guide Editor (`admin/content/guide.vue`):** Dynamische Steps mit TipTap, Drag-Reorder, eigener Preview-Tab mit vertikaler Timeline und Bottom-Cards Preview. Preview ist aktuell nicht 1:1 identisch zur neuen Public-Guide-Ansicht.
@@ -489,7 +492,7 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 ### Admin Layout Features (`layouts/admin.vue`)
 - kollabierbare Desktop-Sidebar plus Mobile-Slide-In mit sauberer Active-State-Logik
 - `useAdminNavigation()` liefert Sections, Seitenkontext, Command-Palette-Items und Mobile-Dock-Links aus einer zentralen Quelle
-- Sticky Top-Toolbar mit Section-Chip, Titel, Hint, Search Trigger, Notification Tray, Theme Toggle und Website Shortcut
+- Sticky Top-Toolbar mit integrierter Seitenüberschrift, Bereich, Hint, Search Trigger, Notification Tray und Theme Toggle
 - Mobile Bottom Dock für schnellen Zugriff auf die wichtigsten Admin-Bereiche
 - `CommandPalette.vue` nutzt dieselben Navigationsdaten wie Sidebar und Toolbar
 - Keyboard Shortcuts (`?` Taste öffnet Modal, `g d`/`g p`/`g w`/`g l`/`g s`/`g a` Navigation)

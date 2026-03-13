@@ -29,7 +29,7 @@ This repository contains the public website for MagguuUI, the internal admin are
 - `Tailwind CSS v4`
 - `SQLite` via `better-sqlite3`
 - `Drizzle ORM`
-- `JWT` auth
+- `JWT` auth + HttpOnly session cookie support
 - `WebAuthn / Passkeys`
 - `Docker`
 
@@ -57,7 +57,7 @@ This repository contains the public website for MagguuUI, the internal admin are
 The admin panel was rebuilt around a shared, modern SaaS-style shell while keeping the existing data flows and APIs intact.
 
 - collapsible sidebar with grouped navigation, cleaner active-state handling, and mobile slide-over behavior
-- sticky top toolbar with page context, search trigger, notifications, theme control, and website shortcut
+- sticky top toolbar with integrated page title/context, search trigger, notifications, and theme control
 - command palette and mobile dock powered by the shared navigation data in `useAdminNavigation.ts`
 - reusable admin primitives under `components/admin/` for page headers, panels, metric cards, empty states, and sticky save bars
 - modernized dashboard plus the core content, string, and system screens with consistent spacing, cards, tables, and responsive behavior
@@ -105,6 +105,7 @@ Copy `.env.example` to `.env` and configure the required values.
 Important values include:
 
 - `NUXT_JWT_SECRET`
+- `NUXT_AUTH_COOKIE_NAME`
 - `NUXT_ADMIN_PASSWORD`
 - `NUXT_API_KEY`
 - `NUXT_GITHUB_TOKEN`
@@ -179,7 +180,7 @@ Still worth improving further:
 
 - add a lockfile and switch the Docker build from `npm install` to `npm ci`
 - tighten upload limits and validation
-- move admin auth from `localStorage` to HttpOnly cookies in the future
+- finish the admin client migration away from `localStorage` toward cookie-first auth
 - add smoke tests for health/auth/content flows
 
 ## Git Notes
@@ -208,3 +209,4 @@ Line endings are normalized through `.gitattributes` to avoid Windows/Linux depl
 - reusable admin UI primitives added for headers, panels, metrics, empty states, and sticky save bars
 - dashboard plus key content, data, and system screens moved onto the new design system
 - FAQ and installation guide synced from code into DB on startup
+- backend hardened with persistent rate limiting, upload validation, HttpOnly session-cookie support, and SWR caching for public read APIs

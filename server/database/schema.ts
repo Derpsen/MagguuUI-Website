@@ -315,3 +315,14 @@ export const pageViews = sqliteTable('page_views', {
     .notNull()
     .default(sql`(unixepoch())`),
 })
+
+// ─── Rate Limits ──────────────────────────────────
+// Persistent request throttling state per key (e.g. login:IP)
+
+export const rateLimits = sqliteTable('rate_limits', {
+  key: text('key').primaryKey(),
+  count: integer('count').notNull().default(0),
+  firstAttempt: integer('first_attempt').notNull(),
+  blockedUntil: integer('blocked_until').notNull().default(0),
+  updatedAt: integer('updated_at').notNull(),
+})

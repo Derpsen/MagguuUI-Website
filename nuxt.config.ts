@@ -2,6 +2,10 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: process.env.NODE_ENV !== 'production' },
+  sourcemap: {
+    server: process.env.NODE_ENV !== 'production',
+    client: process.env.NODE_ENV !== 'production',
+  },
 
   modules: [
     '@nuxt/ui',
@@ -73,6 +77,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Server-only (never exposed to client)
     jwtSecret: process.env.NUXT_JWT_SECRET || 'change-me-in-production',
+    authCookieName: process.env.NUXT_AUTH_COOKIE_NAME || 'magguuui_session',
     adminPassword: process.env.NUXT_ADMIN_PASSWORD || '',
     apiKey: process.env.NUXT_API_KEY || '',
     githubToken: process.env.NUXT_GITHUB_TOKEN || '',
@@ -110,6 +115,16 @@ export default defineNuxtConfig({
   routeRules: {
     // Admin pages: no SSR (prevents auth flash, token is client-only)
     '/admin/**': { ssr: false },
+    // Public read endpoints: cache briefly and serve stale while revalidating
+    '/api/v1/profiles': { swr: 120 },
+    '/api/v1/wowup': { swr: 120 },
+    '/api/v1/layouts': { swr: 120 },
+    '/api/v1/layouts/**': { swr: 120 },
+    '/api/v1/content/**': { swr: 120 },
+    '/api/v1/faqs': { swr: 120 },
+    '/api/v1/changelogs': { swr: 120 },
+    '/api/v1/settings': { swr: 300 },
+    '/api/v1/latest-change': { swr: 60 },
     // Backward compatibility for external embeds/descriptions still using this image URL
     '/assets/logo.png': { redirect: '/logo.svg' },
     // Security headers for all routes

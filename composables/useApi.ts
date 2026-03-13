@@ -20,6 +20,7 @@ export function useApi() {
     const response = await $fetch<{ success: boolean; data: T }>(url, {
       ...options,
       headers,
+      credentials: 'include',
     })
 
     return response.data

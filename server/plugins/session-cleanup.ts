@@ -10,6 +10,7 @@ import { cleanupExpiredSessions, cleanupOldLoginAttempts } from '~/server/utils/
 import { cleanupExpiredChallenges } from '~/server/utils/webauthn'
 import { getDataRetentionDays } from '~/server/utils/settings'
 import { sqlite } from '~/server/database'
+import { cleanupRateLimits } from '~/server/utils/rateLimit'
 
 function runCleanup() {
   const retentionDays = getDataRetentionDays()
@@ -18,6 +19,7 @@ function runCleanup() {
   cleanupExpiredSessions()
   cleanupOldLoginAttempts(retentionDays)
   cleanupExpiredChallenges()
+  cleanupRateLimits()
 
   // Clean up old page views & copy events based on data retention setting
   try {

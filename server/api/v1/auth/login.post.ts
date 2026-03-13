@@ -99,6 +99,7 @@ export default defineEventHandler(async (event) => {
   const { getSessionTimeoutHours } = await import('~/server/utils/settings')
   const timeoutHours = getSessionTimeoutHours()
   const expiresAt = new Date(Date.now() + timeoutHours * 60 * 60 * 1000)
+  const maxAgeSeconds = timeoutHours * 60 * 60
 
   // Create token first (need it for session hash)
   const token = createToken({
@@ -123,6 +124,7 @@ export default defineEventHandler(async (event) => {
     role: user.role,
     sessionId: session.id,
   })
+  setAuthCookie(event, finalToken, maxAgeSeconds)
 
   // Update session tokenHash with the final token (which includes sessionId)
   const { hashToken } = await import('~/server/utils/session')

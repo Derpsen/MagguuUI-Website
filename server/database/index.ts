@@ -241,6 +241,15 @@ sqlite.exec(`
     expires_at INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (unixepoch())
   );
+
+  CREATE TABLE IF NOT EXISTS rate_limits (
+    key TEXT PRIMARY KEY,
+    count INTEGER NOT NULL DEFAULT 0,
+    first_attempt INTEGER NOT NULL,
+    blocked_until INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_rate_limits_updated_at ON rate_limits(updated_at);
 `)
 
 console.log('[DB] ✓ Database ready — all tables verified')

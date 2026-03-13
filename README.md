@@ -166,11 +166,14 @@ Implemented already:
 
 - admin API protection via server middleware
 - JWT session validation
+- additional HttpOnly auth cookie support for same-origin admin sessions
 - session tracking and revocation
-- rate limiting for sensitive login flows
+- persistent rate limiting for sensitive login flows
 - CSP and extra security headers
 - removal of `X-Powered-By`
 - SSR-safe changelog sanitizing
+- upload hardening via file-signature and size validation
+- SWR caching for public read APIs
 
 Still worth improving further:
 

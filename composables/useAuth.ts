@@ -10,6 +10,7 @@ export function useAuth() {
   const token = useState<string | null>('auth-token', () => null)
   const user = useState<{ id: number; username: string; role: string } | null>('auth-user', () => null)
   const sessionId = useState<number | null>('auth-session-id', () => null)
+  const restoring = useState<boolean>('auth-restoring', () => false)
 
   // Initialize from localStorage
   if (import.meta.client) {
@@ -34,12 +35,37 @@ export function useAuth() {
     }
   }
 
-  const isLoggedIn = computed(() => !!token.value)
+  const isLoggedIn = computed(() => !!token.value || !!user.value)
+
+  async function restoreSession() {
+    if (import.meta.server || restoring.value || user.value) {
+      return !!user.value
+    }
+
+    restoring.value = true
+
+    try {
+      const response = await $fetch<any>('/api/v1/admin/sessions/current', {
+        credentials: 'include',
+      })
+
+      if (!response?.data?.user) return false
+
+      user.value = response.data.user
+      sessionId.value = response.data.id || null
+      return true
+    } catch {
+      return false
+    } finally {
+      restoring.value = false
+    }
+  }
 
   async function login(username: string, password: string) {
     const response = await $fetch<any>('/api/v1/auth/login', {
       method: 'POST',
       body: { username, password },
+      credentials: 'include',
     })
 
     if (!response?.data?.token) {
@@ -62,11 +88,12 @@ export function useAuth() {
 
   async function logout() {
     // Call server-side logout to revoke session
-    if (token.value) {
+    if (token.value || user.value) {
       try {
         await $fetch('/api/v1/auth/logout', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token.value}` },
+          headers: token.value ? { Authorization: `Bearer ${token.value}` } : undefined,
+          credentials: 'include',
         })
       } catch {
         // Proceed with local logout even if server call fails
@@ -83,5 +110,5 @@ export function useAuth() {
     navigateTo('/admin/login')
   }
 
-  return { token, user, sessionId, isLoggedIn, login, logout }
+  return { token, user, sessionId, restoring, isLoggedIn, restoreSession, login, logout }
 }

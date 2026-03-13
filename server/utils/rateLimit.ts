@@ -1,31 +1,40 @@
 /**
- * Rate Limiter — In-memory rate limiting
+ * Rate Limiter — SQLite-backed, persistent across restarts
  *
  * Protects login and sensitive endpoints against brute-force.
- * Uses IP-based tracking with automatic cleanup.
+ * Uses DB-backed key tracking so limits survive restarts and match the app's single-node SQLite setup.
  */
 
-interface RateEntry {
+import { sqlite } from '~/server/database'
+
+interface RateEntryRow {
+  key: string
   count: number
-  firstAttempt: number
-  blockedUntil: number
+  first_attempt: number
+  blocked_until: number
+  updated_at: number
 }
 
-const store = new Map<string, RateEntry>()
+const getRateLimitStmt = sqlite.prepare(
+  'SELECT key, count, first_attempt, blocked_until, updated_at FROM rate_limits WHERE key = ?',
+)
 
-// Cleanup old entries every 10 minutes
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, entry] of store) {
-    if (now - entry.firstAttempt > 60 * 60 * 1000) { // 1h
-      store.delete(key)
-    }
-  }
-}, 10 * 60 * 1000)
+const insertRateLimitStmt = sqlite.prepare(
+  'INSERT INTO rate_limits (key, count, first_attempt, blocked_until, updated_at) VALUES (?, ?, ?, ?, ?)',
+)
+
+const updateRateLimitStmt = sqlite.prepare(
+  'UPDATE rate_limits SET count = ?, first_attempt = ?, blocked_until = ?, updated_at = ? WHERE key = ?',
+)
+
+const deleteRateLimitStmt = sqlite.prepare('DELETE FROM rate_limits WHERE key = ?')
+const cleanupRateLimitStmt = sqlite.prepare(
+  'DELETE FROM rate_limits WHERE updated_at < ? AND blocked_until < ?',
+)
 
 /**
  * Check rate limit for a given key (usually IP).
- * Returns { allowed, retryAfter } where retryAfter is seconds.
+ * Returns { allowed, remaining, retryAfter } where retryAfter is seconds.
  */
 export function checkRateLimit(
   key: string,
@@ -34,41 +43,73 @@ export function checkRateLimit(
   blockMs: number = 15 * 60 * 1000,  // 15 min block
 ): { allowed: boolean; remaining: number; retryAfter: number } {
   const now = Date.now()
-  const entry = store.get(key)
-
-  if (!entry) {
-    store.set(key, { count: 1, firstAttempt: now, blockedUntil: 0 })
-    return { allowed: true, remaining: maxAttempts - 1, retryAfter: 0 }
+  let result = {
+    allowed: true,
+    remaining: Math.max(0, maxAttempts - 1),
+    retryAfter: 0,
   }
 
-  // Currently blocked?
-  if (entry.blockedUntil > now) {
-    const retryAfter = Math.ceil((entry.blockedUntil - now) / 1000)
-    return { allowed: false, remaining: 0, retryAfter }
-  }
+  const run = sqlite.transaction(() => {
+    const entry = getRateLimitStmt.get(key) as RateEntryRow | undefined
 
-  // Window expired? Reset
-  if (now - entry.firstAttempt > windowMs) {
-    store.set(key, { count: 1, firstAttempt: now, blockedUntil: 0 })
-    return { allowed: true, remaining: maxAttempts - 1, retryAfter: 0 }
-  }
+    if (!entry) {
+      insertRateLimitStmt.run(key, 1, now, 0, now)
+      result = { allowed: true, remaining: Math.max(0, maxAttempts - 1), retryAfter: 0 }
+      return
+    }
 
-  entry.count++
+    if (entry.blocked_until > now) {
+      result = {
+        allowed: false,
+        remaining: 0,
+        retryAfter: Math.ceil((entry.blocked_until - now) / 1000),
+      }
+      return
+    }
 
-  if (entry.count > maxAttempts) {
-    entry.blockedUntil = now + blockMs
-    const retryAfter = Math.ceil(blockMs / 1000)
-    return { allowed: false, remaining: 0, retryAfter }
-  }
+    if (now - entry.first_attempt > windowMs) {
+      updateRateLimitStmt.run(1, now, 0, now, key)
+      result = { allowed: true, remaining: Math.max(0, maxAttempts - 1), retryAfter: 0 }
+      return
+    }
 
-  return { allowed: true, remaining: maxAttempts - entry.count, retryAfter: 0 }
+    const nextCount = entry.count + 1
+
+    if (nextCount > maxAttempts) {
+      updateRateLimitStmt.run(nextCount, entry.first_attempt, now + blockMs, now, key)
+      result = {
+        allowed: false,
+        remaining: 0,
+        retryAfter: Math.ceil(blockMs / 1000),
+      }
+      return
+    }
+
+    updateRateLimitStmt.run(nextCount, entry.first_attempt, 0, now, key)
+    result = {
+      allowed: true,
+      remaining: Math.max(0, maxAttempts - nextCount),
+      retryAfter: 0,
+    }
+  })
+
+  run()
+  return result
 }
 
 /**
  * Reset rate limit for a key (e.g. after successful login).
  */
 export function resetRateLimit(key: string) {
-  store.delete(key)
+  deleteRateLimitStmt.run(key)
+}
+
+/**
+ * Remove stale rate-limit rows.
+ */
+export function cleanupRateLimits(retentionMs: number = 24 * 60 * 60 * 1000) {
+  const now = Date.now()
+  cleanupRateLimitStmt.run(now - retentionMs, now)
 }
 
 /**

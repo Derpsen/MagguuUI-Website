@@ -218,8 +218,9 @@ cd /mnt/user/appdata/nuxt && git fetch origin main && git reset --hard origin/ma
 - **SSR für Public Pages, CSR für Admin:** Admin-Bereich nutzt `ssr: false` (Route Rule in nuxt.config.ts) um Auth-Token-Flash zu vermeiden
 - **SQLite mit WAL-Modus:** Einfache Deployment-Strategie für Single-Server, `busy_timeout = 5000`
 - **JWT Auth (24h Expiry):** Token in localStorage, Server-Middleware validiert alle `/api/v1/admin/*` Requests
+- **HttpOnly Cookie Support:** Backend setzt zusätzlich ein Same-Origin HttpOnly Session-Cookie, Bearer-Token bleibt für den bestehenden Admin-Client kompatibel
 - **WebAuthn/Passkeys:** Biometrische Authentifizierung via SimpleWebAuthn (Registration + Login)
-- **Rate Limiting:** Login auf 5 Versuche pro 15 Minuten pro IP begrenzt
+- **Rate Limiting:** Login auf 5 Versuche pro 15 Minuten pro IP begrenzt, persistent in SQLite statt nur im Prozessspeicher
 - **Monolithisch:** Ein Nuxt-App für Public + Admin + API
 - **Runtime-Daten bleiben lokal:** `.env`, `data/`, `uploads/` werden nicht in dasselbe Deploy-Repo committed
 - **Keine Tests:** Kein Testing-Framework konfiguriert
@@ -523,3 +524,4 @@ NUXT_GITHUB_WEBHOOK_SECRET= # Webhook Secret
 - [ ] **Tests hinzufügen:** Kein Testing-Framework konfiguriert (Vitest empfohlen)
 - [ ] **Linter/Formatter:** ESLint + Prettier oder Biome einrichten
 - [ ] **Lockfile im Repo:** Dann kann der Docker-Build auf `npm ci` umgestellt werden
+- [ ] **Frontend Auth Cleanup:** Admin-Client nutzt noch `localStorage`; Backend kann schon HttpOnly-Cookies, der Client ist dafür noch nicht vollständig umgestellt

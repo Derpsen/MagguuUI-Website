@@ -9,6 +9,7 @@ import { revokeSession } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
   const token = extractToken(event)
+  clearAuthCookie(event)
   if (!token) return { success: true }
 
   try {

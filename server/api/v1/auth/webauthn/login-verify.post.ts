@@ -88,6 +88,7 @@ export default defineEventHandler(async (event) => {
   const { getSessionTimeoutHours } = await import('~/server/utils/settings')
   const timeoutHours = getSessionTimeoutHours()
   const expiresAt = new Date(Date.now() + timeoutHours * 60 * 60 * 1000)
+  const maxAgeSeconds = timeoutHours * 60 * 60
 
   const token = createToken({
     userId: user.id,
@@ -111,6 +112,7 @@ export default defineEventHandler(async (event) => {
     role: user.role,
     sessionId: session.id,
   })
+  setAuthCookie(event, finalToken, maxAgeSeconds)
 
   // Update session tokenHash
   const { sqlite } = await import('~/server/database')
@@ -126,6 +128,7 @@ export default defineEventHandler(async (event) => {
   })
 
   return {
+    success: true,
     data: {
       token: finalToken,
       sessionId: session.id,

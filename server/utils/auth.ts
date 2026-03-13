@@ -17,6 +17,25 @@ interface JwtPayload {
   sessionId?: number
 }
 
+function getAuthCookieName() {
+  const config = useRuntimeConfig()
+  return config.authCookieName || 'magguuui_session'
+}
+
+export function setAuthCookie(event: H3Event, token: string, maxAgeSeconds: number) {
+  setCookie(event, getAuthCookieName(), token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: maxAgeSeconds,
+    path: '/',
+  })
+}
+
+export function clearAuthCookie(event: H3Event) {
+  deleteCookie(event, getAuthCookieName(), { path: '/' })
+}
+
 /**
  * Create a signed JWT token
  */
@@ -39,8 +58,12 @@ export function verifyToken(token: string): JwtPayload {
  */
 export function extractToken(event: H3Event): string | null {
   const header = getHeader(event, 'authorization')
-  if (!header?.startsWith('Bearer ')) return null
-  return header.slice(7)
+  if (header?.startsWith('Bearer ')) return header.slice(7)
+
+  const cookieToken = getCookie(event, getAuthCookieName())
+  if (cookieToken) return cookieToken
+
+  return null
 }
 
 /**

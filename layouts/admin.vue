@@ -5,10 +5,10 @@
         class="fixed inset-y-0 left-0 z-40 px-2.5 py-2.5 transition-all duration-300"
         :class="[
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-          collapsed ? 'w-[4rem]' : 'w-[12rem]',
+          collapsed ? 'w-[4.25rem]' : 'w-[13.5rem]',
         ]"
       >
-        <div class="admin-sidebar-shell flex h-full flex-col overflow-hidden rounded-[1.2rem] p-2.5">
+        <div class="admin-sidebar-shell flex h-full flex-col overflow-hidden rounded-[1.35rem] p-3">
           <div class="admin-sidebar-brand">
             <NuxtLink to="/admin" class="flex min-w-0 items-center gap-3">
               <div class="admin-workspace-card__logo">
@@ -117,7 +117,7 @@
         @click="sidebarOpen = false"
       />
 
-      <div class="admin-main-shell transition-all duration-300" :class="collapsed ? 'lg:pl-[4rem]' : 'lg:pl-[12rem]'">
+      <div class="admin-main-shell transition-all duration-300" :class="collapsed ? 'lg:pl-[4.25rem]' : 'lg:pl-[13.5rem]'">
         <div class="mx-auto flex min-h-screen w-full max-w-[1680px] flex-col px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pb-8">
           <header class="admin-toolbar-shell sticky top-3 z-20 mb-5 rounded-[1.15rem]">
             <div class="admin-toolbar-shell__row">

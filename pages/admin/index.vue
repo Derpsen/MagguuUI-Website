@@ -181,12 +181,14 @@
               </div>
 
               <div class="relative flex h-full items-end gap-2">
-                <div v-for="(day, idx) in last7Copies" :key="idx" class="flex flex-1 flex-col items-center gap-2">
+                <div v-for="day in last7Copies" :key="day.day" class="flex h-full flex-1 flex-col items-center gap-2">
                   <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ day.count }}</span>
-                  <div
-                    class="w-full rounded-t-xl bg-blue-500/80 transition hover:bg-blue-500"
-                    :style="{ height: `${barHeight(day.count, maxLast7)}%`, minHeight: day.count > 0 ? '10px' : '4px' }"
-                  />
+                  <div class="flex w-full flex-1 items-end">
+                    <div
+                      class="w-full rounded-t-xl bg-blue-500/80 transition hover:bg-blue-500"
+                      :style="{ height: `${barHeight(day.count, maxLast7)}%`, minHeight: day.count > 0 ? '10px' : '4px' }"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -309,8 +311,29 @@ const releaseSteps = [
   },
 ]
 
-const last7Copies = computed(() => (stats.value?.dailyCopies || []).slice(-7))
-const prev7Copies = computed(() => (stats.value?.dailyCopies || []).slice(-14, -7))
+function buildDailySeries(source: Array<{ day: string; count: number | string }> | undefined, days: number) {
+  const endDate = new Date()
+  endDate.setHours(0, 0, 0, 0)
+
+  const countByDay = new Map(
+    (source || []).map(item => [item.day, Number(item.count) || 0]),
+  )
+
+  return Array.from({ length: days }, (_, index) => {
+    const date = new Date(endDate)
+    date.setDate(endDate.getDate() - (days - 1 - index))
+    const day = date.toISOString().slice(0, 10)
+
+    return {
+      day,
+      count: countByDay.get(day) ?? 0,
+    }
+  })
+}
+
+const copySeries14 = computed(() => buildDailySeries(stats.value?.dailyCopies, 14))
+const last7Copies = computed(() => copySeries14.value.slice(-7))
+const prev7Copies = computed(() => copySeries14.value.slice(0, 7))
 const maxLast7 = computed(() => Math.max(1, ...last7Copies.value.map(day => day.count)))
 const trendPercent = computed(() => {
   const current = last7Copies.value.reduce((sum, day) => sum + day.count, 0)

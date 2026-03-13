@@ -420,12 +420,14 @@ const BarChart = defineComponent({
           ]),
           h("div", { class: "relative flex h-full items-end gap-2" },
             props.data.map((item, index) =>
-              h("div", { key: `${item.day}-${index}`, class: "flex flex-1 flex-col items-center gap-2" }, [
+              h("div", { key: `${item.day}-${index}`, class: "flex h-full flex-1 flex-col items-center gap-2" }, [
                 h("span", { class: "text-[11px] font-medium text-slate-500 dark:text-slate-400" }, String(item.count)),
-                h("div", {
-                  class: `w-full rounded-t-xl transition-colors ${props.toneClass}`,
-                  style: { height: `${height(item.count)}%`, minHeight: item.count > 0 ? "10px" : "4px" },
-                }),
+                h("div", { class: "flex w-full flex-1 items-end" }, [
+                  h("div", {
+                    class: `w-full rounded-t-xl transition-colors ${props.toneClass}`,
+                    style: { height: `${height(item.count)}%`, minHeight: item.count > 0 ? "10px" : "4px" },
+                  }),
+                ]),
               ]),
             ),
           ),

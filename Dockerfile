@@ -11,6 +11,7 @@ RUN npm install --legacy-peer-deps --no-audit --no-fund && npm cache clean --for
 
 # Copy source and build
 COPY . .
+ENV NODE_ENV=production
 RUN npm run build
 
 # ─── Production Stage ────────────────────────────

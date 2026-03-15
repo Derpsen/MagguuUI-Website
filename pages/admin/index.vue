@@ -17,6 +17,9 @@
         <UButton size="sm" color="neutral" variant="ghost" icon="i-heroicons-arrow-path" :loading="refreshing" @click="refreshAll">
           Refresh
         </UButton>
+        <UButton size="sm" color="neutral" variant="ghost" icon="i-heroicons-squares-2x2" @click="resetDashboardLayout">
+          Reset layout
+        </UButton>
       </template>
     </AdminPageHeader>
 
@@ -135,156 +138,225 @@
         </div>
       </div>
 
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(320px,0.78fr)]">
-        <AdminPanel title="Release focus" description="The current release lane without the extra dashboard noise." icon="i-heroicons-bolt">
-          <div class="space-y-5">
-            <div class="flex flex-wrap items-center gap-3">
-              <UButton to="/admin/strings/profiles" icon="i-heroicons-plus-circle">
-                Profiles
-              </UButton>
-              <UButton to="/admin/content/changelog" color="neutral" variant="ghost" icon="i-heroicons-document-text">
-                Changelog
-              </UButton>
-              <UButton to="/admin/system/github" color="neutral" variant="ghost" icon="i-simple-icons-github">
-                GitHub
-              </UButton>
-            </div>
-
-            <div class="grid gap-3 sm:grid-cols-2">
-              <div v-for="item in releaseFocusCards" :key="item.eyebrow" class="admin-subpanel">
-                <p class="admin-row__eyebrow">{{ item.eyebrow }}</p>
-                <p class="mt-3 text-lg font-semibold tracking-tight text-slate-950 dark:text-white">{{ item.title }}</p>
-                <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ item.description }}</p>
-              </div>
-            </div>
-          </div>
-        </AdminPanel>
-
-        <AdminPanel title="Watchlist" description="Compact signal stack for release, freshness, recent updates and cadence." icon="i-heroicons-shield-check">
-          <div class="admin-status-list">
-            <div
-              v-for="signal in statusSignals"
-              :key="signal.label"
-              class="admin-status-row"
-              :class="signal.tone === 'warning' ? 'admin-status-row--attention' : ''"
-            >
-              <span class="admin-status-row__label">{{ signal.label }}</span>
-              <span class="admin-status-row__value">{{ signal.value }}</span>
-            </div>
-          </div>
-        </AdminPanel>
-      </div>
-
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)]">
-        <AdminPanel title="Recent activity" description="Latest changes across content and data." icon="i-heroicons-clock">
-          <div v-if="stats.recentActivity?.length" class="space-y-2">
-            <div
-              v-for="item in stats.recentActivity.slice(0, 6)"
-              :key="item.id"
-              class="admin-activity-row"
-            >
-              <div class="admin-command__item-icon" :class="activityTone(item.action)">
-                <UIcon :name="actionIcon(item.action)" class="h-4 w-4" />
-              </div>
-
-              <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-2">
-                  <p class="truncate text-sm font-medium text-slate-950 dark:text-white">{{ item.entityName || typeLabel(item.entityType) }}</p>
-                  <UBadge :color="item.action === 'created' ? 'success' : item.action === 'updated' ? 'info' : 'error'" variant="subtle">
-                    {{ item.action }}
-                  </UBadge>
-                </div>
-                <p class="mt-1 text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">{{ typeLabel(item.entityType) }}</p>
-              </div>
-
-              <span class="text-xs text-slate-500 dark:text-slate-400">{{ timeAgo(item.createdAt) }}</span>
-            </div>
-          </div>
-
-          <AdminEmptyState
-            v-else
-            icon="i-heroicons-clock"
-            title="No activity yet"
-            description="Changes will appear here once content or settings are updated."
-          />
-        </AdminPanel>
-
-        <div class="space-y-5">
-          <AdminPanel title="Top demand" description="The strings people currently pull the most." icon="i-heroicons-fire">
-            <div v-if="topDemandItems.length" class="admin-list">
-              <div v-for="item in topDemandItems" :key="`${item.string_type}-${item.name}`" class="admin-row">
-                <div class="admin-row__content">
-                  <p class="admin-row__title">{{ item.name }}</p>
-                  <p class="admin-row__meta">{{ typeLabel(item.string_type) }}</p>
-                </div>
-                <div class="admin-row__actions">
-                  <UBadge color="info" variant="subtle" size="xs">{{ item.copies }}x</UBadge>
-                </div>
-              </div>
-            </div>
-
-            <AdminEmptyState
-              v-else
-              icon="i-heroicons-fire"
-              title="No demand data"
-              description="Copied strings will appear here once users start pulling data."
-            />
-          </AdminPanel>
-
-          <AdminPanel title="Traffic snapshot" description="Views, visitors and copy momentum for the last seven days." icon="i-heroicons-chart-bar">
-            <div class="grid gap-3 sm:grid-cols-3">
-              <div v-for="card in trafficCards" :key="card.label" class="admin-subpanel">
-                <p class="admin-row__eyebrow">{{ card.label }}</p>
-                <p class="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{{ card.value }}</p>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ card.hint }}</p>
-              </div>
-            </div>
-
-            <div v-if="trafficTrendPills.length" class="mt-4 flex flex-wrap gap-2">
-              <span
-                v-for="pill in trafficTrendPills"
-                :key="pill.label"
-                class="admin-pill"
-                :class="pill.tone"
-              >
-                {{ pill.label }} {{ pill.value }}
+      <div class="admin-dashboard-grid">
+        <section
+          v-for="module in orderedModules"
+          :key="module.id"
+          class="admin-dashboard-module"
+          :class="[
+            module.layoutClass,
+            draggedModuleId === module.id ? 'admin-dashboard-module--dragging' : '',
+            dragTargetId === module.id ? 'admin-dashboard-module--drop' : '',
+          ]"
+          draggable="true"
+          @dragstart="handleModuleDragStart(module.id)"
+          @dragover.prevent="handleModuleDragOver(module.id)"
+          @drop.prevent="handleModuleDrop(module.id)"
+          @dragend="handleModuleDragEnd"
+        >
+          <AdminPanel :title="module.title" :description="module.description" :icon="module.icon">
+            <template #actions>
+              <span class="admin-module-hint hidden xl:inline-flex">
+                <UIcon name="i-heroicons-arrows-up-down" class="h-3.5 w-3.5" />
+                Drag
               </span>
-            </div>
+            </template>
 
-            <div v-if="last7Copies.length" class="mt-5">
-              <div class="relative h-32">
-                <div class="absolute inset-0 flex flex-col justify-between">
-                  <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
-                  <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
-                  <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
-                  <div />
+            <template v-if="module.id === 'release-focus'">
+              <div class="space-y-5">
+                <div class="flex flex-wrap items-center gap-3">
+                  <UButton to="/admin/strings/profiles" icon="i-heroicons-plus-circle">
+                    Profiles
+                  </UButton>
+                  <UButton to="/admin/content/changelog" color="neutral" variant="ghost" icon="i-heroicons-document-text">
+                    Changelog
+                  </UButton>
+                  <UButton to="/admin/system/github" color="neutral" variant="ghost" icon="i-simple-icons-github">
+                    GitHub
+                  </UButton>
                 </div>
 
-                <div class="relative flex h-full items-end gap-2">
-                  <div v-for="day in last7Copies" :key="day.day" class="flex h-full flex-1 flex-col items-center gap-2">
-                    <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ day.count }}</span>
-                    <div class="flex w-full flex-1 items-end">
-                      <div
-                        class="w-full rounded-t-xl bg-blue-500/80 transition hover:bg-blue-500"
-                        :style="{ height: `${barHeight(day.count, maxLast7)}%`, minHeight: day.count > 0 ? '10px' : '4px' }"
-                      />
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <div v-for="item in releaseFocusCards" :key="item.eyebrow" class="admin-subpanel">
+                    <p class="admin-row__eyebrow">{{ item.eyebrow }}</p>
+                    <p class="mt-3 text-lg font-semibold tracking-tight text-slate-950 dark:text-white">{{ item.title }}</p>
+                    <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ item.description }}</p>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <template v-else-if="module.id === 'control-center'">
+              <div class="space-y-4">
+                <div class="grid gap-3 sm:grid-cols-3">
+                  <div v-for="card in controlCenterCards" :key="card.label" class="admin-kpi-tile">
+                    <p class="admin-kpi-tile__label">{{ card.label }}</p>
+                    <p class="admin-kpi-tile__value">{{ card.value }}</p>
+                    <p class="admin-kpi-tile__note">{{ card.hint }}</p>
+                  </div>
+                </div>
+
+                <div class="admin-list">
+                  <NuxtLink v-for="item in controlCenterLinks" :key="item.label" :to="item.to" class="admin-row">
+                    <div class="flex min-w-0 flex-1 items-start gap-3">
+                      <div class="admin-command__item-icon" :class="item.tone">
+                        <UIcon :name="item.icon" class="h-4 w-4" />
+                      </div>
+
+                      <div class="admin-row__content">
+                        <p class="admin-row__title">{{ item.label }}</p>
+                        <p class="admin-row__meta">{{ item.meta }}</p>
+                      </div>
                     </div>
+
+                    <UIcon name="i-heroicons-arrow-up-right" class="mt-0.5 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                  </NuxtLink>
+                </div>
+              </div>
+            </template>
+
+            <template v-else-if="module.id === 'watchlist'">
+              <div class="admin-status-list">
+                <div
+                  v-for="signal in statusSignals"
+                  :key="signal.label"
+                  class="admin-status-row"
+                  :class="signal.tone === 'warning' ? 'admin-status-row--attention' : ''"
+                >
+                  <span class="admin-status-row__label">{{ signal.label }}</span>
+                  <span class="admin-status-row__value">{{ signal.value }}</span>
+                </div>
+              </div>
+            </template>
+
+            <template v-else-if="module.id === 'release-lane'">
+              <div class="admin-list">
+                <div v-for="item in releaseLaneItems" :key="item.label" class="admin-row">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <p class="admin-row__title">{{ item.label }}</p>
+                      <span class="admin-pill" :class="item.tone">{{ item.badge }}</span>
+                    </div>
+                    <p class="admin-row__meta">{{ item.description }}</p>
+                  </div>
+
+                  <div class="shrink-0 text-right">
+                    <p class="text-sm font-semibold text-slate-950 dark:text-white">{{ item.value }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ item.caption }}</p>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <template v-else-if="module.id === 'recent-activity'">
+              <div v-if="stats.recentActivity?.length" class="space-y-2">
+                <div
+                  v-for="item in stats.recentActivity.slice(0, 6)"
+                  :key="item.id"
+                  class="admin-activity-row"
+                >
+                  <div class="admin-command__item-icon" :class="activityTone(item.action)">
+                    <UIcon :name="actionIcon(item.action)" class="h-4 w-4" />
+                  </div>
+
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <p class="truncate text-sm font-medium text-slate-950 dark:text-white">{{ item.entityName || typeLabel(item.entityType) }}</p>
+                      <UBadge :color="item.action === 'created' ? 'success' : item.action === 'updated' ? 'info' : 'error'" variant="subtle">
+                        {{ item.action }}
+                      </UBadge>
+                    </div>
+                    <p class="mt-1 text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">{{ typeLabel(item.entityType) }}</p>
+                  </div>
+
+                  <span class="text-xs text-slate-500 dark:text-slate-400">{{ timeAgo(item.createdAt) }}</span>
+                </div>
+              </div>
+
+              <AdminEmptyState
+                v-else
+                icon="i-heroicons-clock"
+                title="No activity yet"
+                description="Changes will appear here once content or settings are updated."
+              />
+            </template>
+
+            <template v-else-if="module.id === 'top-demand'">
+              <div v-if="topDemandItems.length" class="admin-list">
+                <div v-for="item in topDemandItems" :key="`${item.string_type}-${item.name}`" class="admin-row">
+                  <div class="admin-row__content">
+                    <p class="admin-row__title">{{ item.name }}</p>
+                    <p class="admin-row__meta">{{ typeLabel(item.string_type) }}</p>
+                  </div>
+                  <div class="admin-row__actions">
+                    <UBadge color="info" variant="subtle" size="xs">{{ item.copies }}x</UBadge>
                   </div>
                 </div>
               </div>
 
-              <div class="mt-2 grid grid-cols-7 gap-2">
+              <AdminEmptyState
+                v-else
+                icon="i-heroicons-fire"
+                title="No demand data"
+                description="Copied strings will appear here once users start pulling data."
+              />
+            </template>
+
+            <template v-else-if="module.id === 'traffic-snapshot'">
+              <div class="grid gap-3 sm:grid-cols-3">
+                <div v-for="card in trafficCards" :key="card.label" class="admin-subpanel">
+                  <p class="admin-row__eyebrow">{{ card.label }}</p>
+                  <p class="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{{ card.value }}</p>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ card.hint }}</p>
+                </div>
+              </div>
+
+              <div v-if="trafficTrendPills.length" class="mt-4 flex flex-wrap gap-2">
                 <span
-                  v-for="(day, idx) in last7Copies"
-                  :key="`label-${idx}`"
-                  class="text-center text-[11px] text-slate-500 dark:text-slate-400"
+                  v-for="pill in trafficTrendPills"
+                  :key="pill.label"
+                  class="admin-pill"
+                  :class="pill.tone"
                 >
-                  {{ shortDay(day.day) }}
+                  {{ pill.label }} {{ pill.value }}
                 </span>
               </div>
-            </div>
+
+              <div v-if="last7Copies.length" class="mt-5">
+                <div class="relative h-32">
+                  <div class="absolute inset-0 flex flex-col justify-between">
+                    <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
+                    <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
+                    <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
+                    <div />
+                  </div>
+
+                  <div class="relative flex h-full items-end gap-2">
+                    <div v-for="day in last7Copies" :key="day.day" class="flex h-full flex-1 flex-col items-center gap-2">
+                      <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ day.count }}</span>
+                      <div class="flex w-full flex-1 items-end">
+                        <div
+                          class="w-full rounded-t-xl bg-blue-500/80 transition hover:bg-blue-500"
+                          :style="{ height: `${barHeight(day.count, maxLast7)}%`, minHeight: day.count > 0 ? '10px' : '4px' }"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-2 grid grid-cols-7 gap-2">
+                  <span
+                    v-for="(day, idx) in last7Copies"
+                    :key="`label-${idx}`"
+                    class="text-center text-[11px] text-slate-500 dark:text-slate-400"
+                  >
+                    {{ shortDay(day.day) }}
+                  </span>
+                </div>
+              </div>
+            </template>
           </AdminPanel>
-        </div>
+        </section>
       </div>
     </template>
   </div>
@@ -338,8 +410,84 @@ interface Stats {
   topCopied?: TopCopiedItem[]
 }
 
+type DashboardModuleId =
+  | 'release-focus'
+  | 'control-center'
+  | 'watchlist'
+  | 'release-lane'
+  | 'recent-activity'
+  | 'top-demand'
+  | 'traffic-snapshot'
+
+const DASHBOARD_LAYOUT_STORAGE_KEY = 'admin-dashboard-layout-v2'
+const defaultDashboardOrder: DashboardModuleId[] = [
+  'release-focus',
+  'control-center',
+  'watchlist',
+  'release-lane',
+  'recent-activity',
+  'top-demand',
+  'traffic-snapshot',
+]
+
+const dashboardModuleMeta: Record<DashboardModuleId, {
+  id: DashboardModuleId
+  title: string
+  description: string
+  icon: string
+  layoutClass?: string
+}> = {
+  'release-focus': {
+    id: 'release-focus',
+    title: 'Release focus',
+    description: 'The current release lane without the extra dashboard noise.',
+    icon: 'i-heroicons-bolt',
+    layoutClass: 'admin-dashboard-module--feature',
+  },
+  'control-center': {
+    id: 'control-center',
+    title: 'Control center',
+    description: 'Quick actions, refresh pulse and the things that matter next.',
+    icon: 'i-heroicons-command-line',
+  },
+  watchlist: {
+    id: 'watchlist',
+    title: 'Watchlist',
+    description: 'Compact signal stack for release, freshness, recent updates and cadence.',
+    icon: 'i-heroicons-shield-check',
+  },
+  'release-lane': {
+    id: 'release-lane',
+    title: 'Release lane',
+    description: 'A calmer timeline for publish, profile and layout movement.',
+    icon: 'i-heroicons-rocket-launch',
+  },
+  'recent-activity': {
+    id: 'recent-activity',
+    title: 'Recent activity',
+    description: 'Latest changes across content and data.',
+    icon: 'i-heroicons-clock',
+  },
+  'top-demand': {
+    id: 'top-demand',
+    title: 'Top demand',
+    description: 'The strings people currently pull the most.',
+    icon: 'i-heroicons-fire',
+  },
+  'traffic-snapshot': {
+    id: 'traffic-snapshot',
+    title: 'Traffic snapshot',
+    description: 'Views, visitors and copy momentum for the last seven days.',
+    icon: 'i-heroicons-chart-bar',
+    layoutClass: 'admin-dashboard-module--panorama',
+  },
+}
+
 const stats = ref<Stats | null>(null)
 const refreshing = ref(false)
+const moduleOrder = ref<DashboardModuleId[]>([...defaultDashboardOrder])
+const draggedModuleId = ref<DashboardModuleId | null>(null)
+const dragTargetId = ref<DashboardModuleId | null>(null)
 
 const REFRESH_INTERVAL = 60
 const nextRefresh = ref(REFRESH_INTERVAL)
@@ -567,6 +715,173 @@ const statusSignals = computed(() => [
   },
 ])
 
+const controlCenterCards = computed(() => {
+  const data = stats.value
+  return [
+    {
+      label: 'Sync state',
+      value: versionData.value
+        ? (versionData.value.isUpToDate ? 'Ready' : 'Review')
+        : 'Unknown',
+      hint: versionData.value
+        ? (versionData.value.isUpToDate
+            ? 'Local release matches GitHub'
+            : `GitHub is ahead on v${versionData.value.latestVersion}`)
+        : 'Release status unavailable right now',
+    },
+    {
+      label: 'Next pulse',
+      value: `${nextRefresh.value}s`,
+      hint: `${notifItems.value.length || 0} alerts waiting · auto refresh running`,
+    },
+    {
+      label: 'Audience',
+      value: data?.uniquePageVisitorsLast7Days || 0,
+      hint: `${data?.pageViewsLast7Days || 0} views in the last seven days`,
+    },
+  ]
+})
+
+const controlCenterLinks = computed(() => {
+  const data = stats.value
+
+  return [
+    {
+      label: 'Publish update',
+      meta: data?.lastPublishedAt
+        ? `Last published ${timeAgo(data.lastPublishedAt)}`
+        : 'No changelog entry has been published yet',
+      to: '/admin/content/changelog',
+      icon: 'i-heroicons-document-text',
+      tone: 'admin-tone-brand',
+    },
+    {
+      label: 'Check GitHub sync',
+      meta: versionData.value?.isUpToDate
+        ? 'Repository and local release are aligned'
+        : 'Version check suggests a sync review',
+      to: '/admin/system/github',
+      icon: 'i-simple-icons-github',
+      tone: versionData.value?.isUpToDate ? 'admin-tone-success' : 'admin-tone-warning',
+    },
+    {
+      label: 'Review traffic',
+      meta: `${data?.apiCallsLast7Days || 0} API calls and ${data?.copiesLast7Days || 0} copies this week`,
+      to: '/admin/system/stats',
+      icon: 'i-heroicons-chart-bar',
+      tone: 'admin-tone-violet',
+    },
+  ]
+})
+
+const releaseLaneItems = computed(() => {
+  const data = stats.value
+
+  return [
+    {
+      label: 'Last publish',
+      value: data?.lastPublishedAt ? timeAgo(data.lastPublishedAt) : 'Not published',
+      caption: data?.lastPublishedAt ? absoluteDate(data.lastPublishedAt) : 'Changelog pending',
+      description: data?.lastPublishedAt
+        ? 'Public update text is already live and ready for users.'
+        : 'Your next changelog entry still needs a publish moment.',
+      badge: data?.lastPublishedAt ? 'Published' : 'Pending',
+      tone: data?.lastPublishedAt ? 'admin-pill--success' : 'admin-pill--warning',
+    },
+    {
+      label: 'Profiles',
+      value: data?.latestProfileUpdateAt ? timeAgo(data.latestProfileUpdateAt) : 'No data',
+      caption: data?.latestProfileUpdateAt ? absoluteDate(data.latestProfileUpdateAt) : 'No profile sync yet',
+      description: `${data?.profiles || 0} addon profiles tracked in the current inventory.`,
+      badge: data?.outdatedProfiles ? `${data.outdatedProfiles} stale` : 'Fresh',
+      tone: data?.outdatedProfiles ? 'admin-pill--warning' : 'admin-pill--success',
+    },
+    {
+      label: 'Layouts',
+      value: data?.latestLayoutUpdateAt ? timeAgo(data.latestLayoutUpdateAt) : 'No data',
+      caption: data?.latestLayoutUpdateAt ? absoluteDate(data.latestLayoutUpdateAt) : 'No layout sync yet',
+      description: `${data?.layouts || 0} class and spec layouts are available for distribution.`,
+      badge: data?.outdatedLayouts ? `${data.outdatedLayouts} stale` : 'Fresh',
+      tone: data?.outdatedLayouts ? 'admin-pill--warning' : 'admin-pill--success',
+    },
+    {
+      label: 'WowUp',
+      value: data?.latestWowupUpdateAt ? timeAgo(data.latestWowupUpdateAt) : 'No data',
+      caption: data?.latestWowupUpdateAt ? absoluteDate(data.latestWowupUpdateAt) : 'No WowUp sync yet',
+      description: `${data?.wowupStrings || 0} package strings are ready for the updater flow.`,
+      badge: (data?.wowupStrings || 0) > 0 ? 'Ready' : 'Empty',
+      tone: (data?.wowupStrings || 0) > 0 ? 'admin-pill--success' : 'admin-pill--warning',
+    },
+  ]
+})
+
+const orderedModules = computed(() =>
+  normalizeDashboardOrder(moduleOrder.value).map(id => dashboardModuleMeta[id]),
+)
+
+function normalizeDashboardOrder(order: DashboardModuleId[]) {
+  const seen = new Set<DashboardModuleId>()
+  const normalized = order.filter((id): id is DashboardModuleId => {
+    if (!(id in dashboardModuleMeta) || seen.has(id)) return false
+    seen.add(id)
+    return true
+  })
+
+  for (const id of defaultDashboardOrder) {
+    if (!seen.has(id)) normalized.push(id)
+  }
+
+  return normalized
+}
+
+function persistDashboardLayout() {
+  if (!import.meta.client) return
+  window.localStorage.setItem(DASHBOARD_LAYOUT_STORAGE_KEY, JSON.stringify(moduleOrder.value))
+}
+
+function resetDashboardLayout() {
+  moduleOrder.value = [...defaultDashboardOrder]
+  persistDashboardLayout()
+}
+
+function handleModuleDragStart(id: DashboardModuleId) {
+  draggedModuleId.value = id
+  dragTargetId.value = id
+}
+
+function handleModuleDragOver(id: DashboardModuleId) {
+  if (!draggedModuleId.value || draggedModuleId.value === id) return
+  dragTargetId.value = id
+}
+
+function handleModuleDrop(id: DashboardModuleId) {
+  const dragged = draggedModuleId.value
+  if (!dragged || dragged === id) {
+    handleModuleDragEnd()
+    return
+  }
+
+  const next = [...moduleOrder.value]
+  const fromIndex = next.indexOf(dragged)
+  const toIndex = next.indexOf(id)
+
+  if (fromIndex === -1 || toIndex === -1) {
+    handleModuleDragEnd()
+    return
+  }
+
+  next.splice(fromIndex, 1)
+  next.splice(toIndex, 0, dragged)
+  moduleOrder.value = normalizeDashboardOrder(next)
+  persistDashboardLayout()
+  handleModuleDragEnd()
+}
+
+function handleModuleDragEnd() {
+  draggedModuleId.value = null
+  dragTargetId.value = null
+}
+
 async function loadStats() {
   refreshing.value = true
   try {
@@ -656,7 +971,24 @@ function timeAgo(value: string | number | Date | null) {
   return date.toLocaleDateString('en', { day: '2-digit', month: 'short' })
 }
 
+function absoluteDate(value: string | number | Date | null) {
+  if (!value) return ''
+  const date = value instanceof Date ? value : typeof value === 'number' ? new Date(value * 1000) : new Date(value)
+  return date.toLocaleDateString('en', { day: '2-digit', month: 'short' })
+}
+
 onMounted(async () => {
+  if (import.meta.client) {
+    const stored = window.localStorage.getItem(DASHBOARD_LAYOUT_STORAGE_KEY)
+    if (stored) {
+      try {
+        moduleOrder.value = normalizeDashboardOrder(JSON.parse(stored) as DashboardModuleId[])
+      } catch {
+        moduleOrder.value = [...defaultDashboardOrder]
+      }
+    }
+  }
+
   await loadStats()
   await loadStoredVersion()
   notifRefresh(true)

@@ -1,11 +1,10 @@
 <template>
   <UApp>
-    <div class="admin-shell">
+    <div class="admin-shell" :style="adminShellStyle">
       <aside
-        class="fixed inset-y-0 left-0 z-40 px-4 py-4 transition-all duration-300"
+        class="admin-sidebar-frame fixed z-40 transition-all duration-300"
         :class="[
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-          collapsed ? 'w-[4.25rem]' : 'w-[14.75rem]',
         ]"
       >
         <div class="admin-sidebar-shell flex h-full flex-col overflow-hidden rounded-[1.35rem] p-3">
@@ -117,9 +116,9 @@
         @click="sidebarOpen = false"
       />
 
-      <div class="admin-main-shell transition-all duration-300" :class="collapsed ? 'lg:pl-[4.25rem]' : 'lg:pl-[14.75rem]'">
-        <div class="mx-auto flex min-h-screen w-full max-w-[1680px] flex-col px-4 pb-24 pt-4 lg:pb-8">
-          <header class="admin-toolbar-shell sticky top-4 z-20 mb-5 rounded-[1.15rem]">
+      <div class="admin-main-shell">
+        <div class="admin-main-frame mx-auto flex min-h-screen w-full max-w-[1760px] flex-col px-4 pb-24 lg:pb-8 lg:pl-0 lg:pr-4">
+          <header class="admin-toolbar-shell sticky z-20 mb-5 rounded-[1.15rem]">
             <div class="admin-toolbar-shell__row">
               <button class="admin-icon-button lg:hidden" @click="sidebarOpen = !sidebarOpen">
                 <UIcon name="i-heroicons-bars-3" class="h-5 w-5" />
@@ -293,6 +292,9 @@ const notifPanelRef = ref<HTMLElement | null>(null)
 const searchShortcut = computed(() => isMac.value ? 'Cmd K' : 'Ctrl K')
 const userInitial = computed(() => (user.value?.username || 'A').charAt(0).toUpperCase())
 const pageHeading = computed(() => currentContext.value.heading || currentContext.value.label)
+const adminShellStyle = computed(() => ({
+  '--admin-sidebar-width': collapsed.value ? '4.85rem' : '15.25rem',
+}))
 const activeSection = computed(() =>
   sections.find(section => section.links.some(link => isRouteActive(link.to)))?.title ?? sections[0]?.title ?? '',
 )

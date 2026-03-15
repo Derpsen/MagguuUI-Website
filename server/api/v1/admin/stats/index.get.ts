@@ -140,6 +140,18 @@ export default defineEventHandler(async () => {
   const outdatedLayouts = db.get<{ count: number }>(sql`
     SELECT COUNT(*) as count FROM character_layouts WHERE updated_at < ${thirtyDaysAgo}
   `)
+  const latestProfileUpdate = db.get<{ updatedAt: number | null }>(sql`
+    SELECT MAX(updated_at) as updatedAt FROM profiles
+  `)
+  const latestWowupUpdate = db.get<{ updatedAt: number | null }>(sql`
+    SELECT MAX(updated_at) as updatedAt FROM wowup_strings
+  `)
+  const latestLayoutUpdate = db.get<{ updatedAt: number | null }>(sql`
+    SELECT MAX(updated_at) as updatedAt FROM character_layouts
+  `)
+  const latestPublishedChangelog = db.get<{ publishedAt: number | null }>(sql`
+    SELECT MAX(published_at) as publishedAt FROM changelogs WHERE is_published = 1
+  `)
 
   // ─── Average String Size per Addon ────────────────
   const avgStringSizes = db.all(sql`
@@ -263,6 +275,10 @@ export default defineEventHandler(async () => {
       apiTrend,
       outdatedProfiles: outdatedProfiles?.count || 0,
       outdatedLayouts: outdatedLayouts?.count || 0,
+      latestProfileUpdateAt: latestProfileUpdate?.updatedAt || null,
+      latestWowupUpdateAt: latestWowupUpdate?.updatedAt || null,
+      latestLayoutUpdateAt: latestLayoutUpdate?.updatedAt || null,
+      lastPublishedAt: latestPublishedChangelog?.publishedAt || null,
       avgStringSizes,
       hourlyCopies,
       // Page view analytics

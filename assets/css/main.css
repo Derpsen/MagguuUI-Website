@@ -1072,7 +1072,6 @@ html.dark .admin-user-chip__avatar {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: -0.15rem;
 }
 
 .admin-page-header__content {
@@ -1139,7 +1138,6 @@ html.dark .admin-user-chip__avatar {
 
 .admin-page-shell {
   min-width: 0;
-  padding-top: 0.15rem;
 }
 
 .admin-panel {

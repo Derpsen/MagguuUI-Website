@@ -2,7 +2,7 @@
   <UApp>
     <div class="admin-shell">
       <aside
-        class="fixed inset-y-0 left-0 z-40 px-2.5 py-2.5 transition-all duration-300"
+        class="fixed inset-y-0 left-0 z-40 px-4 py-4 transition-all duration-300"
         :class="[
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
           collapsed ? 'w-[4.25rem]' : 'w-[14.75rem]',
@@ -118,8 +118,8 @@
       />
 
       <div class="admin-main-shell transition-all duration-300" :class="collapsed ? 'lg:pl-[4.25rem]' : 'lg:pl-[14.75rem]'">
-        <div class="mx-auto flex min-h-screen w-full max-w-[1680px] flex-col px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pb-8">
-          <header class="admin-toolbar-shell sticky top-3 z-20 mb-5 rounded-[1.15rem]">
+        <div class="mx-auto flex min-h-screen w-full max-w-[1680px] flex-col px-4 pb-24 pt-4 lg:pb-8">
+          <header class="admin-toolbar-shell sticky top-4 z-20 mb-5 rounded-[1.15rem]">
             <div class="admin-toolbar-shell__row">
               <button class="admin-icon-button lg:hidden" @click="sidebarOpen = !sidebarOpen">
                 <UIcon name="i-heroicons-bars-3" class="h-5 w-5" />

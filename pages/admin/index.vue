@@ -4,10 +4,13 @@
       icon="i-heroicons-squares-2x2"
       eyebrow="Overview"
       title="Dashboard"
-      description="One primary action, the current signals and the latest activity."
+      description="Release health, string freshness and the latest activity in one compact view."
     >
       <template #meta>
-        <span v-if="stats" class="admin-pill">Auto refresh {{ nextRefresh }}s</span>
+        <div class="flex flex-wrap items-center gap-2">
+          <span v-if="stats" class="admin-pill">Auto refresh {{ nextRefresh }}s</span>
+          <span v-if="lastActivityText && stats" class="admin-pill">{{ lastActivityText }}</span>
+        </div>
       </template>
 
       <template #actions>
@@ -24,18 +27,30 @@
         </div>
       </div>
 
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,0.88fr)_minmax(320px,0.72fr)]">
-        <AdminPanel title="Primary action" description="Loading release focus." icon="i-heroicons-bolt">
+      <div class="admin-filterbar">
+        <div class="h-5 w-32 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+        <div class="h-5 w-24 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+        <div class="h-5 w-28 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+        <div class="ml-auto h-5 w-52 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+      </div>
+
+      <div class="grid gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(320px,0.78fr)]">
+        <AdminPanel title="Release focus" description="Preparing the current release picture." icon="i-heroicons-bolt">
           <div class="space-y-4">
-            <div class="h-8 w-56 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-            <div class="h-4 w-full max-w-xl rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-            <div class="h-10 w-32 rounded-xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+            <div class="h-10 w-64 rounded-xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div v-for="item in 4" :key="`focus-${item}`" class="admin-subpanel">
+                <div class="h-3 w-20 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+                <div class="mt-3 h-6 w-28 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+                <div class="mt-2 h-3 w-full rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+              </div>
+            </div>
           </div>
         </AdminPanel>
 
-        <AdminPanel title="Ops status" description="Loading system signals." icon="i-heroicons-shield-check">
+        <AdminPanel title="Watchlist" description="Loading operational signals." icon="i-heroicons-shield-check">
           <div class="space-y-2">
-            <div v-for="i in 3" :key="`signal-${i}`" class="admin-status-row">
+            <div v-for="i in 9" :key="`watch-${i}`" class="admin-status-row">
               <div class="h-3 w-20 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
               <div class="h-3 w-24 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
             </div>
@@ -43,10 +58,10 @@
         </AdminPanel>
       </div>
 
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,1.12fr)_minmax(320px,0.88fr)]">
+      <div class="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)]">
         <AdminPanel title="Recent activity" description="Loading the latest changes." icon="i-heroicons-clock">
           <div class="space-y-2">
-            <div v-for="i in 4" :key="`activity-${i}`" class="admin-activity-row">
+            <div v-for="i in 5" :key="`activity-${i}`" class="admin-activity-row">
               <div class="h-9 w-9 rounded-xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
               <div class="flex-1 space-y-2">
                 <div class="h-3 w-40 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
@@ -56,9 +71,29 @@
           </div>
         </AdminPanel>
 
-        <AdminPanel title="Usage trend" description="Loading copy activity." icon="i-heroicons-chart-bar">
-          <div class="h-48 rounded-2xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-        </AdminPanel>
+        <div class="space-y-5">
+          <AdminPanel title="Top demand" description="Loading copy demand." icon="i-heroicons-fire">
+            <div class="space-y-2">
+              <div v-for="i in 3" :key="`demand-${i}`" class="admin-row">
+                <div class="flex-1 space-y-2">
+                  <div class="h-3 w-32 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+                  <div class="h-3 w-24 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+                </div>
+                <div class="h-5 w-12 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+              </div>
+            </div>
+          </AdminPanel>
+
+          <AdminPanel title="Traffic snapshot" description="Loading traffic and momentum." icon="i-heroicons-chart-bar">
+            <div class="grid gap-3 sm:grid-cols-3">
+              <div v-for="i in 3" :key="`traffic-${i}`" class="admin-subpanel">
+                <div class="h-3 w-16 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+                <div class="mt-3 h-6 w-20 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+              </div>
+            </div>
+            <div class="mt-5 h-32 rounded-2xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+          </AdminPanel>
+        </div>
       </div>
     </div>
 
@@ -77,35 +112,55 @@
         />
       </div>
 
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,0.88fr)_minmax(320px,0.72fr)]">
-        <AdminPanel title="Primary action" description="Start the next release from one clean record." icon="i-heroicons-bolt">
-          <div class="space-y-6">
-            <div class="max-w-xl">
-              <p class="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
-                Create the next profile.
-              </p>
-              <p class="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-400">
-                Profiles are still the cleanest starting point for a release. Add the profile first, then publish the matching update once it is ready.
-              </p>
-            </div>
+      <div class="admin-filterbar">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="admin-context-chip">Release radar</span>
+          <span class="admin-pill" :class="versionData && !versionData.isUpToDate ? 'admin-pill--warning' : 'admin-pill--success'">
+            Version {{ versionStatusChip }}
+          </span>
+          <span class="admin-pill" :class="notifItems.length ? 'admin-pill--warning' : 'admin-pill--success'">
+            Alerts {{ notifItems.length ? `${notifItems.length} open` : 'clear' }}
+          </span>
+          <span class="admin-pill" :class="totalStaleStrings ? 'admin-pill--warning' : 'admin-pill--success'">
+            Stale {{ totalStaleStrings }}
+          </span>
+        </div>
 
+        <div class="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+          <span>{{ stats.apiCallsLast7Days || 0 }} API calls 7d</span>
+          <span>•</span>
+          <span>{{ stats.totalActivities || 0 }} tracked changes</span>
+          <span>•</span>
+          <span>{{ stats.uniquePageVisitorsLast7Days || 0 }} visitors 7d</span>
+        </div>
+      </div>
+
+      <div class="grid gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(320px,0.78fr)]">
+        <AdminPanel title="Release focus" description="The current release lane without the extra dashboard noise." icon="i-heroicons-bolt">
+          <div class="space-y-5">
             <div class="flex flex-wrap items-center gap-3">
-              <UButton to="/admin/strings/profiles?action=create" icon="i-heroicons-plus-circle">
-                New profile
+              <UButton to="/admin/strings/profiles" icon="i-heroicons-plus-circle">
+                Profiles
+              </UButton>
+              <UButton to="/admin/content/changelog" color="neutral" variant="ghost" icon="i-heroicons-document-text">
+                Changelog
+              </UButton>
+              <UButton to="/admin/system/github" color="neutral" variant="ghost" icon="i-simple-icons-github">
+                GitHub
               </UButton>
             </div>
 
-            <div class="grid gap-3 sm:grid-cols-3">
-              <div v-for="step in releaseSteps" :key="step.title" class="admin-subpanel">
-                <p class="admin-row__eyebrow">{{ step.eyebrow }}</p>
-                <p class="mt-3 text-sm font-semibold text-slate-950 dark:text-white">{{ step.title }}</p>
-                <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ step.description }}</p>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div v-for="item in releaseFocusCards" :key="item.eyebrow" class="admin-subpanel">
+                <p class="admin-row__eyebrow">{{ item.eyebrow }}</p>
+                <p class="mt-3 text-lg font-semibold tracking-tight text-slate-950 dark:text-white">{{ item.title }}</p>
+                <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ item.description }}</p>
               </div>
             </div>
           </div>
         </AdminPanel>
 
-        <AdminPanel title="Ops status" description="Short signal stack for version, alerts and refresh cadence." icon="i-heroicons-shield-check">
+        <AdminPanel title="Watchlist" description="Compact signal stack for release, freshness, recent updates and cadence." icon="i-heroicons-shield-check">
           <div class="admin-status-list">
             <div
               v-for="signal in statusSignals"
@@ -120,7 +175,7 @@
         </AdminPanel>
       </div>
 
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,1.12fr)_minmax(320px,0.88fr)]">
+      <div class="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)]">
         <AdminPanel title="Recent activity" description="Latest changes across content and data." icon="i-heroicons-clock">
           <div v-if="stats.recentActivity?.length" class="space-y-2">
             <div
@@ -154,70 +209,82 @@
           />
         </AdminPanel>
 
-        <AdminPanel title="Usage trend" description="Copy activity over the last seven days." icon="i-heroicons-chart-bar">
-          <div class="flex items-end justify-between gap-4">
-            <div>
-              <p class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">{{ stats.copiesLast7Days || 0 }}</p>
-              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">copies in the last 7 days</p>
-            </div>
-
-            <div
-              v-if="trendPercent !== null"
-              class="admin-metric-card__trend"
-              :class="trendPercent >= 0 ? 'admin-metric-card__trend--up' : 'admin-metric-card__trend--down'"
-            >
-              <UIcon :name="trendPercent >= 0 ? 'i-heroicons-arrow-trending-up' : 'i-heroicons-arrow-trending-down'" class="h-3.5 w-3.5" />
-              <span>{{ Math.abs(trendPercent) }}%</span>
-            </div>
-          </div>
-
-          <div v-if="last7Copies.length" class="mt-5">
-            <div class="relative h-36">
-              <div class="absolute inset-0 flex flex-col justify-between">
-                <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
-                <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
-                <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
-                <div />
-              </div>
-
-              <div class="relative flex h-full items-end gap-2">
-                <div v-for="day in last7Copies" :key="day.day" class="flex h-full flex-1 flex-col items-center gap-2">
-                  <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ day.count }}</span>
-                  <div class="flex w-full flex-1 items-end">
-                    <div
-                      class="w-full rounded-t-xl bg-blue-500/80 transition hover:bg-blue-500"
-                      :style="{ height: `${barHeight(day.count, maxLast7)}%`, minHeight: day.count > 0 ? '10px' : '4px' }"
-                    />
-                  </div>
+        <div class="space-y-5">
+          <AdminPanel title="Top demand" description="The strings people currently pull the most." icon="i-heroicons-fire">
+            <div v-if="topDemandItems.length" class="admin-list">
+              <div v-for="item in topDemandItems" :key="`${item.string_type}-${item.name}`" class="admin-row">
+                <div class="admin-row__content">
+                  <p class="admin-row__title">{{ item.name }}</p>
+                  <p class="admin-row__meta">{{ typeLabel(item.string_type) }}</p>
+                </div>
+                <div class="admin-row__actions">
+                  <UBadge color="info" variant="subtle" size="xs">{{ item.copies }}x</UBadge>
                 </div>
               </div>
             </div>
 
-            <div class="mt-2 grid grid-cols-7 gap-2">
+            <AdminEmptyState
+              v-else
+              icon="i-heroicons-fire"
+              title="No demand data"
+              description="Copied strings will appear here once users start pulling data."
+            />
+          </AdminPanel>
+
+          <AdminPanel title="Traffic snapshot" description="Views, visitors and copy momentum for the last seven days." icon="i-heroicons-chart-bar">
+            <div class="grid gap-3 sm:grid-cols-3">
+              <div v-for="card in trafficCards" :key="card.label" class="admin-subpanel">
+                <p class="admin-row__eyebrow">{{ card.label }}</p>
+                <p class="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{{ card.value }}</p>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ card.hint }}</p>
+              </div>
+            </div>
+
+            <div v-if="trafficTrendPills.length" class="mt-4 flex flex-wrap gap-2">
               <span
-                v-for="(day, idx) in last7Copies"
-                :key="`label-${idx}`"
-                class="text-center text-[11px] text-slate-500 dark:text-slate-400"
+                v-for="pill in trafficTrendPills"
+                :key="pill.label"
+                class="admin-pill"
+                :class="pill.tone"
               >
-                {{ shortDay(day.day) }}
+                {{ pill.label }} {{ pill.value }}
               </span>
             </div>
-          </div>
 
-          <AdminEmptyState
-            v-else
-            icon="i-heroicons-chart-bar"
-            title="No trend data"
-            description="Traffic and copy charts will appear once events have been recorded."
-          />
+            <div v-if="last7Copies.length" class="mt-5">
+              <div class="relative h-32">
+                <div class="absolute inset-0 flex flex-col justify-between">
+                  <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
+                  <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
+                  <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
+                  <div />
+                </div>
 
-          <template #footer>
-            <div class="flex w-full flex-wrap items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
-              <span><strong class="text-slate-950 dark:text-white">{{ stats.pageViewsLast7Days || 0 }}</strong> page views</span>
-              <span><strong class="text-slate-950 dark:text-white">{{ stats.uniqueVisitors || 0 }}</strong> visitors</span>
+                <div class="relative flex h-full items-end gap-2">
+                  <div v-for="day in last7Copies" :key="day.day" class="flex h-full flex-1 flex-col items-center gap-2">
+                    <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ day.count }}</span>
+                    <div class="flex w-full flex-1 items-end">
+                      <div
+                        class="w-full rounded-t-xl bg-blue-500/80 transition hover:bg-blue-500"
+                        :style="{ height: `${barHeight(day.count, maxLast7)}%`, minHeight: day.count > 0 ? '10px' : '4px' }"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-2 grid grid-cols-7 gap-2">
+                <span
+                  v-for="(day, idx) in last7Copies"
+                  :key="`label-${idx}`"
+                  class="text-center text-[11px] text-slate-500 dark:text-slate-400"
+                >
+                  {{ shortDay(day.day) }}
+                </span>
+              </div>
             </div>
-          </template>
-        </AdminPanel>
+          </AdminPanel>
+        </div>
       </div>
     </template>
   </div>
@@ -229,6 +296,21 @@ definePageMeta({ layout: 'admin' })
 const { apiFetch } = useApi()
 const { notifications: notifItems, refresh: notifRefresh } = useAdminNotifications()
 
+interface ActivityItem {
+  id: number
+  action: string
+  entityType: string
+  entityName: string
+  createdAt: string | number | Date | null
+}
+
+interface TopCopiedItem {
+  string_type: string
+  string_id: number
+  copies: number
+  name: string
+}
+
 interface Stats {
   profiles: number
   wowupStrings: number
@@ -236,80 +318,161 @@ interface Stats {
   changelogs: number
   copiesLast7Days: number
   uniqueVisitors: number
-  recentActivity: any[]
+  uniqueVisitorsLast7Days?: number
+  uniquePageVisitorsLast7Days?: number
+  recentActivity: ActivityItem[]
   dailyCopies: Array<{ day: string; count: number }>
-  dailyPageViews?: Array<{ day: string; count: number }>
-  totalPageViews?: number
+  totalCopies?: number
+  totalActivities?: number
   pageViewsLast7Days?: number
   pageViewTrend?: number
   copyTrend?: number
   users?: number
+  apiCallsLast7Days?: number
+  outdatedProfiles?: number
+  outdatedLayouts?: number
+  latestProfileUpdateAt?: string | number | Date | null
+  latestWowupUpdateAt?: string | number | Date | null
+  latestLayoutUpdateAt?: string | number | Date | null
+  lastPublishedAt?: string | number | Date | null
+  topCopied?: TopCopiedItem[]
 }
 
 const stats = ref<Stats | null>(null)
 const refreshing = ref(false)
 
+const REFRESH_INTERVAL = 60
+const nextRefresh = ref(REFRESH_INTERVAL)
+let refreshTimer: ReturnType<typeof setInterval>
+
+const versionData = ref<{ latestVersion: string; localVersion: string | null; isUpToDate: boolean } | null>(null)
+
+const latestActivity = computed(() => stats.value?.recentActivity?.[0] ?? null)
+const totalStaleStrings = computed(() => (stats.value?.outdatedProfiles || 0) + (stats.value?.outdatedLayouts || 0))
+const lastActivityText = computed(() => latestActivity.value ? `Latest change ${timeAgo(latestActivity.value.createdAt)}` : '')
+const versionStatusChip = computed(() => {
+  if (!versionData.value) return 'unknown'
+  return versionData.value.isUpToDate ? 'current' : `v${versionData.value.latestVersion}`
+})
+
 const overviewCards = computed(() => {
+  const data = stats.value
+  if (!data) return []
+
+  const stale = totalStaleStrings.value
+  const staleHint = stale
+    ? `${data.outdatedProfiles || 0} profiles · ${data.outdatedLayouts || 0} layouts older than 30d`
+    : `${data.profiles + data.wowupStrings + data.layouts} active strings checked`
+
+  const releaseValue = !versionData.value
+    ? 'Unknown'
+    : versionData.value.isUpToDate
+      ? 'Current'
+      : `v${versionData.value.latestVersion}`
+
+  const releaseHint = !versionData.value
+    ? 'GitHub release state is currently unavailable'
+    : versionData.value.isUpToDate
+      ? `Local ${versionData.value.localVersion || versionData.value.latestVersion} matches GitHub`
+      : `Local ${versionData.value.localVersion || 'unknown'} is behind GitHub`
+
+  return [
+    {
+      label: 'Release',
+      value: releaseValue,
+      icon: 'i-heroicons-rocket-launch',
+      tone: versionData.value && !versionData.value.isUpToDate ? ('warning' as const) : ('brand' as const),
+      to: '/admin/system/github',
+      hint: releaseHint,
+      trend: null,
+    },
+    {
+      label: 'Freshness',
+      value: stale,
+      icon: 'i-heroicons-shield-exclamation',
+      tone: stale ? ('warning' as const) : ('success' as const),
+      to: '/admin/system/stats',
+      hint: staleHint,
+      trend: null,
+    },
+    {
+      label: 'Copies 7d',
+      value: data.copiesLast7Days || 0,
+      icon: 'i-heroicons-bolt',
+      tone: 'success' as const,
+      to: '/admin/system/stats',
+      hint: `${data.pageViewsLast7Days || 0} views · ${data.uniquePageVisitorsLast7Days || 0} visitors`,
+      trend: data.copyTrend ?? null,
+    },
+    {
+      label: 'Alerts',
+      value: notifItems.value.length,
+      icon: 'i-heroicons-bell-alert',
+      tone: notifItems.value.length ? ('warning' as const) : ('success' as const),
+      to: '/admin/system/activity',
+      hint: notifItems.value.length ? 'Open notices need attention' : 'No active admin alerts',
+      trend: null,
+    },
+  ]
+})
+
+const releaseFocusCards = computed(() => {
+  const data = stats.value
+  if (!data) return []
+
+  const latestPublishTitle = data.lastPublishedAt ? timeAgo(data.lastPublishedAt) : `${data.changelogs} updates`
+  const latestPublishDescription = data.lastPublishedAt
+    ? 'Latest published changelog entry'
+    : 'No published update recorded yet.'
+
+  return [
+    {
+      eyebrow: 'Inventory',
+      title: `${data.profiles + data.wowupStrings + data.layouts}`,
+      description: `${data.profiles} profiles · ${data.wowupStrings} WowUp · ${data.layouts} layouts`,
+    },
+    {
+      eyebrow: 'Latest publish',
+      title: latestPublishTitle,
+      description: latestPublishDescription,
+    },
+    {
+      eyebrow: 'Profiles',
+      title: data.latestProfileUpdateAt ? timeAgo(data.latestProfileUpdateAt) : 'No data',
+      description: `${data.profiles} addon profiles tracked in the current inventory`,
+    },
+    {
+      eyebrow: 'WowUp',
+      title: data.latestWowupUpdateAt ? timeAgo(data.latestWowupUpdateAt) : 'No data',
+      description: `${data.wowupStrings} package strings ready for distribution`,
+    },
+  ]
+})
+
+const topDemandItems = computed(() => (stats.value?.topCopied || []).slice(0, 4))
+
+const trafficCards = computed(() => {
   const data = stats.value
   if (!data) return []
 
   return [
     {
-      label: 'Inventory',
-      value: data.profiles + data.wowupStrings + data.layouts,
-      icon: 'i-heroicons-cube',
-      tone: 'brand' as const,
-      to: '/admin/strings/profiles',
-      hint: `${data.profiles} profiles · ${data.wowupStrings} WowUp · ${data.layouts} layouts`,
-      trend: null,
+      label: 'Views 7d',
+      value: data.pageViewsLast7Days || 0,
+      hint: 'Public page traffic',
     },
     {
-      label: 'Published',
-      value: data.changelogs,
-      icon: 'i-heroicons-document-text',
-      tone: 'warning' as const,
-      to: '/admin/content/changelog',
-      hint: `${data.changelogs} public updates`,
-      trend: null,
+      label: 'Visitors 7d',
+      value: data.uniquePageVisitorsLast7Days || 0,
+      hint: 'Unique page visitors',
     },
     {
       label: 'Copies 7d',
-      value: data.copiesLast7Days,
-      icon: 'i-heroicons-bolt',
-      tone: 'success' as const,
-      to: '/admin/system/stats',
-      hint: `${data.pageViewsLast7Days || 0} page views`,
-      trend: data.copyTrend ?? null,
-    },
-    {
-      label: 'Views 7d',
-      value: data.pageViewsLast7Days || 0,
-      icon: 'i-heroicons-eye',
-      tone: 'neutral' as const,
-      to: '/admin/system/stats',
-      hint: `${data.uniqueVisitors || 0} unique visitors`,
-      trend: data.pageViewTrend ?? null,
+      value: data.copiesLast7Days || 0,
+      hint: 'String copy events',
     },
   ]
 })
-
-const releaseSteps = [
-  {
-    eyebrow: 'Step 1',
-    title: 'Draft profile',
-    description: 'Create the profile record before touching the public update log.',
-  },
-  {
-    eyebrow: 'Step 2',
-    title: 'Check signals',
-    description: 'Review version state, alerts and recent traffic before publishing.',
-  },
-  {
-    eyebrow: 'Step 3',
-    title: 'Ship update',
-    description: 'Publish the changelog only once the release data is complete.',
-  },
-]
 
 function buildDailySeries(source: Array<{ day: string; count: number | string }> | undefined, days: number) {
   const endDate = new Date()
@@ -333,33 +496,24 @@ function buildDailySeries(source: Array<{ day: string; count: number | string }>
 
 const copySeries14 = computed(() => buildDailySeries(stats.value?.dailyCopies, 14))
 const last7Copies = computed(() => copySeries14.value.slice(-7))
-const prev7Copies = computed(() => copySeries14.value.slice(0, 7))
 const maxLast7 = computed(() => Math.max(1, ...last7Copies.value.map(day => day.count)))
-const trendPercent = computed(() => {
-  const current = last7Copies.value.reduce((sum, day) => sum + day.count, 0)
-  const previous = prev7Copies.value.reduce((sum, day) => sum + day.count, 0)
-  if (previous === 0) return null
-  return Math.round(((current - previous) / previous) * 100)
+const trafficTrendPills = computed(() => {
+  const data = stats.value
+  if (!data) return []
+
+  return [
+    {
+      label: 'Views',
+      value: formatTrend(data.pageViewTrend),
+      tone: typeof data.pageViewTrend === 'number' && data.pageViewTrend < 0 ? 'admin-pill--warning' : 'admin-pill--success',
+    },
+    {
+      label: 'Copies',
+      value: formatTrend(data.copyTrend),
+      tone: typeof data.copyTrend === 'number' && data.copyTrend < 0 ? 'admin-pill--warning' : 'admin-pill--success',
+    },
+  ]
 })
-
-function barHeight(value: number, max: number) {
-  if (!value || !max) return 2
-  return Math.max(10, (value / max) * 100)
-}
-
-function shortDay(dateStr: string) {
-  try {
-    const date = new Date(dateStr)
-    return date.toLocaleDateString('en', { weekday: 'short' }).slice(0, 2)
-  } catch {
-    return dateStr?.slice(8, 10) || ''
-  }
-}
-
-const REFRESH_INTERVAL = 60
-const nextRefresh = ref(REFRESH_INTERVAL)
-let refreshTimer: ReturnType<typeof setInterval>
-const versionData = ref<{ latestVersion: string; localVersion: string | null; isUpToDate: boolean } | null>(null)
 
 const statusSignals = computed(() => [
   {
@@ -375,6 +529,36 @@ const statusSignals = computed(() => [
     label: 'Alerts',
     value: notifItems.value.length ? `${notifItems.value.length} open` : 'Clear',
     tone: notifItems.value.length ? 'warning' : 'neutral',
+  },
+  {
+    label: 'Stale strings',
+    value: totalStaleStrings.value ? `${totalStaleStrings.value} open` : 'Clear',
+    tone: totalStaleStrings.value > 0 ? 'warning' : 'neutral',
+  },
+  {
+    label: 'Profiles',
+    value: stats.value?.latestProfileUpdateAt ? timeAgo(stats.value.latestProfileUpdateAt) : 'No data',
+    tone: 'neutral',
+  },
+  {
+    label: 'WowUp',
+    value: stats.value?.latestWowupUpdateAt ? timeAgo(stats.value.latestWowupUpdateAt) : 'No data',
+    tone: 'neutral',
+  },
+  {
+    label: 'Layouts',
+    value: stats.value?.latestLayoutUpdateAt ? timeAgo(stats.value.latestLayoutUpdateAt) : 'No data',
+    tone: 'neutral',
+  },
+  {
+    label: 'Last publish',
+    value: stats.value?.lastPublishedAt ? timeAgo(stats.value.lastPublishedAt) : 'None',
+    tone: 'neutral',
+  },
+  {
+    label: 'Last change',
+    value: latestActivity.value ? timeAgo(latestActivity.value.createdAt) : 'None',
+    tone: 'neutral',
   },
   {
     label: 'Refresh',
@@ -414,6 +598,26 @@ async function loadStoredVersion() {
   }
 }
 
+function barHeight(value: number, max: number) {
+  if (!value || !max) return 2
+  return Math.max(10, (value / max) * 100)
+}
+
+function shortDay(dateStr: string) {
+  try {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en', { weekday: 'short' }).slice(0, 2)
+  } catch {
+    return dateStr?.slice(8, 10) || ''
+  }
+}
+
+function formatTrend(value?: number | null) {
+  if (typeof value !== 'number' || Number.isNaN(value)) return 'No data'
+  if (value === 0) return 'Flat'
+  return `${value > 0 ? '+' : ''}${value}%`
+}
+
 function activityTone(action: string) {
   if (action === 'created') return 'admin-tone-success'
   if (action === 'deleted') return 'admin-tone-danger'
@@ -438,9 +642,9 @@ function typeLabel(type: string) {
   return labels[type] || type
 }
 
-function timeAgo(value: string | number | null) {
+function timeAgo(value: string | number | Date | null) {
   if (!value) return ''
-  const date = typeof value === 'number' ? new Date(value * 1000) : new Date(value)
+  const date = value instanceof Date ? value : typeof value === 'number' ? new Date(value * 1000) : new Date(value)
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
   if (seconds < 60) return 'just now'
   const minutes = Math.floor(seconds / 60)

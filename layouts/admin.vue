@@ -118,7 +118,7 @@
 
       <div class="admin-main-shell">
         <div class="admin-main-frame mx-auto flex min-h-screen w-full max-w-[1760px] flex-col px-4 pb-24 lg:pb-8 lg:pl-0 lg:pr-4">
-          <header class="admin-toolbar-shell sticky z-20 mb-5 rounded-[1.15rem]">
+          <header class="admin-toolbar-shell sticky z-20 mb-4 rounded-[1.15rem]">
             <div class="admin-toolbar-shell__row">
               <button class="admin-icon-button lg:hidden" @click="sidebarOpen = !sidebarOpen">
                 <UIcon name="i-heroicons-bars-3" class="h-5 w-5" />

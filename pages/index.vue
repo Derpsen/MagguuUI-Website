@@ -293,32 +293,43 @@ function renderHomeRichText(text: string): string {
 
 // ─── Scroll Indicator ─────────────────────
 const scrollIndicatorOpacity = ref(1)
+let homeRevealObserver: IntersectionObserver | null = null
+
+function handleHeroScroll() {
+  const y = window.scrollY
+  scrollIndicatorOpacity.value = y < 80 ? 1 : Math.max(0, 1 - (y - 80) / 120)
+}
 
 // ─── Scroll Reveal ─────────────────────
 const featuresHeading = ref<HTMLElement | null>(null)
 const addonsHeading = ref<HTMLElement | null>(null)
 const addonPills = ref<HTMLElement | null>(null)
 onMounted(() => {
-  // Fade out scroll indicator after scrolling 150px
-  const onScroll = () => {
-    const y = window.scrollY
-    scrollIndicatorOpacity.value = y < 80 ? 1 : Math.max(0, 1 - (y - 80) / 120)
-  }
-  window.addEventListener('scroll', onScroll, { passive: true })
-  onUnmounted(() => window.removeEventListener('scroll', onScroll))
+  window.addEventListener('scroll', handleHeroScroll, { passive: true })
+  handleHeroScroll()
 
-  const obs = new IntersectionObserver((entries) => {
+  homeRevealObserver = new IntersectionObserver((entries) => {
     for (const entry of entries) {
       if (entry.isIntersecting) {
         (entry.target as HTMLElement).classList.add('scroll-revealed')
-        obs.unobserve(entry.target)
+        homeRevealObserver?.unobserve(entry.target)
       }
     }
   }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' })
 
   const featureItems = document.querySelectorAll('.feature-reveal-item')
   const targets = [featuresHeading.value, ...Array.from(featureItems), addonsHeading.value, addonPills.value]
-  for (const el of targets) { if (el) obs.observe(el) }
+  for (const el of targets) {
+    if (el) homeRevealObserver.observe(el)
+  }
+})
+
+onUnmounted(() => {
+  if (import.meta.client) {
+    window.removeEventListener('scroll', handleHeroScroll)
+  }
+  homeRevealObserver?.disconnect()
+  homeRevealObserver = null
 })
 </script>
 

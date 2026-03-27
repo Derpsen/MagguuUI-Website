@@ -266,7 +266,7 @@ async function seed() {
 
   // ─── Default Settings ──────────────────────────
   const defaultSettings = [
-    { key: 'site_title', value: 'MagguuUI' },
+    { key: 'site_name', value: 'MagguuUI' },
     { key: 'site_description', value: 'World of Warcraft UI Configuration' },
     { key: 'github_repo', value: 'Derpsen/MagguuUI' },
     { key: 'auto_sync', value: 'true' },

@@ -216,7 +216,7 @@ cd /mnt/user/appdata/nuxt && git fetch origin main && git reset --hard origin/ma
 
 - **SSR für Public Pages, CSR für Admin:** Admin-Bereich nutzt `ssr: false` (Route Rule in nuxt.config.ts) um Auth-Token-Flash zu vermeiden
 - **SQLite mit WAL-Modus:** Einfache Deployment-Strategie für Single-Server, `busy_timeout = 5000`
-- **JWT Auth (24h Expiry):** Token in localStorage, Server-Middleware validiert alle `/api/v1/admin/*` Requests
+- **JWT Auth (24h Expiry):** Admin-Client nutzt weiter JWT plus localStorage, aber `useAuth()` zentralisiert inzwischen Token-/Session-Hydration, Expiry-Checks, Logout-Cleanup und Passkey/Login-State; Server-Middleware validiert alle `/api/v1/admin/*` Requests
 - **HttpOnly Cookie Support:** Backend setzt zusätzlich ein Same-Origin HttpOnly Session-Cookie, Bearer-Token bleibt für den bestehenden Admin-Client kompatibel
 - **WebAuthn/Passkeys:** Biometrische Authentifizierung via SimpleWebAuthn (Registration + Login)
 - **Rate Limiting:** Login auf 5 Versuche pro 15 Minuten pro IP begrenzt, persistent in SQLite statt nur im Prozessspeicher
@@ -519,6 +519,10 @@ NUXT_WEBAUTHN_ORIGIN=      # Optional: erwarteter Origin für Passkeys
 - [x] **Sticky Public Admin Bar:** eingeloggte Session-Leiste sitzt im sticky Public-Header und läuft beim Scrollen mit
 - [x] **Public Breadcrumb Removal:** Breadcrumbs im Public-Layout wieder entfernt
 - [x] **Mobile Menu Overlay:** Hamburger öffnet im Mobile-Breakpoint ein sichtbares Overlay statt eines unauffälligen In-Flow-Blocks
+
+- [x] **Auth State Cleanup:** `useAuth()` kapselt jetzt Storage-Hydration, Token-Expiry-Pruefung, Session-Persistenz und Passkey/Login-State gemeinsam; Admin-Middleware und Login-Seite greifen nicht mehr separat auf `localStorage` zu
+- [x] **Frontend Listener Cleanup:** Homepage-Observer/Scroll-Handler und der global genutzte Copy-Shortcut auf `strings.vue` werden sauber an- und abgemeldet
+- [x] **Deprecated Login History Endpoint Removed:** alter Compatibility-Endpoint `server/api/v1/admin/login-history.get.ts` wurde entfernt
 
 ### VERBLEIBEND
 - [ ] **OG-Image als PNG:** SVG erstellt, aber Social-Media-Crawler brauchen PNG — manuelle Konvertierung nötig

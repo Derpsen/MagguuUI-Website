@@ -129,10 +129,9 @@
 definePageMeta({ layout: false })
 const router = useRouter()
 const colorMode = useColorMode()
-const { login, isLoggedIn } = useAuth()
+const { login, isLoggedIn, restoreSession, setSession } = useAuth()
 const isDark = useIsDark()
 function toggleTheme() { colorMode.preference = isDark.value ? 'light' : 'dark' }
-if (import.meta.client && isLoggedIn.value) { router.replace('/admin') }
 
 const form = reactive({ username: '', password: '' })
 const loading = ref(false)
@@ -160,11 +159,6 @@ const loginHighlights = [
 
 // Check WebAuthn support
 const passkeySupported = ref(false)
-if (import.meta.client) {
-  passkeySupported.value = !!window.PublicKeyCredential
-  // Check if passkeys exist on server
-  checkPasskeys()
-}
 
 async function checkPasskeys() {
   try {
@@ -216,19 +210,8 @@ async function handlePasskeyLogin() {
       throw new Error('Passkey authentication failed')
     }
 
-    // 4. Store auth data
-    const { token: authToken, user: authUser, sessionId } = useAuth()
-    authToken.value = verifyRes.data.token
-    authUser.value = verifyRes.data.user
-    sessionId.value = verifyRes.data.sessionId || null
-
-    if (import.meta.client) {
-      localStorage.setItem('token', verifyRes.data.token)
-      if (verifyRes.data.sessionId) {
-        localStorage.setItem('sessionId', String(verifyRes.data.sessionId))
-      }
-    }
-
+    // 4. Store auth data via shared auth composable
+    setSession(verifyRes.data)
     router.push('/admin')
   } catch (e: any) {
     // User cancelled or error
@@ -246,4 +229,16 @@ async function handlePasskeyLogin() {
     }
   } finally { passkeyLoading.value = false }
 }
+
+onMounted(async () => {
+  if (isLoggedIn.value || await restoreSession()) {
+    router.replace('/admin')
+    return
+  }
+
+  passkeySupported.value = !!window.PublicKeyCredential
+  if (passkeySupported.value) {
+    await checkPasskeys()
+  }
+})
 </script>

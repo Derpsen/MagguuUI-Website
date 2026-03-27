@@ -354,26 +354,31 @@ function stringSizeColor(len: number): string {
 
 const toast = useToast()
 const isMac = ref(false)
+function handleCopyShortcut(e: KeyboardEvent) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+    const selection = window.getSelection()?.toString()
+    if (selection && selection.length > 0) return
+    if (editModal.value) return
+
+    e.preventDefault()
+    if (activeTab.value === 'layouts' && selectedLayout.value?.importString) copyLayout()
+    else if (activeTab.value === 'profiles' && selectedProfile.value?.string) copyProfile()
+    else if (activeTab.value === 'wowup' && selectedWowup.value?.string) copyWowup()
+  }
+}
+
 onMounted(() => {
   isMac.value = navigator.platform.toUpperCase().includes('MAC')
 })
 
-// Keyboard shortcut: Ctrl+C / Cmd+C to copy current string (when no text selected)
 onMounted(() => {
-  const handler = (e: KeyboardEvent) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-      // Only trigger when no text is selected on the page
-      const selection = window.getSelection()?.toString()
-      if (selection && selection.length > 0) return
-      if (editModal.value) return
-      e.preventDefault()
-      if (activeTab.value === 'layouts' && selectedLayout.value?.importString) copyLayout()
-      else if (activeTab.value === 'profiles' && selectedProfile.value?.string) copyProfile()
-      else if (activeTab.value === 'wowup' && selectedWowup.value?.string) copyWowup()
-    }
+  window.addEventListener('keydown', handleCopyShortcut)
+})
+
+onUnmounted(() => {
+  if (import.meta.client) {
+    window.removeEventListener('keydown', handleCopyShortcut)
   }
-  window.addEventListener('keydown', handler)
-  onUnmounted(() => window.removeEventListener('keydown', handler))
 })
 
 async function doCopy(text: string) { try { await navigator.clipboard.writeText(text); return true } catch { const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); return true } }

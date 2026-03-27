@@ -14,32 +14,18 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server) return
 
   const auth = useAuth()
+  auth.hydrateFromStorage()
 
-  const token = localStorage.getItem('token')
-
-  if (!token) {
-    const restored = await auth.restoreSession()
-    if (!restored) {
-      return navigateTo('/admin/login')
-    }
+  if (auth.token.value && !auth.isTokenExpired()) {
     return
   }
 
-  // Validate token isn't expired
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    if (payload.exp * 1000 < Date.now()) {
-      localStorage.removeItem('token')
-      const restored = await auth.restoreSession()
-      if (!restored) {
-        return navigateTo('/admin/login')
-      }
-    }
-  } catch {
-    localStorage.removeItem('token')
-    const restored = await auth.restoreSession()
-    if (!restored) {
-      return navigateTo('/admin/login')
-    }
+  if (auth.token.value && auth.isTokenExpired()) {
+    auth.clearSession()
+  }
+
+  const restored = await auth.restoreSession()
+  if (!restored) {
+    return navigateTo('/admin/login')
   }
 })

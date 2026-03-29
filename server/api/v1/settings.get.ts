@@ -1,22 +1,21 @@
 /**
  * GET /api/v1/settings
  *
- * Returns public-facing settings (social links, site info).
+ * Returns public-facing settings (site info, SEO defaults, legal/contact details).
  * No authentication required.
  */
 
 import { db } from '~/server/database'
 import { settings } from '~/server/database/schema'
 import { inArray } from 'drizzle-orm'
-
-const PUBLIC_KEYS = ['site_name', 'site_description', 'github_url', 'discord_url', 'curseforge_url', 'banner_text', 'maintenance_mode']
+import { PUBLIC_SITE_SETTING_KEYS, PUBLIC_SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
 
 export default defineEventHandler(async () => {
   const rows = db.select().from(settings)
-    .where(inArray(settings.key, PUBLIC_KEYS))
+    .where(inArray(settings.key, [...PUBLIC_SITE_SETTING_KEYS]))
     .all()
 
-  const result: Record<string, string> = {}
+  const result: Record<string, string> = { ...PUBLIC_SITE_SETTINGS_DEFAULTS }
   for (const row of rows) {
     result[row.key] = row.value || ''
   }

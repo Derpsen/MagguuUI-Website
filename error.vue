@@ -47,6 +47,11 @@
 <script setup lang="ts">
 const error = useError()
 const isDark = useIsDark()
+const router = useRouter()
+
+useSeoMeta({
+  robots: 'noindex, nofollow',
+})
 
 const errorTitle = computed(() => {
   const code = error.value?.statusCode
@@ -64,6 +69,12 @@ const errorDesc = computed(() => {
 })
 
 function handleError() {
+  if (import.meta.client && window.history.length > 1) {
+    clearError()
+    router.back()
+    return
+  }
+
   clearError({ redirect: '/' })
 }
 </script>

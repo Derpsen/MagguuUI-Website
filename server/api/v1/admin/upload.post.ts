@@ -48,6 +48,16 @@ function detectImageType(buffer: Buffer): { mime: string; ext: string } | null {
 }
 
 export default defineEventHandler(async (event) => {
+  const ip = getClientIp(event)
+  const { allowed, retryAfter } = checkRateLimit(`admin-upload:${ip}`, 20, 15 * 60 * 1000, 15 * 60 * 1000)
+  if (!allowed) {
+    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    throw createError({
+      statusCode: 429,
+      message: `Too many uploads. Please wait ${Math.ceil(retryAfter / 60)} minutes.`,
+    })
+  }
+
   const formData = await readMultipartFormData(event)
 
   if (!formData || formData.length === 0) {

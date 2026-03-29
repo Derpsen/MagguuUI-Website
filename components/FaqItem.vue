@@ -28,7 +28,7 @@
         <div class="px-5 sm:px-6 pb-5 pt-0">
           <div class="border-t pt-3" :class="isDark ? 'border-brand-400/10' : 'border-gray-200'">
             <div class="faq-answer text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'"
-              v-html="answer" />
+              v-html="safeAnswer" />
           </div>
         </div>
       </div>
@@ -37,11 +37,15 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { sanitizeRichHtml } from '~/utils/richText'
+
+const props = defineProps<{
   question: string
   answer: string
   isDark: boolean
 }>()
+
+const safeAnswer = computed(() => sanitizeRichHtml(props.answer))
 
 const uid = useId()
 const open = ref(false)

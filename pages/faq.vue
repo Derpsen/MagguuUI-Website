@@ -1,11 +1,10 @@
 <!--
-  FAQ Page — Frequently asked questions about MagguuUI
+  FAQ Page - Frequently asked questions about MagguuUI
   Fetches FAQ entries from API, grouped by category
 -->
 
 <template>
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <!-- Admin Edit Button -->
     <div v-if="isLoggedIn" class="flex justify-end mb-4">
       <NuxtLink to="/admin/content/faq"
         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
@@ -15,7 +14,6 @@
       </NuxtLink>
     </div>
 
-    <!-- Header -->
     <div class="text-center mb-12 fade-in heading-glow">
       <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
         <svg class="w-8 h-8 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -28,7 +26,6 @@
       </p>
     </div>
 
-    <!-- FAQ Sections -->
     <div class="space-y-6">
       <div v-for="(section, idx) in sections" :key="section.key" class="fade-in" :class="idx > 0 ? `fade-in-delay-${idx}` : ''">
         <h2 v-if="faqData[section.key]?.length" class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider mb-3 px-1"
@@ -45,17 +42,15 @@
       </div>
     </div>
 
-    <!-- Empty State -->
     <div v-if="!hasFaqs && !pending" class="text-center py-12">
       <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">No FAQ entries yet.</p>
     </div>
 
-    <!-- Bottom CTA -->
     <div v-if="hasFaqs" class="text-center mt-12 pt-6 border-t fade-in"
       :class="isDark ? 'border-brand-400/10' : 'border-gray-200'">
       <p class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
         Still have questions? Open an issue on
-        <a href="https://github.com/Derpsen/MagguuUI/issues" target="_blank" rel="noopener noreferrer" class="text-brand-400 hover:underline">GitHub</a>
+        <a :href="githubIssuesUrl" target="_blank" rel="noopener noreferrer" class="text-brand-400 hover:underline">GitHub</a>
         or check the <NuxtLink to="/guide" class="text-brand-400 hover:underline">Installation Guide</NuxtLink>.
       </p>
     </div>
@@ -65,6 +60,11 @@
 <script setup lang="ts">
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
+const siteSettings = await usePublicPageSeo({
+  title: 'FAQ',
+  description: 'Frequently asked questions about MagguuUI - setup, addons, profiles, and troubleshooting.',
+  path: '/faq',
+})
 
 const sections = [
   { key: 'general', label: 'General', icon: 'M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z' },
@@ -76,9 +76,6 @@ const sections = [
 const { data: rawData, pending } = await useFetch('/api/v1/faqs')
 const faqData = computed(() => (rawData.value as any)?.data || {})
 const hasFaqs = computed(() => Object.values(faqData.value).some((arr: any) => arr?.length > 0))
-
-useHead({
-  title: 'FAQ — MagguuUI',
-  meta: [{ name: 'description', content: 'Frequently asked questions about MagguuUI — a pre-configured WoW UI compilation.' }],
-})
+const githubUrl = computed(() => siteSettings.value.github_url || 'https://github.com/Derpsen/MagguuUI')
+const githubIssuesUrl = computed(() => githubUrl.value.endsWith('/issues') ? githubUrl.value : `${githubUrl.value.replace(/\/$/, '')}/issues`)
 </script>

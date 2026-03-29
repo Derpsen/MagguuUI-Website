@@ -397,7 +397,7 @@ definePageMeta({ layout: "admin" })
 
 const toast = useToast()
 const { apiFetch } = useApi()
-const { user: currentUser, token } = useAuth()
+const { user: currentUser } = useAuth()
 
 interface User { id: number; username: string; role: string; lastLogin: string | null; createdAt: string | number; isLocked?: boolean; lockedUntil?: string | null; passkeyCount?: number }
 interface Session { id: number; browser: string; os: string; deviceType: string; ipAddress: string; lastActive: string | number; expiresAt: string | number; createdAt: string | number; isCurrent: boolean }
@@ -578,7 +578,7 @@ async function loadAttempts() {
   attemptsLoading.value = true
   try {
     const response = await $fetch<any>("/api/v1/admin/sessions/login-attempts?limit=100", {
-      headers: token.value ? { Authorization: `Bearer ${token.value}` } : {},
+      credentials: "include",
     })
     loginAttemptsList.value = Array.isArray(response?.data) ? response.data : []
     attemptStats.value = response?.meta?.stats ?? null

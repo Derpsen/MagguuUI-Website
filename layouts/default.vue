@@ -25,7 +25,7 @@
                 :class="isDark ? 'bg-white/[0.06] border border-white/10' : 'bg-white/90 border border-blue-100 shadow-sm'">
                 <img :src="'/logo.svg'" alt="MagguuUI" class="w-7 h-7" />
               </span>
-              <span class="text-sm sm:text-[15px] font-semibold truncate whitespace-nowrap" :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI</span>
+              <span class="text-sm sm:text-[15px] font-semibold truncate whitespace-nowrap" :class="isDark ? 'text-white' : 'text-gray-900'">{{ siteName }}</span>
             </NuxtLink>
 
             <div class="hidden lg:flex justify-center px-4">
@@ -302,7 +302,7 @@
                 One place for setup, imports and upkeep.
               </h2>
               <p class="text-sm max-w-xl leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-                MagguuUI is built to get your main character ready fast and make alt setup repeatable. The website stays focused: quick copy flows, install guidance and clear updates.
+                  {{ siteName }} is built to get your main character ready fast and make alt setup repeatable. The website stays focused: quick copy flows, install guidance and clear updates.
               </p>
 
               <div class="grid sm:grid-cols-3 gap-2.5 mt-5">
@@ -357,7 +357,7 @@
                 <img :src="'/logo.svg'" alt="MagguuUI" class="w-5 h-5" />
               </span>
               <div>
-                <p class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI</p>
+                  <p class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ siteName }}</p>
                 <p class="text-xs" :class="isDark ? 'text-silver-500' : 'text-gray-500'">&copy; {{ new Date().getFullYear() }} All rights reserved.</p>
               </div>
             </div>
@@ -366,19 +366,22 @@
               <a v-if="socialLinks.github" :href="socialLinks.github" target="_blank" rel="noopener noreferrer"
                 class="admin-icon-button"
                 :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-500 hover:text-gray-900 hover:bg-white border border-blue-100 shadow-sm'"
-                title="GitHub">
+                title="GitHub"
+                aria-label="Open GitHub">
                 <svg class="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
               </a>
               <a v-if="socialLinks.discord" :href="socialLinks.discord" target="_blank" rel="noopener noreferrer"
                 class="admin-icon-button"
                 :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-500 hover:text-gray-900 hover:bg-white border border-blue-100 shadow-sm'"
-                title="Discord">
+                title="Discord"
+                aria-label="Open Discord">
                 <svg class="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" /></svg>
               </a>
               <a v-if="socialLinks.curseforge" :href="socialLinks.curseforge" target="_blank" rel="noopener noreferrer"
                 class="admin-icon-button"
                 :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-500 hover:text-gray-900 hover:bg-white border border-blue-100 shadow-sm'"
-                title="CurseForge">
+                title="CurseForge"
+                aria-label="Open CurseForge">
                 <svg class="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.326 9.2025h-2.6408l-.6327-1.0023H5.6723v-1.5H18.326v2.5023zm-3.3735 0L11.2 15.8h-4.5l3.752-6.5975h4.5z" /></svg>
               </a>
             </div>
@@ -389,9 +392,9 @@
 
     <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-4" enter-to-class="opacity-100 translate-y-0"
       leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-4">
-      <button v-if="showBackToTop" class="fixed bottom-6 right-6 z-40 inline-flex items-center justify-center w-12 h-12 rounded-full text-white btn-gradient shadow-xl" @click="scrollToTop">
-        <UIcon name="i-heroicons-arrow-up" class="w-5 h-5" />
-      </button>
+        <button v-if="showBackToTop" class="fixed bottom-6 right-6 z-40 inline-flex items-center justify-center w-12 h-12 rounded-full text-white btn-gradient shadow-xl" aria-label="Back to top" @click="scrollToTop">
+          <UIcon name="i-heroicons-arrow-up" class="w-5 h-5" />
+        </button>
     </Transition>
   </div>
   </UApp>
@@ -405,6 +408,8 @@ const showBackToTop = ref(false)
 const scrollProgress = ref(0)
 const { user, isLoggedIn, logout } = useAuth()
 const isDark = useIsDark()
+const siteSettings = await usePublicSiteSettings()
+const siteName = computed(() => siteSettings.value.site_name || 'MagguuUI')
 
 usePageTracking()
 
@@ -448,7 +453,6 @@ const footerHighlights = [
   },
 ]
 
-const siteSettings = useState<Record<string, string>>('site-settings', () => ({}))
 const socialLinks = computed(() => ({
   github: siteSettings.value.github_url || 'https://github.com/Derpsen/MagguuUI',
   discord: siteSettings.value.discord_url || '',
@@ -473,13 +477,13 @@ const footerGroups = computed(() => [
   },
   {
     title: 'Legal',
-    links: [
-      { label: 'Imprint', to: '/imprint', icon: 'i-heroicons-scale' },
-      { label: 'Privacy', to: '/privacy', icon: 'i-heroicons-shield-check' },
-      { label: 'Contact', href: 'mailto:contact@magguui.com', icon: 'i-heroicons-envelope' },
-    ],
-  },
-])
+      links: [
+        { label: 'Imprint', to: '/imprint', icon: 'i-heroicons-scale' },
+        { label: 'Privacy', to: '/privacy', icon: 'i-heroicons-shield-check' },
+        { label: 'Contact', href: `mailto:${siteSettings.value.contact_email || 'contact@magguui.com'}`, icon: 'i-heroicons-envelope' },
+      ],
+    },
+  ])
 const bannerText = computed(() => siteSettings.value.banner_text || '')
 const maintenanceMode = computed(() => siteSettings.value.maintenance_mode === 'true')
 const siteStatusLabel = computed(() => {
@@ -508,16 +512,6 @@ const siteStatusClasses = computed(() => {
     : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
 })
 
-async function ensureSiteSettings() {
-  if (Object.keys(siteSettings.value).length > 0) return
-  try {
-    const res = await $fetch<{ data: Record<string, string> }>('/api/v1/settings')
-    if (res?.data) siteSettings.value = res.data
-  } catch {
-    // Non-blocking for public pages.
-  }
-}
-
 function isActive(path: string): boolean {
   if (path === '/') return route.path === '/'
   return route.path.startsWith(path)
@@ -535,8 +529,7 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-onMounted(async () => {
-  await ensureSiteSettings()
+onMounted(() => {
   handleWindowScroll()
   window.addEventListener('scroll', handleWindowScroll, { passive: true })
 })

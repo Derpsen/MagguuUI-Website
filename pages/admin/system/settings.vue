@@ -100,6 +100,36 @@
                   <UInput v-model="form.og_image_url" :disabled="saving" placeholder="https://ui.magguu.xyz/og-image.png" />
                 </div>
               </div>
+
+              <div class="admin-subpanel space-y-4">
+                <p class="admin-row__eyebrow">Legal & Contact</p>
+                <div class="admin-field">
+                  <label class="admin-field__label">Contact email</label>
+                  <UInput v-model="form.contact_email" :disabled="saving" placeholder="contact@magguui.com" />
+                </div>
+
+                <div class="admin-form-grid admin-form-grid--2">
+                  <div class="admin-field">
+                    <label class="admin-field__label">Imprint name</label>
+                    <UInput v-model="form.imprint_name" :disabled="saving" placeholder="Your legal name" />
+                  </div>
+
+                  <div class="admin-field">
+                    <label class="admin-field__label">Country</label>
+                    <UInput v-model="form.imprint_country" :disabled="saving" placeholder="Germany" />
+                  </div>
+                </div>
+
+                <div class="admin-field">
+                  <label class="admin-field__label">Street</label>
+                  <UInput v-model="form.imprint_street" :disabled="saving" placeholder="Street and house number" />
+                </div>
+
+                <div class="admin-field">
+                  <label class="admin-field__label">City / postal code</label>
+                  <UInput v-model="form.imprint_city" :disabled="saving" placeholder="12345 City" />
+                </div>
+              </div>
             </div>
           </AdminPanel>
 
@@ -255,6 +285,8 @@
 </template>
 
 <script setup lang="ts">
+import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
+
 definePageMeta({ layout: "admin" })
 
 const toast = useToast()
@@ -313,24 +345,7 @@ const linkFields = [
   { key: "curseforge_url", label: "CurseForge", placeholder: "https://www.curseforge.com/wow/addons/..." },
 ]
 
-const defaults: Record<string, string> = {
-  site_name: "MagguuUI",
-  site_description: "",
-  curseforge_url: "",
-  github_url: "https://github.com/Derpsen/MagguuUI",
-  discord_url: "",
-  maintenance_mode: "false",
-  banner_text: "",
-  meta_title: "",
-  meta_description: "",
-  og_image_url: "",
-  session_timeout_hours: "24",
-  max_login_attempts: "10",
-  lockout_duration_minutes: "30",
-  tracking_pageviews_enabled: "true",
-  tracking_copyevents_enabled: "true",
-  data_retention_days: "90",
-}
+const defaults: Record<string, string> = { ...SITE_SETTINGS_DEFAULTS }
 
 const form = reactive({ ...defaults })
 const original = ref({ ...defaults })
@@ -410,9 +425,8 @@ async function downloadBackup() {
   downloadingBackup.value = true
 
   try {
-    const { token } = useAuth()
     const response = await fetch("/api/v1/admin/system/db-backup", {
-      headers: { Authorization: `Bearer ${token.value}` },
+      credentials: "include",
     })
 
     if (!response.ok) throw new Error("Download failed")

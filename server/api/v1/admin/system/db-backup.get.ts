@@ -12,6 +12,16 @@ import { sqlite } from '~/server/database'
 export default defineEventHandler(async (event) => {
   requireAuth(event)
 
+  const ip = getClientIp(event)
+  const { allowed, retryAfter } = checkRateLimit(`admin-db-backup:${ip}`, 6, 60 * 60 * 1000, 60 * 60 * 1000)
+  if (!allowed) {
+    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    throw createError({
+      statusCode: 429,
+      message: `Too many backup downloads. Please wait ${Math.ceil(retryAfter / 60)} minutes.`,
+    })
+  }
+
   const dbPath = join(process.cwd(), 'data', 'magguuui.db')
 
   // Checkpoint WAL to ensure all data is in the main DB file

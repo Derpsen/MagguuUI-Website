@@ -7,6 +7,7 @@
 import { eq, asc } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { faqs } from '~/server/database/schema'
+import { sanitizeRichHtml } from '~/utils/richText'
 
 export default defineEventHandler(async () => {
   const rows = db
@@ -20,7 +21,10 @@ export default defineEventHandler(async () => {
   const grouped: Record<string, typeof rows> = {}
   for (const row of rows) {
     if (!grouped[row.category]) grouped[row.category] = []
-    grouped[row.category].push(row)
+    grouped[row.category].push({
+      ...row,
+      answer: sanitizeRichHtml(row.answer),
+    })
   }
 
   return apiSuccess(grouped, { count: rows.length })

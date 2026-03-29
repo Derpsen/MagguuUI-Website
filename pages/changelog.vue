@@ -117,42 +117,21 @@
 </template>
 
 <script setup lang="ts">
-import { marked } from 'marked'
+import { renderMarkdownToSafeHtml } from '~/utils/richText'
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
 const { observe } = useScrollReveal()
-
-useSeoMeta({
-  title: 'Changelog — MagguuUI',
-  description: 'All updates and changes to MagguuUI import strings. Version history and patch notes.',
-  ogTitle: 'Changelog — MagguuUI',
+await usePublicPageSeo({
+  title: 'Changelog',
+  description: 'All updates and changes to MagguuUI import strings, packages, and setup guidance.',
+  path: '/changelog',
 })
+
 const { data: changelogData } = await useFetch('/api/v1/changelogs')
 const allEntries = computed(() => (changelogData.value as any)?.data || [])
 
-let clientSanitize: ((html: string) => string) | null = null
-if (import.meta.client) {
-  const mod = await import('dompurify')
-  clientSanitize = (html: string) => mod.default.sanitize(html)
-}
-
-function sanitizeHtmlSSR(html: string): string {
-  return html
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
-    .replace(/<iframe[\s\S]*?>[\s\S]*?<\/iframe>/gi, '')
-    .replace(/<object[\s\S]*?>[\s\S]*?<\/object>/gi, '')
-    .replace(/<embed[\s\S]*?>[\s\S]*?<\/embed>/gi, '')
-    .replace(/<form[\s\S]*?>[\s\S]*?<\/form>/gi, '')
-    .replace(/\son\w+=(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    .replace(/\s(href|src)\s*=\s*(['"])\s*javascript:[\s\S]*?\2/gi, ' $1="#"')
-}
-
 function renderMarkdown(text: string): string {
-  // Strip "### Changes YYYY-MM-DD" headers (date is already shown in card header)
-  const cleaned = text.replace(/^###\s+Changes\s+\d{4}-\d{2}-\d{2}\s*/gm, '').trim()
-  const html = marked.parse(cleaned, { async: false }) as string
-  return clientSanitize ? clientSanitize(html) : sanitizeHtmlSSR(html)
+  return renderMarkdownToSafeHtml(text, { stripChangelogDateHeaders: true })
 }
 function formatDate(date: string | Date | null): string {
   if (!date) return ''

@@ -5,7 +5,7 @@
  * Database: SQLite (WAL mode)
  */
 
-import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, uniqueIndex, index } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
 // ─── Helper: Timestamps ────────────────────────────
@@ -179,7 +179,10 @@ export const sessions = sqliteTable('sessions', {
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
-})
+}, (table) => ({
+  tokenHashIdx: index('idx_sessions_token_hash').on(table.tokenHash),
+  userRevokedIdx: index('idx_sessions_user_revoked').on(table.userId, table.isRevoked),
+}))
 
 // ─── Login Attempts ──────────────────────────────
 // Tracks all login attempts for security auditing
@@ -198,7 +201,10 @@ export const loginAttempts = sqliteTable('login_attempts', {
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
-})
+}, (table) => ({
+  usernameCreatedAtIdx: index('idx_login_attempts_username_created_at').on(table.username, table.createdAt),
+  ipCreatedAtIdx: index('idx_login_attempts_ip_created_at').on(table.ipAddress, table.createdAt),
+}))
 
 // ─── Passkeys (WebAuthn Credentials) ──────────────
 // Registered WebAuthn/Passkey credentials per user
@@ -325,4 +331,6 @@ export const rateLimits = sqliteTable('rate_limits', {
   firstAttempt: integer('first_attempt').notNull(),
   blockedUntil: integer('blocked_until').notNull().default(0),
   updatedAt: integer('updated_at').notNull(),
-})
+}, (table) => ({
+  updatedAtIdx: index('idx_rate_limits_updated_at').on(table.updatedAt),
+}))

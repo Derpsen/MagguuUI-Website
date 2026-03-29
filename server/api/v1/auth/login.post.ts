@@ -10,8 +10,8 @@ import bcrypt from 'bcrypt'
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { users } from '~/server/database/schema'
+import { completeSuccessfulLogin } from '~/server/utils/loginSuccess'
 import {
-  createSession,
   logLoginAttempt,
   checkAccountLockout,
   checkAndLockIfNeeded,
@@ -89,67 +89,10 @@ export default defineEventHandler(async (event) => {
   // Success — reset rate limit for this IP
   resetRateLimit(`login:${ip}`)
 
-  // Update last login + unlock if was locked
-  db.update(users)
-    .set({ lastLogin: new Date(), isLocked: false, lockedUntil: null })
-    .where(eq(users.id, user.id))
-    .run()
-
-  // Create JWT with sessionId (duration from settings)
-  const { getSessionTimeoutHours } = await import('~/server/utils/settings')
-  const timeoutHours = getSessionTimeoutHours()
-  const expiresAt = new Date(Date.now() + timeoutHours * 60 * 60 * 1000)
-  const maxAgeSeconds = timeoutHours * 60 * 60
-
-  // Create token first (need it for session hash)
-  const token = createToken({
-    userId: user.id,
-    username: user.username,
-    role: user.role,
-  })
-
-  // Create session in DB
-  const session = createSession({
-    userId: user.id,
-    token,
+  return completeSuccessfulLogin({
+    event,
+    user,
     ip,
     userAgent: ua,
-    expiresAt,
   })
-
-  // Create final token with sessionId included
-  const finalToken = createToken({
-    userId: user.id,
-    username: user.username,
-    role: user.role,
-    sessionId: session.id,
-  })
-  setAuthCookie(event, finalToken, maxAgeSeconds)
-
-  // Update session tokenHash with the final token (which includes sessionId)
-  const { hashToken } = await import('~/server/utils/session')
-  const { sqlite } = await import('~/server/database')
-  sqlite.prepare('UPDATE sessions SET token_hash = ? WHERE id = ?')
-    .run(hashToken(finalToken), session.id)
-
-  // Log successful login
-  logLoginAttempt({
-    username: user.username,
-    ip,
-    userAgent: ua,
-    success: true,
-  })
-
-  return {
-    success: true,
-    data: {
-      token: finalToken,
-      sessionId: session.id,
-      user: {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-      },
-    },
-  }
 })

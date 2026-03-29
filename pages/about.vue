@@ -1,5 +1,5 @@
 <!--
-  About Page — Project information
+  About Page - Project information
 -->
 
 <template>
@@ -17,7 +17,6 @@
     </div>
 
     <div class="space-y-4">
-      <!-- What is MagguuUI -->
       <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">
         <h2 class="text-lg font-semibold mb-3 flex items-center gap-2.5">
           <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
@@ -28,11 +27,10 @@
         <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           MagguuUI is a collection of pre-configured import strings for World of Warcraft addons.
           Instead of spending hours tweaking your own UI, you can download ready-made configurations
-          for ElvUI, Plater, BigWigs, Details and more — and start using them right away.
+          for ElvUI, Plater, BigWigs, Details and more, and start using them right away.
         </p>
       </div>
 
-      <!-- Features -->
       <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">
         <h2 class="text-lg font-semibold mb-3 flex items-center gap-2.5">
           <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -43,24 +41,23 @@
         <ul class="space-y-2 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Addon Profiles</strong> — Pre-configured settings for the most popular WoW addons</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Addon Profiles</strong> - Pre-configured settings for the most popular WoW addons</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Cooldown Layouts</strong> — Optimized layouts for every class and specialization</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Cooldown Layouts</strong> - Optimized layouts for every class and specialization</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">WowUp Import Strings</strong> — Easy addon installation via WowUp</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">WowUp Import Strings</strong> - Easy addon installation via WowUp</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Regular Updates</strong> — Up-to-date strings with every patch</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Regular Updates</strong> - Up-to-date strings with every patch</span>
           </li>
         </ul>
       </div>
 
-      <!-- Contact -->
       <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">
         <h2 class="text-lg font-semibold mb-3 flex items-center gap-2.5">
           <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -70,13 +67,12 @@
         </h2>
         <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           Questions, feedback or bug reports? Send an email to
-          <a href="mailto:contact@magguui.com" class="text-brand-400 hover:underline">contact@magguui.com</a>
+          <a :href="`mailto:${contactEmail}`" class="text-brand-400 hover:underline">{{ contactEmail }}</a>
           or create a
-          <a href="https://github.com/Derpsen/MagguuUI/issues" target="_blank" rel="noopener noreferrer" class="text-brand-400 hover:underline">GitHub Issue</a>.
+          <a :href="githubIssuesUrl" target="_blank" rel="noopener noreferrer" class="text-brand-400 hover:underline">GitHub Issue</a>.
         </p>
       </div>
 
-      <!-- Legal -->
       <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">
         <h2 class="text-lg font-semibold mb-3 flex items-center gap-2.5">
           <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -92,7 +88,6 @@
       </div>
     </div>
 
-    <!-- Bottom CTA -->
     <div class="text-center mt-12 pt-6 border-t fade-in"
       :class="isDark ? 'border-brand-400/10' : 'border-gray-200'">
       <p class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
@@ -107,10 +102,13 @@
 <script setup lang="ts">
 const isDark = useIsDark()
 const { observe } = useScrollReveal()
-
-useSeoMeta({
-  title: 'About — MagguuUI',
-  description: 'Learn more about MagguuUI — the WoW UI configuration tool.',
-  ogTitle: 'About — MagguuUI',
+const siteSettings = await usePublicPageSeo({
+  title: 'About',
+  description: 'Learn more about MagguuUI - the WoW UI configuration tool.',
+  path: '/about',
 })
+
+const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguui.com')
+const githubUrl = computed(() => siteSettings.value.github_url || 'https://github.com/Derpsen/MagguuUI')
+const githubIssuesUrl = computed(() => githubUrl.value.endsWith('/issues') ? githubUrl.value : `${githubUrl.value.replace(/\/$/, '')}/issues`)
 </script>

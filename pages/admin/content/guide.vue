@@ -165,7 +165,7 @@
                 <p class="admin-row__title">{{ step.title || `Step ${index + 1}` }}</p>
                 <div
                   class="prose prose-sm mt-3 max-w-none dark:prose-invert"
-                  v-html="step.content || '<em>No content</em>'"
+                  v-html="renderPreviewContent(step.content)"
                 />
               </div>
             </div>
@@ -177,6 +177,8 @@
 </template>
 
 <script setup lang="ts">
+import { sanitizeRichHtml } from '~/utils/richText'
+
 definePageMeta({ layout: "admin" })
 
 const toast = useToast()
@@ -193,6 +195,10 @@ interface Step {
   id: number
   title: string
   content: string
+}
+
+function renderPreviewContent(content: string) {
+  return sanitizeRichHtml(content || '<em>No content</em>')
 }
 
 const form = reactive({

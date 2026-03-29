@@ -206,7 +206,7 @@ async function handlePasskeyLogin() {
       body: { credential },
     })
 
-    if (!verifyRes?.data?.token) {
+    if (!verifyRes?.data?.user) {
       throw new Error('Passkey authentication failed')
     }
 

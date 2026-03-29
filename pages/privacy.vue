@@ -1,5 +1,5 @@
 <!--
-  Privacy Policy Page — Legal requirement for DE/EU (GDPR)
+  Privacy Policy Page - Legal requirement for DE/EU (GDPR)
 -->
 
 <template>
@@ -17,7 +17,6 @@
     </div>
 
     <div class="space-y-4">
-      <!-- 1. Privacy at a Glance -->
       <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">
         <h2 class="text-lg font-semibold mb-3 flex items-center gap-2.5">
           <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -38,7 +37,6 @@
         </div>
       </div>
 
-      <!-- 2. Hosting -->
       <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">
         <h2 class="text-lg font-semibold mb-3 flex items-center gap-2.5">
           <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -53,7 +51,6 @@
         </p>
       </div>
 
-      <!-- 3. General Information and Mandatory Disclosures -->
       <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">
         <h2 class="text-lg font-semibold mb-3 flex items-center gap-2.5">
           <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -73,7 +70,6 @@
         </div>
       </div>
 
-      <!-- 4. Data Collection on This Website -->
       <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">
         <h2 class="text-lg font-semibold mb-3 flex items-center gap-2.5">
           <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -90,26 +86,11 @@
             <h3 class="font-medium mb-1" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Server Log Files</h3>
             <p>The hosting provider automatically collects and stores information in server log files that your browser transmits:</p>
             <ul class="mt-2 space-y-1 ml-4">
-              <li class="flex items-start gap-2">
-                <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-                Browser type and version
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-                Operating system
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-                Referrer URL
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-                IP address (anonymized)
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-                Time of server request
-              </li>
+              <li class="flex items-start gap-2"><span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />Browser type and version</li>
+              <li class="flex items-start gap-2"><span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />Operating system</li>
+              <li class="flex items-start gap-2"><span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />Referrer URL</li>
+              <li class="flex items-start gap-2"><span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />IP address (anonymized)</li>
+              <li class="flex items-start gap-2"><span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />Time of server request</li>
             </ul>
           </div>
           <div>
@@ -119,7 +100,6 @@
         </div>
       </div>
 
-      <!-- 5. External Services -->
       <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">
         <h2 class="text-lg font-semibold mb-3 flex items-center gap-2.5">
           <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -128,17 +108,14 @@
           <span class="text-gradient-subtle">5. External Services</span>
         </h2>
         <div class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-          <h3 class="font-medium mb-1" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Google Fonts</h3>
+          <h3 class="font-medium mb-1" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Self-Hosted Fonts</h3>
           <p>
-            This site uses Google Fonts for font rendering.
-            When you access a page, your browser loads the required fonts directly from Google servers.
-            Your IP address is transmitted to Google in the process.
-            More information: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-brand-400 hover:underline">Google Privacy Policy</a>.
+            This site uses self-hosted web fonts for font rendering.
+            The required font files are served directly by this application, so no separate font request is sent from your browser to a third-party font provider when you open a page.
           </p>
         </div>
       </div>
 
-      <!-- 6. Your Rights -->
       <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">
         <h2 class="text-lg font-semibold mb-3 flex items-center gap-2.5">
           <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -161,9 +138,9 @@
 const isDark = useIsDark()
 const { observe } = useScrollReveal()
 
-useSeoMeta({
-  title: 'Privacy Policy — MagguuUI',
+await usePublicPageSeo({
+  title: 'Privacy Policy',
   description: 'Privacy policy for MagguuUI in accordance with GDPR.',
-  ogTitle: 'Privacy Policy — MagguuUI',
+  path: '/privacy',
 })
 </script>

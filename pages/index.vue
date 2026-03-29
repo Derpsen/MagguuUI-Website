@@ -126,26 +126,26 @@
 </template>
 
 <script setup lang="ts">
+import { sanitizeRichHtml } from '~/utils/richText'
+
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
+const siteSettings = await usePublicSiteSettings()
+const homeMetaTitle = computed(() => siteSettings.value.meta_title || 'MagguuUI - Your WoW Interface, perfected.')
+const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'High-quality import strings for ElvUI, Plater, BigWigs, Details & more. Simply copy and paste into WoW.')
+const homeOgImage = computed(() => siteSettings.value.og_image_url || 'https://ui.magguu.xyz/logo.png')
 
 useHead({
-  title: 'MagguuUI — Your WoW Interface, perfected.',
-  meta: [
-    { name: 'description', content: 'High-quality import strings for ElvUI, Plater, BigWigs, Details & more. Simply copy and paste into WoW.' },
-    { property: 'og:title', content: 'MagguuUI — Your WoW Interface, perfected.' },
-    { property: 'og:description', content: 'High-quality import strings for ElvUI, Plater, BigWigs, Details & more.' },
-    { property: 'og:url', content: 'https://ui.magguu.xyz' },
-  ],
   script: [
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify({
+      innerHTML: () => JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'WebApplication',
-        name: 'MagguuUI',
+        name: siteSettings.value.site_name || 'MagguuUI',
         url: 'https://ui.magguu.xyz',
-        description: 'High-quality import strings for ElvUI, Plater, BigWigs, Details & more. Simply copy and paste into WoW.',
+        description: homeMetaDescription.value,
+        image: homeOgImage.value,
         applicationCategory: 'GameApplication',
         operatingSystem: 'Web',
         offers: {
@@ -155,12 +155,23 @@ useHead({
         },
         author: {
           '@type': 'Person',
-          name: 'Magguu',
+          name: siteSettings.value.site_name || 'MagguuUI',
           url: 'https://ui.magguu.xyz',
         },
       }),
     },
   ],
+})
+
+useSeoMeta({
+  title: () => homeMetaTitle.value,
+  description: () => homeMetaDescription.value,
+  ogTitle: () => homeMetaTitle.value,
+  ogDescription: () => homeMetaDescription.value,
+  ogImage: () => homeOgImage.value,
+  twitterTitle: () => homeMetaTitle.value,
+  twitterDescription: () => homeMetaDescription.value,
+  twitterImage: () => homeOgImage.value,
 })
 
 // Content fetching
@@ -268,27 +279,8 @@ const stats = computed(() => [
   { value: animatedUpdates.value, label: 'Updates' },
 ])
 
-let clientSanitize: ((html: string) => string) | null = null
-if (import.meta.client) {
-  const mod = await import('dompurify')
-  clientSanitize = (html: string) => mod.default.sanitize(html)
-}
-
-function sanitizeHtmlSSR(html: string): string {
-  return html
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
-    .replace(/<iframe[\s\S]*?>[\s\S]*?<\/iframe>/gi, '')
-    .replace(/<object[\s\S]*?>[\s\S]*?<\/object>/gi, '')
-    .replace(/<embed[\s\S]*?>[\s\S]*?<\/embed>/gi, '')
-    .replace(/<form[\s\S]*?>[\s\S]*?<\/form>/gi, '')
-    .replace(/\son\w+=(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    .replace(/\s(href|src)\s*=\s*(['"])\s*javascript:[\s\S]*?\2/gi, ' $1="#"')
-}
-
 function renderHomeRichText(text: string): string {
-  if (!text) return ''
-  return clientSanitize ? clientSanitize(text) : sanitizeHtmlSSR(text)
+  return sanitizeRichHtml(text)
 }
 
 // ─── Scroll Indicator ─────────────────────

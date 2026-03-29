@@ -29,7 +29,7 @@ This repository contains the public website for MagguuUI, the internal admin are
 - `Tailwind CSS v4`
 - `SQLite` via `better-sqlite3`
 - `Drizzle ORM`
-- `JWT` auth + HttpOnly session cookie support
+- `JWT` auth with HttpOnly cookie-backed admin sessions
 - `WebAuthn / Passkeys`
 - `Docker`
 
@@ -75,6 +75,12 @@ Install dependencies:
 npm install
 ```
 
+This repository now includes `package-lock.json`, so prefer:
+
+```bash
+npm ci
+```
+
 Start development server:
 
 ```bash
@@ -86,6 +92,12 @@ Production build:
 ```bash
 npm run build
 npm run preview
+```
+
+Smoke-check the production build locally:
+
+```bash
+npm run verify
 ```
 
 Database helpers:
@@ -111,6 +123,7 @@ Important values include:
 - `NUXT_GITHUB_TOKEN`
 - `NUXT_GITHUB_REPO`
 - `NUXT_GITHUB_WEBHOOK_SECRET`
+- `NUXT_SYNC_SEEDED_CONTENT`
 - `NUXT_WEBAUTHN_RP_ID`
 - `NUXT_WEBAUTHN_ORIGIN`
 
@@ -153,13 +166,13 @@ Runtime data is intentionally not tracked in Git:
 - `data/`
 - `uploads/`
 
-The app bootstraps and syncs key defaults on startup, including:
+The app bootstraps key defaults on startup, including:
 
 - admin user creation
-- FAQ content sync
-- installation guide sync
+- initial FAQ seed
+- initial installation guide seed
 
-This means repository changes to seeded FAQ/guide content are pushed into the live database on next app start.
+Repository-driven FAQ/guide re-sync is now opt-in via `NUXT_SYNC_SEEDED_CONTENT=true`.
 
 ## Security Notes
 
@@ -167,21 +180,23 @@ Implemented already:
 
 - admin API protection via server middleware
 - JWT session validation
-- additional HttpOnly auth cookie support for same-origin admin sessions
+- cookie-first admin auth via HttpOnly same-origin sessions
+- production fail-fast for insecure JWT/admin bootstrap defaults
 - session tracking and revocation
 - persistent rate limiting for sensitive login flows
 - CSP and extra security headers
+- no-store/no-index headers for private admin/auth routes
 - removal of `X-Powered-By`
-- SSR-safe changelog sanitizing
+- shared rich-text sanitizing across public FAQ/home/guide/changelog flows
 - upload hardening via file-signature and size validation
 - SWR caching for public read APIs
+- committed lockfile plus Docker-aware `npm ci` fallback
+- local production smoke test via `npm run verify`
 
 Still worth improving further:
 
-- add a lockfile and switch the Docker build from `npm install` to `npm ci`
 - tighten upload limits and validation
-- finish the admin client migration away from `localStorage` toward cookie-first auth
-- add smoke tests for health/auth/content flows
+- add broader smoke coverage for auth/admin flows
 
 ## Git Notes
 
@@ -208,5 +223,5 @@ Line endings are normalized through `.gitattributes` to avoid Windows/Linux depl
 - admin panel rebuilt with a shared navigation and layout system
 - reusable admin UI primitives added for headers, panels, metrics, empty states, and sticky save bars
 - dashboard plus key content, data, and system screens moved onto the new design system
-- FAQ and installation guide synced from code into DB on startup
+- FAQ and installation guide seed data kept available, with forced code-sync now opt-in
 - backend hardened with persistent rate limiting, upload validation, HttpOnly session-cookie support, and SWR caching for public read APIs

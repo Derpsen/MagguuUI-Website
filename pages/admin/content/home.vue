@@ -174,7 +174,7 @@
           </h2>
           <div
             class="prose prose-sm mx-auto mt-4 max-w-2xl dark:prose-invert"
-            v-html="form.hero.description || '<em>No subtitle set</em>'"
+            v-html="renderPreviewHtml(form.hero.description, '<em>No subtitle set</em>')"
           />
         </div>
 
@@ -219,7 +219,7 @@
             </h3>
             <div
               class="prose prose-sm mt-3 max-w-none text-left dark:prose-invert"
-              v-html="featureText(index) || '<em>No description</em>'"
+              v-html="renderPreviewHtml(featureText(index), '<em>No description</em>')"
             />
           </div>
         </div>
@@ -229,6 +229,8 @@
 </template>
 
 <script setup lang="ts">
+import { sanitizeRichHtml } from '~/utils/richText'
+
 definePageMeta({ layout: "admin" })
 
 const toast = useToast()
@@ -302,6 +304,10 @@ function featureTitle(index: typeof featureIndices[number]) {
 
 function featureText(index: typeof featureIndices[number]) {
   return form.features[`feature_${index}_text`]
+}
+
+function renderPreviewHtml(value: string, fallback: string) {
+  return sanitizeRichHtml(value || fallback)
 }
 
 async function load() {

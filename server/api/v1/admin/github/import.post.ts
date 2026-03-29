@@ -13,6 +13,16 @@ import { db } from '~/server/database'
 import { profiles, wowupStrings, characterLayouts, changelogs, siteContent, syncHistory } from '~/server/database/schema'
 
 export default defineEventHandler(async (event) => {
+  const ip = getClientIp(event)
+  const { allowed, retryAfter } = checkRateLimit(`admin-github-import:${ip}`, 5, 15 * 60 * 1000, 15 * 60 * 1000)
+  if (!allowed) {
+    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    throw createError({
+      statusCode: 429,
+      message: `Too many imports. Please wait ${Math.ceil(retryAfter / 60)} minutes.`,
+    })
+  }
+
   const body = await readBody(event)
   if (!body?.data) {
     throw createError({ statusCode: 400, message: 'data field required' })
@@ -149,7 +159,7 @@ export default defineEventHandler(async (event) => {
       for (const sc of data.siteContent) {
         try {
           if (!sc.page || !sc.section || !sc.key) continue
-          const locale = sc.locale || 'de'
+          const locale = sc.locale || 'en'
 
           const existing = db.select({ id: siteContent.id }).from(siteContent)
             .where(and(

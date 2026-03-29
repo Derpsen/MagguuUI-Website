@@ -8,6 +8,7 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { siteContent } from '~/server/database/schema'
+import { createContentLocaleBuckets, DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 
 export default defineEventHandler(async (event) => {
   const page = getRouterParam(event, 'page')
@@ -16,9 +17,9 @@ export default defineEventHandler(async (event) => {
   const entries = db.select().from(siteContent).where(eq(siteContent.page, page)).all()
 
   // Group by locale → section → key: value
-  const result: Record<string, Record<string, Record<string, string>>> = { de: {}, en: {} }
+  const result: Record<string, Record<string, Record<string, string>>> = createContentLocaleBuckets(() => ({}))
   for (const e of entries) {
-    const locale = e.locale || 'de'
+    const locale = e.locale || DEFAULT_CONTENT_LOCALE
     if (!result[locale]) result[locale] = {}
     if (!result[locale][e.section]) result[locale][e.section] = {}
     result[locale][e.section][e.key] = e.value

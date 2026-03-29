@@ -6,8 +6,9 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-# --legacy-peer-deps: resolves optional peer dependency conflicts (zod v4 etc.)
-RUN npm install --legacy-peer-deps --no-audit --no-fund && npm cache clean --force
+COPY .npmrc ./
+RUN if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi \
+  && npm cache clean --force
 
 # Copy source and build
 COPY . .

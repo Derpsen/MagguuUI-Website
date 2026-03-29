@@ -372,7 +372,6 @@ definePageMeta({ layout: "admin" })
 
 const toast = useToast()
 const { apiFetch } = useApi()
-const { token } = useAuth()
 
 interface SyncEntry {
   id: number
@@ -551,7 +550,7 @@ async function testConnection() {
   try {
     const response = await $fetch<any>("/api/v1/admin/github/test", {
       method: "POST",
-      headers: { Authorization: `Bearer ${token.value}` },
+      credentials: "include",
     })
 
     if (response?.success && response?.data) {
@@ -616,7 +615,7 @@ async function doPush() {
 async function doExport() {
   try {
     const response = await $fetch("/api/v1/admin/github/export", {
-      headers: { Authorization: `Bearer ${token.value}` },
+      credentials: "include",
     })
     const blob = new Blob([JSON.stringify(response, null, 2)], { type: "application/json" })
     const url = URL.createObjectURL(blob)

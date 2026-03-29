@@ -8,35 +8,28 @@
 import { eq, and, asc } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { siteContent } from '~/server/database/schema'
+import { getContentLocaleChain, normalizeContentLocale } from '~/server/utils/contentLocales'
 
 export default defineEventHandler(async (event) => {
   const page = getRouterParam(event, 'page')
   if (!page) return apiError('MISSING_PARAM', 'Page parameter required')
 
   const query = getQuery(event)
-  const locale = (query.locale as string) || 'en'
+  const localeChain = getContentLocaleChain(normalizeContentLocale(query.locale as string | undefined))
+  const merged: Array<typeof siteContent.$inferSelect> = []
+  const keySet = new Set<string>()
 
-  // Get requested locale
-  const rows = db.select().from(siteContent)
-    .where(and(eq(siteContent.page, page), eq(siteContent.locale, locale)))
-    .orderBy(asc(siteContent.sortOrder))
-    .all()
-
-  // Fallback to 'de' for missing keys (backward compat with old content)
-  let fallbackRows: typeof rows = []
-  if (locale !== 'de') {
-    fallbackRows = db.select().from(siteContent)
-      .where(and(eq(siteContent.page, page), eq(siteContent.locale, 'de')))
+  for (const locale of localeChain) {
+    const rows = db.select().from(siteContent)
+      .where(and(eq(siteContent.page, page), eq(siteContent.locale, locale)))
       .orderBy(asc(siteContent.sortOrder))
       .all()
-  }
 
-  // Merge: use locale content, fall back to 'de' for missing keys
-  const keySet = new Set(rows.map(r => `${r.section}::${r.key}`))
-  const merged = [...rows]
-  for (const fb of fallbackRows) {
-    if (!keySet.has(`${fb.section}::${fb.key}`)) {
-      merged.push(fb)
+    for (const row of rows) {
+      const key = `${row.section}::${row.key}`
+      if (keySet.has(key)) continue
+      keySet.add(key)
+      merged.push(row)
     }
   }
 

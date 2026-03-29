@@ -16,15 +16,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const auth = useAuth()
   auth.hydrateFromStorage()
 
-  if (auth.token.value && !auth.isTokenExpired()) {
-    return
-  }
-
-  if (auth.token.value && auth.isTokenExpired()) {
-    auth.clearSession()
-  }
-
-  const restored = await auth.restoreSession()
+  const restored = await auth.restoreSession(true)
   if (!restored) {
     return navigateTo('/admin/login')
   }

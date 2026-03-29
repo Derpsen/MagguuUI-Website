@@ -237,11 +237,10 @@
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
 const { apiFetch } = useApi()
-
-useSeoMeta({
-  title: 'Import Strings — MagguuUI',
-  description: 'All available import strings for ElvUI, Plater, BigWigs, Details and more. Simply copy and paste into WoW.',
-  ogTitle: 'Import Strings — MagguuUI',
+await usePublicPageSeo({
+  title: 'Import Strings',
+  description: 'Browse import strings, packages, and layouts for MagguuUI.',
+  path: '/strings',
 })
 
 const inputClass = computed(() => isDark.value

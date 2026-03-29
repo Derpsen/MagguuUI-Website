@@ -286,18 +286,21 @@
 </template>
 
 <script setup lang="ts">
-import { marked } from 'marked'
+import { renderMarkdownToSafeHtml } from '~/utils/richText'
 
 const toast = useToast()
 const { apiFetch } = useApi()
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
+await usePublicPageSeo({
+  title: 'Installation Guide',
+  description: 'Step-by-step installation guide for MagguuUI, from first install to alt profile sync.',
+  path: '/guide',
+})
 const isAdmin = computed(() => {
   if (import.meta.server) return false
   return isLoggedIn.value
 })
-
-useHead({ title: 'Installation Guide — MagguuUI' })
 
 const { data: guideData, refresh: refreshGuide } = await useFetch('/api/v1/content/guide')
 
@@ -370,28 +373,8 @@ watch(guideContent, (src) => {
   }
 }, { immediate: true })
 
-let clientSanitize: ((html: string) => string) | null = null
-if (import.meta.client) {
-  const mod = await import('dompurify')
-  clientSanitize = (html: string) => mod.default.sanitize(html)
-}
-
-function sanitizeHtmlSSR(html: string): string {
-  return html
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
-    .replace(/<iframe[\s\S]*?>[\s\S]*?<\/iframe>/gi, '')
-    .replace(/<object[\s\S]*?>[\s\S]*?<\/object>/gi, '')
-    .replace(/<embed[\s\S]*?>[\s\S]*?<\/embed>/gi, '')
-    .replace(/<form[\s\S]*?>[\s\S]*?<\/form>/gi, '')
-    .replace(/\son\w+=(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    .replace(/\s(href|src)\s*=\s*(['"])\s*javascript:[\s\S]*?\2/gi, ' $1="#"')
-}
-
 function renderGuideContent(text: string): string {
-  if (!text) return ''
-  const html = marked.parse(text, { async: false, breaks: true }) as string
-  return clientSanitize ? clientSanitize(html) : sanitizeHtmlSSR(html)
+  return renderMarkdownToSafeHtml(text, { breaks: true })
 }
 
 function stepAccent(idx: number) {

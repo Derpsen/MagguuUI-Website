@@ -17,10 +17,12 @@ export function usePageTracking() {
     trackView(router.currentRoute.value.fullPath)
   })
 
-  // Track client-side navigation
-  router.afterEach((to) => {
+  // Track client-side navigation — capture unregister fn so the hook
+  // does not accumulate across layout re-mounts.
+  const off = router.afterEach((to) => {
     trackView(to.fullPath)
   })
+  onUnmounted(() => off())
 }
 
 function trackView(path: string) {

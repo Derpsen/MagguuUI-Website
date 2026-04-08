@@ -14,6 +14,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Username and password required' })
   }
 
+  if (typeof body.username !== 'string' || body.username.length < 3 || body.username.length > 100) {
+    throw createError({ statusCode: 400, message: 'Invalid username' })
+  }
+
+  // Allowlist role — never trust arbitrary strings from the client
+  const ALLOWED_ROLES = ['admin', 'viewer'] as const
+  const role = ALLOWED_ROLES.includes(body.role) ? body.role : 'admin'
+
   // Validate password strength
   const { passwordSchema } = await import('~/server/utils/validation')
   const pwResult = passwordSchema.safeParse(body.password)
@@ -27,7 +35,7 @@ export default defineEventHandler(async (event) => {
     const result = db.insert(users).values({
       username: body.username,
       passwordHash: hash,
-      role: body.role || 'admin',
+      role,
     }).returning({ id: users.id, username: users.username, role: users.role }).get()
 
     setResponseStatus(event, 201)

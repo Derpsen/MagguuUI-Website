@@ -23,17 +23,25 @@ function cleanReferrer(referrer: string | null | undefined): string | null {
   }
 }
 
-// Simple in-memory dedup (prevent duplicate tracking for same IP+path within 5s)
-const recentViews = new Map<string, number>()
+// Simple in-memory dedup (prevent duplicate tracking for same IP+path within 5s).
+// State is pinned to globalThis so HMR module reloads in dev don't leak intervals.
 const DEDUP_WINDOW = 5000 // 5 seconds
+const g = globalThis as unknown as {
+  __pageViewDedup?: Map<string, number>
+  __pageViewDedupTimer?: NodeJS.Timeout
+}
+const recentViews: Map<string, number> = g.__pageViewDedup ?? (g.__pageViewDedup = new Map())
 
-// Cleanup old entries every 60s
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, time] of recentViews) {
-    if (now - time > DEDUP_WINDOW) recentViews.delete(key)
-  }
-}, 60_000)
+if (!g.__pageViewDedupTimer) {
+  g.__pageViewDedupTimer = setInterval(() => {
+    const now = Date.now()
+    for (const [key, time] of recentViews) {
+      if (now - time > DEDUP_WINDOW) recentViews.delete(key)
+    }
+  }, 60_000)
+  // Don't keep the event loop alive just for cleanup — matters for graceful shutdown
+  g.__pageViewDedupTimer.unref?.()
+}
 
 export default defineEventHandler(async (event) => {
   // Check if page view tracking is enabled in settings
@@ -41,15 +49,19 @@ export default defineEventHandler(async (event) => {
     return { success: true }
   }
 
-  const body = await readBody(event)
+  const ip = getClientIp(event)
 
-  if (!body?.path || typeof body.path !== 'string') {
-    throw createError({ statusCode: 400, message: 'path is required' })
+  // 120 page views / minute / IP — silently drop above that.
+  const { allowed } = checkRateLimit(`page-view:${ip}`, 120, 60 * 1000, 60 * 1000)
+  if (!allowed) {
+    return { success: true }
   }
 
-  const ip = getRequestHeader(event, 'x-forwarded-for')?.split(',')[0]?.trim()
-    || getRequestHeader(event, 'x-real-ip')
-    || '0.0.0.0'
+  const body = await readBody(event)
+
+  if (!body?.path || typeof body.path !== 'string' || body.path.length > 500) {
+    throw createError({ statusCode: 400, message: 'path is required' })
+  }
 
   // Dedup check
   const dedupKey = `${ip}:${body.path}`

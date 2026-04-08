@@ -47,17 +47,19 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid JSON payload' })
   }
 
-  // Verify webhook signature if secret is configured
-  if (webhookSecret) {
-    const bodyStr = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody)
-    if (!verifySignature(bodyStr, signature, webhookSecret)) {
-      db.insert(syncHistory).values({
-        triggerSource: `webhook-${eventType}`,
-        status: 'error',
-        details: 'Invalid webhook signature',
-      }).run()
-      throw createError({ statusCode: 401, message: 'Invalid signature' })
-    }
+  // Webhook secret is REQUIRED — refuse all calls if unset, to prevent
+  // unauthenticated writes into the DB via the auto-pull path.
+  if (!webhookSecret) {
+    throw createError({ statusCode: 503, message: 'Webhook secret not configured' })
+  }
+  const bodyStr = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody)
+  if (!verifySignature(bodyStr, signature, webhookSecret)) {
+    db.insert(syncHistory).values({
+      triggerSource: `webhook-${eventType}`,
+      status: 'error',
+      details: 'Invalid webhook signature',
+    }).run()
+    throw createError({ statusCode: 401, message: 'Invalid signature' })
   }
 
   // Handle ping event (GitHub sends this when webhook is first configured)

@@ -22,18 +22,22 @@ function getAuthCookieName() {
   return config.authCookieName || 'magguuui_session'
 }
 
+const AUTH_COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: 'strict' as const,
+  secure: process.env.NODE_ENV === 'production',
+  path: '/',
+}
+
 export function setAuthCookie(event: H3Event, token: string, maxAgeSeconds: number) {
   setCookie(event, getAuthCookieName(), token, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    ...AUTH_COOKIE_OPTIONS,
     maxAge: maxAgeSeconds,
-    path: '/',
   })
 }
 
 export function clearAuthCookie(event: H3Event) {
-  deleteCookie(event, getAuthCookieName(), { path: '/' })
+  deleteCookie(event, getAuthCookieName(), AUTH_COOKIE_OPTIONS)
 }
 
 /**

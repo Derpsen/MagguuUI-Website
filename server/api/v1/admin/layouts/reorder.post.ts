@@ -4,7 +4,7 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
 import { characterLayouts } from '~/server/database/schema'
 
 export default defineEventHandler(async (event) => {
@@ -13,15 +13,20 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'items array required' })
   }
 
-  for (const item of body.items) {
-    if (item.id && item.sortOrder !== undefined) {
+  const items = body.items.filter(
+    (i: any) => typeof i?.id === 'number' && typeof i?.sortOrder === 'number'
+  )
+
+  const now = new Date()
+  sqlite.transaction(() => {
+    for (const item of items) {
       db.update(characterLayouts)
-        .set({ sortOrder: item.sortOrder, updatedAt: new Date() })
+        .set({ sortOrder: item.sortOrder, updatedAt: now })
         .where(eq(characterLayouts.id, item.id))
         .run()
     }
-  }
+  })()
 
   triggerGitHubSync('layouts-reordered').catch(() => {})
-  return { success: true }
+  return { success: true, data: { updated: items.length } }
 })

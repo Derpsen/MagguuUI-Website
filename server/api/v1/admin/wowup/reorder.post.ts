@@ -3,17 +3,27 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
 import { wowupStrings } from '~/server/database/schema'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   if (!Array.isArray(body?.items)) throw createError({ statusCode: 400, message: 'items array required' })
 
-  for (const item of body.items) {
-    if (typeof item.id !== 'number' || typeof item.sortOrder !== 'number') continue
-    db.update(wowupStrings).set({ sortOrder: item.sortOrder, updatedAt: new Date() }).where(eq(wowupStrings.id, item.id)).run()
-  }
+  const items = body.items.filter(
+    (i: any) => typeof i?.id === 'number' && typeof i?.sortOrder === 'number'
+  )
+
+  const now = new Date()
+  sqlite.transaction(() => {
+    for (const item of items) {
+      db.update(wowupStrings)
+        .set({ sortOrder: item.sortOrder, updatedAt: now })
+        .where(eq(wowupStrings.id, item.id))
+        .run()
+    }
+  })()
+
   triggerGitHubSync('wowup-reordered').catch(() => {})
-  return { success: true, data: { updated: body.items.length } }
+  return { success: true, data: { updated: items.length } }
 })

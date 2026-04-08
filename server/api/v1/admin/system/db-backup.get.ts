@@ -5,12 +5,12 @@
  * Performs WAL checkpoint before backup for data integrity.
  */
 
-import { readFileSync, statSync } from 'fs'
+import { readFile } from 'fs/promises'
 import { join } from 'path'
 import { sqlite } from '~/server/database'
 
 export default defineEventHandler(async (event) => {
-  requireAuth(event)
+  // Auth already enforced by server/middleware/admin-api.ts for /api/v1/admin/*
 
   const ip = getClientIp(event)
   const { allowed, retryAfter } = checkRateLimit(`admin-db-backup:${ip}`, 6, 60 * 60 * 1000, 60 * 60 * 1000)
@@ -29,10 +29,10 @@ export default defineEventHandler(async (event) => {
     sqlite.pragma('wal_checkpoint(TRUNCATE)')
   } catch { /* ok */ }
 
-  // Read the database file
+  // Read the database file (async — do not block the event loop)
   let dbBuffer: Buffer
   try {
-    dbBuffer = readFileSync(dbPath)
+    dbBuffer = await readFile(dbPath)
   } catch (e: any) {
     throw createError({ statusCode: 500, message: 'Could not read database file' })
   }

@@ -246,6 +246,7 @@ function moveStep(index: number, direction: number) {
 }
 
 let dragIndex = -1
+let dragCleanup: (() => void) | null = null
 
 function startDrag(index: number, event: MouseEvent) {
   dragIndex = index
@@ -266,11 +267,19 @@ function startDrag(index: number, event: MouseEvent) {
     dragIndex = -1
     window.removeEventListener("mousemove", onMove)
     window.removeEventListener("mouseup", onUp)
+    dragCleanup = null
   }
+
+  // Stored so onUnmounted can detach listeners if the user navigates away mid-drag
+  dragCleanup = onUp
 
   window.addEventListener("mousemove", onMove)
   window.addEventListener("mouseup", onUp)
 }
+
+onUnmounted(() => {
+  if (dragCleanup) dragCleanup()
+})
 
 async function load() {
   loading.value = true

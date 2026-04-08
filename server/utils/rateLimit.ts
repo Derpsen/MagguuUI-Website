@@ -113,12 +113,30 @@ export function cleanupRateLimits(retentionMs: number = 24 * 60 * 60 * 1000) {
 }
 
 /**
- * Get client IP from H3 event
+ * Get client IP from H3 event.
+ *
+ * Priority:
+ * 1. `cf-connecting-ip` — set by Cloudflare tunnel; not forgeable by the client
+ *    because CF strips any value supplied in the request.
+ * 2. `x-real-ip` — set by reverse proxies we control.
+ * 3. Raw socket address — always trustworthy (local).
+ *
+ * `x-forwarded-for` is intentionally NOT trusted by default: an attacker can
+ * set it freely to bypass IP-keyed rate limits. It is only honored as a last
+ * resort when no other signal is available.
  */
 export function getClientIp(event: any): string {
+  const cf = getHeader(event, 'cf-connecting-ip')
+  if (cf) return cf.trim()
+
+  const real = getHeader(event, 'x-real-ip')
+  if (real) return real.trim()
+
+  const socket = event.node?.req?.socket?.remoteAddress
+  if (socket && socket !== '::1' && socket !== '127.0.0.1') return socket
+
   const forwarded = getHeader(event, 'x-forwarded-for')
   if (forwarded) return forwarded.split(',')[0].trim()
-  const real = getHeader(event, 'x-real-ip')
-  if (real) return real
-  return event.node?.req?.socket?.remoteAddress || 'unknown'
+
+  return socket || 'unknown'
 }

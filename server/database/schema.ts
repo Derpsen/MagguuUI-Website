@@ -143,7 +143,10 @@ export const activityLog = sqliteTable('activity_log', {
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
-})
+}, (table) => ({
+  entityTypeCreatedAtIdx: index('idx_activity_log_entity_type_created_at').on(table.entityType, table.createdAt),
+  userIdCreatedAtIdx: index('idx_activity_log_user_id_created_at').on(table.userId, table.createdAt),
+}))
 
 // ─── Users ─────────────────────────────────────────
 // Admin accounts
@@ -236,7 +239,9 @@ export const webauthnChallenges = sqliteTable('webauthn_challenges', {
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
-})
+}, (table) => ({
+  expiresAtIdx: index('idx_webauthn_challenges_expires_at').on(table.expiresAt),
+}))
 
 // ─── API Keys ──────────────────────────────────────
 // Keys for external access (GitHub Actions, sync scripts)
@@ -302,7 +307,10 @@ export const copyEvents = sqliteTable('copy_events', {
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
-})
+}, (table) => ({
+  stringTypeStringIdIdx: index('idx_copy_events_string_type_string_id').on(table.stringType, table.stringId),
+  createdAtIdx: index('idx_copy_events_created_at').on(table.createdAt),
+}))
 
 // ─── Page Views ────────────────────────────────────
 // Anonymous page view tracking for analytics
@@ -320,7 +328,10 @@ export const pageViews = sqliteTable('page_views', {
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
-})
+}, (table) => ({
+  pathCreatedAtIdx: index('idx_page_views_path_created_at').on(table.path, table.createdAt),
+  createdAtIdx: index('idx_page_views_created_at').on(table.createdAt),
+}))
 
 // ─── Rate Limits ──────────────────────────────────
 // Persistent request throttling state per key (e.g. login:IP)

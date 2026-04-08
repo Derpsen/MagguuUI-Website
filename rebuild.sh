@@ -17,16 +17,33 @@ TEMPLATE="/boot/config/plugins/dockerMan/templates-user/my-${CONTAINER_NAME}.xml
 FORCE_REBUILD="${FORCE_REBUILD:-0}"
 
 # ── Farben ─────────────────────────────────────────────────
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+# Only emit ANSI escape codes if stdout is actually a terminal — keeps log
+# files clean when the script is piped (e.g. `bash rebuild.sh > deploy.log`).
+if [ -t 1 ]; then
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    RED='\033[0;31m'
+    BLUE='\033[0;34m'
+    NC='\033[0m'
+else
+    GREEN='' YELLOW='' RED='' BLUE='' NC=''
+fi
 
 log()  { echo -e "${BLUE}[MagguuUI]${NC} $1"; }
-ok()   { echo -e "${GREEN}[✅]${NC} $1"; }
-warn() { echo -e "${YELLOW}[⚠️]${NC}  $1"; }
-err()  { echo -e "${RED}[❌]${NC} $1"; }
+ok()   { echo -e "${GREEN}[OK]${NC} $1"; }
+warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
+err()  { echo -e "${RED}[ERR]${NC} $1"; }
+
+# Fail loud: print a clear marker on any unexpected error so `set -e` exits
+# don't look like a silent "script just stopped".
+on_error() {
+    local exit_code=$?
+    local line_no=$1
+    err "Rebuild aborted (exit ${exit_code}) at line ${line_no}"
+    err "See output above for the failing command."
+    exit "${exit_code}"
+}
+trap 'on_error $LINENO' ERR
 get_image_commit() {
     local image_commit
     image_commit="$(
@@ -81,7 +98,31 @@ if [ ! -f "${TEMPLATE}" ]; then
     exit 1
 fi
 
+# Make sure the Unraid container manager script is actually there — otherwise
+# the rebuild would succeed but the container-recreate step later would fail
+# after we've already rebuilt the image.
+UNRAID_UPDATE_SCRIPT="/usr/local/emhttp/plugins/dynamix.docker.manager/scripts/update_container"
+if [ ! -x "${UNRAID_UPDATE_SCRIPT}" ]; then
+    err "Unraid update_container script nicht gefunden: ${UNRAID_UPDATE_SCRIPT}"
+    err "Läuft dieses Script wirklich auf einem Unraid-Host?"
+    exit 1
+fi
+
 ok "Projektdateien + Template vorhanden"
+
+# Safety: warn if the working tree has uncommitted changes — the normal deploy
+# path does `git reset --hard origin/main`, which would silently discard them.
+if ! git diff --quiet HEAD 2>/dev/null || [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+    warn "Working tree has uncommitted changes in ${PROJECT_DIR}"
+    warn "If you run 'git reset --hard origin/main', these changes will be LOST."
+    warn "Rebuild continues — but double-check before running the deploy oneliner."
+fi
+
+# Safety: warn if disk is nearly full — docker build can silently corrupt images
+DISK_FREE_MB=$(df -Pm "${PROJECT_DIR}" | awk 'NR==2 {print $4}')
+if [ -n "${DISK_FREE_MB}" ] && [ "${DISK_FREE_MB}" -lt 2048 ]; then
+    warn "Only ${DISK_FREE_MB} MB free on the deploy volume — docker build may fail"
+fi
 
 CURRENT_COMMIT="$(git rev-parse HEAD)"
 CURRENT_COMMIT_SHORT="$(git rev-parse --short HEAD)"
@@ -130,11 +171,26 @@ fi
 # ── 3. Container über Unraid Template neu erstellen ────────
 log "Erstelle Container über Unraid Template neu..."
 
-/usr/bin/php -q \
-    /usr/local/emhttp/plugins/dynamix.docker.manager/scripts/update_container \
-    "${CONTAINER_NAME}"
+/usr/bin/php -q "${UNRAID_UPDATE_SCRIPT}" "${CONTAINER_NAME}"
 
 ok "Container neu erstellt (managed, kein 3rd Party)"
+
+# ── 3b. Health-Check: warte bis Container antwortet ────────
+log "Warte auf Container-Health (max 60s)..."
+HEALTH_OK=0
+for i in $(seq 1 30); do
+    if docker exec "${CONTAINER_NAME}" \
+        node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" \
+        >/dev/null 2>&1; then
+        HEALTH_OK=1
+        ok "Container ist gesund (nach ${i}x2s)"
+        break
+    fi
+    sleep 2
+done
+if [ "${HEALTH_OK}" != "1" ]; then
+    warn "Container antwortet nach 60s noch nicht — prüfe 'docker logs ${CONTAINER_NAME}'"
+fi
 
 # ── 4. Alte Images + Build Cache aufräumen ─────────────────
 if [ "${SHOULD_BUILD}" = "1" ]; then

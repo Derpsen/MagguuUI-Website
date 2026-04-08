@@ -1,10 +1,14 @@
 import { marked } from 'marked'
 
+// DOMPurify is client-only. We load it lazily on first sanitize call so that
+// module evaluation stays synchronous on both server and client — a top-level
+// `await import()` caused SSR/CSR hydration mismatches on any v-html surface.
 let clientSanitize: ((html: string) => string) | null = null
 
 if (import.meta.client) {
-  const mod = await import('dompurify')
-  clientSanitize = (html: string) => mod.default.sanitize(html)
+  import('dompurify').then((mod) => {
+    clientSanitize = (html: string) => mod.default.sanitize(html)
+  }).catch(() => { /* ignore — SSR fallback sanitizer will be used */ })
 }
 
 export interface MarkdownRenderOptions {

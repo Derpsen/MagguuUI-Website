@@ -5,7 +5,7 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
 import { profiles } from '~/server/database/schema'
 
 export default defineEventHandler(async (event) => {
@@ -14,14 +14,21 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'items array required' })
   }
 
-  for (const item of body.items) {
-    if (typeof item.id !== 'number' || typeof item.sortOrder !== 'number') continue
-    db.update(profiles)
-      .set({ sortOrder: item.sortOrder, updatedAt: new Date() })
-      .where(eq(profiles.id, item.id))
-      .run()
-  }
+  const items = body.items.filter(
+    (i: any) => typeof i?.id === 'number' && typeof i?.sortOrder === 'number'
+  )
+
+  // Wrap reorder in a single SQLite transaction to avoid N fsync round-trips.
+  const now = new Date()
+  sqlite.transaction(() => {
+    for (const item of items) {
+      db.update(profiles)
+        .set({ sortOrder: item.sortOrder, updatedAt: now })
+        .where(eq(profiles.id, item.id))
+        .run()
+    }
+  })()
 
   triggerGitHubSync('profiles-reordered').catch(() => {})
-  return { success: true, data: { updated: body.items.length } }
+  return { success: true, data: { updated: items.length } }
 })

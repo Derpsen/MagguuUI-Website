@@ -9,7 +9,7 @@
 
 import bcrypt from 'bcrypt'
 import { and, eq, count } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
 import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_SITE_CONTENT } from '~/server/database/defaultContent'
 import { users, siteContent, faqs, settings } from '~/server/database/schema'
 import { DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
@@ -18,6 +18,26 @@ import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
 export default defineNitroPlugin(async () => {
   const config = useRuntimeConfig()
   const shouldSyncSeededContent = process.env.NUXT_SYNC_SEEDED_CONTENT === 'true'
+
+  // ── Idempotent index ensure ─────────────────────────
+  // The project uses `drizzle-kit push` rather than versioned migrations, so we
+  // apply new indexes here on startup. `IF NOT EXISTS` makes each statement
+  // safe to re-run, and SQLite handles index creation in a single pass.
+  try {
+    const indexStatements = [
+      `CREATE INDEX IF NOT EXISTS idx_activity_log_entity_type_created_at ON activity_log (entity_type, created_at)`,
+      `CREATE INDEX IF NOT EXISTS idx_activity_log_user_id_created_at ON activity_log (user_id, created_at)`,
+      `CREATE INDEX IF NOT EXISTS idx_webauthn_challenges_expires_at ON webauthn_challenges (expires_at)`,
+      `CREATE INDEX IF NOT EXISTS idx_copy_events_string_type_string_id ON copy_events (string_type, string_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_copy_events_created_at ON copy_events (created_at)`,
+      `CREATE INDEX IF NOT EXISTS idx_page_views_path_created_at ON page_views (path, created_at)`,
+      `CREATE INDEX IF NOT EXISTS idx_page_views_created_at ON page_views (created_at)`,
+    ]
+    for (const stmt of indexStatements) sqlite.exec(stmt)
+    console.log(`[Init] Ensured ${indexStatements.length} performance indexes`)
+  } catch (err) {
+    console.error('[Init] Index ensure failed:', err)
+  }
 
   try {
     const adminCount = db.select({ count: count() }).from(users).get()

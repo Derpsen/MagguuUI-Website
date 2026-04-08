@@ -33,12 +33,17 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody(event)
 
-  if (!body?.username || !body?.password) {
-    throw createError({
-      statusCode: 400,
-      message: 'Username and password required',
-    })
+  // Hard size/shape validation before any expensive work (bcrypt, DB)
+  const username = typeof body?.username === 'string' ? body.username.trim() : ''
+  const password = typeof body?.password === 'string' ? body.password : ''
+  if (!username || !password) {
+    throw createError({ statusCode: 400, message: 'Username and password required' })
   }
+  if (username.length > 100 || password.length > 200) {
+    throw createError({ statusCode: 400, message: 'Invalid credentials' })
+  }
+  body.username = username
+  body.password = password
 
   // Check account lockout
   const lockout = checkAccountLockout(body.username)

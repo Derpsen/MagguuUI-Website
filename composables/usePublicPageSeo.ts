@@ -8,8 +8,13 @@ interface PublicPageSeoOptions {
   robots?: string
 }
 
-export async function usePublicPageSeo(options: PublicPageSeoOptions) {
-  const siteSettings = await usePublicSiteSettings()
+/**
+ * NOT async on purpose — see comment in usePublicSiteSettings.
+ * Consumers may still call this with `await` (await of a non-Promise is a
+ * no-op), so existing call sites do not need to change.
+ */
+export function usePublicPageSeo(options: PublicPageSeoOptions) {
+  const siteSettings = usePublicSiteSettings()
 
   const siteName = computed(() => siteSettings.value.site_name || PUBLIC_SITE_SETTINGS_DEFAULTS.site_name)
   const fullTitle = computed(() => buildPublicPageTitle(options.title, siteName.value))

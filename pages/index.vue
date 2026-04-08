@@ -200,22 +200,24 @@ const latestBadgeText = computed(() => {
   return content.value?.hero?.badge || 'New: String updates'
 })
 
-// Features with static fallbacks
+// Features — fallbacks must mirror DEFAULT_HOME_CONTENT in
+// server/database/defaultContent.ts so the page reads the same on a fresh
+// install (CMS empty) and after seeding.
 const features = computed(() => [
   {
     emoji: '⚡',
-    title: content.value?.features?.feature_1_title || 'Pre-configured Profiles',
-    text: content.value?.features?.feature_1_text || 'Pre-configured profiles for ElvUI, Plater, BigWigs, Details, and more. One click — done.',
-  },
-  {
-    emoji: '🎯',
-    title: content.value?.features?.feature_2_title || 'Class Layouts',
-    text: content.value?.features?.feature_2_text || 'Optimized cooldown layouts for every class and specialization. Ready to use immediately.',
+    title: content.value?.features?.feature_1_title || 'One-click setup',
+    text: content.value?.features?.feature_1_text || 'Install MagguuUI from CurseForge, log in once, click Install All. Every supported addon gets its profile applied automatically — missing addons are simply skipped.',
   },
   {
     emoji: '🔄',
-    title: content.value?.features?.feature_3_title || 'Always Up-to-Date',
-    text: content.value?.features?.feature_3_text || 'Regular updates with the latest changes and improvements for every addon.',
+    title: content.value?.features?.feature_2_title || 'Always up to date',
+    text: content.value?.features?.feature_2_text || 'Profiles are tuned for the current WoW patch and updated regularly. MagguuUI tells you in chat or via popup whenever a new version is available.',
+  },
+  {
+    emoji: '🎯',
+    title: content.value?.features?.feature_3_title || 'Class layouts included',
+    text: content.value?.features?.feature_3_text || 'Cooldown layouts are pre-built for every class and specialization, and re-applied automatically when you change spec.',
   },
 ])
 

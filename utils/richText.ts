@@ -1,15 +1,12 @@
 import { marked } from 'marked'
 
-// DOMPurify is client-only. We load it lazily on first sanitize call so that
-// module evaluation stays synchronous on both server and client — a top-level
-// `await import()` caused SSR/CSR hydration mismatches on any v-html surface.
-let clientSanitize: ((html: string) => string) | null = null
-
-if (import.meta.client) {
-  import('dompurify').then((mod) => {
-    clientSanitize = (html: string) => mod.default.sanitize(html)
-  }).catch(() => { /* ignore — SSR fallback sanitizer will be used */ })
-}
+// IMPORTANT: SSR and client MUST produce byte-identical HTML here, otherwise
+// Vue hydration fails on any v-html surface and Nuxt escalates the failure to
+// the 500 error page. DOMPurify (client) and the regex sanitizer (server)
+// produce subtly different output (attribute order, whitespace, entity
+// encoding), so we deliberately use the same deterministic sanitizer on
+// both runtimes. Content here is admin-authored markdown, not user input,
+// so the SSR sanitizer is sufficient.
 
 export interface MarkdownRenderOptions {
   breaks?: boolean
@@ -18,7 +15,7 @@ export interface MarkdownRenderOptions {
 
 export function sanitizeRichHtml(html: string): string {
   if (!html) return ''
-  return clientSanitize ? clientSanitize(html) : sanitizeHtmlSSR(html)
+  return sanitizeHtmlSSR(html)
 }
 
 export function renderMarkdownToSafeHtml(markdown: string, options: MarkdownRenderOptions = {}): string {

@@ -24,10 +24,16 @@
           </svg>
           <span class="text-gradient-subtle">What is MagguuUI?</span>
         </h2>
+        <p class="text-sm leading-relaxed mb-3" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+          MagguuUI is an in-game World of Warcraft addon that sets up your entire user interface for you.
+          Once installed, it configures ElvUI, Plater, BigWigs, Details and more with hand-tuned profiles
+          so you have a complete, ready-to-play UI in a few clicks — no editing config files, no copy-pasting
+          import strings, no spending an evening tweaking unitframes.
+        </p>
         <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-          MagguuUI is a collection of pre-configured import strings for World of Warcraft addons.
-          Instead of spending hours tweaking your own UI, you can download ready-made configurations
-          for ElvUI, Plater, BigWigs, Details and more, and start using them right away.
+          MagguuUI does not replace any of those addons. It only configures the ones you have installed
+          and skips the rest. The only hard requirement is <strong :class="isDark ? 'text-white' : 'text-gray-900'">ElvUI 15.00 or higher</strong> —
+          everything else is optional.
         </p>
       </div>
 
@@ -36,26 +42,47 @@
           <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
           </svg>
-          <span class="text-gradient-subtle">Features</span>
+          <span class="text-gradient-subtle">What it does</span>
         </h2>
-        <ul class="space-y-2 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+        <ul class="space-y-2.5 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Addon Profiles</strong> - Pre-configured settings for the most popular WoW addons</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">One-click Install All</strong> — applies a curated profile to every supported addon you have installed.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Cooldown Layouts</strong> - Optimized layouts for every class and specialization</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Class &amp; spec layouts</strong> — pre-built cooldown layouts for every class and spec, re-applied automatically when you respec.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">WowUp Import Strings</strong> - Easy addon installation via WowUp</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Update notifications</strong> — chat hint or popup whenever a new version is released, configurable in <code>/mui settings</code>.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Regular Updates</strong> - Up-to-date strings with every patch</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Quality-of-life tools</strong> — minimap button, audio output switcher (<code>/mui audio</code>), in-game changelog viewer.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Alts in seconds</strong> — after one main setup, alts get a short Load Profiles popup instead of the full installer.</span>
           </li>
         </ul>
+      </div>
+
+      <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">
+        <h2 class="text-lg font-semibold mb-3 flex items-center gap-2.5">
+          <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span class="text-gradient-subtle">What this website is for</span>
+        </h2>
+        <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+          The website is a backup for everything the in-game addon already gives you. If you ever need to
+          re-install a single profile by hand, copy a class layout for a friend, or just see what is
+          currently shipped, you can browse and copy the raw import strings here on the
+          <NuxtLink to="/strings" class="text-brand-400 hover:underline">Strings</NuxtLink> page —
+          and read the <NuxtLink to="/changelog" class="text-brand-400 hover:underline">Changelog</NuxtLink>
+          to see what changed in each release. For most users the in-game installer is all you need.
+        </p>
       </div>
 
       <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">

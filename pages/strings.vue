@@ -14,6 +14,38 @@
       <p class="text-lg" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ tabSubtitle }}</p>
     </div>
 
+    <details class="glass-card rounded-2xl p-5 sm:p-6 mb-6 fade-in fade-in-delay-1 group">
+      <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold list-none">
+        <span class="flex items-center gap-2" :class="isDark ? 'text-white' : 'text-gray-900'">
+          <svg class="w-4 h-4 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+          </svg>
+          New here? What is an import string?
+        </span>
+        <svg class="w-4 h-4 transition-transform group-open:rotate-180" :class="isDark ? 'text-silver-400' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        </svg>
+      </summary>
+      <div class="mt-4 space-y-3 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+        <p>
+          An <strong :class="isDark ? 'text-white' : 'text-gray-900'">import string</strong> is a short text snippet that
+          contains a complete addon configuration. You copy it from here, paste it into the addon's import window in
+          WoW, and the addon recreates the exact setup it describes.
+        </p>
+        <p>
+          <strong :class="isDark ? 'text-white' : 'text-gray-900'">You usually do not need this page.</strong>
+          The <NuxtLink to="/guide" class="text-brand-400 hover:underline">MagguuUI in-game installer</NuxtLink>
+          imports all of these for you with one click. This page exists as a backup if you ever want to import a single
+          profile by hand, share one with a friend, or check what is currently shipped.
+        </p>
+        <p>
+          <strong :class="isDark ? 'text-white' : 'text-gray-900'">How to use a string manually:</strong>
+          pick the addon below, click <em>Copy String</em>, then in WoW open the addon's settings, find its
+          <em>Import Profile</em> dialog (most addons have one), paste, and confirm.
+        </p>
+      </div>
+    </details>
+
     <div class="glass-card rounded-2xl p-6 sm:p-8 fade-in fade-in-delay-1">
       <!-- Tabs -->
       <div class="flex flex-wrap justify-center gap-2 mb-6">

@@ -3,7 +3,7 @@
 -->
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <div class="text-center mb-12 fade-in heading-glow">
       <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
         <svg class="w-8 h-8 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -54,8 +54,9 @@
         </span>
       </div>
       <div class="space-y-3">
-        <div v-for="addon in requiredAddons" :key="addon.name"
-          class="glass-card rounded-xl p-5 flex items-start gap-4 transition-all hover:scale-[1.01]"
+        <a v-for="addon in requiredAddons" :key="addon.name"
+          :href="addon.url" target="_blank" rel="noopener noreferrer"
+          class="glass-card rounded-xl p-5 flex items-start gap-4 transition-all hover:scale-[1.01] block cursor-pointer group"
           :class="isDark ? 'hover:border-brand-400/20' : 'hover:border-blue-200'">
           <span class="inline-flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0 text-lg"
             :class="isDark ? 'bg-brand-400/10 text-brand-300' : 'bg-blue-50 text-blue-600'">
@@ -63,22 +64,18 @@
           </span>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 mb-1">
-              <h3 class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ addon.name }}</h3>
+              <h3 class="font-semibold group-hover:text-brand-400 transition-colors" :class="isDark ? 'text-white' : 'text-gray-900'">{{ addon.name }}</h3>
               <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
                 :class="isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'">
                 Required
               </span>
-            </div>
-            <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</p>
-            <a v-if="addon.url" :href="addon.url" target="_blank" rel="noopener noreferrer"
-              class="inline-flex items-center gap-1 text-xs text-brand-400 hover:underline mt-2">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg class="w-3.5 h-3.5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" :class="isDark ? 'text-silver-400' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
               </svg>
-              {{ addon.urlLabel }}
-            </a>
+            </div>
+            <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</p>
           </div>
-        </div>
+        </a>
       </div>
     </section>
 
@@ -100,21 +97,25 @@
       <p class="text-sm mb-5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
         Strongly recommended &mdash; these addons form the backbone of the MagguuUI experience.
       </p>
-      <div class="grid gap-3">
-        <div v-for="addon in coreAddons" :key="addon.name"
-          class="glass-card rounded-xl p-5 flex items-start gap-4 transition-all hover:scale-[1.01]"
-          :class="isDark ? 'hover:border-brand-400/20' : 'hover:border-blue-200'">
+      <div class="grid sm:grid-cols-2 gap-3">
+        <component :is="addon.url ? 'a' : 'div'" v-for="addon in coreAddons" :key="addon.name"
+          v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
+          class="glass-card rounded-xl p-5 flex items-start gap-4 transition-all hover:scale-[1.01] group"
+          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-blue-200']">
           <span class="inline-flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0 text-lg"
             :class="isDark ? 'bg-brand-400/10 text-brand-300' : 'bg-blue-50 text-blue-600'">
             {{ addon.emoji }}
           </span>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 mb-1">
-              <h3 class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ addon.name }}</h3>
+              <h3 class="font-semibold transition-colors" :class="[addon.url ? 'group-hover:text-brand-400' : '', isDark ? 'text-white' : 'text-gray-900']">{{ addon.name }}</h3>
+              <svg v-if="addon.url" class="w-3.5 h-3.5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" :class="isDark ? 'text-silver-400' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              </svg>
             </div>
             <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</p>
           </div>
-        </div>
+        </component>
       </div>
     </section>
 
@@ -136,19 +137,25 @@
       <p class="text-sm mb-5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
         Install any of these for extra functionality &mdash; MagguuUI will configure them automatically if present.
       </p>
-      <div class="grid sm:grid-cols-2 gap-3">
-        <div v-for="addon in optionalAddons" :key="addon.name"
-          class="glass-card rounded-xl p-4 flex items-start gap-3 transition-all hover:scale-[1.01]"
-          :class="isDark ? 'hover:border-brand-400/20' : 'hover:border-blue-200'">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <component :is="addon.url ? 'a' : 'div'" v-for="addon in optionalAddons" :key="addon.name"
+          v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
+          class="glass-card rounded-xl p-4 flex items-start gap-3 transition-all hover:scale-[1.01] group"
+          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-blue-200']">
           <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg flex-shrink-0 text-base"
             :class="isDark ? 'bg-white/[0.04] text-silver-400' : 'bg-gray-50 text-gray-500'">
             {{ addon.emoji }}
           </span>
           <div class="flex-1 min-w-0">
-            <h3 class="text-sm font-semibold mb-0.5" :class="isDark ? 'text-white' : 'text-gray-900'">{{ addon.name }}</h3>
+            <div class="flex items-center gap-1.5">
+              <h3 class="text-sm font-semibold mb-0.5 transition-colors" :class="[addon.url ? 'group-hover:text-brand-400' : '', isDark ? 'text-white' : 'text-gray-900']">{{ addon.name }}</h3>
+              <svg v-if="addon.url" class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 -mt-0.5" :class="isDark ? 'text-silver-400' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              </svg>
+            </div>
             <p class="text-xs leading-relaxed" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ addon.description }}</p>
           </div>
-        </div>
+        </component>
       </div>
     </section>
 
@@ -172,159 +179,200 @@ usePublicPageSeo({
   path: '/addons',
 })
 
-const requiredAddons = [
+interface Addon {
+  name: string
+  emoji: string
+  description: string
+  url?: string
+}
+
+const CF = 'https://www.curseforge.com/wow/addons'
+
+const requiredAddons: Addon[] = [
   {
     name: 'ElvUI',
     emoji: '🎨',
     description: 'The complete UI replacement framework that MagguuUI is built on. Handles action bars, unit frames, chat, bags, maps, and more. Required version: 15.00 or higher.',
-    url: 'https://www.tukui.org/download.php?ui=elvui',
-    urlLabel: 'tukui.org',
+    url: 'https://tukui.org/elvui',
   },
 ]
 
-const coreAddons = [
-  {
-    name: 'Plater',
-    emoji: '🎯',
-    description: 'Nameplate addon with per-mob customization, scripting, and mod support.',
-  },
+const coreAddons: Addon[] = [
   {
     name: 'BigWigs',
     emoji: '⏱️',
     description: 'Boss mod for raid and dungeon encounters with timers, alerts, and proximity.',
+    url: `${CF}/big-wigs`,
   },
   {
     name: 'Details!',
     emoji: '📊',
     description: 'Damage and healing meter with extensive statistics and plugin support.',
+    url: `${CF}/details`,
   },
   {
     name: 'BetterCooldownManager',
     emoji: '⚡',
     description: 'Tracks party and raid cooldowns with a clean bar/icon display.',
+    url: `${CF}/bettercooldownmanager`,
+  },
+  {
+    name: 'Ayije CDM',
+    emoji: '⏳',
+    description: 'Cooldown manager with a compact interface for tracking group abilities.',
+    url: `${CF}/ayijecdm`,
   },
   {
     name: 'Blizzard EditMode',
     emoji: '🖼️',
     description: 'Built-in WoW layout system — MagguuUI applies a pre-configured layout automatically.',
   },
+  {
+    name: 'ElvUI Anchor',
+    emoji: '⚓',
+    description: 'Keeps ElvUI anchor positions consistent and prevents layout drift between sessions.',
+    url: `${CF}/elvui-anchor`,
+  },
 ]
 
-const optionalAddons = [
+const optionalAddons: Addon[] = [
+  {
+    name: 'Plater',
+    emoji: '🎯',
+    description: 'Nameplate addon with per-mob customization, scripting, and mod support.',
+    url: `${CF}/plater-nameplates`,
+  },
   {
     name: 'Platynator',
     emoji: '🛡️',
     description: 'Additional nameplate tweaks and color coding for Plater.',
-  },
-  {
-    name: 'Ayije CDM',
-    emoji: '⏳',
-    description: 'Alternative cooldown manager with a compact interface.',
+    url: `${CF}/platynator`,
   },
   {
     name: 'BuffReminders',
     emoji: '💡',
     description: 'Reminds you to apply missing buffs like food, flask, or rune.',
+    url: `${CF}/buffreminders`,
   },
   {
     name: 'TargetedSpells',
     emoji: '🔮',
     description: 'Shows incoming spells targeted at you with visual indicators.',
+    url: `${CF}/targetedspells`,
   },
   {
     name: 'AccWideUILayoutSelection',
     emoji: '🔄',
     description: 'Persists your UI layout selection across all characters account-wide.',
+    url: `${CF}/account-wide-ui`,
   },
   {
     name: 'MiniCC',
     emoji: '🕐',
     description: 'Lightweight cooldown count text on action bar buttons.',
+    url: `${CF}/minicc`,
   },
   {
     name: 'ElvUI WindTools',
     emoji: '🌬️',
     description: 'Feature-rich ElvUI plugin with extra modules, skins, and QoL tweaks.',
+    url: `${CF}/elvui-windtools`,
   },
   {
     name: 'ExwindTools',
     emoji: '🔧',
     description: 'Extended toolkit with additional UI modules and utilities.',
+    url: `${CF}/exwindtools`,
   },
   {
     name: 'HandyNotes',
     emoji: '📍',
     description: 'Pins custom notes and collectible locations on your world map.',
+    url: `${CF}/handynotes`,
   },
   {
     name: 'HandyNotes MapNotes',
     emoji: '🗺️',
     description: 'Adds instance entrances, portals, and transport icons to the map.',
+    url: `${CF}/mapnotes`,
   },
   {
     name: 'EasyExperienceBar',
     emoji: '📈',
     description: 'Clean, configurable experience and reputation bar replacement.',
+    url: `${CF}/easy-experience-bar`,
   },
   {
     name: 'WIM',
     emoji: '💬',
     description: 'WoW Instant Messenger — gives whispers their own chat windows.',
+    url: `${CF}/wim-3`,
   },
   {
     name: 'GTFO',
     emoji: '🚨',
     description: 'Plays an alert sound when you stand in fire or other bad stuff.',
+    url: `${CF}/gtfo`,
   },
   {
     name: 'BugSack',
     emoji: '🪲',
     description: 'Collects Lua errors silently so they don\'t interrupt gameplay.',
+    url: `${CF}/bugsack`,
   },
   {
     name: 'NorthernSkyRaidTools',
     emoji: '🧭',
     description: 'Raid assignment and note distribution tool for organized groups.',
+    url: `${CF}/northern-sky-raid-tools`,
   },
   {
     name: 'GroupfinderFlags',
     emoji: '🏁',
     description: 'Adds visual flags and filters to the group finder UI.',
+    url: `${CF}/groupfinderflags`,
   },
   {
     name: 'Falcon',
     emoji: '🦅',
     description: 'Skyriding companion addon with speed and ability tracking.',
+    url: `${CF}/falcon`,
   },
   {
     name: 'CursorTrail',
     emoji: '✨',
     description: 'Adds a visual trail effect to your mouse cursor in-game.',
+    url: `${CF}/cursortrail`,
   },
   {
     name: 'MPlusTimer',
     emoji: '⏲️',
     description: 'Mythic+ dungeon timer with detailed split tracking per boss.',
+    url: `${CF}/mplustimer`,
   },
   {
     name: 'Plumber',
     emoji: '🔩',
     description: 'Quality-of-life tweaks for Blizzard UI elements like Delves and warband bank.',
+    url: `${CF}/plumber`,
   },
   {
     name: 'WaypointUI',
     emoji: '📌',
     description: 'Customizable waypoint arrow and coordinate display.',
+    url: `${CF}/waypointui`,
   },
   {
     name: 'tullaCTC',
     emoji: '🎮',
     description: 'Adds cast time to tooltip and cooldown text customization.',
+    url: `${CF}/tullactc`,
   },
   {
     name: 'TalentTreeTweaks',
     emoji: '🌳',
     description: 'Enhancements for the talent tree UI with better search and import tools.',
+    url: `${CF}/talent-tree-tweaks`,
   },
 ]
 </script>

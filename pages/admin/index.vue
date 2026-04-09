@@ -1,28 +1,6 @@
 <template>
   <div class="space-y-6">
-    <AdminPageHeader
-      icon="i-heroicons-squares-2x2"
-      eyebrow="Overview"
-      title="Dashboard"
-      description="Release health, string freshness and the latest activity in one compact view."
-    >
-      <template #meta>
-        <div class="flex flex-wrap items-center gap-2">
-          <span v-if="stats" class="admin-pill">Auto refresh {{ nextRefresh }}s</span>
-          <span v-if="lastActivityText && stats" class="admin-pill">{{ lastActivityText }}</span>
-        </div>
-      </template>
-
-      <template #actions>
-        <UButton size="sm" color="neutral" variant="ghost" icon="i-heroicons-arrow-path" :loading="refreshing" @click="refreshAll">
-          Refresh
-        </UButton>
-        <UButton size="sm" color="neutral" variant="ghost" icon="i-heroicons-squares-2x2" @click="resetDashboardLayout">
-          Reset layout
-        </UButton>
-      </template>
-    </AdminPageHeader>
-
+    <!-- Skeleton loading state -->
     <div v-if="!stats" class="space-y-5">
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <div v-for="item in 4" :key="`metric-${item}`" class="admin-metric-card">
@@ -30,77 +8,64 @@
         </div>
       </div>
 
-      <div class="admin-filterbar">
-        <div class="h-5 w-32 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-        <div class="h-5 w-24 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-        <div class="h-5 w-28 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-        <div class="ml-auto h-5 w-52 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-      </div>
-
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(320px,0.78fr)]">
-        <AdminPanel title="Release focus" description="Preparing the current release picture." icon="i-heroicons-bolt">
-          <div class="space-y-4">
-            <div class="h-10 w-64 rounded-xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-            <div class="grid gap-3 sm:grid-cols-2">
-              <div v-for="item in 4" :key="`focus-${item}`" class="admin-subpanel">
-                <div class="h-3 w-20 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-                <div class="mt-3 h-6 w-28 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-                <div class="mt-2 h-3 w-full rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-              </div>
-            </div>
-          </div>
-        </AdminPanel>
-
-        <AdminPanel title="Watchlist" description="Loading operational signals." icon="i-heroicons-shield-check">
-          <div class="space-y-2">
-            <div v-for="i in 9" :key="`watch-${i}`" class="admin-status-row">
-              <div class="h-3 w-20 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-              <div class="h-3 w-24 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-            </div>
-          </div>
-        </AdminPanel>
-      </div>
-
-      <div class="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)]">
-        <AdminPanel title="Recent activity" description="Loading the latest changes." icon="i-heroicons-clock">
-          <div class="space-y-2">
-            <div v-for="i in 5" :key="`activity-${i}`" class="admin-activity-row">
-              <div class="h-9 w-9 rounded-xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-              <div class="flex-1 space-y-2">
-                <div class="h-3 w-40 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-                <div class="h-3 w-24 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-              </div>
-            </div>
-          </div>
-        </AdminPanel>
-
-        <div class="space-y-5">
-          <AdminPanel title="Top demand" description="Loading copy demand." icon="i-heroicons-fire">
-            <div class="space-y-2">
-              <div v-for="i in 3" :key="`demand-${i}`" class="admin-row">
-                <div class="flex-1 space-y-2">
-                  <div class="h-3 w-32 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-                  <div class="h-3 w-24 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-                </div>
-                <div class="h-5 w-12 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-              </div>
-            </div>
-          </AdminPanel>
-
-          <AdminPanel title="Traffic snapshot" description="Loading traffic and momentum." icon="i-heroicons-chart-bar">
-            <div class="grid gap-3 sm:grid-cols-3">
-              <div v-for="i in 3" :key="`traffic-${i}`" class="admin-subpanel">
-                <div class="h-3 w-16 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-                <div class="mt-3 h-6 w-20 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-              </div>
-            </div>
-            <div class="mt-5 h-32 rounded-2xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-          </AdminPanel>
-        </div>
+      <div class="grid gap-5 xl:grid-cols-[1fr_340px]">
+        <div class="h-64 rounded-xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+        <div class="h-64 rounded-xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
       </div>
     </div>
 
     <template v-else>
+      <!-- 1. Welcome Banner -->
+      <div
+        class="rounded-xl border p-6"
+        :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-slate-200'"
+      >
+        <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div class="space-y-1">
+            <h1
+              class="text-xl font-semibold tracking-tight"
+              :class="isDark ? 'text-white' : 'text-slate-900'"
+            >
+              Good morning, Admin
+            </h1>
+            <p
+              class="text-sm"
+              :class="isDark ? 'text-white/60' : 'text-slate-500'"
+            >
+              Here is what is happening with your project today.
+              <span class="ml-1 text-xs opacity-70">Auto refresh {{ nextRefresh }}s</span>
+            </p>
+          </div>
+
+          <div class="flex items-center gap-6">
+            <div v-for="card in trafficCards" :key="card.label" class="text-center">
+              <p
+                class="text-lg font-semibold tabular-nums"
+                :class="isDark ? 'text-white' : 'text-slate-900'"
+              >
+                {{ card.value }}
+              </p>
+              <p
+                class="text-xs"
+                :class="isDark ? 'text-white/50' : 'text-slate-400'"
+              >
+                {{ card.label }}
+              </p>
+            </div>
+
+            <UButton
+              size="sm"
+              color="neutral"
+              variant="ghost"
+              icon="i-heroicons-arrow-path"
+              :loading="refreshing"
+              @click="refreshAll"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. KPI Metric Cards -->
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <AdminMetricCard
           v-for="metric in overviewCards"
@@ -115,212 +80,255 @@
         />
       </div>
 
-      <div class="admin-filterbar">
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="admin-context-chip">Release radar</span>
-          <span class="admin-pill" :class="versionData && !versionData.isUpToDate ? 'admin-pill--warning' : 'admin-pill--success'">
-            Version {{ versionStatusChip }}
-          </span>
-          <span class="admin-pill" :class="notifItems.length ? 'admin-pill--warning' : 'admin-pill--success'">
-            Alerts {{ notifItems.length ? `${notifItems.length} open` : 'clear' }}
-          </span>
-          <span class="admin-pill" :class="totalStaleStrings ? 'admin-pill--warning' : 'admin-pill--success'">
-            Stale {{ totalStaleStrings }}
-          </span>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
-          <span>{{ stats.apiCallsLast7Days || 0 }} API calls 7d</span>
-          <span>•</span>
-          <span>{{ stats.totalActivities || 0 }} tracked changes</span>
-          <span>•</span>
-          <span>{{ stats.uniquePageVisitorsLast7Days || 0 }} visitors 7d</span>
-        </div>
+      <!-- 3. Quick Actions Row -->
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <NuxtLink
+          v-for="action in quickActions"
+          :key="action.label"
+          :to="action.to"
+          class="group rounded-xl border p-4 transition-all duration-200"
+          :class="[
+            isDark
+              ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)] hover:border-blue-500/40'
+              : 'bg-white border-slate-200 hover:border-blue-400/50',
+            'hover:shadow-lg hover:shadow-blue-500/5',
+          ]"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+              :class="isDark ? 'bg-white/5' : 'bg-slate-100'"
+            >
+              <UIcon
+                :name="action.icon"
+                class="h-5 w-5"
+                :class="isDark ? 'text-white/70' : 'text-slate-500'"
+              />
+            </div>
+            <div class="min-w-0">
+              <p
+                class="text-sm font-medium truncate"
+                :class="isDark ? 'text-white' : 'text-slate-900'"
+              >
+                {{ action.label }}
+              </p>
+              <p
+                class="text-xs truncate"
+                :class="isDark ? 'text-white/40' : 'text-slate-400'"
+              >
+                {{ action.subtitle }}
+              </p>
+            </div>
+          </div>
+        </NuxtLink>
       </div>
 
-      <div class="admin-dashboard-grid">
-        <section
-          v-for="module in orderedModules"
-          :key="module.id"
-          class="admin-dashboard-module"
-          :class="[
-            module.layoutClass,
-            draggedModuleId === module.id ? 'admin-dashboard-module--dragging' : '',
-            dragTargetId === module.id ? 'admin-dashboard-module--drop' : '',
-          ]"
-          draggable="true"
-          @dragstart="handleModuleDragStart(module.id)"
-          @dragover.prevent="handleModuleDragOver(module.id)"
-          @drop.prevent="handleModuleDrop(module.id)"
-          @dragend="handleModuleDragEnd"
-        >
-          <AdminPanel :title="module.title" :description="module.description" :icon="module.icon">
-            <template #actions>
-              <span class="admin-module-hint hidden xl:inline-flex">
-                <UIcon name="i-heroicons-arrows-up-down" class="h-3.5 w-3.5" />
-                Drag
-              </span>
-            </template>
-
-            <template v-if="module.id === 'release-focus'">
-              <div class="space-y-5">
-                <div class="flex flex-wrap items-center gap-3">
-                  <UButton to="/admin/strings/profiles" icon="i-heroicons-plus-circle">
-                    Profiles
-                  </UButton>
-                  <UButton to="/admin/content/changelog" color="neutral" variant="ghost" icon="i-heroicons-document-text">
-                    Changelog
-                  </UButton>
-                  <UButton to="/admin/system/github" color="neutral" variant="ghost" icon="i-simple-icons-github">
-                    GitHub
-                  </UButton>
-                </div>
-
-                <div class="grid gap-3 sm:grid-cols-2">
-                  <div v-for="item in releaseFocusCards" :key="item.eyebrow" class="admin-subpanel">
-                    <p class="admin-row__eyebrow">{{ item.eyebrow }}</p>
-                    <p class="mt-3 text-lg font-semibold tracking-tight text-slate-950 dark:text-white">{{ item.title }}</p>
-                    <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ item.description }}</p>
-                  </div>
-                </div>
-              </div>
-            </template>
-
-            <template v-else-if="module.id === 'control-center'">
-              <div class="space-y-4">
-                <div class="grid gap-3 sm:grid-cols-3">
-                  <div v-for="card in controlCenterCards" :key="card.label" class="admin-kpi-tile">
-                    <p class="admin-kpi-tile__label">{{ card.label }}</p>
-                    <p class="admin-kpi-tile__value">{{ card.value }}</p>
-                    <p class="admin-kpi-tile__note">{{ card.hint }}</p>
-                  </div>
-                </div>
-
-                <div class="admin-list">
-                  <NuxtLink v-for="item in controlCenterLinks" :key="item.label" :to="item.to" class="admin-row">
-                    <div class="flex min-w-0 flex-1 items-start gap-3">
-                      <div class="admin-command__item-icon" :class="item.tone">
-                        <UIcon :name="item.icon" class="h-4 w-4" />
-                      </div>
-
-                      <div class="admin-row__content">
-                        <p class="admin-row__title">{{ item.label }}</p>
-                        <p class="admin-row__meta">{{ item.meta }}</p>
-                      </div>
-                    </div>
-
-                    <UIcon name="i-heroicons-arrow-up-right" class="mt-0.5 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
-                  </NuxtLink>
-                </div>
-              </div>
-            </template>
-
-            <template v-else-if="module.id === 'watchlist'">
-              <div class="admin-status-list">
-                <div
-                  v-for="signal in statusSignals"
-                  :key="signal.label"
-                  class="admin-status-row"
-                  :class="signal.tone === 'warning' ? 'admin-status-row--attention' : ''"
+      <!-- 4. Two-column layout -->
+      <div class="grid gap-5 xl:grid-cols-[1fr_380px]">
+        <!-- Left column -->
+        <div class="space-y-5">
+          <!-- Traffic chart -->
+          <div
+            class="rounded-xl border p-5"
+            :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-slate-200'"
+          >
+            <div class="mb-4 flex items-center justify-between">
+              <div>
+                <h3
+                  class="text-sm font-semibold"
+                  :class="isDark ? 'text-white' : 'text-slate-900'"
                 >
-                  <span class="admin-status-row__label">{{ signal.label }}</span>
-                  <span class="admin-status-row__value">{{ signal.value }}</span>
-                </div>
-              </div>
-            </template>
-
-            <template v-else-if="module.id === 'release-lane'">
-              <div class="admin-list">
-                <div v-for="item in releaseLaneItems" :key="item.label" class="admin-row">
-                  <div class="min-w-0 flex-1">
-                    <div class="flex flex-wrap items-center gap-2">
-                      <p class="admin-row__title">{{ item.label }}</p>
-                      <span class="admin-pill" :class="item.tone">{{ item.badge }}</span>
-                    </div>
-                    <p class="admin-row__meta">{{ item.description }}</p>
-                  </div>
-
-                  <div class="shrink-0 text-right">
-                    <p class="text-sm font-semibold text-slate-950 dark:text-white">{{ item.value }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ item.caption }}</p>
-                  </div>
-                </div>
-              </div>
-            </template>
-
-            <template v-else-if="module.id === 'recent-activity'">
-              <div v-if="stats.recentActivity?.length" class="space-y-2">
-                <div
-                  v-for="item in stats.recentActivity.slice(0, 6)"
-                  :key="item.id"
-                  class="admin-activity-row"
+                  Traffic overview
+                </h3>
+                <p
+                  class="text-xs mt-0.5"
+                  :class="isDark ? 'text-white/50' : 'text-slate-400'"
                 >
-                  <div class="admin-command__item-icon" :class="activityTone(item.action)">
-                    <UIcon :name="actionIcon(item.action)" class="h-4 w-4" />
-                  </div>
-
-                  <div class="min-w-0 flex-1">
-                    <div class="flex flex-wrap items-center gap-2">
-                      <p class="truncate text-sm font-medium text-slate-950 dark:text-white">{{ item.entityName || typeLabel(item.entityType) }}</p>
-                      <UBadge :color="item.action === 'created' ? 'success' : item.action === 'updated' ? 'info' : 'error'" variant="subtle">
-                        {{ item.action }}
-                      </UBadge>
-                    </div>
-                    <p class="mt-1 text-xs uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">{{ typeLabel(item.entityType) }}</p>
-                  </div>
-
-                  <span class="text-xs text-slate-500 dark:text-slate-400">{{ timeAgo(item.createdAt) }}</span>
-                </div>
+                  Copy events over the last 7 days
+                </p>
               </div>
-
-              <AdminEmptyState
-                v-else
-                icon="i-heroicons-clock"
-                title="No activity yet"
-                description="Changes will appear here once content or settings are updated."
-              />
-            </template>
-
-            <template v-else-if="module.id === 'top-demand'">
-              <AdminChartsHorizontalBarChart
-                v-if="topDemandChartData.length"
-                :data="topDemandChartData"
-                color="#10b981"
-              />
-              <AdminEmptyState
-                v-else
-                icon="i-heroicons-fire"
-                title="No demand data"
-                description="Copied strings will appear here once users start pulling data."
-              />
-            </template>
-
-            <template v-else-if="module.id === 'traffic-snapshot'">
-              <div class="grid gap-3 sm:grid-cols-3">
-                <div v-for="card in trafficCards" :key="card.label" class="admin-subpanel">
-                  <p class="admin-row__eyebrow">{{ card.label }}</p>
-                  <p class="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{{ card.value }}</p>
-                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ card.hint }}</p>
-                </div>
-              </div>
-
-              <div v-if="trafficTrendPills.length" class="mt-4 flex flex-wrap gap-2">
+              <div v-if="trafficTrendPills.length" class="flex items-center gap-2">
                 <span
                   v-for="pill in trafficTrendPills"
                   :key="pill.label"
-                  class="admin-pill"
-                  :class="pill.tone"
+                  class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                  :class="
+                    pill.tone === 'admin-pill--warning'
+                      ? (isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')
+                      : (isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')
+                  "
                 >
                   {{ pill.label }} {{ pill.value }}
                 </span>
               </div>
+            </div>
 
-              <div v-if="trafficChartData.length" class="mt-5">
-                <AdminChartsAreaChart :data="trafficChartData" color="#3b8bff" height="140px" />
+            <div v-if="trafficChartData.length">
+              <AdminChartsAreaChart :data="trafficChartData" color="#3b8bff" height="200px" />
+            </div>
+            <div v-else class="flex h-[200px] items-center justify-center">
+              <p :class="isDark ? 'text-white/30' : 'text-slate-300'" class="text-sm">No traffic data available</p>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div
+            class="rounded-xl border p-5"
+            :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-slate-200'"
+          >
+            <div class="mb-4 flex items-center justify-between">
+              <div>
+                <h3
+                  class="text-sm font-semibold"
+                  :class="isDark ? 'text-white' : 'text-slate-900'"
+                >
+                  Recent activity
+                </h3>
+                <p
+                  class="text-xs mt-0.5"
+                  :class="isDark ? 'text-white/50' : 'text-slate-400'"
+                >
+                  Latest changes across content and data
+                </p>
               </div>
-            </template>
-          </AdminPanel>
-        </section>
+              <NuxtLink
+                to="/admin/system/activity"
+                class="text-xs font-medium transition-colors"
+                :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'"
+              >
+                View all
+              </NuxtLink>
+            </div>
+
+            <div v-if="stats.recentActivity?.length" class="space-y-1">
+              <div
+                v-for="item in stats.recentActivity.slice(0, 8)"
+                :key="item.id"
+                class="flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors"
+                :class="isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-slate-50'"
+              >
+                <div
+                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                  :class="
+                    item.action === 'created'
+                      ? (isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')
+                      : item.action === 'updated'
+                        ? (isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')
+                        : (isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600')
+                  "
+                >
+                  <UIcon :name="actionIcon(item.action)" class="h-3.5 w-3.5" />
+                </div>
+
+                <div class="min-w-0 flex-1">
+                  <p
+                    class="truncate text-sm"
+                    :class="isDark ? 'text-white/90' : 'text-slate-700'"
+                  >
+                    <span class="font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ item.entityName || typeLabel(item.entityType) }}</span>
+                    <span class="mx-1.5 opacity-40">--</span>
+                    <span class="capitalize">{{ item.action }}</span>
+                  </p>
+                  <p
+                    class="text-xs"
+                    :class="isDark ? 'text-white/35' : 'text-slate-400'"
+                  >
+                    {{ typeLabel(item.entityType) }}
+                  </p>
+                </div>
+
+                <span
+                  class="shrink-0 text-xs tabular-nums"
+                  :class="isDark ? 'text-white/30' : 'text-slate-400'"
+                >
+                  {{ timeAgo(item.createdAt) }}
+                </span>
+              </div>
+            </div>
+
+            <AdminEmptyState
+              v-else
+              icon="i-heroicons-clock"
+              title="No activity yet"
+              description="Changes will appear here once content or settings are updated."
+            />
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div class="space-y-5">
+          <!-- Status card -->
+          <div
+            class="rounded-xl border p-5"
+            :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-slate-200'"
+          >
+            <h3
+              class="mb-4 text-sm font-semibold"
+              :class="isDark ? 'text-white' : 'text-slate-900'"
+            >
+              System status
+            </h3>
+
+            <div class="space-y-0.5">
+              <div
+                v-for="signal in statusSignals"
+                :key="signal.label"
+                class="flex items-center justify-between rounded-lg px-2 py-2"
+                :class="isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-slate-50'"
+              >
+                <span
+                  class="text-sm"
+                  :class="isDark ? 'text-white/60' : 'text-slate-500'"
+                >
+                  {{ signal.label }}
+                </span>
+                <span
+                  class="text-sm font-medium tabular-nums"
+                  :class="
+                    signal.tone === 'warning'
+                      ? (isDark ? 'text-amber-400' : 'text-amber-600')
+                      : (isDark ? 'text-white/90' : 'text-slate-700')
+                  "
+                >
+                  {{ signal.value }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Copied strings -->
+          <div
+            class="rounded-xl border p-5"
+            :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-slate-200'"
+          >
+            <div class="mb-4">
+              <h3
+                class="text-sm font-semibold"
+                :class="isDark ? 'text-white' : 'text-slate-900'"
+              >
+                Top copied strings
+              </h3>
+              <p
+                class="text-xs mt-0.5"
+                :class="isDark ? 'text-white/50' : 'text-slate-400'"
+              >
+                Most copied strings this period
+              </p>
+            </div>
+
+            <AdminChartsHorizontalBarChart
+              v-if="topDemandChartData.length"
+              :data="topDemandChartData"
+              color="#10b981"
+            />
+            <AdminEmptyState
+              v-else
+              icon="i-heroicons-fire"
+              title="No demand data"
+              description="Copied strings will appear here once users start pulling data."
+            />
+          </div>
+        </div>
       </div>
     </template>
   </div>
@@ -329,8 +337,16 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
 
+const isDark = useIsDark()
 const { apiFetch } = useApi()
 const { notifications: notifItems, refresh: notifRefresh } = useAdminNotifications()
+
+const quickActions = [
+  { label: 'Profiles', subtitle: 'Manage import strings', icon: 'i-heroicons-rectangle-stack', to: '/admin/strings/profiles' },
+  { label: 'Changelog', subtitle: 'Write an update', icon: 'i-heroicons-document-text', to: '/admin/content/changelog' },
+  { label: 'Analytics', subtitle: 'View traffic stats', icon: 'i-heroicons-chart-bar', to: '/admin/system/stats' },
+  { label: 'GitHub', subtitle: 'Sync and releases', icon: 'i-simple-icons-github', to: '/admin/system/github' },
+]
 
 interface ActivityItem {
   id: number

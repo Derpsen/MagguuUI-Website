@@ -40,222 +40,241 @@
         />
       </div>
 
-      <div class="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-        <div class="space-y-6">
-          <AdminPanel title="Site" description="Core public metadata and outbound links." icon="i-heroicons-globe-alt">
-            <div class="space-y-5">
-              <div class="admin-form-grid admin-form-grid--2">
-                <div class="admin-field">
-                  <label class="admin-field__label">Site name</label>
-                  <UInput v-model="form.site_name" :disabled="saving" placeholder="MagguuUI" />
-                </div>
+      <div class="admin-segmented w-fit">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          class="admin-segmented__button"
+          :class="activeTab === tab.id ? 'admin-segmented__button--active' : ''"
+          @click="activeTab = tab.id"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
 
-                <div class="admin-field">
-                  <label class="admin-field__label">Description</label>
-                  <UInput v-model="form.site_description" :disabled="saving" placeholder="World of Warcraft UI Configuration" />
-                </div>
-              </div>
-
-              <div class="admin-subpanel space-y-4">
-                <p class="admin-row__eyebrow">Links</p>
-                <div class="space-y-3">
-                  <div v-for="link in linkFields" :key="link.key" class="admin-field">
-                    <label class="admin-field__label">{{ link.label }}</label>
-                    <div class="flex items-center gap-2">
-                      <UInput v-model="(form as any)[link.key]" :disabled="saving" :placeholder="link.placeholder" class="flex-1" />
-                      <UButton
-                        v-if="(form as any)[link.key]"
-                        :href="(form as any)[link.key]"
-                        target="_blank"
-                        icon="i-heroicons-arrow-top-right-on-square"
-                        color="neutral"
-                        variant="ghost"
-                        size="sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="admin-subpanel space-y-4">
-                <p class="admin-row__eyebrow">SEO</p>
-                <div class="admin-field">
-                  <label class="admin-field__label">Meta title</label>
-                  <UInput v-model="form.meta_title" :disabled="saving" placeholder="MagguuUI - WoW UI Profiles" />
-                  <p class="admin-field__hint" :class="counterClass(form.meta_title?.length || 0, 70)">
-                    {{ form.meta_title?.length || 0 }}/70
-                  </p>
-                </div>
-
-                <div class="admin-field">
-                  <label class="admin-field__label">Meta description</label>
-                  <UTextarea v-model="form.meta_description" :disabled="saving" :rows="3" placeholder="High-quality import strings..." />
-                  <p class="admin-field__hint" :class="counterClass(form.meta_description?.length || 0, 160)">
-                    {{ form.meta_description?.length || 0 }}/160
-                  </p>
-                </div>
-
-                <div class="admin-field">
-                  <label class="admin-field__label">OG image URL</label>
-                  <UInput v-model="form.og_image_url" :disabled="saving" placeholder="https://ui.magguu.xyz/og-image.png" />
-                </div>
-              </div>
-
-              <div class="admin-subpanel space-y-4">
-                <p class="admin-row__eyebrow">Legal & Contact</p>
-                <div class="admin-field">
-                  <label class="admin-field__label">Contact email</label>
-                  <UInput v-model="form.contact_email" :disabled="saving" placeholder="contact@magguui.com" />
-                </div>
-
-                <div class="admin-form-grid admin-form-grid--2">
-                  <div class="admin-field">
-                    <label class="admin-field__label">Imprint name</label>
-                    <UInput v-model="form.imprint_name" :disabled="saving" placeholder="Your legal name" />
-                  </div>
-
-                  <div class="admin-field">
-                    <label class="admin-field__label">Country</label>
-                    <UInput v-model="form.imprint_country" :disabled="saving" placeholder="Germany" />
-                  </div>
-                </div>
-
-                <div class="admin-field">
-                  <label class="admin-field__label">Street</label>
-                  <UInput v-model="form.imprint_street" :disabled="saving" placeholder="Street and house number" />
-                </div>
-
-                <div class="admin-field">
-                  <label class="admin-field__label">City / postal code</label>
-                  <UInput v-model="form.imprint_city" :disabled="saving" placeholder="12345 City" />
-                </div>
-              </div>
-            </div>
-          </AdminPanel>
-
-          <AdminPanel title="Operations" description="Tracking and maintenance should stay explicit." icon="i-heroicons-bolt">
-            <div class="space-y-3">
-              <div class="admin-switch-row">
-                <div class="admin-switch-row__content">
-                  <p class="admin-switch-row__title">Page view tracking</p>
-                  <p class="admin-switch-row__description">Anonymous traffic collection for analytics.</p>
-                </div>
-                <USwitch
-                  :model-value="form.tracking_pageviews_enabled === 'true'"
-                  :disabled="saving"
-                  @update:model-value="form.tracking_pageviews_enabled = $event ? 'true' : 'false'"
-                />
-              </div>
-
-              <div class="admin-switch-row">
-                <div class="admin-switch-row__content">
-                  <p class="admin-switch-row__title">Copy tracking</p>
-                  <p class="admin-switch-row__description">Tracks string copy events for demand signals.</p>
-                </div>
-                <USwitch
-                  :model-value="form.tracking_copyevents_enabled === 'true'"
-                  :disabled="saving"
-                  @update:model-value="form.tracking_copyevents_enabled = $event ? 'true' : 'false'"
-                />
-              </div>
-
-              <div class="admin-switch-row">
-                <div class="admin-switch-row__content">
-                  <p class="admin-switch-row__title">Maintenance mode</p>
-                  <p class="admin-switch-row__description">Shows a maintenance banner on the public site.</p>
-                </div>
-                <USwitch
-                  :model-value="form.maintenance_mode === 'true'"
-                  :disabled="saving"
-                  @update:model-value="form.maintenance_mode = $event ? 'true' : 'false'"
-                />
-              </div>
-            </div>
-
-            <div class="mt-5 admin-form-grid admin-form-grid--2">
+      <!-- General Tab -->
+      <template v-if="activeTab === 'general'">
+        <AdminPanel title="Site Identity" description="Core public metadata and display options." icon="i-heroicons-globe-alt">
+          <div class="space-y-5">
+            <div class="admin-form-grid admin-form-grid--2">
               <div class="admin-field">
-                <label class="admin-field__label">Data retention</label>
-                <USelect v-model="form.data_retention_days" :items="retentionOptions" value-key="value" :disabled="saving" />
+                <label class="admin-field__label">Site name</label>
+                <UInput v-model="form.site_name" :disabled="saving" placeholder="MagguuUI" />
               </div>
 
               <div class="admin-field">
-                <label class="admin-field__label">Banner text</label>
-                <UInput v-model="form.banner_text" :disabled="saving" placeholder="New update is live" />
+                <label class="admin-field__label">Description</label>
+                <UInput v-model="form.site_description" :disabled="saving" placeholder="World of Warcraft UI Configuration" />
               </div>
             </div>
 
-            <div v-if="form.banner_text" class="mt-4 admin-inline-note">
+            <div class="admin-field">
+              <label class="admin-field__label">Banner text</label>
+              <UInput v-model="form.banner_text" :disabled="saving" placeholder="New update is live" />
+            </div>
+
+            <div v-if="form.banner_text" class="admin-inline-note">
               <UIcon name="i-heroicons-megaphone" class="h-4 w-4 text-blue-500" />
               <span class="text-sm text-slate-600 dark:text-slate-400">{{ form.banner_text }}</span>
             </div>
-          </AdminPanel>
-        </div>
 
-        <div class="space-y-6">
-          <AdminPanel title="Access" description="Session, login and lockout defaults." icon="i-heroicons-shield-check">
-            <div class="space-y-4">
-              <div class="admin-field">
-                <label class="admin-field__label">Session timeout</label>
-                <USelect v-model="form.session_timeout_hours" :items="sessionTimeoutOptions" value-key="value" :disabled="saving" />
+            <div class="admin-switch-row">
+              <div class="admin-switch-row__content">
+                <p class="admin-switch-row__title">Maintenance mode</p>
+                <p class="admin-switch-row__description">Shows a maintenance banner on the public site.</p>
               </div>
-
-              <div class="admin-field">
-                <label class="admin-field__label">Max login attempts</label>
-                <USelect v-model="form.max_login_attempts" :items="loginAttemptOptions" value-key="value" :disabled="saving" />
-              </div>
-
-              <div class="admin-field">
-                <label class="admin-field__label">Lockout duration</label>
-                <USelect v-model="form.lockout_duration_minutes" :items="lockoutOptions" value-key="value" :disabled="saving" />
-              </div>
-
-              <div class="admin-inline-note">
-                <UIcon name="i-heroicons-information-circle" class="h-4 w-4 text-amber-500" />
-                <span class="text-sm text-slate-600 dark:text-slate-400">
-                  After {{ form.max_login_attempts }} failed attempts, the account locks for {{ form.lockout_duration_minutes }} minutes.
-                </span>
-              </div>
+              <USwitch
+                :model-value="form.maintenance_mode === 'true'"
+                :disabled="saving"
+                @update:model-value="form.maintenance_mode = $event ? 'true' : 'false'"
+              />
             </div>
-          </AdminPanel>
+          </div>
+        </AdminPanel>
 
-          <AdminPanel title="Database" description="Current runtime and backup controls." icon="i-heroicons-circle-stack">
-            <div class="grid gap-3 sm:grid-cols-2">
-              <div v-for="detail in systemDetails" :key="detail.label" class="admin-subpanel">
-                <p class="admin-row__eyebrow">{{ detail.label }}</p>
-                <p class="mt-2 text-sm font-semibold text-slate-950 dark:text-white">{{ detail.value }}</p>
+        <AdminPanel title="Legal & Contact" description="Imprint details and contact information." icon="i-heroicons-identification">
+          <div class="space-y-4">
+            <div class="admin-field">
+              <label class="admin-field__label">Contact email</label>
+              <UInput v-model="form.contact_email" :disabled="saving" placeholder="contact@magguui.com" />
+            </div>
+
+            <div class="admin-form-grid admin-form-grid--2">
+              <div class="admin-field">
+                <label class="admin-field__label">Imprint name</label>
+                <UInput v-model="form.imprint_name" :disabled="saving" placeholder="Your legal name" />
+              </div>
+
+              <div class="admin-field">
+                <label class="admin-field__label">Country</label>
+                <UInput v-model="form.imprint_country" :disabled="saving" placeholder="Germany" />
               </div>
             </div>
 
-            <div v-if="sysInfo?.database?.tables" class="mt-5 grid gap-3 sm:grid-cols-2">
-              <div v-for="(count, table) in dbTableDisplay" :key="table" class="admin-subpanel">
-                <p class="admin-row__eyebrow">{{ table }}</p>
-                <p class="mt-2 text-xl font-semibold tracking-tight text-slate-950 dark:text-white">{{ count }}</p>
-              </div>
+            <div class="admin-field">
+              <label class="admin-field__label">Street</label>
+              <UInput v-model="form.imprint_street" :disabled="saving" placeholder="Street and house number" />
             </div>
 
-            <template #footer>
-              <UButton variant="subtle" icon="i-heroicons-arrow-down-tray" :loading="downloadingBackup" @click="downloadBackup">
-                Download Backup
-              </UButton>
-            </template>
-          </AdminPanel>
+            <div class="admin-field">
+              <label class="admin-field__label">City / postal code</label>
+              <UInput v-model="form.imprint_city" :disabled="saving" placeholder="12345 City" />
+            </div>
+          </div>
+        </AdminPanel>
+      </template>
 
-          <AdminPanel title="Reset" description="Only use this if the configuration has drifted too far." icon="i-heroicons-exclamation-triangle">
+      <!-- SEO & Links Tab -->
+      <template v-else-if="activeTab === 'seo'">
+        <AdminPanel title="SEO" description="Search engine and social sharing metadata." icon="i-heroicons-magnifying-glass">
+          <div class="space-y-4">
+            <div class="admin-field">
+              <label class="admin-field__label">Meta title</label>
+              <UInput v-model="form.meta_title" :disabled="saving" placeholder="MagguuUI - WoW UI Profiles" />
+              <p class="admin-field__hint" :class="counterClass(form.meta_title?.length || 0, 70)">
+                {{ form.meta_title?.length || 0 }}/70
+              </p>
+            </div>
+
+            <div class="admin-field">
+              <label class="admin-field__label">Meta description</label>
+              <UTextarea v-model="form.meta_description" :disabled="saving" :rows="3" placeholder="High-quality import strings..." />
+              <p class="admin-field__hint" :class="counterClass(form.meta_description?.length || 0, 160)">
+                {{ form.meta_description?.length || 0 }}/160
+              </p>
+            </div>
+
+            <div class="admin-field">
+              <label class="admin-field__label">OG image URL</label>
+              <UInput v-model="form.og_image_url" :disabled="saving" placeholder="https://ui.magguu.xyz/og-image.png" />
+            </div>
+          </div>
+        </AdminPanel>
+
+        <AdminPanel title="Links" description="Outbound links shown in the public footer and about page." icon="i-heroicons-link">
+          <div class="space-y-3">
+            <div v-for="link in linkFields" :key="link.key" class="admin-field">
+              <label class="admin-field__label">{{ link.label }}</label>
+              <div class="flex items-center gap-2">
+                <UInput v-model="(form as any)[link.key]" :disabled="saving" :placeholder="link.placeholder" class="flex-1" />
+                <UButton
+                  v-if="(form as any)[link.key]"
+                  :href="(form as any)[link.key]"
+                  target="_blank"
+                  icon="i-heroicons-arrow-top-right-on-square"
+                  color="neutral"
+                  variant="ghost"
+                  size="sm"
+                />
+              </div>
+            </div>
+          </div>
+        </AdminPanel>
+      </template>
+
+      <!-- Security Tab -->
+      <template v-else-if="activeTab === 'security'">
+        <AdminPanel title="Access" description="Session, login and lockout defaults." icon="i-heroicons-shield-check">
+          <div class="space-y-4">
+            <div class="admin-field">
+              <label class="admin-field__label">Session timeout</label>
+              <USelect v-model="form.session_timeout_hours" :items="sessionTimeoutOptions" value-key="value" :disabled="saving" />
+            </div>
+
+            <div class="admin-field">
+              <label class="admin-field__label">Max login attempts</label>
+              <USelect v-model="form.max_login_attempts" :items="loginAttemptOptions" value-key="value" :disabled="saving" />
+            </div>
+
+            <div class="admin-field">
+              <label class="admin-field__label">Lockout duration</label>
+              <USelect v-model="form.lockout_duration_minutes" :items="lockoutOptions" value-key="value" :disabled="saving" />
+            </div>
+
             <div class="admin-inline-note">
-              <UIcon name="i-heroicons-exclamation-triangle" class="h-4 w-4 text-red-500" />
+              <UIcon name="i-heroicons-information-circle" class="h-4 w-4 text-amber-500" />
               <span class="text-sm text-slate-600 dark:text-slate-400">
-                Reset restores the defaults locally. You still need to save before anything changes on the server.
+                After {{ form.max_login_attempts }} failed attempts, the account locks for {{ form.lockout_duration_minutes }} minutes.
               </span>
             </div>
+          </div>
+        </AdminPanel>
 
-            <template #footer>
-              <UButton color="error" variant="subtle" icon="i-heroicons-arrow-path" @click="resetModal = true">
-                Reset to Defaults
-              </UButton>
-            </template>
-          </AdminPanel>
-        </div>
-      </div>
+        <AdminPanel title="Tracking" description="Tracking and analytics should stay explicit." icon="i-heroicons-bolt">
+          <div class="space-y-3">
+            <div class="admin-switch-row">
+              <div class="admin-switch-row__content">
+                <p class="admin-switch-row__title">Page view tracking</p>
+                <p class="admin-switch-row__description">Anonymous traffic collection for analytics.</p>
+              </div>
+              <USwitch
+                :model-value="form.tracking_pageviews_enabled === 'true'"
+                :disabled="saving"
+                @update:model-value="form.tracking_pageviews_enabled = $event ? 'true' : 'false'"
+              />
+            </div>
+
+            <div class="admin-switch-row">
+              <div class="admin-switch-row__content">
+                <p class="admin-switch-row__title">Copy tracking</p>
+                <p class="admin-switch-row__description">Tracks string copy events for demand signals.</p>
+              </div>
+              <USwitch
+                :model-value="form.tracking_copyevents_enabled === 'true'"
+                :disabled="saving"
+                @update:model-value="form.tracking_copyevents_enabled = $event ? 'true' : 'false'"
+              />
+            </div>
+          </div>
+        </AdminPanel>
+      </template>
+
+      <!-- Data & Backup Tab -->
+      <template v-else>
+        <AdminPanel title="Retention" description="How long operational data is kept." icon="i-heroicons-archive-box">
+          <div class="admin-field">
+            <label class="admin-field__label">Data retention</label>
+            <USelect v-model="form.data_retention_days" :items="retentionOptions" value-key="value" :disabled="saving" />
+          </div>
+        </AdminPanel>
+
+        <AdminPanel title="Database" description="Current runtime and backup controls." icon="i-heroicons-circle-stack">
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div v-for="detail in systemDetails" :key="detail.label" class="admin-subpanel">
+              <p class="admin-row__eyebrow">{{ detail.label }}</p>
+              <p class="mt-2 text-sm font-semibold text-slate-950 dark:text-white">{{ detail.value }}</p>
+            </div>
+          </div>
+
+          <div v-if="sysInfo?.database?.tables" class="mt-5 grid gap-3 sm:grid-cols-2">
+            <div v-for="(count, table) in dbTableDisplay" :key="table" class="admin-subpanel">
+              <p class="admin-row__eyebrow">{{ table }}</p>
+              <p class="mt-2 text-xl font-semibold tracking-tight text-slate-950 dark:text-white">{{ count }}</p>
+            </div>
+          </div>
+
+          <template #footer>
+            <UButton variant="subtle" icon="i-heroicons-arrow-down-tray" :loading="downloadingBackup" @click="downloadBackup">
+              Download Backup
+            </UButton>
+          </template>
+        </AdminPanel>
+
+        <AdminPanel title="Reset" description="Only use this if the configuration has drifted too far." icon="i-heroicons-exclamation-triangle">
+          <div class="admin-inline-note">
+            <UIcon name="i-heroicons-exclamation-triangle" class="h-4 w-4 text-red-500" />
+            <span class="text-sm text-slate-600 dark:text-slate-400">
+              Reset restores the defaults locally. You still need to save before anything changes on the server.
+            </span>
+          </div>
+
+          <template #footer>
+            <UButton color="error" variant="subtle" icon="i-heroicons-arrow-path" @click="resetModal = true">
+              Reset to Defaults
+            </UButton>
+          </template>
+        </AdminPanel>
+      </template>
     </template>
 
     <UModal v-model:open="resetModal">
@@ -297,6 +316,16 @@ const saving = ref(false)
 const resetModal = ref(false)
 const downloadingBackup = ref(false)
 const sysInfo = ref<any>(null)
+
+type TabId = 'general' | 'seo' | 'security' | 'data'
+
+const activeTab = ref<TabId>('general')
+const tabs: Array<{ id: TabId; label: string }> = [
+  { id: 'general', label: 'General' },
+  { id: 'seo', label: 'SEO & Links' },
+  { id: 'security', label: 'Security' },
+  { id: 'data', label: 'Data & Backup' },
+]
 
 const statusCards = computed(() => [
   { label: "Version", value: sysInfo.value?.app?.version || "-", icon: "i-heroicons-server-stack", tone: "brand" as const, hint: "Current app version" },

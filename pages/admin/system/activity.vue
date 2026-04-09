@@ -26,77 +26,113 @@
 
     <AdminPanel
       title="Audit log"
-      description="Filter by action, type and date range. Open an entry for the raw payload."
+      description="Filter by action, type and date range."
       icon="i-heroicons-clipboard-document-list"
     >
+      <!-- Compact single-row filter bar -->
       <div class="admin-filterbar">
-        <UInput v-model="searchQuery" placeholder="Search by name..." icon="i-heroicons-magnifying-glass" class="w-full sm:max-w-xs" />
-        <USelect v-model="filterAction" :items="actionOptions" value-key="value" placeholder="All actions" class="w-full sm:w-40" />
-        <USelect v-model="filterType" :items="typeOptions" value-key="value" placeholder="All types" class="w-full sm:w-44" />
-        <UInput v-model="dateFrom" type="date" class="w-full sm:w-40" />
-        <UInput v-model="dateTo" type="date" class="w-full sm:w-40" />
+        <UInput v-model="searchQuery" placeholder="Search..." icon="i-heroicons-magnifying-glass" class="w-full sm:w-44" />
+        <USelect v-model="filterAction" :items="actionOptions" value-key="value" placeholder="All actions" class="w-28" />
+        <USelect v-model="filterType" :items="typeOptions" value-key="value" placeholder="All types" class="w-36" />
+        <UInput v-model="dateFrom" type="date" class="w-34" />
+        <UInput v-model="dateTo" type="date" class="w-34" />
 
-        <div class="flex items-center gap-2 sm:ml-auto">
+        <div class="flex items-center gap-1.5 sm:ml-auto">
           <UButton
             :icon="sortOrder === 'desc' ? 'i-heroicons-bars-arrow-down' : 'i-heroicons-bars-arrow-up'"
             variant="ghost"
             color="neutral"
-            size="sm"
+            size="xs"
             @click="toggleSort"
           >
             {{ sortOrder === "desc" ? "Newest" : "Oldest" }}
           </UButton>
-
-          <UButton v-if="hasActiveFilters" variant="ghost" color="neutral" size="sm" icon="i-heroicons-x-mark" @click="clearFilters">
+          <UButton v-if="hasActiveFilters" variant="ghost" color="neutral" size="xs" icon="i-heroicons-x-mark" @click="clearFilters">
             Clear
           </UButton>
         </div>
       </div>
 
+      <!-- Loading spinner -->
       <div v-if="loading && !items.length" class="py-12 text-center">
         <UIcon name="i-heroicons-arrow-path" class="mx-auto h-8 w-8 animate-spin text-blue-500" />
       </div>
 
-      <div v-else-if="items.length" class="admin-list mt-5" :class="loading ? 'opacity-60' : ''">
-        <div v-for="item in items" :key="item.id" class="admin-row">
-          <div class="flex min-w-0 flex-1 items-start gap-4">
-            <div class="admin-empty-state__icon h-10 w-10" :class="actionTone(item.action)">
-              <UIcon :name="actionIcon(item.action)" class="h-4 w-4" />
-            </div>
+      <!-- Timeline grouped by day -->
+      <div v-else-if="groupedEntries.length" class="mt-5 space-y-6" :class="loading ? 'opacity-60' : ''">
+        <div v-for="group in groupedEntries" :key="group.label">
+          <!-- Day header -->
+          <div class="mb-3 flex items-center gap-3">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              {{ group.label }}
+            </span>
+            <span class="admin-pill">{{ group.items.length }}</span>
+            <div class="h-px flex-1 bg-slate-200/60 dark:bg-slate-700/40" />
+          </div>
 
-            <div class="admin-row__content">
-              <div class="flex flex-wrap items-center gap-2">
-                <p class="admin-row__title">
-                  {{ item.entityName }}
-                </p>
-                <UBadge :color="actionBadgeColor(item.action)" variant="subtle" size="xs">{{ item.action }}</UBadge>
-              </div>
+          <!-- Timeline entries -->
+          <div class="relative ml-4 border-l border-slate-200/70 pl-6 dark:border-slate-700/50">
+            <div v-for="item in group.items" :key="item.id" class="group relative pb-5 last:pb-0">
+              <!-- Timeline dot -->
+              <div
+                class="absolute -left-[calc(1.5rem+5px)] top-1 flex h-2.5 w-2.5 items-center justify-center rounded-full ring-4 ring-white dark:ring-slate-900"
+                :class="dotColor(item.action)"
+              />
 
-              <p class="admin-row__meta">
-                {{ typeLabel(item.entityType) }}
-                <span v-if="item.entityId"> · ID {{ item.entityId }}</span>
-                · {{ timeAgo(item.createdAt) }}
-                · {{ formatDate(item.createdAt) }}
-              </p>
+              <!-- Entry card -->
+              <div class="admin-activity-row">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" :class="actionTone(item.action)">
+                  <UIcon :name="actionIcon(item.action)" class="h-4 w-4" />
+                </div>
 
-              <div v-if="item.details" class="mt-3">
-                <UButton
-                  size="xs"
-                  color="neutral"
-                  variant="ghost"
-                  :icon="expandedId === item.id ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
-                  @click="toggleDetail(item.id)"
-                >
-                  {{ expandedId === item.id ? "Hide details" : "Show details" }}
-                </UButton>
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-[0.92rem] font-semibold text-slate-800 dark:text-slate-100">
+                      {{ item.entityName }}
+                    </span>
+                    <UBadge :color="actionBadgeColor(item.action)" variant="subtle" size="xs">{{ item.action }}</UBadge>
+                    <span class="admin-pill">{{ typeLabel(item.entityType) }}</span>
+                  </div>
 
-                <pre v-if="expandedId === item.id" class="admin-code-block mt-3 whitespace-pre-wrap break-words">{{ formatDetails(item.details) }}</pre>
+                  <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                    <span v-if="item.entityId">ID {{ item.entityId }} &middot; </span>
+                    {{ timeAgo(item.createdAt) }} &middot; {{ formatTime(item.createdAt) }}
+                  </p>
+
+                  <!-- Details expand -->
+                  <div v-if="item.details" class="mt-2">
+                    <UButton
+                      size="xs"
+                      color="neutral"
+                      variant="ghost"
+                      :icon="expandedId === item.id ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
+                      @click="toggleDetail(item.id)"
+                    >
+                      {{ expandedId === item.id ? "Hide details" : "Details" }}
+                    </UButton>
+
+                    <div v-if="expandedId === item.id" class="admin-subpanel mt-2.5">
+                      <template v-if="parsedDetails(item.details)">
+                        <div
+                          v-for="(val, key) in parsedDetails(item.details)"
+                          :key="String(key)"
+                          class="flex items-baseline gap-3 py-1.5 text-sm not-last:border-b not-last:border-slate-200/40 dark:not-last:border-slate-700/30"
+                        >
+                          <span class="w-28 shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400">{{ humanizeKey(String(key)) }}</span>
+                          <span class="min-w-0 break-words text-slate-700 dark:text-slate-200">{{ formatValue(val) }}</span>
+                        </div>
+                      </template>
+                      <pre v-else class="whitespace-pre-wrap break-words text-xs text-slate-600 dark:text-slate-300">{{ formatDetailsRaw(item.details) }}</pre>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Empty state -->
       <AdminEmptyState
         v-else
         icon="i-heroicons-clock"
@@ -108,6 +144,7 @@
         </template>
       </AdminEmptyState>
 
+      <!-- Pagination -->
       <template v-if="totalPages > 1" #footer>
         <div class="flex w-full items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
           <span>Page {{ page }} of {{ totalPages }}</span>
@@ -152,6 +189,12 @@ interface Activity {
   createdAt: string
 }
 
+interface DayGroup {
+  label: string
+  dateKey: string
+  items: Activity[]
+}
+
 const items = ref<Activity[]>([])
 const loading = ref(true)
 const total = ref(0)
@@ -192,6 +235,43 @@ const typeOptions = [
   { label: "Content", value: "content" },
 ]
 
+// Group items by day with relative labels
+const groupedEntries = computed<DayGroup[]>(() => {
+  if (!items.value.length) return []
+
+  const now = new Date()
+  const todayKey = toDateKey(now)
+  const yesterdayKey = toDateKey(new Date(now.getTime() - 86400000))
+
+  const groups = new Map<string, Activity[]>()
+
+  for (const item of items.value) {
+    const date = typeof item.createdAt === "number" ? new Date((item.createdAt as unknown as number) * 1000) : new Date(item.createdAt)
+    const key = toDateKey(date)
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(item)
+  }
+
+  const result: DayGroup[] = []
+  for (const [key, groupItems] of groups) {
+    let label: string
+    if (key === todayKey) label = "Today"
+    else if (key === yesterdayKey) label = "Yesterday"
+    else {
+      const [y, m, d] = key.split("-")
+      const date = new Date(Number(y), Number(m) - 1, Number(d))
+      label = date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
+    }
+    result.push({ label, dateKey: key, items: groupItems })
+  }
+
+  return result
+})
+
+function toDateKey(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+}
+
 function clearFilters() {
   filterAction.value = ""
   filterType.value = ""
@@ -208,13 +288,39 @@ function toggleDetail(id: number) {
   expandedId.value = expandedId.value === id ? null : id
 }
 
-function formatDetails(details: string | null): string {
+// Parse details JSON into key-value object, return null if not a flat object
+function parsedDetails(details: string | null): Record<string, unknown> | null {
+  if (!details) return null
+  try {
+    const parsed = JSON.parse(details)
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed as Record<string, unknown>
+    return null
+  } catch {
+    return null
+  }
+}
+
+function formatDetailsRaw(details: string | null): string {
   if (!details) return ""
   try {
     return JSON.stringify(JSON.parse(details), null, 2)
   } catch {
     return details
   }
+}
+
+function humanizeKey(key: string): string {
+  return key
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function formatValue(value: unknown): string {
+  if (value === null || value === undefined) return "-"
+  if (typeof value === "boolean") return value ? "Yes" : "No"
+  if (typeof value === "object") return JSON.stringify(value)
+  return String(value)
 }
 
 const paginationRange = computed(() => {
@@ -327,6 +433,13 @@ function actionBadgeColor(action: string) {
   return "neutral"
 }
 
+function dotColor(action: string) {
+  if (action === "created") return "bg-emerald-500"
+  if (action === "updated") return "bg-blue-500"
+  if (action === "deleted") return "bg-red-500"
+  return "bg-slate-400"
+}
+
 function timeAgo(value: string | number | null) {
   if (!value) return ""
   const date = typeof value === "number" ? new Date(value * 1000) : new Date(value)
@@ -341,10 +454,10 @@ function timeAgo(value: string | number | null) {
   return `${Math.floor(days / 30)}mo ago`
 }
 
-function formatDate(value: string | number) {
+function formatTime(value: string | number) {
   if (!value) return "-"
   const date = typeof value === "number" ? new Date(value * 1000) : new Date(value)
-  return date.toLocaleDateString("en-US", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+  return date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
 }
 
 onMounted(() => {

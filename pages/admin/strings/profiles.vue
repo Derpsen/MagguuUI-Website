@@ -155,7 +155,7 @@
           </div>
           <div class="mt-6 flex justify-end gap-3 border-t border-slate-200 pt-4 dark:border-white/8">
             <UButton variant="ghost" color="neutral" @click="deleteModalOpen = false">Cancel</UButton>
-            <UButton color="error" :loading="deletingLoading" @click="doDelete">Delete</UButton>
+            <UButton color="error" @click="doDelete">Delete</UButton>
           </div>
         </div>
       </template>
@@ -176,7 +176,7 @@
           </div>
           <div class="mt-6 flex justify-end gap-3 border-t border-slate-200 pt-4 dark:border-white/8">
             <UButton variant="ghost" color="neutral" @click="bulkDeleteModalOpen = false">Cancel</UButton>
-            <UButton color="error" :loading="bulkDeletingLoading" @click="doBulkDelete">Delete {{ selected.size }}</UButton>
+            <UButton color="error" @click="doBulkDelete">Delete {{ selected.size }}</UButton>
           </div>
         </div>
       </template>
@@ -248,7 +248,4 @@ const columns = [
   { key: 'profile', label: 'Profile' },
 ]
 
-// Loading states for delete buttons (composable doesn't expose these separately)
-const deletingLoading = ref(false)
-const bulkDeletingLoading = ref(false)
 </script>

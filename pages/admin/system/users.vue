@@ -11,6 +11,19 @@
       </template>
     </AdminPageHeader>
 
+    <div class="admin-segmented w-fit">
+      <button
+        v-for="tab in tabs"
+        :key="tab.id"
+        class="admin-segmented__button"
+        :class="activeTab === tab.id ? 'admin-segmented__button--active' : ''"
+        @click="activeTab = tab.id"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <!-- KPI row -->
     <div v-if="loading && !userList.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <div v-for="item in 4" :key="item" class="admin-metric-card">
         <div class="h-24 rounded-2xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
@@ -30,178 +43,44 @@
         />
       </div>
 
-      <AdminPanel title="Accounts" description="Keep the account list direct and action-focused." icon="i-heroicons-users">
-        <div v-if="userList.length" class="admin-list">
-          <div v-for="user in userList" :key="user.id" class="admin-row">
-            <div class="flex min-w-0 flex-1 items-start gap-4">
-              <div class="flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-semibold" :class="avatarStyle(user)">
-                {{ user.username.charAt(0).toUpperCase() }}
-              </div>
-
-              <div class="admin-row__content">
-                <div class="flex flex-wrap items-center gap-2">
-                  <p class="admin-row__title">{{ user.username }}</p>
-                  <UBadge v-if="user.id === currentUser?.id" color="info" variant="subtle" size="xs">You</UBadge>
-                  <UBadge :color="user.role === 'admin' ? 'info' : 'neutral'" variant="subtle" size="xs">{{ user.role }}</UBadge>
-                  <UBadge v-if="user.isLocked" color="error" variant="subtle" size="xs">Locked</UBadge>
-                  <UBadge v-if="passkeyCountFor(user) > 0" color="success" variant="subtle" size="xs">
-                    {{ passkeyCountFor(user) }} passkey{{ passkeyCountFor(user) > 1 ? "s" : "" }}
-                  </UBadge>
-                </div>
-
-                <p class="admin-row__meta">
-                  Created {{ formatDate(user.createdAt) }}
-                  <span v-if="user.lastLogin"> · Last login {{ timeAgo(user.lastLogin) }}</span>
-                  <span v-else> · Never logged in</span>
-                </p>
-              </div>
-            </div>
-
-            <div class="admin-row__actions">
-              <UButton v-if="user.isLocked" size="xs" variant="ghost" color="success" icon="i-heroicons-lock-open" @click="doUnlock(user)">
-                Unlock
-              </UButton>
-              <UButton v-if="user.id === currentUser?.id" size="xs" variant="ghost" color="neutral" icon="i-heroicons-key" @click="scrollToPassword">
-                Password
-              </UButton>
-              <UButton v-if="user.id !== currentUser?.id" size="xs" variant="ghost" color="error" icon="i-heroicons-trash" @click="confirmDel(user)">
-                Delete
-              </UButton>
-            </div>
-          </div>
-        </div>
-
-        <AdminEmptyState
-          v-else
-          icon="i-heroicons-users"
-          title="No users yet"
-          description="Create the first admin account to unlock the rest of this page."
-        />
-      </AdminPanel>
-
-      <div class="grid gap-6 xl:grid-cols-2">
-        <AdminPanel title="My Passkeys" description="Passwordless sign-in stays optional and minimal." icon="i-heroicons-finger-print">
-          <template #actions>
-            <UButton
-              v-if="passkeySupported"
-              size="sm"
-              variant="ghost"
-              color="neutral"
-              icon="i-heroicons-plus"
-              :loading="registeringPasskey"
-              @click="registerPasskey"
-            >
-              Add
-            </UButton>
-          </template>
-
-          <div v-if="!passkeySupported" class="admin-inline-note">
-            <UIcon name="i-heroicons-information-circle" class="h-4 w-4 text-blue-500" />
-            <span class="text-sm text-slate-600 dark:text-slate-400">This browser does not support passkeys.</span>
-          </div>
-
-          <div v-else-if="passkeysLoading && !passkeysList.length" class="py-12 text-center">
-            <UIcon name="i-heroicons-arrow-path" class="mx-auto h-6 w-6 animate-spin text-blue-500" />
-          </div>
-
-          <div v-else-if="passkeysList.length" class="admin-list">
-            <div v-for="passkey in passkeysList" :key="passkey.id" class="admin-row">
+      <!-- ─── Accounts Tab ─── -->
+      <template v-if="activeTab === 'accounts'">
+        <AdminPanel title="Accounts" description="Keep the account list direct and action-focused." icon="i-heroicons-users">
+          <div v-if="userList.length" class="admin-list">
+            <div v-for="user in userList" :key="user.id" class="admin-row">
               <div class="flex min-w-0 flex-1 items-start gap-4">
-                <div class="admin-empty-state__icon h-10 w-10">
-                  <UIcon name="i-heroicons-finger-print" class="h-4 w-4" />
-                </div>
-
-                <div class="admin-row__content">
-                  <div v-if="editingPasskey === passkey.id" class="flex max-w-sm items-center gap-2">
-                    <UInput v-model="editPasskeyName" size="sm" class="flex-1" @keyup.enter="savePasskeyName(passkey)" />
-                    <UButton size="xs" icon="i-heroicons-check" @click="savePasskeyName(passkey)">Save</UButton>
-                  </div>
-
-                  <template v-else>
-                    <p class="admin-row__title">{{ passkey.deviceName }}</p>
-                    <p class="admin-row__meta">
-                      Created {{ formatDate(passkey.createdAt) }}
-                      <span v-if="passkey.lastUsed"> · Last used {{ timeAgo(passkey.lastUsed) }}</span>
-                      <span v-else> · Never used</span>
-                    </p>
-                  </template>
-                </div>
-              </div>
-
-              <div class="admin-row__actions">
-                <UButton
-                  v-if="editingPasskey !== passkey.id"
-                  size="xs"
-                  variant="ghost"
-                  color="neutral"
-                  icon="i-heroicons-pencil-square"
-                  @click="startEditPasskey(passkey)"
-                />
-                <UButton
-                  v-else
-                  size="xs"
-                  variant="ghost"
-                  color="neutral"
-                  icon="i-heroicons-x-mark"
-                  @click="cancelPasskeyEdit"
-                />
-                <UButton size="xs" variant="ghost" color="error" icon="i-heroicons-trash" @click="deletePasskeyConfirm(passkey)" />
-              </div>
-            </div>
-          </div>
-
-          <AdminEmptyState
-            v-else
-            icon="i-heroicons-finger-print"
-            title="No passkeys registered"
-            description="Add one for faster sign-in on trusted devices."
-          />
-        </AdminPanel>
-
-        <AdminPanel title="Active Sessions" description="End stale sessions without turning this into a security dashboard." icon="i-heroicons-computer-desktop">
-          <template #actions>
-            <UButton
-              v-if="activeSessions.length > 1"
-              size="sm"
-              variant="ghost"
-              color="error"
-              icon="i-heroicons-arrow-right-on-rectangle"
-              @click="endAllOtherSessions"
-            >
-              End Others
-            </UButton>
-          </template>
-
-          <div v-if="sessionsLoading && !activeSessions.length" class="py-12 text-center">
-            <UIcon name="i-heroicons-arrow-path" class="mx-auto h-6 w-6 animate-spin text-blue-500" />
-          </div>
-
-          <div v-else-if="activeSessions.length" class="admin-list">
-            <div v-for="session in activeSessions" :key="session.id" class="admin-row">
-              <div class="flex min-w-0 flex-1 items-start gap-4">
-                <div class="admin-empty-state__icon h-10 w-10" :class="session.isCurrent ? 'text-emerald-600 dark:text-emerald-300' : ''">
-                  <UIcon :name="deviceIcon(session.deviceType)" class="h-4 w-4" />
+                <div class="flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-semibold" :class="avatarStyle(user)">
+                  {{ user.username.charAt(0).toUpperCase() }}
                 </div>
 
                 <div class="admin-row__content">
                   <div class="flex flex-wrap items-center gap-2">
-                    <p class="admin-row__title">{{ session.browser || "Unknown browser" }} / {{ session.os || "Unknown OS" }}</p>
-                    <UBadge v-if="session.isCurrent" color="success" variant="subtle" size="xs">Current</UBadge>
+                    <p class="admin-row__title">{{ user.username }}</p>
+                    <UBadge v-if="user.id === currentUser?.id" color="info" variant="subtle" size="xs">You</UBadge>
+                    <UBadge :color="user.role === 'admin' ? 'info' : 'neutral'" variant="subtle" size="xs">{{ user.role }}</UBadge>
+                    <UBadge v-if="user.isLocked" color="error" variant="subtle" size="xs">Locked</UBadge>
+                    <UBadge v-if="passkeyCountFor(user) > 0" color="success" variant="subtle" size="xs">
+                      {{ passkeyCountFor(user) }} passkey{{ passkeyCountFor(user) > 1 ? "s" : "" }}
+                    </UBadge>
                   </div>
-                  <p class="admin-row__meta">{{ session.ipAddress || "-" }} · Last active {{ timeAgo(session.lastActive) }}</p>
+
+                  <p class="admin-row__meta">
+                    Created {{ formatDate(user.createdAt) }}
+                    <span v-if="user.lastLogin"> · Last login {{ timeAgo(user.lastLogin) }}</span>
+                    <span v-else> · Never logged in</span>
+                  </p>
                 </div>
               </div>
 
               <div class="admin-row__actions">
-                <UButton
-                  v-if="!session.isCurrent"
-                  size="xs"
-                  variant="ghost"
-                  color="error"
-                  icon="i-heroicons-x-mark"
-                  @click="endSession(session.id)"
-                >
-                  End
+                <UButton v-if="user.isLocked" size="xs" variant="ghost" color="success" icon="i-heroicons-lock-open" @click="doUnlock(user)">
+                  Unlock
+                </UButton>
+                <UButton v-if="user.id === currentUser?.id" size="xs" variant="ghost" color="neutral" icon="i-heroicons-key" @click="switchToPassword">
+                  Password
+                </UButton>
+                <UButton v-if="user.id !== currentUser?.id" size="xs" variant="ghost" color="error" icon="i-heroicons-trash" @click="confirmDel(user)">
+                  Delete
                 </UButton>
               </div>
             </div>
@@ -209,74 +88,93 @@
 
           <AdminEmptyState
             v-else
-            icon="i-heroicons-computer-desktop"
-            title="No active sessions"
-            description="Only active signed-in devices show up here."
+            icon="i-heroicons-users"
+            title="No users yet"
+            description="Create the first admin account to unlock the rest of this page."
           />
         </AdminPanel>
-      </div>
 
-      <div class="grid gap-6 xl:grid-cols-2">
-        <AdminPanel title="Login History" description="Search recent attempts and keep suspicious activity obvious." icon="i-heroicons-shield-check">
-          <div v-if="attemptStats" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div v-for="item in miniStats" :key="item.label" class="admin-subpanel">
-              <p class="admin-row__eyebrow">{{ item.label }}</p>
-              <p class="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{{ item.value }}</p>
+        <div class="grid gap-6 xl:grid-cols-2">
+          <!-- Passkeys -->
+          <AdminPanel title="My Passkeys" description="Passwordless sign-in stays optional and minimal." icon="i-heroicons-finger-print">
+            <template #actions>
+              <UButton
+                v-if="passkeySupported"
+                size="sm"
+                variant="ghost"
+                color="neutral"
+                icon="i-heroicons-plus"
+                :loading="registeringPasskey"
+                @click="registerPasskey"
+              >
+                Add
+              </UButton>
+            </template>
+
+            <div v-if="!passkeySupported" class="admin-inline-note">
+              <UIcon name="i-heroicons-information-circle" class="h-4 w-4 text-blue-500" />
+              <span class="text-sm text-slate-600 dark:text-slate-400">This browser does not support passkeys.</span>
             </div>
-          </div>
 
-          <div class="admin-filterbar mt-5">
-            <UInput v-model="attemptSearch" placeholder="Search by user or IP..." icon="i-heroicons-magnifying-glass" class="w-full sm:max-w-xs" />
-            <USelect v-model="attemptFilter" :items="attemptFilterOptions" value-key="value" class="w-full sm:w-40" />
-          </div>
+            <div v-else-if="passkeysLoading && !passkeysList.length" class="py-12 text-center">
+              <UIcon name="i-heroicons-arrow-path" class="mx-auto h-6 w-6 animate-spin text-blue-500" />
+            </div>
 
-          <div v-if="attemptsLoading && !loginAttemptsList.length" class="py-12 text-center">
-            <UIcon name="i-heroicons-arrow-path" class="mx-auto h-6 w-6 animate-spin text-blue-500" />
-          </div>
-
-          <div v-else-if="paginatedAttempts.length" class="admin-list mt-5">
-            <div v-for="attempt in paginatedAttempts" :key="attempt.id" class="admin-row">
-              <div class="flex min-w-0 flex-1 items-start gap-4">
-                <div class="admin-empty-state__icon h-10 w-10" :class="attempt.success ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'">
-                  <UIcon :name="attempt.success ? 'i-heroicons-check-circle' : 'i-heroicons-x-circle'" class="h-4 w-4" />
-                </div>
-
-                <div class="admin-row__content">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <p class="admin-row__title">{{ attempt.username }}</p>
-                    <UBadge v-if="attempt.is_flagged" color="warning" variant="subtle" size="xs">{{ flagLabel(attempt.flag_reason) }}</UBadge>
+            <div v-else-if="passkeysList.length" class="admin-list">
+              <div v-for="passkey in passkeysList" :key="passkey.id" class="admin-row">
+                <div class="flex min-w-0 flex-1 items-start gap-4">
+                  <div class="admin-empty-state__icon h-10 w-10">
+                    <UIcon name="i-heroicons-finger-print" class="h-4 w-4" />
                   </div>
-                  <p class="admin-row__meta">{{ attempt.ip_address || "-" }} · {{ attempt.browser || "Unknown browser" }} · {{ timeAgo(attempt.created_at) }}</p>
+
+                  <div class="admin-row__content">
+                    <div v-if="editingPasskey === passkey.id" class="flex max-w-sm items-center gap-2">
+                      <UInput v-model="editPasskeyName" size="sm" class="flex-1" @keyup.enter="savePasskeyName(passkey)" />
+                      <UButton size="xs" icon="i-heroicons-check" @click="savePasskeyName(passkey)">Save</UButton>
+                    </div>
+
+                    <template v-else>
+                      <p class="admin-row__title">{{ passkey.deviceName }}</p>
+                      <p class="admin-row__meta">
+                        Created {{ formatDate(passkey.createdAt) }}
+                        <span v-if="passkey.lastUsed"> · Last used {{ timeAgo(passkey.lastUsed) }}</span>
+                        <span v-else> · Never used</span>
+                      </p>
+                    </template>
+                  </div>
+                </div>
+
+                <div class="admin-row__actions">
+                  <UButton
+                    v-if="editingPasskey !== passkey.id"
+                    size="xs"
+                    variant="ghost"
+                    color="neutral"
+                    icon="i-heroicons-pencil-square"
+                    @click="startEditPasskey(passkey)"
+                  />
+                  <UButton
+                    v-else
+                    size="xs"
+                    variant="ghost"
+                    color="neutral"
+                    icon="i-heroicons-x-mark"
+                    @click="cancelPasskeyEdit"
+                  />
+                  <UButton size="xs" variant="ghost" color="error" icon="i-heroicons-trash" @click="deletePasskeyConfirm(passkey)" />
                 </div>
               </div>
-
-              <div class="admin-row__actions">
-                <UBadge :color="attempt.success ? 'success' : 'error'" variant="subtle" size="xs">
-                  {{ attempt.success ? "Success" : "Failed" }}
-                </UBadge>
-              </div>
             </div>
-          </div>
 
-          <AdminEmptyState
-            v-else
-            icon="i-heroicons-shield-check"
-            :title="attemptFilter || attemptSearch ? 'No matching attempts' : 'No login attempts yet'"
-            :description="attemptFilter || attemptSearch ? 'Try a broader filter.' : 'Recent authentication attempts will appear here.'"
-          />
+            <AdminEmptyState
+              v-else
+              icon="i-heroicons-finger-print"
+              title="No passkeys registered"
+              description="Add one for faster sign-in on trusted devices."
+            />
+          </AdminPanel>
 
-          <template v-if="attemptTotalPages > 1" #footer>
-            <div class="flex w-full items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
-              <span>Page {{ attemptPage }} of {{ attemptTotalPages }}</span>
-              <div class="flex items-center gap-1.5">
-                <UButton size="xs" variant="ghost" color="neutral" icon="i-heroicons-chevron-left" :disabled="attemptPage <= 1" @click="attemptPage--" />
-                <UButton size="xs" variant="ghost" color="neutral" icon="i-heroicons-chevron-right" :disabled="attemptPage >= attemptTotalPages" @click="attemptPage++" />
-              </div>
-            </div>
-          </template>
-        </AdminPanel>
-
-        <div ref="passwordSection">
+          <!-- Change Password -->
           <AdminPanel title="Change Password" description="Keep the current account protected with a stronger password." icon="i-heroicons-key">
             <div class="admin-form-grid">
               <label class="admin-field">
@@ -321,9 +219,155 @@
             </template>
           </AdminPanel>
         </div>
-      </div>
+      </template>
+
+      <!-- ─── Sessions Tab ─── -->
+      <template v-if="activeTab === 'sessions'">
+        <AdminPanel title="Active Sessions" description="End stale sessions without turning this into a security dashboard." icon="i-heroicons-computer-desktop">
+          <template #actions>
+            <UButton
+              v-if="activeSessions.length > 1"
+              size="sm"
+              variant="ghost"
+              color="error"
+              icon="i-heroicons-arrow-right-on-rectangle"
+              @click="endAllOtherSessions"
+            >
+              End Others
+            </UButton>
+          </template>
+
+          <div v-if="sessionsLoading && !activeSessions.length" class="py-12 text-center">
+            <UIcon name="i-heroicons-arrow-path" class="mx-auto h-6 w-6 animate-spin text-blue-500" />
+          </div>
+
+          <template v-else-if="activeSessions.length">
+            <div class="admin-table-shell">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Device</th>
+                    <th>Browser / OS</th>
+                    <th>IP Address</th>
+                    <th>Last Active</th>
+                    <th>Created</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="session in activeSessions" :key="session.id">
+                    <td>
+                      <div class="flex items-center gap-2">
+                        <UIcon :name="deviceIcon(session.deviceType)" class="h-4 w-4 shrink-0" :class="session.isCurrent ? 'text-emerald-500' : 'text-slate-400 dark:text-slate-500'" />
+                        <span class="text-sm">{{ deviceLabel(session.deviceType) }}</span>
+                        <UBadge v-if="session.isCurrent" color="success" variant="subtle" size="xs">Current</UBadge>
+                      </div>
+                    </td>
+                    <td class="text-sm text-slate-600 dark:text-slate-400">{{ session.browser || "Unknown" }} / {{ session.os || "Unknown" }}</td>
+                    <td class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ session.ipAddress || "-" }}</td>
+                    <td class="text-sm text-slate-600 dark:text-slate-400">{{ timeAgo(session.lastActive) }}</td>
+                    <td class="text-sm text-slate-600 dark:text-slate-400">{{ formatDate(session.createdAt) }}</td>
+                    <td class="text-right">
+                      <UButton
+                        v-if="!session.isCurrent"
+                        size="xs"
+                        variant="ghost"
+                        color="error"
+                        icon="i-heroicons-x-mark"
+                        @click="endSession(session.id)"
+                      >
+                        End
+                      </UButton>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
+
+          <AdminEmptyState
+            v-else
+            icon="i-heroicons-computer-desktop"
+            title="No active sessions"
+            description="Only active signed-in devices show up here."
+          />
+        </AdminPanel>
+      </template>
+
+      <!-- ─── Login Attempts Tab ─── -->
+      <template v-if="activeTab === 'attempts'">
+        <AdminPanel title="Login History" description="Search recent attempts and keep suspicious activity obvious." icon="i-heroicons-shield-check">
+          <div v-if="attemptStats" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div v-for="item in miniStats" :key="item.label" class="admin-subpanel">
+              <p class="admin-row__eyebrow">{{ item.label }}</p>
+              <p class="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{{ item.value }}</p>
+            </div>
+          </div>
+
+          <div class="admin-filterbar mt-5">
+            <UInput v-model="attemptSearch" placeholder="Search by user or IP..." icon="i-heroicons-magnifying-glass" class="w-full sm:max-w-xs" />
+            <USelect v-model="attemptFilter" :items="attemptFilterOptions" value-key="value" class="w-full sm:w-40" />
+          </div>
+
+          <div v-if="attemptsLoading && !loginAttemptsList.length" class="py-12 text-center">
+            <UIcon name="i-heroicons-arrow-path" class="mx-auto h-6 w-6 animate-spin text-blue-500" />
+          </div>
+
+          <template v-else-if="paginatedAttempts.length">
+            <div class="admin-table-shell mt-5">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>Username</th>
+                    <th>IP Address</th>
+                    <th>Browser</th>
+                    <th>Flags</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="attempt in paginatedAttempts" :key="attempt.id">
+                    <td>
+                      <UBadge :color="attempt.success ? 'success' : 'error'" variant="subtle" size="xs">
+                        {{ attempt.success ? "Success" : "Failed" }}
+                      </UBadge>
+                    </td>
+                    <td class="text-sm font-medium text-slate-950 dark:text-white">{{ attempt.username }}</td>
+                    <td class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ attempt.ip_address || "-" }}</td>
+                    <td class="text-sm text-slate-600 dark:text-slate-400">{{ attempt.browser || "Unknown" }}</td>
+                    <td>
+                      <UBadge v-if="attempt.is_flagged" color="warning" variant="subtle" size="xs">{{ flagLabel(attempt.flag_reason) }}</UBadge>
+                      <span v-else class="text-sm text-slate-400 dark:text-slate-500">-</span>
+                    </td>
+                    <td class="text-sm text-slate-600 dark:text-slate-400">{{ timeAgo(attempt.created_at) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
+
+          <AdminEmptyState
+            v-else
+            icon="i-heroicons-shield-check"
+            :title="attemptFilter || attemptSearch ? 'No matching attempts' : 'No login attempts yet'"
+            :description="attemptFilter || attemptSearch ? 'Try a broader filter.' : 'Recent authentication attempts will appear here.'"
+          />
+
+          <template v-if="attemptTotalPages > 1" #footer>
+            <div class="flex w-full items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
+              <span>Page {{ attemptPage }} of {{ attemptTotalPages }}</span>
+              <div class="flex items-center gap-1.5">
+                <UButton size="xs" variant="ghost" color="neutral" icon="i-heroicons-chevron-left" :disabled="attemptPage <= 1" @click="attemptPage--" />
+                <UButton size="xs" variant="ghost" color="neutral" icon="i-heroicons-chevron-right" :disabled="attemptPage >= attemptTotalPages" @click="attemptPage++" />
+              </div>
+            </div>
+          </template>
+        </AdminPanel>
+      </template>
     </template>
 
+    <!-- ─── Modals ─── -->
     <UModal v-model:open="createModal">
       <template #content>
         <div class="p-6">
@@ -399,31 +443,50 @@ const toast = useToast()
 const { apiFetch } = useApi()
 const { user: currentUser } = useAuth()
 
+// ─── Types ───
 interface User { id: number; username: string; role: string; lastLogin: string | null; createdAt: string | number; isLocked?: boolean; lockedUntil?: string | null; passkeyCount?: number }
 interface Session { id: number; browser: string; os: string; deviceType: string; ipAddress: string; lastActive: string | number; expiresAt: string | number; createdAt: string | number; isCurrent: boolean }
 interface LoginAttempt { id: number; username: string; ip_address: string; browser: string; os: string; success: boolean; fail_reason: string | null; is_flagged: boolean; flag_reason: string | null; created_at: string | number }
 interface Passkey { id: number; credentialId: string; deviceName: string; createdAt: string | number; lastUsed: string | number | null }
 
+type TabId = "accounts" | "sessions" | "attempts"
+
+// ─── Tabs ───
+const tabs: { id: TabId; label: string }[] = [
+  { id: "accounts", label: "Accounts" },
+  { id: "sessions", label: "Sessions" },
+  { id: "attempts", label: "Login Attempts" },
+]
+const activeTab = ref<TabId>("accounts")
+
+// ─── Data ───
 const userList = ref<User[]>([])
 const activeSessions = ref<Session[]>([])
 const loginAttemptsList = ref<LoginAttempt[]>([])
 const passkeysList = ref<Passkey[]>([])
 const attemptStats = ref<{ totalAttempts: number; failedAttempts: number; flaggedAttempts: number; recentFailed: number } | null>(null)
 
+// ─── Loading ───
 const loading = ref(true)
 const sessionsLoading = ref(true)
 const attemptsLoading = ref(true)
 const passkeysLoading = ref(true)
 const passkeySupported = ref(false)
 const registeringPasskey = ref(false)
-const passwordSection = ref<HTMLElement | null>(null)
+
+// ─── Attempts filter / pagination ───
 const attemptSearch = ref("")
 const attemptFilter = ref("all")
 const attemptPage = ref(1)
-const showCurrentPw = ref(false)
-const showNewPw = ref(false)
 const PAGE_SIZE = 8
 
+// ─── Password form ───
+const showCurrentPw = ref(false)
+const showNewPw = ref(false)
+const pwSaving = ref(false)
+const pwForm = reactive({ current: "", newPw: "" })
+
+// ─── Modal state ───
 const createModal = ref(false)
 const creating = ref(false)
 const createError = ref("")
@@ -433,14 +496,13 @@ const delUser = ref<User | null>(null)
 const deleting = ref(false)
 const revokeAllModal = ref(false)
 const revokingAll = ref(false)
-const pwSaving = ref(false)
-const pwForm = reactive({ current: "", newPw: "" })
 const editingPasskey = ref<number | null>(null)
 const editPasskeyName = ref("")
 const deletePasskeyModal = ref(false)
 const deletePasskeyTarget = ref<Passkey | null>(null)
 const deletingPasskey = ref(false)
 
+// ─── Static options ───
 const attemptFilterOptions = [
   { label: "All attempts", value: "all" },
   { label: "Success", value: "success" },
@@ -452,6 +514,7 @@ const roleOptions = [
   { label: "Editor - Content only", value: "editor" },
 ]
 
+// ─── Computed ───
 const statCards = computed(() => [
   { label: "Users", value: userList.value.length, icon: "i-heroicons-users", tone: "brand" as const, hint: "Configured admin accounts" },
   { label: "Sessions", value: activeSessions.value.length, icon: "i-heroicons-computer-desktop", tone: "success" as const, hint: "Current signed-in devices" },
@@ -494,8 +557,10 @@ const pwStrength = computed(() => {
   }
 })
 
+// ─── Watchers ───
 watch([attemptFilter, attemptSearch], () => { attemptPage.value = 1 })
 
+// ─── Helpers ───
 function formatDate(value: string | number | null) {
   if (!value) return "-"
   const date = typeof value === "number" ? new Date(value * 1000) : new Date(value)
@@ -518,6 +583,12 @@ function deviceIcon(type: string | null) {
   if (type === "mobile") return "i-heroicons-device-phone-mobile"
   if (type === "tablet") return "i-heroicons-device-tablet"
   return "i-heroicons-computer-desktop"
+}
+
+function deviceLabel(type: string | null) {
+  if (type === "mobile") return "Mobile"
+  if (type === "tablet") return "Tablet"
+  return "Desktop"
 }
 
 function flagLabel(reason: string | null) {
@@ -544,13 +615,15 @@ function passkeyCountFor(user: User) {
   return 0
 }
 
-function scrollToPassword() { passwordSection.value?.scrollIntoView({ behavior: "smooth", block: "center" }) }
+// ─── Actions ───
+function switchToPassword() { activeTab.value = "accounts" }
 function startEditPasskey(passkey: Passkey) { editingPasskey.value = passkey.id; editPasskeyName.value = passkey.deviceName }
 function cancelPasskeyEdit() { editingPasskey.value = null; editPasskeyName.value = "" }
 function deletePasskeyConfirm(passkey: Passkey) { deletePasskeyTarget.value = passkey; deletePasskeyModal.value = true }
 function endAllOtherSessions() { revokeAllModal.value = true }
 function confirmDel(user: User) { delUser.value = user; delModal.value = true }
 
+// ─── Data loading ───
 async function loadUsers() {
   loading.value = true
   try {
@@ -601,6 +674,7 @@ async function loadPasskeys() {
   }
 }
 
+// ─── Mutations ───
 async function savePasskeyName(passkey: Passkey) {
   if (!editPasskeyName.value.trim()) return
   try {
@@ -731,6 +805,7 @@ async function changePassword() {
   }
 }
 
+// ─── Init ───
 onMounted(async () => {
   passkeySupported.value = typeof window !== "undefined" && !!window.PublicKeyCredential
   await Promise.allSettled([loadUsers(), loadSessions(), loadAttempts(), loadPasskeys()])

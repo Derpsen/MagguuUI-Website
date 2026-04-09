@@ -282,18 +282,11 @@
             </template>
 
             <template v-else-if="module.id === 'top-demand'">
-              <div v-if="topDemandItems.length" class="admin-list">
-                <div v-for="item in topDemandItems" :key="`${item.string_type}-${item.name}`" class="admin-row">
-                  <div class="admin-row__content">
-                    <p class="admin-row__title">{{ item.name }}</p>
-                    <p class="admin-row__meta">{{ typeLabel(item.string_type) }}</p>
-                  </div>
-                  <div class="admin-row__actions">
-                    <UBadge color="info" variant="subtle" size="xs">{{ item.copies }}x</UBadge>
-                  </div>
-                </div>
-              </div>
-
+              <AdminChartsHorizontalBarChart
+                v-if="topDemandChartData.length"
+                :data="topDemandChartData"
+                color="#10b981"
+              />
               <AdminEmptyState
                 v-else
                 icon="i-heroicons-fire"
@@ -322,37 +315,8 @@
                 </span>
               </div>
 
-              <div v-if="last7Copies.length" class="mt-5">
-                <div class="relative h-32">
-                  <div class="absolute inset-0 flex flex-col justify-between">
-                    <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
-                    <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
-                    <div class="border-b border-dashed border-slate-200 dark:border-white/8" />
-                    <div />
-                  </div>
-
-                  <div class="relative flex h-full items-end gap-2">
-                    <div v-for="day in last7Copies" :key="day.day" class="flex h-full flex-1 flex-col items-center gap-2">
-                      <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ day.count }}</span>
-                      <div class="flex w-full flex-1 items-end">
-                        <div
-                          class="w-full rounded-t-xl bg-blue-500/80 transition hover:bg-blue-500"
-                          :style="{ height: `${barHeight(day.count, maxLast7)}%`, minHeight: day.count > 0 ? '10px' : '4px' }"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="mt-2 grid grid-cols-7 gap-2">
-                  <span
-                    v-for="(day, idx) in last7Copies"
-                    :key="`label-${idx}`"
-                    class="text-center text-[11px] text-slate-500 dark:text-slate-400"
-                  >
-                    {{ shortDay(day.day) }}
-                  </span>
-                </div>
+              <div v-if="trafficChartData.length" class="mt-5">
+                <AdminChartsAreaChart :data="trafficChartData" color="#3b8bff" height="140px" />
               </div>
             </template>
           </AdminPanel>
@@ -598,6 +562,9 @@ const releaseFocusCards = computed(() => {
 })
 
 const topDemandItems = computed(() => (stats.value?.topCopied || []).slice(0, 4))
+const topDemandChartData = computed(() =>
+  topDemandItems.value.map(item => ({ label: item.name, value: item.copies }))
+)
 
 const trafficCards = computed(() => {
   const data = stats.value
@@ -644,7 +611,15 @@ function buildDailySeries(source: Array<{ day: string; count: number | string }>
 
 const copySeries14 = computed(() => buildDailySeries(stats.value?.dailyCopies, 14))
 const last7Copies = computed(() => copySeries14.value.slice(-7))
-const maxLast7 = computed(() => Math.max(1, ...last7Copies.value.map(day => day.count)))
+const trafficChartData = computed(() =>
+  last7Copies.value.map(d => {
+    try {
+      return { label: new Date(d.day).toLocaleDateString('en', { weekday: 'short' }).slice(0, 2), value: d.count }
+    } catch {
+      return { label: d.day.slice(-2), value: d.count }
+    }
+  })
+)
 const trafficTrendPills = computed(() => {
   const data = stats.value
   if (!data) return []
@@ -913,19 +888,6 @@ async function loadStoredVersion() {
   }
 }
 
-function barHeight(value: number, max: number) {
-  if (!value || !max) return 2
-  return Math.max(10, (value / max) * 100)
-}
-
-function shortDay(dateStr: string) {
-  try {
-    const date = new Date(dateStr)
-    return date.toLocaleDateString('en', { weekday: 'short' }).slice(0, 2)
-  } catch {
-    return dateStr?.slice(8, 10) || ''
-  }
-}
 
 function formatTrend(value?: number | null) {
   if (typeof value !== 'number' || Number.isNaN(value)) return 'No data'

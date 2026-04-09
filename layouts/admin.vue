@@ -151,7 +151,7 @@
                   </button>
 
                   <Transition
-                    enter-active-class="transition duration-150 ease-out"
+                    enter-active-class="transition duration-200 ease-out"
                     enter-from-class="opacity-0 translate-y-2 scale-95"
                     enter-to-class="opacity-100 translate-y-0 scale-100"
                     leave-active-class="transition duration-100 ease-in"
@@ -161,27 +161,36 @@
                     <div
                       v-if="notifOpen"
                       ref="notifPanelRef"
-                      class="admin-panel absolute right-0 top-full mt-2 w-[22rem] p-0"
+                      class="absolute right-0 top-full z-[100] mt-2.5 w-[24rem] rounded-2xl border shadow-2xl backdrop-blur-xl"
+                      :class="isDark
+                        ? 'border-white/10 bg-slate-900/95 shadow-black/30'
+                        : 'border-slate-200 bg-white/95 shadow-slate-200/50'"
                     >
-                      <div class="admin-panel__header border-b border-slate-200/80 px-4 py-3 dark:border-white/8">
-                        <div class="admin-panel__head">
-                          <div>
-                            <h2 class="admin-panel__title">Notifications</h2>
-                            <p class="admin-panel__description">{{ notifCount || 0 }} active</p>
-                          </div>
+                      <div class="flex items-center justify-between px-5 py-4 border-b"
+                        :class="isDark ? 'border-white/8' : 'border-slate-100'">
+                        <div>
+                          <h2 class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">Notifications</h2>
+                          <p class="text-xs mt-0.5" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ notifCount || 0 }} active</p>
                         </div>
+                        <span v-if="notifCount > 0" class="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-[10px] font-bold"
+                          :class="isDark ? 'bg-red-500/20 text-red-400' : 'bg-red-50 text-red-600'">
+                          {{ notifCount }}
+                        </span>
                       </div>
 
-                      <div v-if="notifItems.length" class="max-h-80 overflow-y-auto">
+                      <div v-if="notifItems.length" class="max-h-80 overflow-y-auto py-1.5">
                         <div
                           v-for="item in notifItems"
                           :key="item.id"
-                          class="admin-notification-row"
+                          class="flex items-start gap-3 px-4 py-3 mx-1.5 rounded-xl transition-colors"
+                          :class="isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-slate-50'"
                         >
-                          <div
-                            class="admin-notification-row__icon"
-                            :class="notificationToneClass(item.type)"
-                          >
+                          <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0 mt-0.5"
+                            :class="item.type === 'error'
+                              ? isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-600'
+                              : item.type === 'warning'
+                                ? isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-50 text-amber-600'
+                                : isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-50 text-blue-600'">
                             <UIcon
                               :name="item.type === 'error'
                                 ? 'i-heroicons-x-circle'
@@ -190,31 +199,37 @@
                                   : 'i-heroicons-information-circle'"
                               class="h-4 w-4"
                             />
-                          </div>
+                          </span>
 
                           <div class="min-w-0 flex-1">
                             <NuxtLink
                               v-if="item.link"
                               :to="item.link"
-                              class="block truncate text-sm font-medium text-slate-950 hover:text-blue-700 dark:text-white dark:hover:text-blue-300"
+                              class="block text-sm font-medium transition-colors"
+                              :class="isDark ? 'text-white hover:text-blue-300' : 'text-slate-900 hover:text-blue-700'"
                               @click="notifOpen = false"
                             >
                               {{ item.title }}
                             </NuxtLink>
-                            <p v-else class="truncate text-sm font-medium text-slate-950 dark:text-white">
+                            <p v-else class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">
                               {{ item.title }}
                             </p>
-                            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.message }}</p>
+                            <p class="mt-0.5 text-xs leading-relaxed" :class="isDark ? 'text-slate-400' : 'text-slate-500'">{{ item.message }}</p>
                           </div>
 
-                          <button class="admin-icon-button h-8 w-8 shrink-0" @click="notifDismiss(item.id)">
-                            <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
+                          <button
+                            class="inline-flex items-center justify-center h-7 w-7 rounded-lg flex-shrink-0 transition-colors"
+                            :class="isDark ? 'text-slate-500 hover:text-white hover:bg-white/[0.06]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'"
+                            @click="notifDismiss(item.id)"
+                          >
+                            <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
                           </button>
                         </div>
                       </div>
 
-                      <div v-else class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
-                        No notifications
+                      <div v-else class="px-5 py-10 text-center">
+                        <UIcon name="i-heroicons-bell-slash" class="h-8 w-8 mx-auto mb-2" :class="isDark ? 'text-slate-600' : 'text-slate-300'" />
+                        <p class="text-sm" :class="isDark ? 'text-slate-500' : 'text-slate-400'">No notifications</p>
                       </div>
                     </div>
                   </Transition>

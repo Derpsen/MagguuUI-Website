@@ -1432,20 +1432,20 @@ html.dark .admin-link--active {
 .admin-segmented {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.22rem;
-  border-radius: 0.95rem;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--admin-radius);
   border: 1px solid var(--admin-border);
   background: var(--admin-muted-bg);
 }
 
 .admin-segmented__button {
-  border-radius: 0.78rem;
-  padding: 0.55rem 0.8rem;
+  border-radius: calc(var(--admin-radius) - 2px);
+  padding: 0.45rem 0.85rem;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--admin-fg-muted);
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .admin-segmented__button:hover {
@@ -1455,11 +1455,7 @@ html.dark .admin-link--active {
 .admin-segmented__button--active {
   color: var(--admin-fg);
   background: var(--admin-card);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
-}
-
-html.dark .admin-segmented__button--active {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
 }
 
 .admin-form-grid {
@@ -1487,6 +1483,16 @@ html.dark .admin-segmented__button--active {
   font-size: 0.74rem;
   line-height: 1.45;
   color: var(--admin-fg-faint);
+}
+
+/* Subtle focus ring for admin inputs */
+.admin-shell input:focus,
+.admin-shell textarea:focus,
+.admin-shell select:focus,
+.admin-shell [data-headlessui-state~="open"] {
+  outline: none;
+  border-color: var(--admin-accent) !important;
+  box-shadow: 0 0 0 1px var(--admin-accent) !important;
 }
 
 .admin-file-input {
@@ -1967,42 +1973,39 @@ html.dark .admin-segmented__button--active {
   border-color: var(--admin-border);
 }
 
-.admin-tone-brand {
-  background: rgba(37, 99, 235, 0.12);
-  color: #2563eb;
-}
-
-.admin-tone-success {
-  background: rgba(5, 150, 105, 0.12);
-  color: #059669;
+.admin-tone-brand,
+.admin-tone-success,
+.admin-tone-violet,
+.admin-tone-neutral {
+  background: var(--admin-accent-bg);
+  color: var(--admin-fg-muted);
 }
 
 .admin-tone-warning {
-  background: rgba(245, 158, 11, 0.14);
-  color: #d97706;
+  background: hsl(42 84% 61% / 0.1);
+  color: hsl(42 84% 50%);
 }
 
 .admin-tone-danger {
-  background: rgba(220, 38, 38, 0.12);
-  color: #dc2626;
+  background: hsl(359 100% 65% / 0.1);
+  color: hsl(359 80% 55%);
 }
 
-.admin-tone-violet {
-  background: rgba(124, 58, 237, 0.12);
-  color: #7c3aed;
+html.dark .admin-tone-brand,
+html.dark .admin-tone-success,
+html.dark .admin-tone-violet,
+html.dark .admin-tone-neutral {
+  background: var(--admin-accent-bg);
+  color: var(--admin-fg-muted);
 }
-
-.admin-tone-neutral {
-  background: rgba(148, 163, 184, 0.14);
-  color: #475569;
+html.dark .admin-tone-warning {
+  background: hsl(42 84% 61% / 0.12);
+  color: hsl(42 84% 65%);
 }
-
-html.dark .admin-tone-brand { color: #93c5fd; }
-html.dark .admin-tone-success { color: #6ee7b7; }
-html.dark .admin-tone-warning { color: #fcd34d; }
-html.dark .admin-tone-danger { color: #fca5a5; }
-html.dark .admin-tone-violet { color: #c4b5fd; }
-html.dark .admin-tone-neutral { color: #cbd5e1; }
+html.dark .admin-tone-danger {
+  background: hsl(359 68% 56% / 0.12);
+  color: hsl(359 68% 65%);
+}
 
 @media (max-width: 1023px) {
   .admin-shell {

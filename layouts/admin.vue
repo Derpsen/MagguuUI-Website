@@ -129,12 +129,16 @@
             <NuxtLink to="/admin" class="shrink-0 transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'">
               <UIcon name="i-heroicons-squares-2x2" class="h-4 w-4" />
             </NuxtLink>
-            <template v-if="currentContext.section">
-              <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0" :class="isDark ? 'text-white/30' : 'text-slate-300'" />
-              <span class="shrink-0" :class="isDark ? 'text-white/50' : 'text-slate-400'">{{ currentContext.section }}</span>
-            </template>
-            <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0" :class="isDark ? 'text-white/30' : 'text-slate-300'" />
-            <span class="truncate font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ pageHeading }}</span>
+            <Transition name="breadcrumb-slide" mode="out-in">
+              <div :key="route.path" class="flex items-center gap-1.5 min-w-0">
+                <template v-if="currentContext.section">
+                  <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0" :class="isDark ? 'text-white/30' : 'text-slate-300'" />
+                  <span class="shrink-0" :class="isDark ? 'text-white/50' : 'text-slate-400'">{{ currentContext.section }}</span>
+                </template>
+                <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0" :class="isDark ? 'text-white/30' : 'text-slate-300'" />
+                <span class="truncate font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ pageHeading }}</span>
+              </div>
+            </Transition>
           </nav>
 
           <div class="ml-auto flex items-center gap-1">
@@ -214,6 +218,10 @@
               </Transition>
             </div>
 
+            <button class="vben-header-btn hidden md:inline-flex" title="Fullscreen" @click="toggleFullscreen">
+              <UIcon :name="isFullscreen ? 'i-heroicons-arrows-pointing-in' : 'i-heroicons-arrows-pointing-out'" class="h-4 w-4" />
+            </button>
+
             <button class="vben-header-btn" :title="isDark ? 'Light mode' : 'Dark mode'" @click="toggleTheme">
               <UIcon :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'" class="h-4 w-4" />
             </button>
@@ -264,6 +272,7 @@ const { notifications: notifItems, count: notifCount, refresh: notifRefresh, dis
 const { sections, dockLinks, currentContext } = useAdminNavigation()
 
 const { loadFromStorage: loadTabs, trackCurrentRoute } = useAdminTabs()
+const isFullscreen = ref(false)
 const sidebarOpen = ref(false)
 const collapsed = ref(false)
 const notifOpen = ref(false)
@@ -289,6 +298,16 @@ const openSections = reactive(
 
 function toggleTheme() {
   colorMode.preference = isDark.value ? 'light' : 'dark'
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen()
+    isFullscreen.value = true
+  } else {
+    document.exitFullscreen()
+    isFullscreen.value = false
+  }
 }
 
 function setOpenSection(title: string) {
@@ -402,5 +421,21 @@ html.dark .vben-nav-item--active {
 .vben-header-btn:hover {
   background: var(--admin-accent-bg-hover);
   color: var(--admin-fg);
+}
+
+/* Breadcrumb slide transition */
+.breadcrumb-slide-enter-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.breadcrumb-slide-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.breadcrumb-slide-enter-from {
+  opacity: 0;
+  transform: translateX(8px);
+}
+.breadcrumb-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-8px);
 }
 </style>

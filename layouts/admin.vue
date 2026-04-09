@@ -7,7 +7,7 @@
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         ]"
       >
-        <div class="admin-sidebar-shell flex h-full flex-col overflow-hidden rounded-[1.35rem] p-3">
+        <div class="admin-sidebar-shell flex h-full flex-col overflow-hidden rounded-xl p-2.5">
           <div class="admin-sidebar-brand">
             <NuxtLink to="/admin" class="flex min-w-0 items-center gap-3">
               <div class="admin-workspace-card__logo">
@@ -308,7 +308,7 @@ const searchShortcut = computed(() => isMac.value ? 'Cmd K' : 'Ctrl K')
 const userInitial = computed(() => (user.value?.username || 'A').charAt(0).toUpperCase())
 const pageHeading = computed(() => currentContext.value.heading || currentContext.value.label)
 const adminShellStyle = computed(() => ({
-  '--admin-sidebar-width': collapsed.value ? '4.85rem' : '15.25rem',
+  '--admin-sidebar-width': collapsed.value ? '3.75rem' : '14rem',
 }))
 const activeSection = computed(() =>
   sections.find(section => section.links.some(link => isRouteActive(link.to)))?.title ?? sections[0]?.title ?? '',

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-5">
     <AdminPageHeader
       icon="i-simple-icons-github"
       eyebrow="System"
@@ -29,8 +29,8 @@
       />
     </div>
 
-    <div class="grid gap-6 xl:grid-cols-2">
-      <AdminPanel title="Connection" description="Repository status, permissions and connection test." icon="i-simple-icons-github">
+    <div class="grid gap-5 xl:grid-cols-2">
+      <AdminPanel title="Connection" description="Repository status, permissions and webhook endpoint." icon="i-simple-icons-github">
         <template #actions>
           <UButton
             size="sm"
@@ -55,6 +55,33 @@
               <UBadge :color="status?.configured ? 'success' : 'error'" variant="subtle">
                 {{ status?.configured ? "Connected" : "Offline" }}
               </UBadge>
+            </div>
+          </div>
+
+          <!-- Webhook row (compact, inline) -->
+          <div
+            class="flex items-center gap-3 rounded-lg border px-3.5 py-2.5"
+            :class="isDark ? 'border-[hsl(240,3.7%,22%)] bg-[hsl(222.34,10.43%,12.27%)]' : 'border-slate-200 bg-white'"
+          >
+            <UIcon name="i-heroicons-link" class="h-4 w-4 shrink-0 text-slate-400" />
+            <code class="min-w-0 flex-1 truncate text-xs text-slate-600 dark:text-slate-400">{{ webhookVisible ? webhookUrl : maskedWebhook }}</code>
+            <div class="flex shrink-0 items-center gap-1">
+              <UButton
+                size="xs"
+                variant="ghost"
+                color="neutral"
+                :icon="webhookVisible ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
+                @click="webhookVisible = !webhookVisible"
+              />
+              <UButton
+                size="xs"
+                variant="ghost"
+                color="neutral"
+                :icon="webhookCopied ? 'i-heroicons-check' : 'i-heroicons-clipboard-document'"
+                @click="copyWebhookUrl"
+              >
+                {{ webhookCopied ? "Copied" : "Copy" }}
+              </UButton>
             </div>
           </div>
 
@@ -114,14 +141,14 @@
         <div class="grid gap-4 md:grid-cols-2">
           <div class="admin-subpanel">
             <p class="admin-row__eyebrow">Local</p>
-            <p class="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
+            <p class="mt-2 text-lg font-semibold tracking-tight text-slate-950 dark:text-white">
               {{ versionInfo.local ? `v${versionInfo.local}` : "-" }}
             </p>
           </div>
 
           <div class="admin-subpanel">
             <p class="admin-row__eyebrow">GitHub</p>
-            <p class="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
+            <p class="mt-2 text-lg font-semibold tracking-tight text-slate-950 dark:text-white">
               {{ versionInfo.github ? `v${versionInfo.github}` : "-" }}
             </p>
           </div>
@@ -147,19 +174,19 @@
     </div>
 
     <AdminPanel title="Actions" description="Manual sync utilities for import, export and remote triggers." icon="i-heroicons-bolt">
-      <div class="grid gap-4 md:grid-cols-2">
+      <div class="grid gap-3 md:grid-cols-2">
         <button
           class="admin-subpanel text-left transition hover:border-blue-500/25 hover:bg-white/70 dark:hover:bg-white/5"
           :disabled="pushing || !status?.configured"
           @click="doPush"
         >
-          <div class="flex items-center gap-3">
-            <div class="admin-empty-state__icon admin-tone-brand h-10 w-10">
-              <UIcon name="i-heroicons-arrow-up-tray" class="h-4 w-4" />
+          <div class="flex items-center gap-2.5">
+            <div class="admin-empty-state__icon admin-tone-brand h-8 w-8">
+              <UIcon name="i-heroicons-arrow-up-tray" class="h-3.5 w-3.5" />
             </div>
             <div>
-              <p class="admin-row__title">{{ pushing ? "Pushing..." : "Push Trigger" }}</p>
-              <p class="admin-row__meta">Trigger the remote GitHub sync workflow.</p>
+              <p class="admin-row__title text-[13px]">{{ pushing ? "Pushing..." : "Push Trigger" }}</p>
+              <p class="admin-row__meta text-xs">Trigger the remote GitHub sync workflow.</p>
             </div>
           </div>
         </button>
@@ -169,13 +196,13 @@
           :disabled="pullingProfiles || !status?.configured"
           @click="doPullProfiles"
         >
-          <div class="flex items-center gap-3">
-            <div class="admin-empty-state__icon admin-tone-violet h-10 w-10">
-              <UIcon name="i-heroicons-arrow-down-tray" class="h-4 w-4" />
+          <div class="flex items-center gap-2.5">
+            <div class="admin-empty-state__icon admin-tone-violet h-8 w-8">
+              <UIcon name="i-heroicons-arrow-down-tray" class="h-3.5 w-3.5" />
             </div>
             <div>
-              <p class="admin-row__title">{{ pullingProfiles ? "Pulling..." : "Pull Profiles" }}</p>
-              <p class="admin-row__meta">Import profile data from the repository into the database.</p>
+              <p class="admin-row__title text-[13px]">{{ pullingProfiles ? "Pulling..." : "Pull Profiles" }}</p>
+              <p class="admin-row__meta text-xs">Import profile data from the repository.</p>
             </div>
           </div>
         </button>
@@ -184,13 +211,13 @@
           class="admin-subpanel text-left transition hover:border-blue-500/25 hover:bg-white/70 dark:hover:bg-white/5"
           @click="doExport"
         >
-          <div class="flex items-center gap-3">
-            <div class="admin-empty-state__icon admin-tone-success h-10 w-10">
-              <UIcon name="i-heroicons-arrow-down-on-square" class="h-4 w-4" />
+          <div class="flex items-center gap-2.5">
+            <div class="admin-empty-state__icon admin-tone-success h-8 w-8">
+              <UIcon name="i-heroicons-arrow-down-on-square" class="h-3.5 w-3.5" />
             </div>
             <div>
-              <p class="admin-row__title">Export Backup</p>
-              <p class="admin-row__meta">Download the current admin data as JSON.</p>
+              <p class="admin-row__title text-[13px]">Export Backup</p>
+              <p class="admin-row__meta text-xs">Download the current admin data as JSON.</p>
             </div>
           </div>
         </button>
@@ -199,54 +226,22 @@
           class="admin-subpanel text-left transition hover:border-blue-500/25 hover:bg-white/70 dark:hover:bg-white/5"
           @click="importModal = true"
         >
-          <div class="flex items-center gap-3">
-            <div class="admin-empty-state__icon admin-tone-warning h-10 w-10">
-              <UIcon name="i-heroicons-arrow-up-on-square" class="h-4 w-4" />
+          <div class="flex items-center gap-2.5">
+            <div class="admin-empty-state__icon admin-tone-warning h-8 w-8">
+              <UIcon name="i-heroicons-arrow-up-on-square" class="h-3.5 w-3.5" />
             </div>
             <div>
-              <p class="admin-row__title">Import Backup</p>
-              <p class="admin-row__meta">Restore a JSON export using merge or overwrite mode.</p>
+              <p class="admin-row__title text-[13px]">Import Backup</p>
+              <p class="admin-row__meta text-xs">Restore a JSON export using merge or overwrite.</p>
             </div>
           </div>
         </button>
       </div>
     </AdminPanel>
 
-    <AdminPanel title="Webhook" description="Copy the endpoint and use it for releases, pushes and workflow runs." icon="i-heroicons-link">
-      <template #actions>
-        <div class="flex items-center gap-2">
-          <UButton
-            size="sm"
-            variant="ghost"
-            color="neutral"
-            :icon="webhookVisible ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
-            @click="webhookVisible = !webhookVisible"
-          />
-          <UButton
-            size="sm"
-            variant="ghost"
-            color="neutral"
-            :icon="webhookCopied ? 'i-heroicons-check' : 'i-heroicons-clipboard-document'"
-            @click="copyWebhookUrl"
-          >
-            {{ webhookCopied ? "Copied" : "Copy" }}
-          </UButton>
-        </div>
-      </template>
-
-      <pre class="admin-code-block">{{ webhookVisible ? webhookUrl : maskedWebhook }}</pre>
-
-      <div class="mt-4 admin-inline-note">
-        <UIcon name="i-heroicons-information-circle" class="h-4 w-4 text-blue-500" />
-        <span class="text-sm text-slate-600 dark:text-slate-400">
-          Add this URL in GitHub repository settings. Recommended events: releases, pushes and workflow runs.
-        </span>
-      </div>
-    </AdminPanel>
-
     <AdminPanel title="Sync History" description="Search and inspect recent sync jobs." icon="i-heroicons-clock">
-      <div class="admin-filterbar">
-        <div class="flex flex-wrap items-center gap-2">
+      <div class="admin-filterbar gap-2 py-2">
+        <div class="flex flex-wrap items-center gap-1.5">
           <button
             v-for="filter in syncFilters"
             :key="filter.value"
@@ -261,6 +256,7 @@
 
         <UInput
           v-model="syncSearch"
+          size="sm"
           icon="i-heroicons-magnifying-glass"
           placeholder="Search trigger or details"
           class="min-w-0 flex-1"
@@ -271,32 +267,46 @@
         <UIcon name="i-heroicons-arrow-path" class="mx-auto h-8 w-8 animate-spin text-blue-500" />
       </div>
 
-      <div v-else-if="filteredSyncs.length" class="admin-list mt-5">
-        <div v-for="sync in filteredSyncs" :key="sync.id" class="admin-row">
-          <div class="admin-row__content">
-            <div class="flex flex-wrap items-center gap-2">
-              <p class="admin-row__title">{{ sync.trigger }}</p>
-              <UBadge :color="syncBadgeColor(sync.status)" variant="subtle" size="xs">{{ sync.status }}</UBadge>
-            </div>
-
-            <p class="admin-row__meta">{{ sync.details || "No details available." }}</p>
-            <p class="mt-2 text-xs text-slate-400 dark:text-slate-500">{{ formatDate(sync.createdAt) }}</p>
-
-            <div class="mt-3">
-              <UButton
-                size="xs"
-                color="neutral"
-                variant="ghost"
-                :icon="expandedSyncId === sync.id ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
-                @click="expandedSyncId = expandedSyncId === sync.id ? null : sync.id"
-              >
-                {{ expandedSyncId === sync.id ? "Hide details" : "Show details" }}
-              </UButton>
-
-              <pre v-if="expandedSyncId === sync.id" class="admin-code-block mt-3 whitespace-pre-wrap break-words">{{ sync.details || "No details available." }}</pre>
-            </div>
-          </div>
-        </div>
+      <div v-else-if="filteredSyncs.length" class="admin-table-shell mt-4">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th class="w-[25%]">Trigger</th>
+              <th class="w-[10%]">Status</th>
+              <th class="w-[35%]">Details</th>
+              <th class="w-[20%]">Time</th>
+              <th class="w-[10%] text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="sync in filteredSyncs" :key="sync.id">
+              <tr>
+                <td class="font-medium text-slate-950 dark:text-white">{{ sync.trigger }}</td>
+                <td>
+                  <UBadge :color="syncBadgeColor(sync.status)" variant="subtle" size="xs">{{ sync.status }}</UBadge>
+                </td>
+                <td class="max-w-0">
+                  <span class="block truncate text-slate-500 dark:text-slate-400">{{ sync.details || "No details" }}</span>
+                </td>
+                <td class="text-xs text-slate-400 dark:text-slate-500">{{ formatDate(sync.createdAt) }}</td>
+                <td class="text-right">
+                  <UButton
+                    size="xs"
+                    color="neutral"
+                    variant="ghost"
+                    :icon="expandedSyncId === sync.id ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
+                    @click="expandedSyncId = expandedSyncId === sync.id ? null : sync.id"
+                  />
+                </td>
+              </tr>
+              <tr v-if="expandedSyncId === sync.id">
+                <td colspan="5" class="!pt-0 !pb-3">
+                  <pre class="admin-code-block whitespace-pre-wrap break-words text-xs">{{ sync.details || "No details available." }}</pre>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
       </div>
 
       <AdminEmptyState
@@ -370,6 +380,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: "admin" })
 
+const isDark = useIsDark()
 const toast = useToast()
 const { apiFetch } = useApi()
 

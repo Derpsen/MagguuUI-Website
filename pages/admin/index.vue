@@ -895,49 +895,9 @@ function formatTrend(value?: number | null) {
   return `${value > 0 ? '+' : ''}${value}%`
 }
 
-function activityTone(action: string) {
-  if (action === 'created') return 'admin-tone-success'
-  if (action === 'deleted') return 'admin-tone-danger'
-  return 'admin-tone-brand'
-}
-
-function actionIcon(action: string) {
-  if (action === 'created') return 'i-heroicons-plus-circle'
-  if (action === 'updated') return 'i-heroicons-pencil-square'
-  if (action === 'deleted') return 'i-heroicons-trash'
-  return 'i-heroicons-information-circle'
-}
-
-function typeLabel(type: string) {
-  const labels: Record<string, string> = {
-    profile: 'Addon Profile',
-    wowup: 'WowUp String',
-    layout: 'Character Layout',
-    changelog: 'Update',
-    content: 'Content',
-  }
-  return labels[type] || type
-}
-
-function timeAgo(value: string | number | Date | null) {
-  if (!value) return ''
-  const date = value instanceof Date ? value : typeof value === 'number' ? new Date(value * 1000) : new Date(value)
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
-  if (seconds < 60) return 'just now'
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 7) return `${days}d ago`
-  return date.toLocaleDateString('en', { day: '2-digit', month: 'short' })
-}
-
-function absoluteDate(value: string | number | Date | null) {
-  if (!value) return ''
-  const date = value instanceof Date ? value : typeof value === 'number' ? new Date(value * 1000) : new Date(value)
-  return date.toLocaleDateString('en', { day: '2-digit', month: 'short' })
-}
+// timeAgo, absoluteDate, activityTone, actionIcon, entityTypeLabel
+// are auto-imported from utils/adminHelpers.ts
+const typeLabel = entityTypeLabel
 
 onMounted(async () => {
   if (import.meta.client) {

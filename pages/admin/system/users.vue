@@ -567,17 +567,7 @@ function formatDate(value: string | number | null) {
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })
 }
 
-function timeAgo(value: string | number | null) {
-  if (!value) return "-"
-  const date = typeof value === "number" ? new Date(value * 1000) : new Date(value)
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
-  if (seconds < 60) return "just now"
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  return `${Math.floor(hours / 24)}d ago`
-}
+// timeAgo is auto-imported from utils/adminHelpers.ts
 
 function deviceIcon(type: string | null) {
   if (type === "mobile") return "i-heroicons-device-phone-mobile"

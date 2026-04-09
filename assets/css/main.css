@@ -1059,8 +1059,7 @@ html.dark .admin-toolbar-context__icon {
 .admin-sidebar-user__avatar,
 .admin-metric-card__icon,
 .admin-empty-state__icon,
-.admin-command__item-icon,
-.admin-notification-row__icon {
+.admin-command__item-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2087,13 +2086,6 @@ html.dark .admin-segmented__button--active {
   color: var(--admin-muted);
 }
 
-.admin-notification-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.8rem;
-  padding: 0.95rem 1rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
-}
 
 .admin-mobile-dock {
   position: fixed;

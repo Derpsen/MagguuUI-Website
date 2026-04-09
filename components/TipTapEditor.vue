@@ -5,11 +5,11 @@
 
 <template>
   <div class="tiptap-editor rounded-lg overflow-hidden border transition-colors"
-    :class="isDark ? 'border-brand-400/15 bg-brand-800/50' : 'border-gray-300 bg-white'">
+    :class="isDark ? 'border-[hsl(240,3.7%,22%)] bg-[hsl(222.34,10.43%,12.27%)]' : 'border-slate-200 bg-white'">
 
     <!-- Toolbar -->
     <div v-if="editor" class="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b transition-colors"
-      :class="isDark ? 'border-brand-400/10 bg-brand-800/80' : 'border-gray-200 bg-gray-50'">
+      :class="isDark ? 'border-[hsl(240,3.7%,22%)] bg-[hsl(220,13.06%,11%)]' : 'border-slate-200 bg-slate-50'">
 
       <!-- Text Style -->
       <div class="flex items-center gap-0.5">
@@ -26,7 +26,7 @@
         </button>
       </div>
 
-      <div class="toolbar-divider" :class="isDark ? 'bg-brand-400/10' : 'bg-gray-300'" />
+      <div class="toolbar-divider" :class="isDark ? 'bg-white/8' : 'bg-slate-200'" />
 
       <!-- Format -->
       <div class="flex items-center gap-0.5">
@@ -47,7 +47,7 @@
         </button>
       </div>
 
-      <div class="toolbar-divider" :class="isDark ? 'bg-brand-400/10' : 'bg-gray-300'" />
+      <div class="toolbar-divider" :class="isDark ? 'bg-white/8' : 'bg-slate-200'" />
 
       <!-- Lists -->
       <div class="flex items-center gap-0.5">
@@ -59,7 +59,7 @@
         </button>
       </div>
 
-      <div class="toolbar-divider" :class="isDark ? 'bg-brand-400/10' : 'bg-gray-300'" />
+      <div class="toolbar-divider" :class="isDark ? 'bg-white/8' : 'bg-slate-200'" />
 
       <!-- Block -->
       <div class="flex items-center gap-0.5">
@@ -74,7 +74,7 @@
         </button>
       </div>
 
-      <div class="toolbar-divider" :class="isDark ? 'bg-brand-400/10' : 'bg-gray-300'" />
+      <div class="toolbar-divider" :class="isDark ? 'bg-white/8' : 'bg-slate-200'" />
 
       <!-- Link -->
       <div class="flex items-center gap-0.5">
@@ -86,7 +86,7 @@
         </button>
       </div>
 
-      <div class="toolbar-divider" :class="isDark ? 'bg-brand-400/10' : 'bg-gray-300'" />
+      <div class="toolbar-divider" :class="isDark ? 'bg-white/8' : 'bg-slate-200'" />
 
       <!-- Undo/Redo -->
       <div class="flex items-center gap-0.5">
@@ -123,12 +123,12 @@ const emit = defineEmits(['update:modelValue'])
 const isDark = useIsDark()
 
 const activeClass = computed(() => isDark.value
-  ? 'bg-brand-400/20 text-brand-300'
-  : 'bg-blue-100 text-blue-700'
+  ? 'bg-white/10 text-white'
+  : 'bg-slate-200 text-slate-900'
 )
 const inactiveClass = computed(() => isDark.value
-  ? 'text-silver-400 hover:text-white hover:bg-white/10'
-  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200'
+  ? 'text-white/50 hover:text-white hover:bg-white/8'
+  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
 )
 
 const editor = useEditor({
@@ -195,25 +195,25 @@ onBeforeUnmount(() => { editor.value?.destroy() })
 
 /* Dark mode prose */
 .dark .tiptap-content .ProseMirror {
-  color: #c8d0db;
+  color: hsl(0 0% 85%);
 }
 .dark .tiptap-content .ProseMirror h1,
 .dark .tiptap-content .ProseMirror h2,
 .dark .tiptap-content .ProseMirror h3 {
-  color: #fff;
+  color: hsl(0 0% 95%);
 }
 .dark .tiptap-content .ProseMirror a {
-  color: #3B8BFF;
+  color: hsl(212 100% 60%);
 }
 .dark .tiptap-content .ProseMirror code {
-  background: rgba(59, 139, 255, 0.1);
-  color: #93bbff;
+  background: hsl(0 0% 100% / 0.08);
+  color: hsl(212 80% 72%);
   padding: 0.15em 0.3em;
   border-radius: 4px;
   font-size: 0.85em;
 }
 .dark .tiptap-content .ProseMirror pre {
-  background: rgba(0, 0, 0, 0.3);
+  background: hsl(0 0% 0% / 0.25);
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
 }
@@ -222,12 +222,12 @@ onBeforeUnmount(() => { editor.value?.destroy() })
   padding: 0;
 }
 .dark .tiptap-content .ProseMirror blockquote {
-  border-left: 3px solid rgba(59, 139, 255, 0.3);
+  border-left: 3px solid hsl(240 3.7% 28%);
   padding-left: 1rem;
-  color: #8b95a5;
+  color: hsl(240 5% 64.9%);
 }
 .dark .tiptap-content .ProseMirror hr {
-  border-color: rgba(59, 139, 255, 0.15);
+  border-color: hsl(240 3.7% 22%);
 }
 
 /* Light mode prose */

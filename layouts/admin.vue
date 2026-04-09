@@ -224,8 +224,11 @@
           </div>
         </header>
 
+        <!-- Tab Bar -->
+        <AdminTabBar />
+
         <!-- Content -->
-        <main class="min-h-[calc(100vh-50px)] p-4" :class="isDark ? 'bg-[hsl(220,13.06%,9%)]' : 'bg-[hsl(216,20%,95.5%)]'">
+        <main class="min-h-[calc(100vh-88px)] p-4" :class="isDark ? 'bg-[hsl(220,13.06%,9%)]' : 'bg-[hsl(216,20%,95.5%)]'">
           <div :key="route.fullPath" class="mx-auto max-w-[1600px]">
             <slot />
           </div>
@@ -260,6 +263,7 @@ const isDark = useIsDark()
 const { notifications: notifItems, count: notifCount, refresh: notifRefresh, dismiss: notifDismiss } = useAdminNotifications()
 const { sections, dockLinks, currentContext } = useAdminNavigation()
 
+const { loadFromStorage: loadTabs, trackCurrentRoute } = useAdminTabs()
 const sidebarOpen = ref(false)
 const collapsed = ref(false)
 const notifOpen = ref(false)
@@ -328,6 +332,8 @@ function updateLgBreakpoint() {
 
 onMounted(() => {
   notifRefresh(true)
+  loadTabs()
+  trackCurrentRoute()
   if (activeSection.value) setOpenSection(activeSection.value)
 
   if (!import.meta.client) return
@@ -353,6 +359,7 @@ watch(collapsed, value => {
 watch(() => route.fullPath, () => {
   notifOpen.value = false
   sidebarOpen.value = false
+  trackCurrentRoute()
   if (activeSection.value) setOpenSection(activeSection.value)
 })
 </script>

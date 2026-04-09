@@ -218,6 +218,10 @@
               </Transition>
             </div>
 
+            <button class="vben-header-btn hidden md:inline-flex" title="Settings" @click="settingsDrawer?.toggle()">
+              <UIcon name="i-heroicons-cog-6-tooth" class="h-4 w-4" />
+            </button>
+
             <button class="vben-header-btn hidden md:inline-flex" title="Fullscreen" @click="toggleFullscreen">
               <UIcon :name="isFullscreen ? 'i-heroicons-arrows-pointing-in' : 'i-heroicons-arrows-pointing-out'" class="h-4 w-4" />
             </button>
@@ -259,6 +263,7 @@
 
       <CommandPalette ref="cmdPalette" />
       <KeyboardShortcuts />
+      <AdminSettingsDrawer ref="settingsDrawer" />
     </div>
   </UApp>
 </template>
@@ -279,6 +284,7 @@ const notifOpen = ref(false)
 const isMac = ref(false)
 const lgAndUp = ref(true)
 const cmdPalette = ref<{ open: () => void } | null>(null)
+const settingsDrawer = ref<{ toggle: () => void } | null>(null)
 const notifWrapRef = ref<HTMLElement | null>(null)
 const notifButtonRef = ref<HTMLElement | null>(null)
 const notifPanelRef = ref<HTMLElement | null>(null)

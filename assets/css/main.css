@@ -1418,12 +1418,9 @@ html.dark .admin-link--active {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.65rem;
-  border-radius: 1rem;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)),
-    var(--admin-muted-bg);
-  border: 1px solid var(--admin-border-strong);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border-radius: var(--admin-radius-lg);
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
   padding: 0.68rem 0.82rem;
 }
 

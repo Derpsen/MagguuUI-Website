@@ -14,5 +14,16 @@ export default defineAppConfig({
         root: 'w-full',
       },
     },
+    modal: {
+      slots: {
+        overlay: 'bg-black/50',
+        content: 'rounded-xl shadow-xl border border-[var(--admin-border)]',
+      },
+    },
+    badge: {
+      defaultVariants: {
+        size: 'sm',
+      },
+    },
   },
 })

@@ -5,6 +5,7 @@ export interface AdminNavLink {
   icon: string
   description: string
   hint?: string
+  children?: AdminNavLink[]
 }
 
 export interface AdminNavSection {
@@ -108,6 +109,12 @@ const adminSections: AdminNavSection[] = [
         icon: 'i-heroicons-cog-6-tooth',
         description: 'Site-wide configuration, tracking and maintenance.',
         hint: 'One place for site defaults, access rules and operational switches.',
+        children: [
+          { to: '/admin/system/settings?tab=general', label: 'General', icon: 'i-heroicons-cog-6-tooth', description: 'Site name, banner, maintenance.' },
+          { to: '/admin/system/settings?tab=seo', label: 'SEO & Links', icon: 'i-heroicons-globe-alt', description: 'Meta tags, social links.' },
+          { to: '/admin/system/settings?tab=security', label: 'Security', icon: 'i-heroicons-shield-check', description: 'Sessions, rate limits, tracking.' },
+          { to: '/admin/system/settings?tab=data', label: 'Data & Backup', icon: 'i-heroicons-circle-stack', description: 'Retention, backup, reset.' },
+        ],
       },
       {
         to: '/admin/system/stats',
@@ -124,6 +131,11 @@ const adminSections: AdminNavSection[] = [
         icon: 'i-heroicons-users',
         description: 'Accounts, passkeys, sessions and access controls.',
         hint: 'Accounts, sessions and security controls without the old dashboard clutter.',
+        children: [
+          { to: '/admin/system/users?tab=accounts', label: 'Accounts', icon: 'i-heroicons-user-group', description: 'User accounts and roles.' },
+          { to: '/admin/system/users?tab=sessions', label: 'Sessions', icon: 'i-heroicons-computer-desktop', description: 'Active login sessions.' },
+          { to: '/admin/system/users?tab=attempts', label: 'Login History', icon: 'i-heroicons-shield-exclamation', description: 'Login attempts and flags.' },
+        ],
       },
       {
         to: '/admin/system/github',

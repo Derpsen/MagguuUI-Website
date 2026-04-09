@@ -457,7 +457,13 @@ const tabs: { id: TabId; label: string }[] = [
   { id: "sessions", label: "Sessions" },
   { id: "attempts", label: "Login Attempts" },
 ]
-const activeTab = ref<TabId>("accounts")
+const route = useRoute()
+const validUserTabs: TabId[] = ['accounts', 'sessions', 'attempts']
+const activeTab = ref<TabId>(validUserTabs.includes(route.query.tab as TabId) ? route.query.tab as TabId : 'accounts')
+
+watch(() => route.query.tab, (tab) => {
+  if (validUserTabs.includes(tab as TabId)) activeTab.value = tab as TabId
+})
 
 // ─── Data ───
 const userList = ref<User[]>([])

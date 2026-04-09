@@ -40,24 +40,7 @@
         />
       </div>
 
-      <div class="grid gap-6 lg:grid-cols-[200px_1fr]">
-        <!-- Settings sidebar menu -->
-        <nav class="flex lg:flex-col gap-1">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors text-left"
-            :class="activeTab === tab.id
-              ? isDark ? 'bg-white/8 text-white' : 'bg-slate-100 text-slate-900'
-              : isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.04]' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'"
-            @click="activeTab = tab.id"
-          >
-            <UIcon :name="tab.icon" class="h-4 w-4 shrink-0" />
-            {{ tab.label }}
-          </button>
-        </nav>
-
-        <div>
+      <div>
 
       <!-- General Tab -->
       <template v-if="activeTab === 'general'">
@@ -282,7 +265,6 @@
           </template>
         </AdminPanel>
       </template>
-        </div>
       </div>
     </template>
 
@@ -328,8 +310,14 @@ const sysInfo = ref<any>(null)
 
 type TabId = 'general' | 'seo' | 'security' | 'data'
 
-const activeTab = ref<TabId>('general')
+const route = useRoute()
+const validTabs: TabId[] = ['general', 'seo', 'security', 'data']
+const activeTab = ref<TabId>(validTabs.includes(route.query.tab as TabId) ? route.query.tab as TabId : 'general')
 const isDark = useIsDark()
+
+watch(() => route.query.tab, (tab) => {
+  if (validTabs.includes(tab as TabId)) activeTab.value = tab as TabId
+})
 const tabs: Array<{ id: TabId; label: string; icon: string }> = [
   { id: 'general', label: 'General', icon: 'i-heroicons-cog-6-tooth' },
   { id: 'seo', label: 'SEO & Links', icon: 'i-heroicons-globe-alt' },

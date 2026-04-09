@@ -66,20 +66,35 @@
             </button>
 
             <div v-if="collapsed || openSections[section.title]" class="mt-0.5 space-y-0.5">
-              <NuxtLink
-                v-for="item in section.links"
-                :key="item.to"
-                :to="item.to"
-                class="vben-nav-item"
-                :class="[
-                  collapsed ? 'justify-center px-0' : '',
-                  isRouteActive(item.to) ? 'vben-nav-item--active' : '',
-                ]"
-                :title="collapsed ? item.label : undefined"
-              >
-                <UIcon :name="item.icon" class="h-[18px] w-[18px] shrink-0" />
-                <span v-if="!collapsed" class="min-w-0 flex-1 truncate">{{ item.label }}</span>
-              </NuxtLink>
+              <template v-for="item in section.links" :key="item.to">
+                <NuxtLink
+                  :to="item.to"
+                  class="vben-nav-item"
+                  :class="[
+                    collapsed ? 'justify-center px-0' : '',
+                    isRouteActive(item.to) ? 'vben-nav-item--active' : '',
+                  ]"
+                  :title="collapsed ? item.label : undefined"
+                >
+                  <UIcon :name="item.icon" class="h-[18px] w-[18px] shrink-0" />
+                  <span v-if="!collapsed" class="min-w-0 flex-1 truncate">{{ item.label }}</span>
+                  <UIcon v-if="item.children?.length && !collapsed" name="i-heroicons-chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200"
+                    :class="[isRouteActive(item.to) ? '' : '-rotate-90', isDark ? 'text-white/30' : 'text-slate-400']" />
+                </NuxtLink>
+
+                <!-- Children -->
+                <div v-if="item.children?.length && !collapsed && isRouteActive(item.to)" class="ml-5 space-y-0.5 border-l pl-2" :class="isDark ? 'border-white/8' : 'border-slate-200'">
+                  <NuxtLink
+                    v-for="child in item.children"
+                    :key="child.to"
+                    :to="child.to"
+                    class="vben-nav-child"
+                    :class="isChildActive(child.to) ? 'vben-nav-child--active' : ''"
+                  >
+                    <span class="truncate">{{ child.label }}</span>
+                  </NuxtLink>
+                </div>
+              </template>
             </div>
           </div>
         </nav>
@@ -336,6 +351,14 @@ function isRouteActive(path: string, exact = false) {
   return route.path === path || route.path.startsWith(`${path}/`)
 }
 
+function isChildActive(to: string): boolean {
+  const url = new URL(to, 'http://x')
+  if (url.pathname !== route.path) return false
+  const tab = url.searchParams.get('tab')
+  if (!tab) return !route.query.tab
+  return route.query.tab === tab
+}
+
 function handleLogout() {
   logout()
 }
@@ -427,6 +450,24 @@ html.dark .vben-nav-item--active {
 .vben-header-btn:hover {
   background: var(--admin-accent-bg-hover);
   color: var(--admin-fg);
+}
+
+.vben-nav-child {
+  display: block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  transition: background 0.15s, color 0.15s;
+  color: var(--admin-fg-faint);
+}
+.vben-nav-child:hover {
+  color: var(--admin-fg);
+  background: var(--admin-accent-bg-hover);
+}
+.vben-nav-child--active {
+  color: var(--admin-fg);
+  font-weight: 500;
 }
 
 /* Breadcrumb slide transition */

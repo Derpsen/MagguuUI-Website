@@ -52,8 +52,8 @@
               <UBadge v-if="!faq.isVisible" color="warning" variant="subtle" size="xs">Hidden</UBadge>
             </div>
 
-            <p class="admin-row__title mt-3">{{ faq.question }}</p>
-            <p class="admin-row__meta">{{ stripHtml(faq.answer) }}</p>
+            <p class="admin-row__title mt-1.5">{{ faq.question }}</p>
+            <p class="admin-row__meta line-clamp-2">{{ stripHtml(faq.answer) }}</p>
           </div>
 
           <div class="admin-row__actions">

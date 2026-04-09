@@ -62,12 +62,12 @@
               <UBadge v-if="item.version === 'auto'" color="neutral" variant="subtle" size="xs">Auto</UBadge>
             </div>
 
-            <p class="admin-row__title mt-3">
+            <p class="admin-row__title mt-1.5">
               {{ item.version === "auto" ? autoTitle(item) : `Version ${item.version}` }}
             </p>
 
-            <p class="admin-row__meta">{{ cleanPreview(item.content) }}</p>
-            <p class="mt-2 text-xs text-slate-400 dark:text-slate-500">
+            <p class="admin-row__meta line-clamp-1">{{ cleanPreview(item.content) }}</p>
+            <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">
               {{ formatDateFull(item.publishedAt || item.createdAt) }}
               <span v-if="changeCount(item.content) > 0"> · {{ changeCount(item.content) }} changes</span>
             </p>

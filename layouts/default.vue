@@ -424,6 +424,7 @@ function handleLogout() {
 const navLinks = [
   { to: '/', label: 'Home', icon: 'i-heroicons-home' },
   { to: '/strings', label: 'Import Strings', icon: 'i-heroicons-bolt' },
+  { to: '/addons', label: 'Addons', icon: 'i-heroicons-puzzle-piece' },
   { to: '/guide', label: 'Guides', icon: 'i-heroicons-book-open' },
   { to: '/changelog', label: 'Changelog', icon: 'i-heroicons-sparkles' },
   { to: '/faq', label: 'FAQ', icon: 'i-heroicons-question-mark-circle' },
@@ -464,6 +465,7 @@ const footerGroups = computed(() => [
     links: [
       { label: 'Home', to: '/', icon: 'i-heroicons-home' },
       { label: 'Import Strings', to: '/strings', icon: 'i-heroicons-bolt' },
+      { label: 'Addons', to: '/addons', icon: 'i-heroicons-puzzle-piece' },
       { label: 'Guides', to: '/guide', icon: 'i-heroicons-book-open' },
     ],
   },

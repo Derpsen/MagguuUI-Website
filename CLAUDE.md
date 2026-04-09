@@ -14,16 +14,17 @@
 
 | Kategorie | Technologie |
 |-----------|------------|
-| Framework | Nuxt 4 (^4.0.0) + Vue 3 Composition API |
-| Sprache | TypeScript |
+| Framework | Nuxt 4 (^4.0.0) + Vue 3.5 Composition API |
+| Sprache | TypeScript 6 |
 | Datenbank | SQLite (better-sqlite3) mit WAL-Modus |
 | ORM | Drizzle ORM (^0.45.0) |
-| UI Library | NuxtUI v4 (^4.5.0) — basierend auf Reka UI |
+| UI Library | NuxtUI v4 (^4.6.0) — basierend auf Reka UI |
 | Styling | Tailwind CSS v4 (CSS-first, @theme Direktive) + Custom CSS (Public Brand Styles + Admin Design System) |
+| Charts | Apache ECharts (vue-echarts) — Tree-Shaking via Client Plugin |
 | Auth | JWT (jsonwebtoken) + bcrypt + WebAuthn/Passkeys (SimpleWebAuthn) + HttpOnly Cookie Support |
 | Validierung | Zod v4 |
 | Editor | TipTap (ProseMirror) |
-| Markdown | Marked |
+| Markdown | Marked v18 |
 | Fonts | Plus Jakarta Sans, JetBrains Mono (via @theme in CSS) |
 | Icons | Heroicons, Simple Icons (via @iconify-json) |
 | Deployment | Docker (Node 24-bookworm) |
@@ -39,6 +40,7 @@
 │   ├── guide.vue               # Installationsanleitung
 │   ├── changelog.vue           # Changelog
 │   ├── faq.vue                 # FAQ
+│   ├── addons.vue              # Required/Optional Addon-Liste mit CurseForge-Links
 │   ├── about.vue               # Über MagguuUI
 │   ├── imprint.vue             # Impressum (Legal)
 │   ├── privacy.vue             # Datenschutz (Legal)
@@ -51,11 +53,19 @@
 │
 ├── components/                 # Vue Components
 │   ├── admin/                  # Wiederverwendbare Admin-UI-Primitives
+│   │   ├── charts/             # ECharts Wrapper-Komponenten
+│   │   │   ├── AreaChart.vue   # 30-Tage Zeitreihen (Gradient-Fill, Tooltips)
+│   │   │   ├── BarChart.vue    # Hourly Distributions, 7-Tage Snapshots
+│   │   │   ├── DoughnutChart.vue # Breakdowns (Device, Browser, OS)
+│   │   │   ├── HorizontalBarChart.vue # Top-Listen (Referrers, Pages)
+│   │   │   └── SparkLine.vue   # Tiny Inline-Chart für MetricCards
+│   │   ├── CrudModal.vue       # Shared Create/Edit Modal (#content Slot)
 │   │   ├── EmptyState.vue      # Leerer Zustand für Panels und Tabellen
 │   │   ├── MetricCard.vue      # KPI- und Trend-Karten
 │   │   ├── PageHeader.vue      # Standardisierter Seitenkopf mit Actions/Meta
 │   │   ├── Panel.vue           # Card-/Panel-Container für Admin-Surfaces
-│   │   └── StickyBar.vue       # Sticky Save/Publish Bar für Editor-Seiten
+│   │   ├── StickyBar.vue       # Sticky Save/Publish Bar für Editor-Seiten
+│   │   └── StringTable.vue     # Shared Drag-Drop Table für String-Seiten
 │   ├── CommandPalette.vue      # Cmd+K Navigation (nutzt shared admin navigation + UModal #content Slot)
 │   ├── FaqItem.vue             # FAQ Accordion
 │   ├── KeyboardShortcuts.vue   # Admin Keyboard Shortcuts Modal (? Taste)
@@ -68,11 +78,19 @@
 │   ├── useAuth.ts              # Auth State (JWT + Cookie-Session-Fallback)
 │   ├── useIsDark.ts            # Dark Mode Helper
 │   ├── usePageTracking.ts      # Public Analytics / Tracking Hooks
-│   └── useScrollReveal.ts      # Scroll-Animationen
+│   ├── useScrollReveal.ts      # Scroll-Animationen
+│   └── useStringManager.ts     # Config-driven CRUD/Drag-Drop/Bulk für String-Seiten
 │
 ├── layouts/
 │   ├── default.vue             # Public Layout (sticky Navbar, Footer, Public-Admin-Leiste, Mobile-Overlay-Menü) — <UApp> Wrapper
 │   └── admin.vue               # Responsive Admin Shell (Sidebar, Toolbar, Notifications, Mobile Dock) — <UApp> Wrapper
+│
+├── plugins/
+│   └── echarts.client.ts       # ECharts Tree-Shaking Registration (Line, Bar, Pie, Grid, Tooltip, Legend)
+│
+├── utils/
+│   ├── adminHelpers.ts         # Shared Admin Helpers (timeAgo, actionIcon, entityTypeLabel, formatBytes)
+│   └── richText.ts             # Markdown Rendering + HTML Sanitization
 │
 ├── server/
 │   ├── api/v1/                 # REST API Endpoints
@@ -483,10 +501,13 @@ NUXT_WEBAUTHN_ORIGIN=      # Optional: erwarteter Origin für Passkeys
 - Public-Admin-Leiste soll dieselbe Breite/Hierarchie wie der Header haben, keine separate große Card im Content-Bereich
 
 ### Admin Content Editors
-- **Dashboard (`admin/index.vue`):** reduziertes Operations-Dashboard mit Top-Metrics, einer Primäraktion, kompaktem Ops-Status, Activity Feed und 7-Tage-Trend
-- **String-Verwaltung (`admin/strings/profiles.vue`, `wowup.vue`, `layouts.vue`):** einheitliche `AdminPageHeader` + `AdminPanel` Struktur, KPI-Leiste, Suche/Filter, modernisierte Tabellen, Bulk-Selection und Empty States
-- **System-/Content-Seiten (`admin/content/home.vue`, `admin/system/settings.vue`, `stats.vue`, `github.vue`, `users.vue`):** standardisierte PageHeader- und StickyBar-Patterns für konsistente Actions, Status-Hinweise und Save-Flows
-- **Guide Editor (`admin/content/guide.vue`):** Dynamische Steps mit TipTap, Drag-Reorder, eigener Preview-Tab mit vertikaler Timeline und Bottom-Cards Preview. Preview ist aktuell nicht 1:1 identisch zur neuen Public-Guide-Ansicht.
+- **Dashboard (`admin/index.vue`):** Operations-Dashboard mit ECharts (AreaChart, HorizontalBarChart), draggable Module, KPI-Cards, Activity Feed
+- **Stats (`admin/system/stats.vue`):** 4-Tab Analytics mit interaktiven ECharts (Area, Bar, Doughnut, HorizontalBar) — ersetzt alte render-function Charts
+- **String-Verwaltung (`admin/strings/profiles.vue`, `wowup.vue`, `layouts.vue`):** dedupliziert via `useStringManager` Composable + `AdminStringTable` + `AdminCrudModal` Shared Components
+- **Settings (`admin/system/settings.vue`):** Tab-basiertes Layout (General, SEO & Links, Security, Data & Backup)
+- **Users (`admin/system/users.vue`):** Tab-basiertes Layout (Accounts, Sessions, Login Attempts)
+- **Activity (`admin/system/activity.vue`):** Timeline-Darstellung gruppiert nach Tag, farbcodierte Action-Icons
+- **Guide Editor (`admin/content/guide.vue`):** Dynamische Steps mit TipTap, Drag-Reorder, eigener Preview-Tab
 - **Changelog Editor (`admin/content/changelog.vue`):** CRUD mit TipTap, Pagination (UButton)
 
 ### Admin Layout Features (`layouts/admin.vue`)
@@ -505,6 +526,13 @@ NUXT_WEBAUTHN_ORIGIN=      # Optional: erwarteter Origin für Passkeys
 ### ERLEDIGT
 - [x] **Admin Redesign System:** neues responsives Admin-Shell-System mit zentraler Navigation, Command Palette, Mobile Dock und wiederverwendbaren UI-Primitives
 - [x] **Core Admin Screens Refresh:** Dashboard sowie Profiles/WowUp/Layouts/Home/Settings/Stats/GitHub/Users auf konsistente Header-, Panel-, Table- und Sticky-Bar-Patterns umgestellt
+- [x] **Admin Design Overhaul (vben-style):** Glassmorphism durch clean vben-inspired Design-Token-System ersetzt (HSL-basierte Semantic Tokens, solide Backgrounds, flache Shadows)
+- [x] **ECharts Integration:** Apache ECharts via vue-echarts mit Tree-Shaking Plugin, 6 wiederverwendbare Chart-Komponenten (Area, Bar, Doughnut, HorizontalBar, SparkLine)
+- [x] **String Pages Deduplication:** useStringManager Composable + AdminStringTable + AdminCrudModal extrahiert, 3 Seiten von 1.647 auf 746 Zeilen reduziert (-55%)
+- [x] **System Pages Modernisierung:** Settings und Users mit Tab-Layouts, Activity mit Timeline-Darstellung
+- [x] **Shared Admin Helpers:** timeAgo, actionIcon, entityTypeLabel, formatBytes in utils/adminHelpers.ts konsolidiert
+- [x] **Public Addons Page:** Neue /addons Seite mit Required/Core/Optional Addon-Liste und CurseForge-Links
+- [x] **Dependency Updates:** Vue 3.5.32, TypeScript 6, NuxtUI 4.6.1, TipTap 3.22, Marked 18, alle Deps aktuell
 - [x] **UModal #content Slot Fix:** Alle 22 Modals in 9 Admin-Dateien auf `<template #content>` umgestellt
 - [x] **Light-Mode Fixes:** Modal Borders, Table Headers, Table Borders in profiles/wowup/layouts
 - [x] **Admin Header Context:** Header arbeitet mit Section-/Title-Kontext statt klassischer Breadcrumb-Leiste

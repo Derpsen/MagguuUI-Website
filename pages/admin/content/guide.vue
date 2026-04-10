@@ -19,24 +19,9 @@
       </template>
 
       <template #actions>
-        <div class="flex flex-wrap items-center gap-3">
-          <div class="admin-segmented">
-            <button
-              class="admin-segmented__button"
-              :class="tab === 'edit' ? 'admin-segmented__button--active' : ''"
-              @click="tab = 'edit'"
-            >
-              Edit
-            </button>
-            <button
-              class="admin-segmented__button"
-              :class="tab === 'preview' ? 'admin-segmented__button--active' : ''"
-              @click="tab = 'preview'"
-            >
-              Preview
-            </button>
-          </div>
-
+        <div class="admin-segmented">
+          <button class="admin-segmented__button" :class="tab === 'edit' ? 'admin-segmented__button--active' : ''" @click="tab = 'edit'">Edit</button>
+          <button class="admin-segmented__button" :class="tab === 'preview' ? 'admin-segmented__button--active' : ''" @click="tab = 'preview'">Preview</button>
         </div>
       </template>
     </AdminPageHeader>
@@ -48,13 +33,12 @@
     </AdminPanel>
 
     <template v-else-if="tab === 'edit'">
-      <AdminPanel title="Introduction" description="This sets the tone for the whole guide." icon="i-heroicons-sparkles">
+      <AdminPanel title="Introduction" description="Sets the tone for the whole guide." icon="i-heroicons-sparkles">
         <div class="admin-form-grid admin-form-grid--2">
           <div class="admin-field">
             <label class="admin-field__label">Title</label>
             <UInput v-model="form.introTitle" :disabled="saving" placeholder="Installation Guide" />
           </div>
-
           <div class="admin-field">
             <label class="admin-field__label">Subtitle</label>
             <UInput v-model="form.introText" :disabled="saving" placeholder="Short intro text..." />
@@ -62,84 +46,57 @@
         </div>
       </AdminPanel>
 
-      <AdminPanel
-        title="Steps"
-        description="Only keep the steps users actually need to finish setup."
-        icon="i-heroicons-list-bullet"
-      >
+      <AdminPanel title="Steps" description="Only keep the steps users actually need." icon="i-heroicons-list-bullet">
         <template #actions>
-          <UButton size="sm" variant="ghost" color="neutral" icon="i-heroicons-plus" @click="addStep">
-            Add Step
-          </UButton>
+          <div class="flex items-center gap-2">
+            <UButton v-if="form.steps.length > 1" size="sm" variant="ghost" color="neutral"
+              :icon="allExpanded ? 'i-heroicons-chevron-double-up' : 'i-heroicons-chevron-double-down'"
+              @click="toggleAllSteps">
+              {{ allExpanded ? 'Collapse All' : 'Expand All' }}
+            </UButton>
+            <UButton size="sm" variant="ghost" color="neutral" icon="i-heroicons-plus" @click="addStep">Add Step</UButton>
+          </div>
         </template>
 
-        <TransitionGroup name="step-list" tag="div" class="admin-list">
-          <div
-            v-for="(step, index) in form.steps"
-            :key="step.id"
-            class="admin-subpanel space-y-4"
-          >
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div class="flex min-w-0 items-center gap-3">
-                <button
-                  class="admin-icon-button h-9 w-9 cursor-grab active:cursor-grabbing"
-                  title="Drag to reorder"
-                  @mousedown="startDrag(index, $event)"
-                >
-                  <UIcon name="i-heroicons-bars-3-bottom-left" class="h-4 w-4" />
-                </button>
-
-                <span class="admin-pill">Step {{ index + 1 }}</span>
+        <div class="space-y-3">
+          <div v-for="(step, index) in form.steps" :key="step.id" class="guide-step-card">
+            <!-- Step header (always visible) -->
+            <div class="flex items-center gap-3 px-4 py-3 cursor-pointer" @click="toggleStep(step.id)">
+              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold"
+                :class="isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-50 text-blue-600'">
+                {{ index + 1 }}
               </div>
-
-              <div class="flex items-center gap-1">
-                <UButton
-                  v-if="index > 0"
-                  icon="i-heroicons-chevron-up"
-                  size="xs"
-                  color="neutral"
-                  variant="ghost"
-                  @click="moveStep(index, -1)"
-                />
-                <UButton
-                  v-if="index < form.steps.length - 1"
-                  icon="i-heroicons-chevron-down"
-                  size="xs"
-                  color="neutral"
-                  variant="ghost"
-                  @click="moveStep(index, 1)"
-                />
-                <UButton
-                  v-if="form.steps.length > 1"
-                  icon="i-heroicons-trash"
-                  size="xs"
-                  color="error"
-                  variant="ghost"
-                  @click="removeStep(index)"
-                />
+              <UInput
+                v-model="step.title"
+                :disabled="saving"
+                :placeholder="`Step ${index + 1} title...`"
+                variant="none"
+                class="flex-1 font-medium"
+                @click.stop
+              />
+              <div class="flex items-center gap-1 shrink-0">
+                <UButton v-if="index > 0" icon="i-heroicons-chevron-up" size="xs" color="neutral" variant="ghost" @click.stop="moveStep(index, -1)" />
+                <UButton v-if="index < form.steps.length - 1" icon="i-heroicons-chevron-down" size="xs" color="neutral" variant="ghost" @click.stop="moveStep(index, 1)" />
+                <UButton v-if="form.steps.length > 1" icon="i-heroicons-trash" size="xs" color="error" variant="ghost" @click.stop="removeStep(index)" />
+                <UIcon name="i-heroicons-chevron-down" class="h-4 w-4 transition-transform duration-200"
+                  :class="[expandedSteps[step.id] ? 'rotate-180' : '', isDark ? 'text-white/30' : 'text-slate-400']" />
               </div>
             </div>
 
-            <div class="admin-field">
-              <label class="admin-field__label">Step title</label>
-              <UInput v-model="step.title" :disabled="saving" placeholder="Step title..." />
-            </div>
-
-            <div class="admin-field">
-              <label class="admin-field__label">Content</label>
-              <TipTapEditor v-model="step.content" placeholder="Describe this step..." min-height="120px" />
+            <!-- Step content (collapsible) -->
+            <div class="step-collapse" :class="expandedSteps[step.id] ? 'step-collapse--open' : ''">
+              <div class="step-collapse__inner">
+                <div class="px-4 pb-4 pt-1">
+                  <TipTapEditor v-model="step.content" placeholder="Describe this step..." min-height="120px" />
+                </div>
+              </div>
             </div>
           </div>
-        </TransitionGroup>
+        </div>
       </AdminPanel>
     </template>
 
-    <AdminPanel
-      v-else
-      title="Preview"
-      description="A minimal preview of the onboarding flow."
-      icon="i-heroicons-eye"
-    >
+    <AdminPanel v-else title="Preview" description="A minimal preview of the onboarding flow." icon="i-heroicons-eye">
       <div class="space-y-6">
         <div class="admin-preview-shell text-center">
           <p class="admin-row__eyebrow">Intro</p>
@@ -157,13 +114,9 @@
               <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-500/10 text-sm font-semibold text-blue-600 dark:text-blue-300">
                 {{ index + 1 }}
               </div>
-
               <div class="admin-row__content">
                 <p class="admin-row__title">{{ step.title || `Step ${index + 1}` }}</p>
-                <div
-                  class="prose prose-sm mt-3 max-w-none dark:prose-invert"
-                  v-html="renderPreviewContent(step.content)"
-                />
+                <div class="prose prose-sm mt-3 max-w-none dark:prose-invert" v-html="renderPreviewContent(step.content)" />
               </div>
             </div>
           </div>
@@ -180,6 +133,7 @@ definePageMeta({ layout: "admin" })
 
 const toast = useToast()
 const { apiFetch } = useApi()
+const isDark = useIsDark()
 
 const loading = ref(true)
 const saving = ref(false)
@@ -203,6 +157,20 @@ const form = reactive({
   introText: "",
   steps: [] as Step[],
 })
+
+const expandedSteps = reactive<Record<number, boolean>>({})
+const allExpanded = computed(() => form.steps.every(s => expandedSteps[s.id]))
+
+function toggleStep(id: number) {
+  expandedSteps[id] = !expandedSteps[id]
+}
+
+function toggleAllSteps() {
+  const target = !allExpanded.value
+  for (const step of form.steps) {
+    expandedSteps[step.id] = target
+  }
+}
 
 const originalData = ref("")
 
@@ -228,7 +196,13 @@ function stripHtml(value: string): string {
 }
 
 function addStep() {
-  form.steps.push({ id: nextStepId++, title: "", content: "" })
+  const id = nextStepId++
+  form.steps.push({ id, title: "", content: "" })
+  expandedSteps[id] = true
+  nextTick(() => {
+    const el = document.querySelector(`[data-step-id="${id}"]`) as HTMLElement
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  })
 }
 
 function removeStep(index: number) {
@@ -241,42 +215,6 @@ function moveStep(index: number, direction: number) {
   const [item] = form.steps.splice(index, 1)
   form.steps.splice(targetIndex, 0, item)
 }
-
-let dragIndex = -1
-let dragCleanup: (() => void) | null = null
-
-function startDrag(index: number, event: MouseEvent) {
-  dragIndex = index
-  const startY = event.clientY
-
-  const onMove = (moveEvent: MouseEvent) => {
-    const diff = moveEvent.clientY - startY
-    const stepHeight = 200
-    const steps = Math.round(diff / stepHeight)
-
-    if (steps !== 0 && dragIndex + steps >= 0 && dragIndex + steps < form.steps.length) {
-      moveStep(dragIndex, steps)
-      dragIndex += steps
-    }
-  }
-
-  const onUp = () => {
-    dragIndex = -1
-    window.removeEventListener("mousemove", onMove)
-    window.removeEventListener("mouseup", onUp)
-    dragCleanup = null
-  }
-
-  // Stored so onUnmounted can detach listeners if the user navigates away mid-drag
-  dragCleanup = onUp
-
-  window.addEventListener("mousemove", onMove)
-  window.addEventListener("mouseup", onUp)
-}
-
-onUnmounted(() => {
-  if (dragCleanup) dragCleanup()
-})
 
 async function load() {
   loading.value = true
@@ -306,7 +244,8 @@ async function load() {
           .map(number => {
             const content = source.steps[`step_${number}`] || source.steps[`step_${number}_content`] || ""
             const title = source.steps[`step_${number}_title`] || ""
-            return { id: nextStepId++, title: stripHtml(title), content }
+            const id = nextStepId++
+            return { id, title: stripHtml(title), content }
           })
           .filter(step => step.content || step.title)
       }
@@ -315,6 +254,9 @@ async function load() {
     if (!form.steps.length) {
       form.steps = [{ id: nextStepId++, title: "", content: "" }]
     }
+
+    // Auto-expand first step
+    if (form.steps.length) expandedSteps[form.steps[0].id] = true
   } catch {
     form.steps = [{ id: nextStepId++, title: "", content: "" }]
   } finally {
@@ -361,18 +303,25 @@ onMounted(load)
 </script>
 
 <style scoped>
-.step-list-enter-active,
-.step-list-leave-active {
-  transition: all 0.25s ease;
+.guide-step-card {
+  border-radius: 0.75rem;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-card-bg);
+  transition: border-color 0.15s;
+}
+.guide-step-card:hover {
+  border-color: var(--admin-border-hover, var(--admin-border));
 }
 
-.step-list-enter-from {
-  opacity: 0;
-  transform: translateY(-8px);
+.step-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-.step-list-leave-to {
-  opacity: 0;
-  transform: translateX(12px);
+.step-collapse--open {
+  grid-template-rows: 1fr;
+}
+.step-collapse__inner {
+  overflow: hidden;
 }
 </style>

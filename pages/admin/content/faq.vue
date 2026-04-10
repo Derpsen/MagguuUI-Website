@@ -11,9 +11,7 @@
       </template>
 
       <template #actions>
-        <UButton icon="i-heroicons-plus" @click="openCreate">
-          New Question
-        </UButton>
+        <UButton icon="i-heroicons-plus" @click="openCreate">New Question</UButton>
       </template>
     </AdminPageHeader>
 
@@ -23,12 +21,8 @@
       </div>
     </AdminPanel>
 
-    <AdminPanel
-      v-else
-      title="Questions"
-      description="One good answer per question. Hide outdated entries instead of deleting by default."
-      icon="i-heroicons-question-mark-circle"
-    >
+    <AdminPanel v-else title="Questions" description="One good answer per question." icon="i-heroicons-question-mark-circle">
+      <!-- Category filter -->
       <div class="admin-filterbar">
         <div class="flex flex-wrap items-center gap-2">
           <button
@@ -44,28 +38,95 @@
         </div>
       </div>
 
-      <div v-if="filteredItems.length" class="admin-list mt-5">
-        <div v-for="faq in filteredItems" :key="faq.id" class="admin-row">
-          <div class="admin-row__content">
-            <div class="flex flex-wrap items-center gap-2">
-              <UBadge color="info" variant="subtle" size="xs">{{ categoryLabels[faq.category] || faq.category }}</UBadge>
-              <UBadge v-if="!faq.isVisible" color="warning" variant="subtle" size="xs">Hidden</UBadge>
+      <!-- FAQ list -->
+      <div v-if="filteredItems.length" class="mt-5 space-y-2">
+        <div v-for="(faq, index) in filteredItems" :key="faq.id"
+          class="faq-card"
+          :class="[
+            expandedId === faq.id ? 'faq-card--expanded' : '',
+            deletingId === faq.id ? 'faq-card--deleting' : '',
+          ]">
+          <!-- Collapsed view -->
+          <div class="flex items-center gap-3 px-4 py-3">
+            <!-- Reorder buttons -->
+            <div class="flex flex-col shrink-0">
+              <button
+                class="p-0.5 rounded transition-colors disabled:opacity-20"
+                :class="isDark ? 'text-white/30 hover:text-white/60' : 'text-slate-300 hover:text-slate-500'"
+                :disabled="index === 0 || reordering"
+                @click="moveItem(faq, -1)"
+              >
+                <UIcon name="i-heroicons-chevron-up" class="h-3.5 w-3.5" />
+              </button>
+              <button
+                class="p-0.5 rounded transition-colors disabled:opacity-20"
+                :class="isDark ? 'text-white/30 hover:text-white/60' : 'text-slate-300 hover:text-slate-500'"
+                :disabled="index === filteredItems.length - 1 || reordering"
+                @click="moveItem(faq, 1)"
+              >
+                <UIcon name="i-heroicons-chevron-down" class="h-3.5 w-3.5" />
+              </button>
             </div>
 
-            <p class="admin-row__title mt-1.5">{{ faq.question }}</p>
-            <p class="admin-row__meta line-clamp-2">{{ stripHtml(faq.answer) }}</p>
+            <!-- Content -->
+            <div class="flex-1 min-w-0 cursor-pointer" @click="toggleExpand(faq.id)">
+              <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                <UBadge color="info" variant="subtle" size="xs">{{ categoryLabels[faq.category] || faq.category }}</UBadge>
+                <UBadge v-if="!faq.isVisible" color="warning" variant="subtle" size="xs">Hidden</UBadge>
+              </div>
+              <p class="text-sm font-medium truncate" :class="isDark ? 'text-white' : 'text-slate-900'">{{ faq.question }}</p>
+              <p v-if="expandedId !== faq.id" class="text-xs mt-0.5 line-clamp-1" :class="isDark ? 'text-white/40' : 'text-slate-400'">{{ stripHtml(faq.answer) }}</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-1 shrink-0">
+              <template v-if="deletingId === faq.id">
+                <span class="text-xs mr-1" :class="isDark ? 'text-red-400' : 'text-red-600'">Delete?</span>
+                <UButton icon="i-heroicons-check" size="xs" color="error" variant="ghost" @click="doDelete(faq)" />
+                <UButton icon="i-heroicons-x-mark" size="xs" color="neutral" variant="ghost" @click="deletingId = null" />
+              </template>
+              <template v-else>
+                <UButton
+                  :icon="faq.isVisible ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'"
+                  size="xs" color="neutral" variant="ghost"
+                  @click="toggleVisibility(faq)"
+                />
+                <UButton icon="i-heroicons-pencil-square" size="xs" color="neutral" variant="ghost" @click="toggleExpand(faq.id)" />
+                <UButton icon="i-heroicons-trash" size="xs" color="error" variant="ghost" @click="deletingId = faq.id" />
+              </template>
+            </div>
           </div>
 
-          <div class="admin-row__actions">
-            <UButton
-              :icon="faq.isVisible ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'"
-              size="xs"
-              color="neutral"
-              variant="ghost"
-              @click="toggleVisibility(faq)"
-            />
-            <UButton icon="i-heroicons-pencil-square" size="xs" color="neutral" variant="ghost" @click="openEdit(faq)" />
-            <UButton icon="i-heroicons-trash" size="xs" color="error" variant="ghost" @click="confirmDelete(faq)" />
+          <!-- Expanded inline edit -->
+          <div class="faq-expand" :class="expandedId === faq.id ? 'faq-expand--open' : ''">
+            <div class="faq-expand__inner">
+              <div class="px-4 pb-4 pt-1 space-y-4 border-t" :class="isDark ? 'border-white/6' : 'border-slate-100'">
+                <div class="admin-form-grid admin-form-grid--2">
+                  <div class="admin-field">
+                    <label class="admin-field__label">Category</label>
+                    <USelect v-model="faq.category" :items="categoryOptions" />
+                  </div>
+                  <div class="admin-switch-row">
+                    <div class="admin-switch-row__content">
+                      <p class="admin-switch-row__title">Visible</p>
+                    </div>
+                    <USwitch v-model="faq.isVisible" />
+                  </div>
+                </div>
+                <div class="admin-field">
+                  <label class="admin-field__label">Question</label>
+                  <UInput v-model="faq.question" />
+                </div>
+                <div class="admin-field">
+                  <label class="admin-field__label">Answer</label>
+                  <TipTapEditor v-model="faq.answer" placeholder="Write the answer..." min-height="150px" />
+                </div>
+                <div class="flex justify-end gap-2">
+                  <UButton variant="ghost" color="neutral" size="sm" @click="cancelEdit(faq)">Cancel</UButton>
+                  <UButton icon="i-heroicons-check" size="sm" :loading="saving" @click="saveInline(faq)">Save</UButton>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -82,70 +143,39 @@
       </AdminEmptyState>
     </AdminPanel>
 
-    <UModal v-model:open="modalOpen" class="sm:max-w-2xl">
+    <!-- Create modal -->
+    <UModal v-model:open="createOpen" class="sm:max-w-2xl">
       <template #content>
         <div class="p-6">
-          <h2 class="text-lg font-semibold text-slate-950 dark:text-white">
-            {{ editingFaq ? "Edit Question" : "New Question" }}
-          </h2>
+          <h2 class="text-lg font-semibold text-slate-950 dark:text-white">New Question</h2>
 
           <div class="mt-6 space-y-4">
             <div class="admin-form-grid admin-form-grid--2">
               <div class="admin-field">
                 <label class="admin-field__label">Category</label>
-                <USelect v-model="form.category" :items="categoryOptions" />
+                <USelect v-model="createForm.category" :items="categoryOptions" />
               </div>
-
               <div class="admin-switch-row">
                 <div class="admin-switch-row__content">
                   <p class="admin-switch-row__title">Visible</p>
                   <p class="admin-switch-row__description">Hidden questions stay in the admin only.</p>
                 </div>
-
-                <USwitch v-model="form.isVisible" />
+                <USwitch v-model="createForm.isVisible" />
               </div>
             </div>
-
             <div class="admin-field">
               <label class="admin-field__label">Question</label>
-              <UInput v-model="form.question" placeholder="What is MagguuUI?" />
+              <UInput v-model="createForm.question" placeholder="What is MagguuUI?" />
             </div>
-
             <div class="admin-field">
               <label class="admin-field__label">Answer</label>
-              <TipTapEditor v-model="form.answer" placeholder="Write the answer..." min-height="180px" />
+              <TipTapEditor v-model="createForm.answer" placeholder="Write the answer..." min-height="180px" />
             </div>
           </div>
 
           <div class="mt-6 flex justify-end gap-3 border-t border-slate-200 pt-4 dark:border-white/8">
-            <UButton color="neutral" variant="ghost" @click="modalOpen = false">Cancel</UButton>
-            <UButton :loading="saving" icon="i-heroicons-check" @click="saveForm">
-              {{ editingFaq ? "Update" : "Create" }}
-            </UButton>
-          </div>
-        </div>
-      </template>
-    </UModal>
-
-    <UModal v-model:open="deleteOpen">
-      <template #content>
-        <div class="p-6">
-          <div class="flex items-start gap-4">
-            <div class="admin-empty-state__icon admin-tone-danger h-10 w-10">
-              <UIcon name="i-heroicons-exclamation-triangle" class="h-5 w-5" />
-            </div>
-
-            <div>
-              <h2 class="text-lg font-semibold text-slate-950 dark:text-white">Delete question?</h2>
-              <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                <strong class="text-slate-950 dark:text-white">{{ deletingFaq?.question }}</strong> will be permanently deleted.
-              </p>
-            </div>
-          </div>
-
-          <div class="mt-6 flex justify-end gap-3 border-t border-slate-200 pt-4 dark:border-white/8">
-            <UButton color="neutral" variant="ghost" @click="deleteOpen = false">Cancel</UButton>
-            <UButton color="error" :loading="saving" icon="i-heroicons-trash" @click="doDelete">Delete</UButton>
+            <UButton color="neutral" variant="ghost" @click="createOpen = false">Cancel</UButton>
+            <UButton :loading="saving" icon="i-heroicons-check" @click="doCreate">Create</UButton>
           </div>
         </div>
       </template>
@@ -158,6 +188,7 @@ definePageMeta({ layout: "admin" })
 
 const toast = useToast()
 const { apiFetch } = useApi()
+const isDark = useIsDark()
 
 interface FaqItem {
   id: number
@@ -170,8 +201,12 @@ interface FaqItem {
 
 const loading = ref(true)
 const saving = ref(false)
+const reordering = ref(false)
 const items = ref<FaqItem[]>([])
 const activeCategory = ref("all")
+const expandedId = ref<number | null>(null)
+const deletingId = ref<number | null>(null)
+const editSnapshot = ref<string>("")
 
 const categoryLabels: Record<string, string> = {
   general: "General",
@@ -189,97 +224,54 @@ const categoryOptions = [
 
 const categoryTabs = computed(() => {
   const counts: Record<string, number> = {}
-
-  for (const item of items.value) {
-    counts[item.category] = (counts[item.category] || 0) + 1
-  }
-
+  for (const item of items.value) counts[item.category] = (counts[item.category] || 0) + 1
   return [
     { label: "All", value: "all", count: items.value.length },
-    ...categoryOptions.map(option => ({
-      label: option.label,
-      value: option.value,
-      count: counts[option.value] || 0,
-    })),
+    ...categoryOptions.map(o => ({ label: o.label, value: o.value, count: counts[o.value] || 0 })),
   ]
 })
 
 const filteredItems = computed(() => {
   if (activeCategory.value === "all") return items.value
-  return items.value.filter(item => item.category === activeCategory.value)
+  return items.value.filter(i => i.category === activeCategory.value)
 })
 
 function stripHtml(html: string) {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
 }
 
-const modalOpen = ref(false)
-const editingFaq = ref<FaqItem | null>(null)
-const form = reactive({
-  category: "general",
-  question: "",
-  answer: "",
-  isVisible: true,
-})
-
-const deleteOpen = ref(false)
-const deletingFaq = ref<FaqItem | null>(null)
-
-function openCreate() {
-  editingFaq.value = null
-  form.category = activeCategory.value === "all" ? "general" : activeCategory.value
-  form.question = ""
-  form.answer = ""
-  form.isVisible = true
-  modalOpen.value = true
-}
-
-function openEdit(faq: FaqItem) {
-  editingFaq.value = faq
-  form.category = faq.category
-  form.question = faq.question
-  form.answer = faq.answer
-  form.isVisible = faq.isVisible
-  modalOpen.value = true
-}
-
-function confirmDelete(faq: FaqItem) {
-  deletingFaq.value = faq
-  deleteOpen.value = true
-}
-
-async function load() {
-  loading.value = true
-
-  try {
-    const data = await apiFetch<FaqItem[]>("/api/v1/admin/faqs")
-    items.value = data || []
-  } catch {
-    items.value = []
-  } finally {
-    loading.value = false
+// Inline edit
+function toggleExpand(id: number) {
+  if (expandedId.value === id) {
+    expandedId.value = null
+    return
   }
+  const faq = items.value.find(i => i.id === id)
+  if (faq) editSnapshot.value = JSON.stringify({ category: faq.category, question: faq.question, answer: faq.answer, isVisible: faq.isVisible })
+  expandedId.value = id
 }
 
-async function saveForm() {
-  if (!form.question.trim() || !form.answer.trim()) {
+function cancelEdit(faq: FaqItem) {
+  if (editSnapshot.value) {
+    const snap = JSON.parse(editSnapshot.value)
+    Object.assign(faq, snap)
+  }
+  expandedId.value = null
+}
+
+async function saveInline(faq: FaqItem) {
+  if (!faq.question.trim() || !faq.answer.trim()) {
     toast.add({ title: "Question and answer are required", color: "warning" })
     return
   }
-
   saving.value = true
-
   try {
-    if (editingFaq.value) {
-      await apiFetch(`/api/v1/admin/faqs/${editingFaq.value.id}`, { method: "PUT", body: { ...form } })
-      toast.add({ title: "Question updated", color: "success" })
-    } else {
-      await apiFetch("/api/v1/admin/faqs", { method: "POST", body: { ...form, sortOrder: items.value.length } })
-      toast.add({ title: "Question created", color: "success" })
-    }
-
-    modalOpen.value = false
-    await load()
+    await apiFetch(`/api/v1/admin/faqs/${faq.id}`, {
+      method: "PUT",
+      body: { category: faq.category, question: faq.question, answer: faq.answer, isVisible: faq.isVisible },
+    })
+    toast.add({ title: "Question updated", color: "success" })
+    expandedId.value = null
   } catch {
     toast.add({ title: "Error saving", color: "error" })
   } finally {
@@ -287,23 +279,30 @@ async function saveForm() {
   }
 }
 
-async function doDelete() {
-  if (!deletingFaq.value) return
+// Reorder
+async function moveItem(faq: FaqItem, direction: number) {
+  const idx = items.value.indexOf(faq)
+  const target = idx + direction
+  if (target < 0 || target >= items.value.length) return
 
-  saving.value = true
+  const [moved] = items.value.splice(idx, 1)
+  items.value.splice(target, 0, moved)
 
+  reordering.value = true
   try {
-    await apiFetch(`/api/v1/admin/faqs/${deletingFaq.value.id}`, { method: "DELETE" })
-    toast.add({ title: "Question deleted", color: "success" })
-    deleteOpen.value = false
-    await load()
+    await apiFetch("/api/v1/admin/faqs/reorder", {
+      method: "POST",
+      body: { items: items.value.map((item, i) => ({ id: item.id, sortOrder: i })) },
+    })
   } catch {
-    toast.add({ title: "Error deleting", color: "error" })
+    toast.add({ title: "Reorder failed", color: "error" })
+    await load()
   } finally {
-    saving.value = false
+    reordering.value = false
   }
 }
 
+// Visibility toggle
 async function toggleVisibility(faq: FaqItem) {
   try {
     await apiFetch(`/api/v1/admin/faqs/${faq.id}`, { method: "PUT", body: { isVisible: !faq.isVisible } })
@@ -314,5 +313,93 @@ async function toggleVisibility(faq: FaqItem) {
   }
 }
 
+// Delete (inline confirmation)
+async function doDelete(faq: FaqItem) {
+  saving.value = true
+  try {
+    await apiFetch(`/api/v1/admin/faqs/${faq.id}`, { method: "DELETE" })
+    toast.add({ title: "Question deleted", color: "success" })
+    deletingId.value = null
+    await load()
+  } catch {
+    toast.add({ title: "Error deleting", color: "error" })
+  } finally {
+    saving.value = false
+  }
+}
+
+// Create
+const createOpen = ref(false)
+const createForm = reactive({ category: "general", question: "", answer: "", isVisible: true })
+
+function openCreate() {
+  createForm.category = activeCategory.value === "all" ? "general" : activeCategory.value
+  createForm.question = ""
+  createForm.answer = ""
+  createForm.isVisible = true
+  createOpen.value = true
+}
+
+async function doCreate() {
+  if (!createForm.question.trim() || !createForm.answer.trim()) {
+    toast.add({ title: "Question and answer are required", color: "warning" })
+    return
+  }
+  saving.value = true
+  try {
+    await apiFetch("/api/v1/admin/faqs", { method: "POST", body: { ...createForm, sortOrder: items.value.length } })
+    toast.add({ title: "Question created", color: "success" })
+    createOpen.value = false
+    await load()
+  } catch {
+    toast.add({ title: "Error creating", color: "error" })
+  } finally {
+    saving.value = false
+  }
+}
+
+// Load
+async function load() {
+  loading.value = true
+  try {
+    items.value = await apiFetch("/api/v1/admin/faqs") || []
+  } catch {
+    items.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
 onMounted(load)
 </script>
+
+<style scoped>
+.faq-card {
+  border-radius: 0.75rem;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-card-bg);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.faq-card:hover {
+  border-color: var(--admin-border-hover, var(--admin-border));
+}
+.faq-card--expanded {
+  border-color: hsl(212 100% 50% / 0.3);
+  box-shadow: 0 0 0 1px hsl(212 100% 50% / 0.1);
+}
+.faq-card--deleting {
+  border-color: hsl(0 80% 50% / 0.3);
+}
+
+.faq-expand {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.faq-expand--open {
+  grid-template-rows: 1fr;
+}
+.faq-expand__inner {
+  overflow: hidden;
+}
+</style>

@@ -11,9 +11,7 @@
       </template>
 
       <template #actions>
-        <UButton icon="i-heroicons-plus" @click="openCreate">
-          New Entry
-        </UButton>
+        <UButton icon="i-heroicons-plus" @click="openCreate">New Entry</UButton>
       </template>
     </AdminPageHeader>
 
@@ -23,12 +21,8 @@
       </div>
     </AdminPanel>
 
-    <AdminPanel
-      v-else
-      title="Entries"
-      description="Each entry should answer one question: what changed for users?"
-      icon="i-heroicons-document-text"
-    >
+    <AdminPanel v-else title="Entries" description="Each entry should answer: what changed for users?" icon="i-heroicons-document-text">
+      <!-- Filter bar -->
       <div class="admin-filterbar">
         <div class="flex flex-wrap items-center gap-2">
           <button
@@ -46,40 +40,59 @@
         <UInput
           v-model="searchQuery"
           icon="i-heroicons-magnifying-glass"
-          placeholder="Search version or content"
+          placeholder="Search..."
           class="min-w-0 flex-1"
           @input="currentPage = 1"
         />
       </div>
 
+      <!-- Bulk action bar -->
+      <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
+        <div v-if="selectedIds.size > 0" class="admin-bulkbar mt-3">
+          <div class="flex items-center gap-3">
+            <input type="checkbox" :checked="allPageSelected" :indeterminate="somePageSelected && !allPageSelected" class="rounded" @change="toggleSelectAll" />
+            <span class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-700'">{{ selectedIds.size }} selected</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <UButton size="xs" variant="ghost" color="neutral" icon="i-heroicons-eye" @click="bulkPublish(true)">Publish</UButton>
+            <UButton size="xs" variant="ghost" color="neutral" icon="i-heroicons-eye-slash" @click="bulkPublish(false)">Unpublish</UButton>
+            <UButton size="xs" variant="ghost" color="error" icon="i-heroicons-trash" @click="bulkDeleteOpen = true">Delete</UButton>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Entry list -->
       <div v-if="paginatedItems.length" class="admin-list mt-5">
-        <div v-for="item in paginatedItems" :key="item.id" class="admin-row">
-          <div class="admin-row__content">
-            <div class="flex flex-wrap items-center gap-2">
-              <UBadge :color="item.isPublished ? 'success' : 'warning'" variant="subtle" size="xs">
-                {{ item.isPublished ? "Live" : "Draft" }}
-              </UBadge>
-              <UBadge v-if="item.version === 'auto'" color="neutral" variant="subtle" size="xs">Auto</UBadge>
+        <div v-for="item in paginatedItems" :key="item.id" class="admin-row"
+          :class="selectedIds.has(item.id) ? 'ring-1 ring-blue-500/30 rounded-lg' : ''">
+          <div class="flex items-start gap-3">
+            <input type="checkbox" :checked="selectedIds.has(item.id)" class="mt-1 rounded" @change="toggleSelect(item.id)" />
+            <div class="admin-row__content flex-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="inline-block w-2 h-2 rounded-full shrink-0"
+                  :class="item.version === 'auto' ? 'bg-blue-400' : item.isPublished ? 'bg-emerald-400' : 'bg-amber-400'" />
+                <UBadge :color="item.isPublished ? 'success' : 'warning'" variant="subtle" size="xs">
+                  {{ item.isPublished ? "Live" : "Draft" }}
+                </UBadge>
+                <UBadge v-if="item.version === 'auto'" color="neutral" variant="subtle" size="xs">Auto</UBadge>
+                <span class="text-xs" :class="isDark ? 'text-white/30' : 'text-slate-400'">
+                  {{ formatDateFull(item.publishedAt || item.createdAt) }}
+                </span>
+              </div>
+
+              <p class="admin-row__title mt-1">
+                {{ item.version === "auto" ? autoTitle(item) : `Version ${item.version}` }}
+              </p>
+              <p class="admin-row__meta line-clamp-1">{{ cleanPreview(item.content) }}</p>
             </div>
-
-            <p class="admin-row__title mt-1.5">
-              {{ item.version === "auto" ? autoTitle(item) : `Version ${item.version}` }}
-            </p>
-
-            <p class="admin-row__meta line-clamp-1">{{ cleanPreview(item.content) }}</p>
-            <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">
-              {{ formatDateFull(item.publishedAt || item.createdAt) }}
-              <span v-if="changeCount(item.content) > 0"> · {{ changeCount(item.content) }} changes</span>
-            </p>
           </div>
 
           <div class="admin-row__actions">
             <UButton icon="i-heroicons-pencil-square" size="xs" color="neutral" variant="ghost" @click="openEdit(item)" />
             <UButton
               :icon="item.isPublished ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
-              size="xs"
-              color="neutral"
-              variant="ghost"
+              size="xs" color="neutral" variant="ghost"
               @click="togglePublish(item)"
             />
             <UButton icon="i-heroicons-trash" size="xs" color="error" variant="ghost" @click="confirmDel(item)" />
@@ -90,42 +103,26 @@
       <AdminEmptyState
         v-else
         icon="i-heroicons-document-text"
-        title="No changelog entries"
-        :description="isFiltering ? 'No entries match the current filter.' : 'Create the first release note.'"
+        :title="isFiltering ? 'No matches' : 'No changelog entries'"
+        :description="isFiltering
+          ? (statusFilter === 'draft' ? 'All entries are published. Nice work!' : `No entries match the current filter.`)
+          : 'Create the first release note.'"
       >
         <template #actions>
-          <UButton
-            v-if="isFiltering"
-            icon="i-heroicons-x-mark"
-            color="neutral"
-            variant="ghost"
-            @click="resetFilters"
-          >
-            Clear filters
-          </UButton>
+          <UButton v-if="isFiltering" icon="i-heroicons-x-mark" color="neutral" variant="ghost" @click="resetFilters">Clear filters</UButton>
           <UButton v-else icon="i-heroicons-plus" @click="openCreate">Create entry</UButton>
         </template>
       </AdminEmptyState>
 
+      <!-- Pagination -->
       <template v-if="totalPages > 1" #footer>
         <div class="flex w-full items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
-          <span>
-            Showing {{ (currentPage - 1) * PAGE_SIZE + 1 }}-{{ Math.min(currentPage * PAGE_SIZE, filteredAndSearched.length) }}
-            of {{ filteredAndSearched.length }}
-          </span>
-
+          <span>{{ (currentPage - 1) * PAGE_SIZE + 1 }}&ndash;{{ Math.min(currentPage * PAGE_SIZE, filteredAndSearched.length) }} of {{ filteredAndSearched.length }}</span>
           <div class="flex items-center gap-1">
             <UButton icon="i-heroicons-chevron-left" variant="ghost" color="neutral" size="xs" :disabled="currentPage <= 1" @click="currentPage--" />
             <template v-for="page in visiblePages" :key="page">
-              <span v-if="page === '...'" class="px-1.5 text-xs">...</span>
-              <UButton
-                v-else
-                :variant="currentPage === page ? 'solid' : 'ghost'"
-                :color="currentPage === page ? 'primary' : 'neutral'"
-                size="xs"
-                :label="String(page)"
-                @click="currentPage = page as number"
-              />
+              <span v-if="page === '...'" class="px-1.5 text-xs select-none">&hellip;</span>
+              <UButton v-else :variant="currentPage === page ? 'solid' : 'ghost'" :color="currentPage === page ? 'primary' : 'neutral'" size="xs" :label="String(page)" @click="currentPage = page as number" />
             </template>
             <UButton icon="i-heroicons-chevron-right" variant="ghost" color="neutral" size="xs" :disabled="currentPage >= totalPages" @click="currentPage++" />
           </div>
@@ -133,28 +130,29 @@
       </template>
     </AdminPanel>
 
+    <!-- Create/Edit modal -->
     <UModal v-model:open="modalOpen" class="sm:max-w-3xl">
       <template #content>
         <div class="p-6">
-          <h2 class="text-lg font-semibold text-slate-950 dark:text-white">
-            {{ editing ? "Edit Entry" : "New Entry" }}
-          </h2>
+          <div class="flex items-center gap-3 mb-6">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" :class="isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-50 text-blue-600'">
+              <UIcon :name="editing ? 'i-heroicons-pencil-square' : 'i-heroicons-plus'" class="h-5 w-5" />
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold text-slate-950 dark:text-white">{{ editing ? "Edit Entry" : "New Entry" }}</h2>
+              <p class="text-sm text-slate-500 dark:text-slate-400">{{ editing ? "Update version and content." : "Document what changed." }}</p>
+            </div>
+          </div>
 
-          <div class="mt-6 space-y-4">
-            <div class="admin-form-grid admin-form-grid--2">
-              <div class="admin-field">
+          <div class="space-y-4">
+            <div class="flex items-end gap-4">
+              <div class="admin-field flex-1">
                 <label class="admin-field__label">Version</label>
                 <UInput v-model="form.version" placeholder="e.g. 2.1.0 or auto" :disabled="saving" />
-                <p class="admin-field__hint">Use "auto" for generated release checks.</p>
               </div>
-
-              <div class="admin-switch-row">
-                <div class="admin-switch-row__content">
-                  <p class="admin-switch-row__title">Publish immediately</p>
-                  <p class="admin-switch-row__description">Turn drafts live directly after saving.</p>
-                </div>
-
+              <div class="flex items-center gap-2 pb-1">
                 <USwitch v-model="form.isPublished" :disabled="saving" />
+                <span class="text-sm" :class="isDark ? 'text-white/60' : 'text-slate-600'">Publish</span>
               </div>
             </div>
 
@@ -169,13 +167,14 @@
           <div class="mt-6 flex justify-end gap-3 border-t border-slate-200 pt-4 dark:border-white/8">
             <UButton variant="ghost" color="neutral" :disabled="saving" @click="modalOpen = false">Cancel</UButton>
             <UButton :loading="saving" icon="i-heroicons-check" @click="save">
-              {{ editing ? "Save" : "Create" }}
+              {{ editing ? "Save Changes" : "Create Entry" }}
             </UButton>
           </div>
         </div>
       </template>
     </UModal>
 
+    <!-- Delete confirmation -->
     <UModal v-model:open="delModal">
       <template #content>
         <div class="p-6">
@@ -183,7 +182,6 @@
             <div class="admin-empty-state__icon admin-tone-danger h-10 w-10">
               <UIcon name="i-heroicons-exclamation-triangle" class="h-5 w-5" />
             </div>
-
             <div>
               <h2 class="text-lg font-semibold text-slate-950 dark:text-white">Delete entry?</h2>
               <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
@@ -193,10 +191,30 @@
               </p>
             </div>
           </div>
-
           <div class="mt-6 flex justify-end gap-3 border-t border-slate-200 pt-4 dark:border-white/8">
             <UButton variant="ghost" color="neutral" :disabled="deleting" @click="delModal = false">Cancel</UButton>
             <UButton color="error" :loading="deleting" icon="i-heroicons-trash" @click="doDelete">Delete</UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
+
+    <!-- Bulk delete confirmation -->
+    <UModal v-model:open="bulkDeleteOpen">
+      <template #content>
+        <div class="p-6">
+          <div class="flex items-start gap-4">
+            <div class="admin-empty-state__icon admin-tone-danger h-10 w-10">
+              <UIcon name="i-heroicons-exclamation-triangle" class="h-5 w-5" />
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold text-slate-950 dark:text-white">Delete {{ selectedIds.size }} entries?</h2>
+              <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">This action cannot be undone.</p>
+            </div>
+          </div>
+          <div class="mt-6 flex justify-end gap-3 border-t border-slate-200 pt-4 dark:border-white/8">
+            <UButton variant="ghost" color="neutral" @click="bulkDeleteOpen = false">Cancel</UButton>
+            <UButton color="error" :loading="deleting" icon="i-heroicons-trash" @click="doBulkDelete">Delete All</UButton>
           </div>
         </div>
       </template>
@@ -209,6 +227,7 @@ definePageMeta({ layout: "admin" })
 
 const toast = useToast()
 const { apiFetch } = useApi()
+const isDark = useIsDark()
 
 interface Changelog {
   id: number
@@ -235,22 +254,74 @@ const searchQuery = ref("")
 const currentPage = ref(1)
 const PAGE_SIZE = 10
 
+// Bulk selection
+const selectedIds = ref(new Set<number>())
+const bulkDeleteOpen = ref(false)
+
+const allPageSelected = computed(() => paginatedItems.value.length > 0 && paginatedItems.value.every(i => selectedIds.value.has(i.id)))
+const somePageSelected = computed(() => paginatedItems.value.some(i => selectedIds.value.has(i.id)))
+
+function toggleSelect(id: number) {
+  const s = new Set(selectedIds.value)
+  s.has(id) ? s.delete(id) : s.add(id)
+  selectedIds.value = s
+}
+
+function toggleSelectAll() {
+  if (allPageSelected.value) {
+    const s = new Set(selectedIds.value)
+    for (const item of paginatedItems.value) s.delete(item.id)
+    selectedIds.value = s
+  } else {
+    const s = new Set(selectedIds.value)
+    for (const item of paginatedItems.value) s.add(item.id)
+    selectedIds.value = s
+  }
+}
+
+async function bulkPublish(publish: boolean) {
+  try {
+    for (const id of selectedIds.value) {
+      await apiFetch(`/api/v1/admin/changelogs/${id}`, { method: "PUT", body: { isPublished: publish } })
+    }
+    toast.add({ title: `${selectedIds.value.size} entries ${publish ? 'published' : 'unpublished'}`, color: "success" })
+    selectedIds.value = new Set()
+    await load()
+  } catch {
+    toast.add({ title: "Error", color: "error" })
+  }
+}
+
+async function doBulkDelete() {
+  deleting.value = true
+  try {
+    for (const id of selectedIds.value) {
+      await apiFetch(`/api/v1/admin/changelogs/${id}`, { method: "DELETE" })
+    }
+    toast.add({ title: `${selectedIds.value.size} entries deleted`, color: "success" })
+    selectedIds.value = new Set()
+    bulkDeleteOpen.value = false
+    await load()
+  } catch {
+    toast.add({ title: "Error", color: "error" })
+  } finally {
+    deleting.value = false
+  }
+}
+
+// Filters
 const filteredItems = computed(() => {
   if (statusFilter.value === "all") return items.value
-  if (statusFilter.value === "published") return items.value.filter(item => item.isPublished)
-  if (statusFilter.value === "draft") return items.value.filter(item => !item.isPublished)
-  if (statusFilter.value === "auto") return items.value.filter(item => item.version === "auto")
+  if (statusFilter.value === "published") return items.value.filter(i => i.isPublished && i.version !== "auto")
+  if (statusFilter.value === "draft") return items.value.filter(i => !i.isPublished)
+  if (statusFilter.value === "auto") return items.value.filter(i => i.version === "auto")
   return items.value
 })
 
 const filteredAndSearched = computed(() => {
   if (!searchQuery.value.trim()) return filteredItems.value
-  const query = searchQuery.value.toLowerCase().trim()
-  return filteredItems.value.filter(item => {
-    const version = item.version.toLowerCase()
-    const contentText = stripHtml(item.content).toLowerCase()
-    return version.includes(query) || contentText.includes(query)
-  })
+  const q = searchQuery.value.toLowerCase().trim()
+  return filteredItems.value.filter(i => i.version.toLowerCase().includes(q) || stripHtml(i.content).toLowerCase().includes(q))
 })
 
 const isFiltering = computed(() => statusFilter.value !== "all" || searchQuery.value.trim().length > 0)
@@ -263,13 +334,12 @@ function resetFilters() {
 
 const statusFilters = computed(() => [
   { label: "All", value: "all", count: items.value.length },
-  { label: "Live", value: "published", count: items.value.filter(item => item.isPublished).length },
-  { label: "Draft", value: "draft", count: items.value.filter(item => !item.isPublished).length },
-  { label: "Auto", value: "auto", count: items.value.filter(item => item.version === "auto").length },
+  { label: "Live", value: "published", count: items.value.filter(i => i.isPublished && i.version !== "auto").length },
+  { label: "Draft", value: "draft", count: items.value.filter(i => !i.isPublished).length },
+  { label: "Auto", value: "auto", count: items.value.filter(i => i.version === "auto").length },
 ])
 
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredAndSearched.value.length / PAGE_SIZE)))
-
 const paginatedItems = computed(() => {
   const start = (currentPage.value - 1) * PAGE_SIZE
   return filteredAndSearched.value.slice(start, start + PAGE_SIZE)
@@ -278,76 +348,42 @@ const paginatedItems = computed(() => {
 const visiblePages = computed((): Array<number | string> => {
   const total = totalPages.value
   const current = currentPage.value
-
-  if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1)
-
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
   const pages: Array<number | string> = [1]
   if (current > 3) pages.push("...")
-
-  const start = Math.max(2, current - 1)
-  const end = Math.min(total - 1, current + 1)
-
-  for (let page = start; page <= end; page += 1) pages.push(page)
-
+  for (let p = Math.max(2, current - 1); p <= Math.min(total - 1, current + 1); p++) pages.push(p)
   if (current < total - 2) pages.push("...")
   pages.push(total)
-
   return pages
 })
 
 watch(filteredAndSearched, () => {
-  if (currentPage.value > totalPages.value) {
-    currentPage.value = Math.max(1, totalPages.value)
-  }
+  if (currentPage.value > totalPages.value) currentPage.value = Math.max(1, totalPages.value)
 })
 
-function stripHtml(html: string) {
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
-}
-
-function cleanPreview(html: string) {
-  return stripHtml(html)
-    .replace(/^###?\s*/gm, "")
-    .replace(/^-\s*/gm, "• ")
-    .replace(/\*\*/g, "")
-    .substring(0, 240)
-}
-
+// Helpers
+function stripHtml(html: string) { return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() }
+function cleanPreview(html: string) { return stripHtml(html).replace(/^###?\s*/gm, "").replace(/^-\s*/gm, "").replace(/\*\*/g, "").substring(0, 150) }
 function autoTitle(item: Changelog) {
   const match = item.content?.match(/Changes\s+(\d{4}-\d{2}-\d{2})/)
-
-  if (match) {
-    const date = new Date(match[1])
-    return `Changes - ${date.toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })}`
-  }
-
+  if (match) return `Changes ${new Date(match[1]).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })}`
   return "Auto-generated changes"
 }
-
-function changeCount(content: string) {
-  const text = stripHtml(content)
-  return (text.match(/•|-/g) || []).length || (content.match(/<li>/g) || []).length
-}
-
 function formatDateFull(value: string | number | null) {
   if (!value) return "-"
   const date = typeof value === "number" ? new Date(value * 1000) : new Date(value)
   if (Number.isNaN(date.getTime())) return "-"
-  return date.toLocaleDateString("en-US", { weekday: "short", day: "2-digit", month: "short", year: "numeric" })
+  return date.toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })
 }
 
+// CRUD
 const route = useRoute()
 
 async function load() {
   loading.value = true
-
-  try {
-    items.value = await apiFetch("/api/v1/admin/changelogs")
-  } catch {
-    toast.add({ title: "Error", color: "error" })
-  } finally {
-    loading.value = false
-  }
+  try { items.value = await apiFetch("/api/v1/admin/changelogs") }
+  catch { toast.add({ title: "Error", color: "error" }) }
+  finally { loading.value = false }
 }
 
 onMounted(() => {
@@ -370,17 +406,11 @@ function openEdit(item: Changelog) {
 }
 
 async function save() {
-  if (!form.version.trim() || !form.content.trim()) {
-    formError.value = "Version and content are required"
-    return
-  }
-
+  if (!form.version.trim() || !form.content.trim()) { formError.value = "Version and content are required"; return }
   saving.value = true
   formError.value = ""
-
   try {
     const body = { ...form, contentEn: form.content }
-
     if (editing.value) {
       await apiFetch(`/api/v1/admin/changelogs/${editing.value.id}`, { method: "PUT", body })
       toast.add({ title: "Entry updated", color: "success" })
@@ -388,7 +418,6 @@ async function save() {
       await apiFetch("/api/v1/admin/changelogs", { method: "POST", body })
       toast.add({ title: "Entry created", color: "success" })
     }
-
     modalOpen.value = false
     await load()
   } catch (error: any) {
@@ -403,30 +432,20 @@ async function togglePublish(item: Changelog) {
     await apiFetch(`/api/v1/admin/changelogs/${item.id}`, { method: "PUT", body: { isPublished: !item.isPublished } })
     await load()
     toast.add({ title: item.isPublished ? "Unpublished" : "Published", color: "success" })
-  } catch {
-    toast.add({ title: "Error", color: "error" })
-  }
+  } catch { toast.add({ title: "Error", color: "error" }) }
 }
 
-function confirmDel(item: Changelog) {
-  delItem.value = item
-  delModal.value = true
-}
+function confirmDel(item: Changelog) { delItem.value = item; delModal.value = true }
 
 async function doDelete() {
   if (!delItem.value) return
-
   deleting.value = true
-
   try {
     await apiFetch(`/api/v1/admin/changelogs/${delItem.value.id}`, { method: "DELETE" })
     toast.add({ title: "Entry deleted", color: "success" })
     delModal.value = false
     await load()
-  } catch {
-    toast.add({ title: "Error", color: "error" })
-  } finally {
-    deleting.value = false
-  }
+  } catch { toast.add({ title: "Error", color: "error" }) }
+  finally { deleting.value = false }
 }
 </script>

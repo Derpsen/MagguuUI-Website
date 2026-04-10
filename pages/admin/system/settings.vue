@@ -5,13 +5,8 @@
       eyebrow="System"
       title="Settings"
       description="One place for site defaults, access rules and operational switches."
-    >
-      <template v-if="hasChanges" #actions>
-        <UButton icon="i-heroicons-check" :loading="saving" @click="save">
-          Save
-        </UButton>
-      </template>
-    </AdminPageHeader>
+    />
+
 
     <AdminStickyBar :show="hasChanges" description="There are unsaved settings changes waiting to be applied.">
       <template #actions>

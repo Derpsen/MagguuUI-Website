@@ -37,9 +37,6 @@
             </button>
           </div>
 
-          <UButton v-if="hasChanges" icon="i-heroicons-check" :loading="saving" @click="save">
-            Save
-          </UButton>
         </div>
       </template>
     </AdminPageHeader>

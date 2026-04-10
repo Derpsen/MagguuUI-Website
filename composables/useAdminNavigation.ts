@@ -123,6 +123,12 @@ const adminSections: AdminNavSection[] = [
         icon: 'i-heroicons-chart-bar',
         description: 'Traffic, copies and API usage analytics.',
         hint: 'Traffic, copies and API usage without the old dashboard noise.',
+        children: [
+          { to: '/admin/system/stats?tab=overview', label: 'Overview', icon: 'i-heroicons-chart-bar', description: 'Key metrics at a glance.' },
+          { to: '/admin/system/stats?tab=visitors', label: 'Visitors', icon: 'i-heroicons-eye', description: 'Page views and visitor breakdown.' },
+          { to: '/admin/system/stats?tab=copies', label: 'Copies', icon: 'i-heroicons-clipboard-document', description: 'Copy events and top strings.' },
+          { to: '/admin/system/stats?tab=api', label: 'API', icon: 'i-heroicons-server', description: 'API endpoint usage.' },
+        ],
       },
       {
         to: '/admin/system/users',

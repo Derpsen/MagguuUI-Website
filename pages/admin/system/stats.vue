@@ -241,15 +241,22 @@ interface StatsData {
   avgStringSizes?: Array<{ addon: string; avg_size: number; count: number }>
 }
 
+const route = useRoute()
+const router = useRouter()
 const loading = ref(true)
 const stats = ref<StatsData | null>(null)
-const activeTab = ref<TabId>('overview')
 const tabs: Array<{ id: TabId; label: string }> = [
   { id: 'overview', label: 'Overview' },
   { id: 'visitors', label: 'Visitors' },
   { id: 'copies', label: 'Copies' },
   { id: 'api', label: 'API' },
 ]
+const validTabs = tabs.map(t => t.id) as string[]
+const activeTab = ref<TabId>(validTabs.includes(route.query.tab as string) ? route.query.tab as TabId : 'overview')
+
+watch(activeTab, (tab) => {
+  router.replace({ query: { ...route.query, tab } })
+})
 
 const lastLoaded = ref<Date | null>(null)
 const lastUpdatedText = ref('')

@@ -67,7 +67,22 @@
 
             <div v-if="collapsed || openSections[section.title]" class="mt-0.5 space-y-0.5">
               <template v-for="item in section.links" :key="item.to">
+                <!-- Parent with children: button toggle (like vben) -->
+                <button
+                  v-if="item.children?.length && !collapsed"
+                  class="vben-nav-item w-full"
+                  :class="isRouteActive(item.to) ? 'vben-nav-item--active' : ''"
+                  @click="toggleItemExpand(item.to)"
+                >
+                  <UIcon :name="item.icon" class="h-[18px] w-[18px] shrink-0" />
+                  <span class="min-w-0 flex-1 truncate text-left">{{ item.label }}</span>
+                  <UIcon name="i-heroicons-chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200"
+                    :class="[isItemExpanded(item.to) ? '' : '-rotate-90', isDark ? 'text-white/30' : 'text-slate-400']" />
+                </button>
+
+                <!-- Leaf item or collapsed: normal link -->
                 <NuxtLink
+                  v-else
                   :to="item.to"
                   class="vben-nav-item"
                   :class="[
@@ -78,12 +93,10 @@
                 >
                   <UIcon :name="item.icon" class="h-[18px] w-[18px] shrink-0" />
                   <span v-if="!collapsed" class="min-w-0 flex-1 truncate">{{ item.label }}</span>
-                  <UIcon v-if="item.children?.length && !collapsed" name="i-heroicons-chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200"
-                    :class="[isRouteActive(item.to) ? '' : '-rotate-90', isDark ? 'text-white/30' : 'text-slate-400']" />
                 </NuxtLink>
 
                 <!-- Children -->
-                <div v-if="item.children?.length && !collapsed && isRouteActive(item.to)" class="ml-5 space-y-0.5 border-l pl-2" :class="isDark ? 'border-white/8' : 'border-slate-200'">
+                <div v-if="item.children?.length && !collapsed && isItemExpanded(item.to)" class="ml-5 space-y-0.5 border-l pl-2" :class="isDark ? 'border-white/8' : 'border-slate-200'">
                   <NuxtLink
                     v-for="child in item.children"
                     :key="child.to"
@@ -303,6 +316,7 @@ const settingsDrawer = ref<{ toggle: () => void } | null>(null)
 const notifWrapRef = ref<HTMLElement | null>(null)
 const notifButtonRef = ref<HTMLElement | null>(null)
 const notifPanelRef = ref<HTMLElement | null>(null)
+const expandedItems = reactive<Record<string, boolean>>({})
 
 const searchShortcut = computed(() => isMac.value ? '⌘K' : 'Ctrl K')
 const userInitial = computed(() => (user.value?.username || 'A').charAt(0).toUpperCase())
@@ -349,6 +363,24 @@ function toggleSection(title: string) {
   setOpenSection(title)
 }
 
+function isItemExpanded(path: string): boolean {
+  return expandedItems[path] ?? false
+}
+
+function toggleItemExpand(path: string) {
+  expandedItems[path] = !isItemExpanded(path)
+}
+
+function expandActiveItems() {
+  for (const section of sections) {
+    for (const link of section.links) {
+      if (link.children?.length && isRouteActive(link.to)) {
+        expandedItems[link.to] = true
+      }
+    }
+  }
+}
+
 function isRouteActive(path: string, exact = false) {
   if (path === '/admin') return route.path === '/admin'
   if (exact) return route.path === path
@@ -387,6 +419,7 @@ onMounted(() => {
   loadTabs()
   trackCurrentRoute()
   if (activeSection.value) setOpenSection(activeSection.value)
+  expandActiveItems()
 
   if (!import.meta.client) return
 

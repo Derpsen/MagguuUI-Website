@@ -360,11 +360,7 @@ function setOpenSection(title: string) {
 }
 
 function toggleSection(title: string) {
-  if (openSections[title]) {
-    openSections[title] = false
-    return
-  }
-  setOpenSection(title)
+  openSections[title] = !openSections[title]
 }
 
 function isItemExpanded(path: string): boolean {

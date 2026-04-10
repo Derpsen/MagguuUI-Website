@@ -65,49 +65,53 @@
               />
             </button>
 
-            <div v-if="collapsed || openSections[section.title]" class="mt-0.5 space-y-0.5">
-              <template v-for="item in section.links" :key="item.to">
-                <!-- Parent with children: button toggle (like vben) -->
-                <button
-                  v-if="item.children?.length && !collapsed"
-                  class="vben-nav-item w-full"
-                  :class="isRouteActive(item.to) ? 'vben-nav-item--active' : ''"
-                  @click="toggleItemExpand(item.to)"
-                >
-                  <UIcon :name="item.icon" class="h-[18px] w-[18px] shrink-0" />
-                  <span class="min-w-0 flex-1 truncate text-left">{{ item.label }}</span>
-                  <UIcon name="i-heroicons-chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200"
-                    :class="[isItemExpanded(item.to) ? '' : '-rotate-90', isDark ? 'text-white/30' : 'text-slate-400']" />
-                </button>
-
-                <!-- Leaf item or collapsed: normal link -->
-                <NuxtLink
-                  v-else
-                  :to="item.to"
-                  class="vben-nav-item"
-                  :class="[
-                    collapsed ? 'justify-center px-0' : '',
-                    isRouteActive(item.to) ? 'vben-nav-item--active' : '',
-                  ]"
-                  :title="collapsed ? item.label : undefined"
-                >
-                  <UIcon :name="item.icon" class="h-[18px] w-[18px] shrink-0" />
-                  <span v-if="!collapsed" class="min-w-0 flex-1 truncate">{{ item.label }}</span>
-                </NuxtLink>
-
-                <!-- Children -->
-                <div v-if="item.children?.length && !collapsed && isItemExpanded(item.to)" class="ml-5 space-y-0.5 border-l pl-2" :class="isDark ? 'border-white/8' : 'border-slate-200'">
-                  <NuxtLink
-                    v-for="child in item.children"
-                    :key="child.to"
-                    :to="child.to"
-                    class="vben-nav-child"
-                    :class="isChildActive(child.to) ? 'vben-nav-child--active' : ''"
+            <div class="nav-collapse" :class="collapsed || openSections[section.title] ? 'nav-collapse--open' : ''">
+              <div class="nav-collapse__inner mt-0.5 space-y-0.5">
+                <template v-for="item in section.links" :key="item.to">
+                  <!-- Parent with children: button toggle (like vben) -->
+                  <button
+                    v-if="item.children?.length && !collapsed"
+                    class="vben-nav-item w-full"
+                    :class="isRouteActive(item.to) ? 'vben-nav-item--active' : ''"
+                    @click="toggleItemExpand(item.to)"
                   >
-                    <span class="truncate">{{ child.label }}</span>
+                    <UIcon :name="item.icon" class="h-[18px] w-[18px] shrink-0" />
+                    <span class="min-w-0 flex-1 truncate text-left">{{ item.label }}</span>
+                    <UIcon name="i-heroicons-chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200"
+                      :class="[isItemExpanded(item.to) ? '' : '-rotate-90', isDark ? 'text-white/30' : 'text-slate-400']" />
+                  </button>
+
+                  <!-- Leaf item or collapsed: normal link -->
+                  <NuxtLink
+                    v-else
+                    :to="item.to"
+                    class="vben-nav-item"
+                    :class="[
+                      collapsed ? 'justify-center px-0' : '',
+                      isRouteActive(item.to) ? 'vben-nav-item--active' : '',
+                    ]"
+                    :title="collapsed ? item.label : undefined"
+                  >
+                    <UIcon :name="item.icon" class="h-[18px] w-[18px] shrink-0" />
+                    <span v-if="!collapsed" class="min-w-0 flex-1 truncate">{{ item.label }}</span>
                   </NuxtLink>
-                </div>
-              </template>
+
+                  <!-- Children -->
+                  <div v-if="item.children?.length && !collapsed" class="nav-collapse" :class="isItemExpanded(item.to) ? 'nav-collapse--open' : ''">
+                    <div class="nav-collapse__inner ml-5 space-y-0.5 border-l pl-2" :class="isDark ? 'border-white/8' : 'border-slate-200'">
+                      <NuxtLink
+                        v-for="child in item.children"
+                        :key="child.to"
+                        :to="child.to"
+                        class="vben-nav-child"
+                        :class="isChildActive(child.to) ? 'vben-nav-child--active' : ''"
+                      >
+                        <span class="truncate">{{ child.label }}</span>
+                      </NuxtLink>
+                    </div>
+                  </div>
+                </template>
+              </div>
             </div>
           </div>
         </nav>
@@ -328,7 +332,7 @@ const activeSection = computed(() =>
   sections.find(section => section.links.some(link => isRouteActive(link.to)))?.title ?? sections[0]?.title ?? '',
 )
 const openSections = reactive(
-  Object.fromEntries(sections.map(section => [section.title, false])) as Record<string, boolean>,
+  Object.fromEntries(sections.map(section => [section.title, true])) as Record<string, boolean>,
 )
 
 function toggleTheme() {
@@ -418,7 +422,6 @@ onMounted(() => {
   notifRefresh(true)
   loadTabs()
   trackCurrentRoute()
-  if (activeSection.value) setOpenSection(activeSection.value)
   expandActiveItems()
 
   if (!import.meta.client) return
@@ -445,7 +448,6 @@ watch(() => route.fullPath, () => {
   notifOpen.value = false
   sidebarOpen.value = false
   trackCurrentRoute()
-  if (activeSection.value) setOpenSection(activeSection.value)
 })
 </script>
 
@@ -505,6 +507,19 @@ html.dark .vben-nav-item--active {
 .vben-nav-child--active {
   color: var(--admin-fg);
   font-weight: 500;
+}
+
+/* Smooth collapse/expand (grid trick for height animation) */
+.nav-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nav-collapse--open {
+  grid-template-rows: 1fr;
+}
+.nav-collapse__inner {
+  overflow: hidden;
 }
 
 /* Breadcrumb slide transition */

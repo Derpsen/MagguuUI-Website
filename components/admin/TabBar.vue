@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { tabs, closeTab, togglePin, isActive } = useAdminTabs()
+const { tabs, closeTab, closeAllTabs, closeOtherTabs, togglePin, isActive } = useAdminTabs()
 const isDark = useIsDark()
 
 const contextTab = ref<string | null>(null)
@@ -71,6 +71,17 @@ onUnmounted(() => {
       </button>
     </NuxtLink>
 
+    <!-- Close all button -->
+    <button
+      v-if="tabs.some(t => !t.pinned)"
+      class="ml-auto shrink-0 flex items-center gap-1 px-2.5 h-full text-[12px] transition-colors border-l"
+      :class="isDark ? 'text-white/35 hover:text-white/70 border-[hsl(240,3.7%,22%)]' : 'text-slate-400 hover:text-slate-600 border-[hsl(240,5.9%,90%)]'"
+      title="Close all tabs"
+      @click="closeAllTabs()"
+    >
+      <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
+    </button>
+
     <!-- Context menu -->
     <Teleport to="body">
       <div
@@ -94,6 +105,22 @@ onUnmounted(() => {
         >
           <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
           Close tab
+        </button>
+        <button
+          class="flex w-full items-center gap-2 px-3 py-1.5 text-left transition-colors"
+          :class="isDark ? 'hover:bg-white/[0.06]' : 'hover:bg-slate-50'"
+          @click="closeOtherTabs(contextTab!)"
+        >
+          <UIcon name="i-heroicons-arrows-pointing-in" class="h-3.5 w-3.5" />
+          Close others
+        </button>
+        <button
+          class="flex w-full items-center gap-2 px-3 py-1.5 text-left transition-colors"
+          :class="isDark ? 'hover:bg-white/[0.06]' : 'hover:bg-slate-50'"
+          @click="closeAllTabs()"
+        >
+          <UIcon name="i-heroicons-x-circle" class="h-3.5 w-3.5" />
+          Close all
         </button>
       </div>
     </Teleport>

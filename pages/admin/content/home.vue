@@ -44,115 +44,97 @@
     </AdminPanel>
 
     <template v-else-if="tab === 'edit'">
-      <AdminPanel title="Hero" description="This is the only part visitors should notice first." icon="i-heroicons-sparkles">
-        <div class="admin-form-grid admin-form-grid--2">
-          <div class="admin-field">
-            <label class="admin-field__label">Heading line 1</label>
-            <UInput v-model="form.hero.title" :disabled="saving" placeholder="Your WoW Interface," />
-            <p class="admin-field__hint" :class="counterClass(form.hero.title?.length || 0, 40)">
-              {{ form.hero.title?.length || 0 }}/40
-            </p>
+      <!-- Hero -->
+      <AdminPanel title="Hero" description="The first thing visitors see — keep it punchy." icon="i-heroicons-sparkles">
+        <div class="space-y-4">
+          <div class="admin-form-grid admin-form-grid--2">
+            <div class="admin-field">
+              <label class="admin-field__label">Heading line 1</label>
+              <UInput v-model="form.hero.title" :disabled="saving" placeholder="Your WoW Interface," />
+              <p class="admin-field__hint" :class="counterClass(form.hero.title?.length || 0, 40)">
+                {{ form.hero.title?.length || 0 }}/40
+              </p>
+            </div>
+            <div class="admin-field">
+              <label class="admin-field__label">Heading line 2</label>
+              <UInput v-model="form.hero.title2" :disabled="saving" placeholder="perfected." />
+              <p class="admin-field__hint" :class="counterClass(form.hero.title2?.length || 0, 30)">
+                {{ form.hero.title2?.length || 0 }}/30
+              </p>
+            </div>
           </div>
-
           <div class="admin-field">
-            <label class="admin-field__label">Heading line 2</label>
-            <UInput v-model="form.hero.title2" :disabled="saving" placeholder="perfected." />
-            <p class="admin-field__hint" :class="counterClass(form.hero.title2?.length || 0, 30)">
-              {{ form.hero.title2?.length || 0 }}/30
-            </p>
+            <label class="admin-field__label">Subtitle</label>
+            <TipTapEditor v-model="form.hero.description" placeholder="Short description..." min-height="80px" />
           </div>
-        </div>
-
-        <div class="mt-4 admin-field">
-          <label class="admin-field__label">Subtitle</label>
-          <TipTapEditor v-model="form.hero.description" placeholder="Short description..." min-height="96px" />
         </div>
       </AdminPanel>
 
-      <div class="grid gap-6 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-        <AdminPanel title="Section labels" description="Only keep the labels users actually scan." icon="i-heroicons-rectangle-group">
-          <div class="space-y-4">
-            <div class="admin-subpanel space-y-4">
-              <div>
-                <p class="admin-row__eyebrow">Addons</p>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Headline for supported addons.</p>
-              </div>
-
-              <div class="admin-field">
-                <label class="admin-field__label">Title</label>
-                <UInput v-model="form.addons.title" :disabled="saving" placeholder="Supported Addons" />
-              </div>
-
-              <div class="admin-field">
-                <label class="admin-field__label">Subtitle</label>
-                <UInput
-                  v-model="form.addons.subtitle"
-                  :disabled="saving"
-                  placeholder="Profiles for the most popular WoW addons"
-                />
-              </div>
+      <!-- Section labels -->
+      <AdminPanel title="Section headings" description="Labels above the addons and features sections on the homepage." icon="i-heroicons-rectangle-group">
+        <div class="grid gap-4 md:grid-cols-2">
+          <div class="admin-subpanel space-y-3">
+            <p class="admin-row__eyebrow">Addons section</p>
+            <div class="admin-field">
+              <label class="admin-field__label">Title</label>
+              <UInput v-model="form.addons.title" :disabled="saving" placeholder="Supported Addons" />
             </div>
-
-            <div class="admin-subpanel space-y-4">
-              <div>
-                <p class="admin-row__eyebrow">Features</p>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Short heading above the three feature cards.</p>
-              </div>
-
-              <div class="admin-field">
-                <label class="admin-field__label">Title</label>
-                <UInput v-model="form.features_heading.title" :disabled="saving" placeholder="Why MagguuUI?" />
-              </div>
-
-              <div class="admin-field">
-                <label class="admin-field__label">Subtitle</label>
-                <UInput
-                  v-model="form.features_heading.subtitle"
-                  :disabled="saving"
-                  placeholder="Everything you need in one package"
-                />
-              </div>
+            <div class="admin-field">
+              <label class="admin-field__label">Subtitle</label>
+              <UInput v-model="form.addons.subtitle" :disabled="saving" placeholder="Profiles for the most popular WoW addons" />
             </div>
           </div>
-        </AdminPanel>
+          <div class="admin-subpanel space-y-3">
+            <p class="admin-row__eyebrow">Features section</p>
+            <div class="admin-field">
+              <label class="admin-field__label">Title</label>
+              <UInput v-model="form.features_heading.title" :disabled="saving" placeholder="Why MagguuUI?" />
+            </div>
+            <div class="admin-field">
+              <label class="admin-field__label">Subtitle</label>
+              <UInput v-model="form.features_heading.subtitle" :disabled="saving" placeholder="Everything you need in one package" />
+            </div>
+          </div>
+        </div>
+      </AdminPanel>
 
-        <AdminPanel title="Feature cards" description="Three cards are enough. Keep each one sharp." icon="i-heroicons-squares-2x2">
-          <div class="grid gap-4 xl:grid-cols-3">
-            <div v-for="index in featureIndices" :key="index" class="admin-subpanel space-y-4">
-              <div class="flex items-center justify-between gap-3">
-                <p class="admin-row__eyebrow">Feature {{ index }}</p>
-                <span class="admin-pill">{{ featureEmoji(index) || "?" }}</span>
+      <!-- Feature cards -->
+      <AdminPanel title="Feature cards" description="Three cards below the features heading. Keep each one sharp." icon="i-heroicons-squares-2x2">
+        <div class="space-y-3">
+          <div v-for="index in featureIndices" :key="index"
+            class="admin-subpanel flex flex-col gap-4 sm:flex-row sm:items-start">
+            <!-- Icon -->
+            <div class="flex shrink-0 items-center gap-3 sm:w-20 sm:flex-col sm:text-center">
+              <div class="flex h-11 w-11 items-center justify-center rounded-xl text-xl"
+                :class="isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'">
+                {{ featureEmoji(index) || "?" }}
               </div>
-
-              <div class="grid gap-4 sm:grid-cols-[72px_minmax(0,1fr)]">
-                <div class="admin-field">
-                  <label class="admin-field__label">Icon</label>
-                  <UInput
-                    v-model="form.features[`feature_${index}_emoji`]"
-                    :disabled="saving"
-                    maxlength="2"
-                    class="text-center text-lg"
-                  />
-                </div>
-
-                <div class="admin-field">
-                  <label class="admin-field__label">Title</label>
-                  <UInput v-model="form.features[`feature_${index}_title`]" :disabled="saving" />
-                </div>
+              <UInput
+                v-model="form.features[`feature_${index}_emoji`]"
+                :disabled="saving"
+                maxlength="2"
+                placeholder="🎯"
+                class="w-14 text-center text-lg"
+              />
+            </div>
+            <!-- Content -->
+            <div class="flex-1 space-y-3">
+              <div class="admin-field">
+                <label class="admin-field__label">Title</label>
+                <UInput v-model="form.features[`feature_${index}_title`]" :disabled="saving" :placeholder="`Feature ${index}`" />
               </div>
-
               <div class="admin-field">
                 <label class="admin-field__label">Description</label>
                 <TipTapEditor
                   v-model="form.features[`feature_${index}_text`]"
                   placeholder="Feature description..."
-                  min-height="110px"
+                  min-height="80px"
                 />
               </div>
             </div>
           </div>
-        </AdminPanel>
-      </div>
+        </div>
+      </AdminPanel>
     </template>
 
     <AdminPanel
@@ -232,6 +214,7 @@ definePageMeta({ layout: "admin" })
 
 const toast = useToast()
 const { apiFetch } = useApi()
+const isDark = useIsDark()
 
 const loading = ref(true)
 const saving = ref(false)

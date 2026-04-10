@@ -139,26 +139,45 @@ useHead({
   script: [
     {
       type: 'application/ld+json',
-      innerHTML: () => JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'WebApplication',
-        name: siteSettings.value.site_name || 'MagguuUI',
-        url: 'https://ui.magguu.xyz',
-        description: homeMetaDescription.value,
-        image: homeOgImage.value,
-        applicationCategory: 'GameApplication',
-        operatingSystem: 'Web',
-        offers: {
-          '@type': 'Offer',
-          price: '0',
-          priceCurrency: 'EUR',
-        },
-        author: {
-          '@type': 'Person',
+      innerHTML: () => JSON.stringify([
+        {
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
           name: siteSettings.value.site_name || 'MagguuUI',
           url: 'https://ui.magguu.xyz',
+          description: homeMetaDescription.value,
+          image: homeOgImage.value,
+          applicationCategory: 'GameApplication',
+          operatingSystem: 'Web',
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'EUR',
+          },
+          author: {
+            '@type': 'Organization',
+            name: siteSettings.value.site_name || 'MagguuUI',
+            url: 'https://ui.magguu.xyz',
+          },
         },
-      }),
+        {
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: siteSettings.value.site_name || 'MagguuUI',
+          url: 'https://ui.magguu.xyz',
+          description: homeMetaDescription.value,
+          publisher: {
+            '@type': 'Organization',
+            name: siteSettings.value.site_name || 'MagguuUI',
+            url: 'https://ui.magguu.xyz',
+            logo: {
+              '@type': 'ImageObject',
+              url: 'https://ui.magguu.xyz/logo.png',
+            },
+            ...(siteSettings.value.github_url ? { sameAs: [siteSettings.value.github_url] } : {}),
+          },
+        },
+      ]),
     },
   ],
 })

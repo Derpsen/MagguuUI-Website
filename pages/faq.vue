@@ -76,6 +76,30 @@ const sections = [
 const { data: rawData, pending } = await useFetch('/api/v1/faqs')
 const faqData = computed(() => (rawData.value as any)?.data || {})
 const hasFaqs = computed(() => Object.values(faqData.value).some((arr: any) => arr?.length > 0))
+
+// FAQ JSON-LD structured data for rich snippets
+useHead({
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: () => {
+        const allFaqs = sections.flatMap(s =>
+          (faqData.value[s.key] || []).map((faq: any) => ({
+            '@type': 'Question',
+            name: faq.question,
+            acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+          })),
+        )
+        if (!allFaqs.length) return '{}'
+        return JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: allFaqs,
+        })
+      },
+    },
+  ],
+})
 const githubUrl = computed(() => siteSettings.value.github_url || 'https://github.com/Derpsen/MagguuUI')
 const githubIssuesUrl = computed(() => githubUrl.value.endsWith('/issues') ? githubUrl.value : `${githubUrl.value.replace(/\/$/, '')}/issues`)
 </script>

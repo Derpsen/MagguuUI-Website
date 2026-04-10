@@ -31,6 +31,7 @@ export default defineNuxtConfig({
         { name: 'description', content: defaultMetaDescription },
         { name: 'author', content: defaultSiteName },
         { name: 'theme-color', content: '#0c1b35' },
+        { name: 'google-adsense-account', content: 'ca-pub-3382298185404332' },
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: defaultSiteName },
         { property: 'og:url', content: siteBaseUrl },

@@ -15,6 +15,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const ids = body.ids.map(Number).filter((n: number) => !isNaN(n))
+  if (ids.length === 0) {
+    throw createError({ statusCode: 400, message: 'No valid IDs provided' })
+  }
   db.delete(wowupStrings).where(inArray(wowupStrings.id, ids)).run()
   logActivity({ action: 'deleted', entityType: 'wowup', entityName: `${ids.length} wowup strings`, details: `Bulk deleted IDs: ${ids.join(', ')}` })
   triggerGitHubSync(`wowup-bulk-deleted: ${ids.length} strings`).catch(() => {})

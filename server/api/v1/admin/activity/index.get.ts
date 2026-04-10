@@ -48,7 +48,7 @@ export default defineEventHandler(async (event) => {
   const totalResult = where
     ? db.select({ count: count() }).from(activityLog).where(where).get()
     : db.select({ count: count() }).from(activityLog).get()
-  const total = totalResult?.count || 0
+  const total = totalResult?.count ?? 0
 
   // Get paginated rows
   const baseQuery = db.select().from(activityLog)

@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
 
   logActivity({
     action: 'updated',
-    entityType: 'faq' as any,
+    entityType: 'faq',
     entityId: id,
     entityName: (body.question || existing.question).substring(0, 60),
   })

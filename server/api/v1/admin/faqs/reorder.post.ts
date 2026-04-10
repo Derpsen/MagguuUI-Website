@@ -3,7 +3,7 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
 import { faqs } from '~/server/database/schema'
 
 export default defineEventHandler(async (event) => {
@@ -14,9 +14,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'items array required' })
   }
 
-  for (const item of items) {
-    db.update(faqs).set({ sortOrder: item.sortOrder }).where(eq(faqs.id, item.id)).run()
-  }
+  sqlite.transaction(() => {
+    for (const item of items) {
+      db.update(faqs).set({ sortOrder: item.sortOrder }).where(eq(faqs.id, item.id)).run()
+    }
+  })()
 
   return { success: true, data: { updated: items.length } }
 })

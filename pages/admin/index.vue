@@ -26,7 +26,7 @@
               class="text-xl font-semibold tracking-tight"
               :class="isDark ? 'text-white' : 'text-slate-900'"
             >
-              Good morning, Admin
+              {{ greeting }}
             </h1>
             <p
               class="text-sm"
@@ -339,7 +339,16 @@ definePageMeta({ layout: 'admin' })
 
 const isDark = useIsDark()
 const { apiFetch } = useApi()
+const { user } = useAuth()
 const { notifications: notifItems, refresh: notifRefresh } = useAdminNotifications()
+
+const greeting = computed(() => {
+  const h = new Date().getHours()
+  const name = user.value?.username || 'Admin'
+  if (h < 12) return `Good morning, ${name}`
+  if (h < 18) return `Good afternoon, ${name}`
+  return `Good evening, ${name}`
+})
 
 const quickActions = [
   { label: 'Profiles', subtitle: 'Manage import strings', icon: 'i-heroicons-rectangle-stack', to: '/admin/strings/profiles' },

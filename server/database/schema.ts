@@ -281,7 +281,9 @@ export const apiLogs = sqliteTable('api_logs', {
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
-})
+}, (table) => ({
+  createdAtIdx: index('idx_api_logs_created_at').on(table.createdAt),
+}))
 
 // ─── Sync History ──────────────────────────────────
 // GitHub sync run log

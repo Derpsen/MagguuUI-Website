@@ -15,6 +15,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const ids = body.ids.map(Number).filter((n: number) => !isNaN(n))
+  if (ids.length === 0) {
+    throw createError({ statusCode: 400, message: 'No valid IDs provided' })
+  }
   db.delete(profiles).where(inArray(profiles.id, ids)).run()
   logActivity({ action: 'deleted', entityType: 'profile', entityName: `${ids.length} profiles`, details: `Bulk deleted IDs: ${ids.join(', ')}` })
   triggerGitHubSync(`profiles-bulk-deleted: ${ids.length} profiles`).catch(() => {})

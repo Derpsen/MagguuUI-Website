@@ -34,7 +34,9 @@ export function completeSuccessfulLogin({
   const expiresAt = new Date(Date.now() + timeoutHours * 60 * 60 * 1000)
   const maxAgeSeconds = timeoutHours * 60 * 60
 
-  const token = createToken({
+  // Create a temporary token to bootstrap the session, then replace it
+  // with the final token that includes the sessionId.
+  const bootstrapToken = createToken({
     userId: user.id,
     username: user.username,
     role: user.role,
@@ -42,22 +44,23 @@ export function completeSuccessfulLogin({
 
   const session = createSession({
     userId: user.id,
-    token,
+    token: bootstrapToken,
     ip,
     userAgent,
     expiresAt,
   })
 
-  const finalToken = createToken({
+  // Final token includes sessionId for session validation on subsequent requests
+  const token = createToken({
     userId: user.id,
     username: user.username,
     role: user.role,
     sessionId: session.id,
   })
-  setAuthCookie(event, finalToken, maxAgeSeconds)
+  setAuthCookie(event, token, maxAgeSeconds)
 
   sqlite.prepare('UPDATE sessions SET token_hash = ? WHERE id = ?')
-    .run(hashToken(finalToken), session.id)
+    .run(hashToken(token), session.id)
 
   logLoginAttempt({
     username: user.username,

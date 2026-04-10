@@ -17,5 +17,11 @@ export default defineEventHandler((event) => {
   applyPrivateApiHeaders(event)
 
   // Verify JWT
-  requireAuth(event)
+  const auth = requireAuth(event)
+
+  // Viewers may only read — block all write operations
+  const method = getMethod(event)
+  if (method !== 'GET' && auth.role === 'viewer') {
+    throw createError({ statusCode: 403, message: 'Insufficient permissions' })
+  }
 })

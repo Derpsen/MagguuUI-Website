@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
   logActivity({
     action: 'deleted',
-    entityType: 'faq' as any,
+    entityType: 'faq',
     entityId: id,
     entityName: existing.question.substring(0, 60),
   })

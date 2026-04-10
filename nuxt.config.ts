@@ -43,6 +43,13 @@ export default defineNuxtConfig({
         { name: 'twitter:description', content: defaultMetaDescription },
         { name: 'twitter:image', content: defaultOgImage },
       ],
+      script: [
+        {
+          async: true,
+          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3382298185404332',
+          crossorigin: 'anonymous',
+        },
+      ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' },
         { rel: 'icon', type: 'image/png', href: '/logo.png' },

@@ -6,7 +6,7 @@
       title="Settings"
       description="One place for site defaults, access rules and operational switches."
     >
-      <template #actions>
+      <template v-if="hasChanges" #actions>
         <UButton icon="i-heroicons-check" :loading="saving" @click="save">
           Save
         </UButton>

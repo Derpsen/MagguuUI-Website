@@ -113,6 +113,7 @@ const adminSections: AdminNavSection[] = [
           { to: '/admin/system/settings?tab=general', label: 'General', icon: 'i-heroicons-cog-6-tooth', description: 'Site name, banner, maintenance.' },
           { to: '/admin/system/settings?tab=seo', label: 'SEO & Links', icon: 'i-heroicons-globe-alt', description: 'Meta tags, social links.' },
           { to: '/admin/system/settings?tab=security', label: 'Security', icon: 'i-heroicons-shield-check', description: 'Sessions, rate limits, tracking.' },
+          { to: '/admin/system/settings?tab=ads', label: 'Ads', icon: 'i-heroicons-megaphone', description: 'AdSense configuration.' },
           { to: '/admin/system/settings?tab=data', label: 'Data & Backup', icon: 'i-heroicons-circle-stack', description: 'Retention, backup, reset.' },
         ],
       },

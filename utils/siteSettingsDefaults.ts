@@ -22,6 +22,11 @@ export const SITE_SETTINGS_DEFAULTS: Record<string, string> = {
   tracking_pageviews_enabled: 'true',
   tracking_copyevents_enabled: 'true',
   data_retention_days: '90',
+  adsense_publisher_id: '',
+  adsense_enabled: 'false',
+  adsense_slot_header: '',
+  adsense_slot_content: '',
+  adsense_slot_footer: '',
 }
 
 export const PUBLIC_SITE_SETTING_KEYS = [
@@ -40,6 +45,11 @@ export const PUBLIC_SITE_SETTING_KEYS = [
   'imprint_street',
   'imprint_city',
   'imprint_country',
+  'adsense_publisher_id',
+  'adsense_enabled',
+  'adsense_slot_header',
+  'adsense_slot_content',
+  'adsense_slot_footer',
 ] as const
 
 export const PUBLIC_SITE_SETTINGS_DEFAULTS: Record<string, string> = {
@@ -58,4 +68,9 @@ export const PUBLIC_SITE_SETTINGS_DEFAULTS: Record<string, string> = {
   imprint_street: SITE_SETTINGS_DEFAULTS.imprint_street,
   imprint_city: SITE_SETTINGS_DEFAULTS.imprint_city,
   imprint_country: SITE_SETTINGS_DEFAULTS.imprint_country,
+  adsense_publisher_id: SITE_SETTINGS_DEFAULTS.adsense_publisher_id,
+  adsense_enabled: SITE_SETTINGS_DEFAULTS.adsense_enabled,
+  adsense_slot_header: SITE_SETTINGS_DEFAULTS.adsense_slot_header,
+  adsense_slot_content: SITE_SETTINGS_DEFAULTS.adsense_slot_content,
+  adsense_slot_footer: SITE_SETTINGS_DEFAULTS.adsense_slot_footer,
 }

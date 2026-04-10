@@ -219,6 +219,60 @@
         </AdminPanel>
       </template>
 
+      <!-- Ads Tab -->
+      <template v-else-if="activeTab === 'ads'">
+        <AdminPanel title="Google AdSense" description="Manage ad placements and revenue settings." icon="i-heroicons-megaphone">
+          <div class="space-y-5">
+            <div class="admin-switch-row">
+              <div class="admin-switch-row__content">
+                <p class="admin-switch-row__title">Enable ads</p>
+                <p class="admin-switch-row__description">Show Google AdSense ads on public pages.</p>
+              </div>
+              <USwitch
+                :model-value="form.adsense_enabled === 'true'"
+                :disabled="saving"
+                @update:model-value="form.adsense_enabled = $event ? 'true' : 'false'"
+              />
+            </div>
+
+            <div class="admin-field">
+              <label class="admin-field__label">Publisher ID</label>
+              <UInput v-model="form.adsense_publisher_id" :disabled="saving" placeholder="ca-pub-XXXXXXXXXXXXXXXX" />
+              <p class="admin-field__hint">Your Google AdSense publisher ID. Found in your AdSense dashboard.</p>
+            </div>
+          </div>
+        </AdminPanel>
+
+        <AdminPanel title="Ad Slots" description="Paste the slot IDs from your AdSense ad units." icon="i-heroicons-rectangle-group">
+          <div class="space-y-5">
+            <div class="admin-field">
+              <label class="admin-field__label">Header slot</label>
+              <UInput v-model="form.adsense_slot_header" :disabled="saving" placeholder="1234567890" />
+              <p class="admin-field__hint">Shown above the main content on public pages.</p>
+            </div>
+
+            <div class="admin-field">
+              <label class="admin-field__label">Content slot</label>
+              <UInput v-model="form.adsense_slot_content" :disabled="saving" placeholder="1234567890" />
+              <p class="admin-field__hint">Shown between content sections (e.g. below strings, in guides).</p>
+            </div>
+
+            <div class="admin-field">
+              <label class="admin-field__label">Footer slot</label>
+              <UInput v-model="form.adsense_slot_footer" :disabled="saving" placeholder="1234567890" />
+              <p class="admin-field__hint">Shown above the footer on all public pages.</p>
+            </div>
+          </div>
+        </AdminPanel>
+
+        <div v-if="form.adsense_enabled === 'true' && !form.adsense_publisher_id" class="admin-inline-note">
+          <UIcon name="i-heroicons-exclamation-triangle" class="h-4 w-4 text-amber-500" />
+          <span class="text-sm text-slate-600 dark:text-slate-400">
+            Ads are enabled but no publisher ID is set. Ads won't show until a valid publisher ID is configured.
+          </span>
+        </div>
+      </template>
+
       <!-- Data & Backup Tab -->
       <template v-else>
         <AdminPanel title="Retention" description="How long operational data is kept." icon="i-heroicons-archive-box">
@@ -308,10 +362,10 @@ const resetModal = ref(false)
 const downloadingBackup = ref(false)
 const sysInfo = ref<any>(null)
 
-type TabId = 'general' | 'seo' | 'security' | 'data'
+type TabId = 'general' | 'seo' | 'security' | 'ads' | 'data'
 
 const route = useRoute()
-const validTabs: TabId[] = ['general', 'seo', 'security', 'data']
+const validTabs: TabId[] = ['general', 'seo', 'security', 'ads', 'data']
 const activeTab = ref<TabId>(validTabs.includes(route.query.tab as TabId) ? route.query.tab as TabId : 'general')
 const isDark = useIsDark()
 
@@ -322,6 +376,7 @@ const tabs: Array<{ id: TabId; label: string; icon: string }> = [
   { id: 'general', label: 'General', icon: 'i-heroicons-cog-6-tooth' },
   { id: 'seo', label: 'SEO & Links', icon: 'i-heroicons-globe-alt' },
   { id: 'security', label: 'Security', icon: 'i-heroicons-shield-check' },
+  { id: 'ads', label: 'Ads', icon: 'i-heroicons-megaphone' },
   { id: 'data', label: 'Data & Backup', icon: 'i-heroicons-circle-stack' },
 ]
 

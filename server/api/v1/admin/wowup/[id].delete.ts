@@ -16,5 +16,5 @@ export default defineEventHandler(async (event) => {
   db.delete(wowupStrings).where(eq(wowupStrings.id, id)).run()
   logActivity({ action: 'deleted', entityType: 'wowup', entityId: id, entityName: existing.name, autoChangelog: true })
   triggerGitHubSync(`wowup-deleted: ${existing.name}`).catch(() => {})
-  return { success: true, data: { id } }
+  return apiSuccess({ id })
 })

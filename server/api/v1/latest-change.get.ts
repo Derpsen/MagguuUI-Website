@@ -17,16 +17,13 @@ export default defineEventHandler(async () => {
     .get()
 
   if (!row) {
-    return { success: true, data: null }
+    return apiSuccess(null)
   }
 
-  return {
-    success: true,
-    data: {
-      action: row.action,
-      type: row.entityType,
-      name: row.entityName,
-      createdAt: row.createdAt,
-    },
-  }
+  return apiSuccess({
+    action: row.action,
+    type: row.entityType,
+    name: row.entityName,
+    createdAt: row.createdAt,
+  })
 })

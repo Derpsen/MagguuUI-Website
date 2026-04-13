@@ -14,9 +14,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server) return
 
   const auth = useAuth()
-  auth.hydrateFromStorage()
 
-  const restored = await auth.restoreSession(true)
+  const restored = await auth.restoreSession()
   if (!restored) {
     return navigateTo('/admin/login')
   }

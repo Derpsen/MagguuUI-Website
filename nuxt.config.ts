@@ -56,7 +56,7 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' },
         { rel: 'icon', type: 'image/png', href: '/logo.png' },
         { rel: 'shortcut icon', href: '/logo.png' },
-        { rel: 'canonical', href: siteBaseUrl },
+        /* canonical is set per-page via usePublicPageSeo composable */
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
         { rel: 'manifest', href: '/manifest.json' },
         { rel: 'dns-prefetch', href: 'https://api.iconify.design' },
@@ -161,6 +161,7 @@ export default defineNuxtConfig({
         'Cross-Origin-Opener-Policy': 'same-origin',
         'Cross-Origin-Resource-Policy': 'same-origin',
         'Origin-Agent-Cluster': '?1',
+        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
         'X-DNS-Prefetch-Control': 'off',
         'X-Permitted-Cross-Domain-Policies': 'none',
         'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',

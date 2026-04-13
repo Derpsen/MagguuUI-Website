@@ -5,6 +5,7 @@
  * Uses DB-backed key tracking so limits survive restarts and match the app's single-node SQLite setup.
  */
 
+import type { H3Event } from 'h3'
 import { sqlite } from '~/server/database'
 
 interface RateEntryRow {
@@ -125,7 +126,7 @@ export function cleanupRateLimits(retentionMs: number = 24 * 60 * 60 * 1000) {
  * set it freely to bypass IP-keyed rate limits. It is only honored as a last
  * resort when no other signal is available.
  */
-export function getClientIp(event: any): string {
+export function getClientIp(event: H3Event): string {
   const cf = getHeader(event, 'cf-connecting-ip')
   if (cf) return cf.trim()
 
@@ -136,7 +137,7 @@ export function getClientIp(event: any): string {
   if (socket && socket !== '::1' && socket !== '127.0.0.1') return socket
 
   const forwarded = getHeader(event, 'x-forwarded-for')
-  if (forwarded) return forwarded.split(',')[0].trim()
+  if (forwarded) return (forwarded.split(',')[0] ?? forwarded).trim()
 
   return socket || 'unknown'
 }

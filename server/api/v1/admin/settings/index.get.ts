@@ -14,5 +14,5 @@ export default defineEventHandler(async () => {
     obj[s.key] = s.value
   }
 
-  return { success: true, data: obj }
+  return apiSuccess(obj)
 })

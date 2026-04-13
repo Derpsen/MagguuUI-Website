@@ -36,12 +36,12 @@
       <AdminPanel title="Introduction" description="Sets the tone for the whole guide." icon="i-heroicons-sparkles">
         <div class="admin-form-grid admin-form-grid--2">
           <div class="admin-field">
-            <label class="admin-field__label">Title</label>
-            <UInput v-model="form.introTitle" :disabled="saving" placeholder="Installation Guide" />
+            <label for="guide-intro-title" class="admin-field__label">Title</label>
+            <UInput id="guide-intro-title" v-model="form.introTitle" :disabled="saving" placeholder="Installation Guide" />
           </div>
           <div class="admin-field">
-            <label class="admin-field__label">Subtitle</label>
-            <UInput v-model="form.introText" :disabled="saving" placeholder="Short intro text..." />
+            <label for="guide-intro-subtitle" class="admin-field__label">Subtitle</label>
+            <UInput id="guide-intro-subtitle" v-model="form.introText" :disabled="saving" placeholder="Short intro text..." />
           </div>
         </div>
       </AdminPanel>

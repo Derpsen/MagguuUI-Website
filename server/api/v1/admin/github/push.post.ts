@@ -7,10 +7,12 @@
 
 import { db } from '~/server/database'
 import { syncHistory } from '~/server/database/schema'
+import { validateBody, githubPushSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event) || {}
-  const reason = body.reason || 'manual-push'
+  const data = validateBody(githubPushSchema, body)
+  const reason = data.reason || 'manual-push'
   const config = useRuntimeConfig()
 
   if (!config.githubToken || !config.githubRepo) {

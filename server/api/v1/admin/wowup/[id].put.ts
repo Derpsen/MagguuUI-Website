@@ -5,6 +5,7 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { wowupStrings } from '~/server/database/schema'
+import { validateBody, wowupUpdateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const id = Number(getRouterParam(event, 'id'))
@@ -14,15 +15,16 @@ export default defineEventHandler(async (event) => {
   if (!existing) throw createError({ statusCode: 404, message: 'Not found' })
 
   const body = await readBody(event)
+  const data = validateBody(wowupUpdateSchema, body)
 
   const result = db.update(wowupStrings)
     .set({
-      ...(body.name !== undefined && { name: body.name }),
-      ...(body.string !== undefined && { string: body.string }),
-      ...(body.description !== undefined && { description: body.description }),
-      ...(body.isVisible !== undefined && { isVisible: body.isVisible }),
-      ...(body.sortOrder !== undefined && { sortOrder: body.sortOrder }),
-      ...(body.customFields !== undefined && { customFields: typeof body.customFields === 'string' ? body.customFields : JSON.stringify(body.customFields) }),
+      ...(data.name !== undefined && { name: data.name }),
+      ...(data.string !== undefined && { string: data.string }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.isVisible !== undefined && { isVisible: data.isVisible }),
+      ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
+      ...(data.customFields !== undefined && { customFields: data.customFields }),
       updatedAt: new Date(),
     })
     .where(eq(wowupStrings.id, id))
@@ -30,5 +32,5 @@ export default defineEventHandler(async (event) => {
 
   logActivity({ action: 'updated', entityType: 'wowup', entityId: id, entityName: result.name, autoChangelog: true })
   triggerGitHubSync(`wowup-updated: ${result.name}`).catch(() => {})
-  return { success: true, data: result }
+  return apiSuccess(result)
 })

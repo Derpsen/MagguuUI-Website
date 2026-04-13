@@ -8,5 +8,5 @@ import { characterLayouts } from '~/server/database/schema'
 
 export default defineEventHandler(async () => {
   const all = db.select().from(characterLayouts).orderBy(asc(characterLayouts.sortOrder)).all()
-  return { success: true, data: all }
+  return apiSuccess(all)
 })

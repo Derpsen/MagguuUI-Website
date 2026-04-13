@@ -20,5 +20,5 @@ export default defineEventHandler(async () => {
     result[row.key] = row.value || ''
   }
 
-  return { success: true, data: result }
+  return apiSuccess(result)
 })

@@ -9,5 +9,5 @@ import { getUserPasskeys } from '~/server/utils/webauthn'
 export default defineEventHandler(async (event) => {
   const auth = requireAuth(event)
   const passkeysList = getUserPasskeys(auth.userId)
-  return { success: true, data: passkeysList }
+  return apiSuccess(passkeysList)
 })

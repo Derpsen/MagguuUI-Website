@@ -25,5 +25,5 @@ export default defineEventHandler(async (event) => {
     result[locale][e.section][e.key] = e.value
   }
 
-  return { success: true, data: result }
+  return apiSuccess(result)
 })

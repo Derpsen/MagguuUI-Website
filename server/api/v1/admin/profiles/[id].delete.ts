@@ -23,5 +23,5 @@ export default defineEventHandler(async (event) => {
   logActivity({ action: 'deleted', entityType: 'profile', entityId: id, entityName: `${existing.addon} — ${existing.profile}`, autoChangelog: true })
   triggerGitHubSync(`profile-deleted: ${existing.addon} — ${existing.profile}`).catch(() => {})
 
-  return { success: true, data: { id } }
+  return apiSuccess({ id })
 })

@@ -5,6 +5,7 @@
  * using @simplewebauthn/server. Challenges stored in DB.
  */
 
+import type { H3Event } from 'h3'
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -16,13 +17,23 @@ import type {
   GenerateAuthenticationOptionsOpts,
   VerifiedRegistrationResponse,
   VerifiedAuthenticationResponse,
+  RegistrationResponseJSON,
+  AuthenticationResponseJSON,
 } from '@simplewebauthn/server'
 import { eq, and } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
 import { passkeys, webauthnChallenges, users } from '~/server/database/schema'
 
+// ─── Internal DB row types ─────────────────────────
+
+interface ChallengeRow { id: number }
+interface CountRow { count: number }
+
 // ─── Base64URL Helpers (native, replacing @simplewebauthn/server/helpers) ───
-const base64urlToBuffer = (str: string): Uint8Array => new Uint8Array(Buffer.from(str, 'base64url'))
+const base64urlToBuffer = (str: string): Uint8Array<ArrayBuffer> => {
+  const buf = Buffer.from(str, 'base64url')
+  return new Uint8Array(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer)
+}
 const bufferToBase64url = (buf: Uint8Array): string => Buffer.from(buf).toString('base64url')
 const utf8ToUint8Array = (str: string): Uint8Array => new TextEncoder().encode(str)
 
@@ -32,7 +43,7 @@ const utf8ToUint8Array = (str: string): Uint8Array => new TextEncoder().encode(s
  * Get Relying Party configuration from runtimeConfig or request.
  * Falls back to auto-detection from the request URL.
  */
-function getRpConfig(event?: any) {
+function getRpConfig(event?: H3Event) {
   const config = useRuntimeConfig()
   let rpId = config.webauthnRpId
   let origin = config.webauthnOrigin
@@ -83,7 +94,7 @@ export function cleanupExpiredChallenges() {
  * Generate registration options for a user.
  * Returns the options object to send to the browser.
  */
-export async function generatePasskeyRegistrationOptions(userId: number, username: string, event?: any) {
+export async function generatePasskeyRegistrationOptions(userId: number, username: string, event?: H3Event) {
   const { rpName, rpId } = getRpConfig(event)
 
   // Get existing credentials to exclude
@@ -121,9 +132,9 @@ export async function generatePasskeyRegistrationOptions(userId: number, usernam
  */
 export async function verifyPasskeyRegistration(
   userId: number,
-  credential: any,
+  credential: RegistrationResponseJSON,
   deviceName: string,
-  event?: any,
+  event?: H3Event,
 ) {
   const { rpId, origin } = getRpConfig(event)
 
@@ -136,7 +147,7 @@ export async function verifyPasskeyRegistration(
         // Look up challenge in DB and consume it (one-time use)
         const row = sqlite.prepare(
           'SELECT * FROM webauthn_challenges WHERE challenge = ? AND type = ? AND user_id = ? AND expires_at > ?'
-        ).get(challenge, 'register', userId, Math.floor(Date.now() / 1000)) as any
+        ).get(challenge, 'register', userId, Math.floor(Date.now() / 1000)) as ChallengeRow | undefined
         if (row) {
           sqlite.prepare('DELETE FROM webauthn_challenges WHERE id = ?').run(row.id)
           return true
@@ -146,8 +157,9 @@ export async function verifyPasskeyRegistration(
       expectedOrigin: origin,
       expectedRPID: rpId,
     })
-  } catch (e: any) {
-    throw createError({ statusCode: 400, message: `Passkey verification failed: ${e.message}` })
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e)
+    throw createError({ statusCode: 400, message: `Passkey verification failed: ${msg}` })
   }
 
   if (!verification.verified || !verification.registrationInfo) {
@@ -178,7 +190,7 @@ export async function verifyPasskeyRegistration(
  * Generate authentication options (for login).
  * Returns options to send to the browser.
  */
-export async function generatePasskeyAuthenticationOptions(event?: any) {
+export async function generatePasskeyAuthenticationOptions(event?: H3Event) {
   const { rpId } = getRpConfig(event)
 
   // Get all passkeys for allowCredentials
@@ -208,7 +220,7 @@ export async function generatePasskeyAuthenticationOptions(event?: any) {
  * Verify an authentication response and resolve the user.
  * Returns { user, passkey, session } info for JWT creation.
  */
-export async function verifyPasskeyAuthentication(credential: any, event?: any) {
+export async function verifyPasskeyAuthentication(credential: AuthenticationResponseJSON, event?: H3Event) {
   const { rpId, origin } = getRpConfig(event)
 
   // Find the passkey by credential ID
@@ -228,7 +240,7 @@ export async function verifyPasskeyAuthentication(credential: any, event?: any) 
       expectedChallenge: (challenge: string) => {
         const row = sqlite.prepare(
           'SELECT * FROM webauthn_challenges WHERE challenge = ? AND type = ? AND expires_at > ?'
-        ).get(challenge, 'authenticate', Math.floor(Date.now() / 1000)) as any
+        ).get(challenge, 'authenticate', Math.floor(Date.now() / 1000)) as ChallengeRow | undefined
         if (row) {
           sqlite.prepare('DELETE FROM webauthn_challenges WHERE id = ?').run(row.id)
           return true
@@ -289,7 +301,7 @@ export function getUserPasskeys(userId: number) {
  * Get passkey count for a user.
  */
 export function getUserPasskeyCount(userId: number): number {
-  const result = sqlite.prepare('SELECT COUNT(*) as count FROM passkeys WHERE user_id = ?').get(userId) as any
+  const result = sqlite.prepare('SELECT COUNT(*) as count FROM passkeys WHERE user_id = ?').get(userId) as CountRow | undefined
   return result?.count || 0
 }
 
@@ -329,6 +341,6 @@ export function deletePasskey(id: number, userId: number) {
  * Check if any passkeys exist (for showing passkey button on login page).
  */
 export function hasAnyPasskeys(): boolean {
-  const result = sqlite.prepare('SELECT COUNT(*) as count FROM passkeys').get() as any
+  const result = sqlite.prepare('SELECT COUNT(*) as count FROM passkeys').get() as CountRow | undefined
   return (result?.count || 0) > 0
 }

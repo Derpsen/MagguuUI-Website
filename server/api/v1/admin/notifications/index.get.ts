@@ -84,5 +84,5 @@ export default defineEventHandler(async () => {
     })
   }
 
-  return { success: true, data: notifications }
+  return apiSuccess(notifications)
 })

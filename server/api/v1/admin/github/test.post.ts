@@ -9,10 +9,10 @@ export default defineEventHandler(async () => {
   const config = useRuntimeConfig()
 
   if (!config.githubToken) {
-    throw createError({ statusCode: 400, data: { success: false, error: { code: 'MISSING_TOKEN', message: 'NUXT_GITHUB_TOKEN nicht gesetzt' } } })
+    apiError('MISSING_TOKEN', 'NUXT_GITHUB_TOKEN is not set', 400)
   }
   if (!config.githubRepo) {
-    throw createError({ statusCode: 400, data: { success: false, error: { code: 'MISSING_REPO', message: 'NUXT_GITHUB_REPO nicht gesetzt' } } })
+    apiError('MISSING_REPO', 'NUXT_GITHUB_REPO is not set', 400)
   }
 
   const [owner, repo] = config.githubRepo.split('/')
@@ -42,29 +42,26 @@ export default defineEventHandler(async () => {
       },
     })
 
-    return {
-      success: true,
-      data: {
-        repo: repoInfo.full_name,
-        isPrivate: repoInfo.private,
-        permissions: repoInfo.permissions || null,
-        rateLimit: {
-          limit: rateLimit.rate.limit,
-          remaining: rateLimit.rate.remaining,
-          resetsAt: new Date(rateLimit.rate.reset * 1000).toISOString(),
-        },
-        webhookUrl: `/api/v1/webhooks/github`,
-        webhookSecretConfigured: !!config.githubWebhookSecret,
+    return apiSuccess({
+      repo: repoInfo.full_name,
+      isPrivate: repoInfo.private,
+      permissions: repoInfo.permissions || null,
+      rateLimit: {
+        limit: rateLimit.rate.limit,
+        remaining: rateLimit.rate.remaining,
+        resetsAt: new Date(rateLimit.rate.reset * 1000).toISOString(),
       },
-    }
+      webhookUrl: `/api/v1/webhooks/github`,
+      webhookSecretConfigured: !!config.githubWebhookSecret,
+    })
   } catch (err: any) {
     const status = err?.response?.status || err?.statusCode
     let errorMsg = err?.message || 'Unknown error'
 
     if (status === 401) errorMsg = 'Token invalid or expired'
-    else if (status === 403) errorMsg = 'Zugriff verweigert — Token hat nicht genug Berechtigungen'
-    else if (status === 404) errorMsg = `Repo "${owner}/${repo}" nicht gefunden oder kein Zugriff`
+    else if (status === 403) errorMsg = 'Access denied — token does not have sufficient permissions'
+    else if (status === 404) errorMsg = `Repo "${owner}/${repo}" not found or no access`
 
-    throw createError({ statusCode: status || 500, data: { success: false, error: { code: 'GITHUB_ERROR', message: errorMsg } } })
+    apiError('GITHUB_ERROR', errorMsg, status || 500)
   }
 })

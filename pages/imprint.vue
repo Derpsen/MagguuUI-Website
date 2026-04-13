@@ -77,6 +77,7 @@ const siteSettings = await usePublicPageSeo({
   title: 'Imprint',
   description: 'Legal notice and imprint for MagguuUI.',
   path: '/imprint',
+  robots: 'noindex, follow',
 })
 
 const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguui.com')

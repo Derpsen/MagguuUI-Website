@@ -15,11 +15,10 @@ interface AdminTab {
 const STORAGE_KEY = 'admin-tabs'
 const DASHBOARD_TAB: AdminTab = { path: '/admin', label: 'Dashboard', icon: 'i-heroicons-squares-2x2', pinned: true }
 
-// Shared state across all component instances
-const tabs = ref<AdminTab[]>([DASHBOARD_TAB])
-const initialized = ref(false)
-
 export function useAdminTabs() {
+  const tabs = useState<AdminTab[]>('admin-tabs', () => [{ ...DASHBOARD_TAB }])
+  const initialized = useState<boolean>('admin-tabs-initialized', () => false)
+
   const route = useRoute()
   const router = useRouter()
   const { currentContext } = useAdminNavigation()

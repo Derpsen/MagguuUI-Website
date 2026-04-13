@@ -69,7 +69,7 @@ export default defineEventHandler(async (event) => {
       status: 'success',
       details: `Webhook connected: ${body.zen || 'OK'}`,
     }).run()
-    return { success: true, data: { message: 'pong' } }
+    return apiSuccess({ message: 'pong' })
   }
 
   // Handle release events
@@ -360,5 +360,5 @@ export default defineEventHandler(async (event) => {
     details: `Unhandled event type: ${eventType}`,
   }).run()
 
-  return { success: true, data: { event: eventType, handled: false } }
+  return apiSuccess({ event: eventType, handled: false })
 })

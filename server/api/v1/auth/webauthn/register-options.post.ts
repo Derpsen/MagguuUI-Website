@@ -16,5 +16,5 @@ export default defineEventHandler(async (event) => {
     event,
   )
 
-  return { success: true, data: options }
+  return apiSuccess(options)
 })

@@ -6,21 +6,15 @@
 import { inArray } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { wowupStrings } from '~/server/database/schema'
+import { validateBody, bulkDeleteSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
+  const data = validateBody(bulkDeleteSchema, body)
 
-  if (!Array.isArray(body?.ids) || body.ids.length === 0) {
-    throw createError({ statusCode: 400, message: 'IDs array required' })
-  }
+  db.delete(wowupStrings).where(inArray(wowupStrings.id, data.ids)).run()
+  logActivity({ action: 'deleted', entityType: 'wowup', entityName: `${data.ids.length} wowup strings`, details: `Bulk deleted IDs: ${data.ids.join(', ')}` })
+  triggerGitHubSync(`wowup-bulk-deleted: ${data.ids.length} strings`).catch(() => {})
 
-  const ids = body.ids.map(Number).filter((n: number) => !isNaN(n))
-  if (ids.length === 0) {
-    throw createError({ statusCode: 400, message: 'No valid IDs provided' })
-  }
-  db.delete(wowupStrings).where(inArray(wowupStrings.id, ids)).run()
-  logActivity({ action: 'deleted', entityType: 'wowup', entityName: `${ids.length} wowup strings`, details: `Bulk deleted IDs: ${ids.join(', ')}` })
-  triggerGitHubSync(`wowup-bulk-deleted: ${ids.length} strings`).catch(() => {})
-
-  return { success: true, data: { deleted: ids.length } }
+  return apiSuccess({ deleted: data.ids.length })
 })

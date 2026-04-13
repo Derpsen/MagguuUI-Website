@@ -15,5 +15,5 @@ export default defineEventHandler(async (event) => {
 
   db.delete(fieldDefinitions).where(eq(fieldDefinitions.id, id)).run()
 
-  return { success: true }
+  return apiSuccess(null)
 })

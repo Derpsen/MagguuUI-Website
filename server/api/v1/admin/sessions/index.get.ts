@@ -26,5 +26,5 @@ export default defineEventHandler(async (event) => {
     isCurrent: s.tokenHash === currentTokenHash,
   }))
 
-  return { success: true, data }
+  return apiSuccess(data)
 })

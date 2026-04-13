@@ -7,6 +7,7 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { profiles } from '~/server/database/schema'
+import { validateBody, profileUpdateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const id = Number(getRouterParam(event, 'id'))
@@ -20,16 +21,17 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
+  const data = validateBody(profileUpdateSchema, body)
 
   const result = db.update(profiles)
     .set({
-      ...(body.addon !== undefined && { addon: body.addon }),
-      ...(body.profile !== undefined && { profile: body.profile }),
-      ...(body.string !== undefined && { string: body.string }),
-      ...(body.description !== undefined && { description: body.description }),
-      ...(body.sortOrder !== undefined && { sortOrder: body.sortOrder }),
-      ...(body.isVisible !== undefined && { isVisible: body.isVisible }),
-      ...(body.customFields !== undefined && { customFields: typeof body.customFields === 'string' ? body.customFields : JSON.stringify(body.customFields) }),
+      ...(data.addon !== undefined && { addon: data.addon }),
+      ...(data.profile !== undefined && { profile: data.profile }),
+      ...(data.string !== undefined && { string: data.string }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
+      ...(data.isVisible !== undefined && { isVisible: data.isVisible }),
+      ...(data.customFields !== undefined && { customFields: data.customFields }),
       updatedAt: new Date(),
     })
     .where(eq(profiles.id, id))
@@ -38,4 +40,5 @@ export default defineEventHandler(async (event) => {
 
   logActivity({ action: 'updated', entityType: 'profile', entityId: id, entityName: `${result.addon} — ${result.profile}`, autoChangelog: true })
   triggerGitHubSync(`profile-updated: ${result.addon} — ${result.profile}`).catch(() => {})
-  return { success: true, data: result }})
+  return apiSuccess(result)
+})

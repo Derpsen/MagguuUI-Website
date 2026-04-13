@@ -32,5 +32,5 @@ export default defineEventHandler(async (event) => {
 
   logActivity({ action: 'updated', entityType: 'layout', entityId: id, entityName: `${existing.className || ''} ${existing.spec || existing.name}`.trim(), details: 'visibility toggled' })
   triggerGitHubSync(`layout-toggled: ${existing.className || ''} ${existing.spec || existing.name}`.trim()).catch(() => {})
-  return { success: true, data: result }
+  return apiSuccess(result)
 })

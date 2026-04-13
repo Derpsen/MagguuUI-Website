@@ -25,5 +25,5 @@ export default defineEventHandler(async (event) => {
 
   logActivity({ action: 'updated', entityType: 'wowup', entityId: id, entityName: existing.name, details: 'visibility toggled' })
   triggerGitHubSync(`wowup-toggled: ${existing.name}`).catch(() => {})
-  return { success: true, data: result }
+  return apiSuccess(result)
 })

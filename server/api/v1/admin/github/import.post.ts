@@ -11,6 +11,7 @@
 import { eq, and } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { profiles, wowupStrings, characterLayouts, changelogs, siteContent, syncHistory } from '~/server/database/schema'
+import { validateBody, githubImportSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const ip = getClientIp(event)
@@ -24,18 +25,16 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
-  if (!body?.data) {
-    throw createError({ statusCode: 400, message: 'data field required' })
-  }
+  const validated = validateBody(githubImportSchema, body)
 
   let data: any
   try {
-    data = typeof body.data === 'string' ? JSON.parse(body.data) : body.data
+    data = typeof validated.data === 'string' ? JSON.parse(validated.data as string) : validated.data
   } catch {
     throw createError({ statusCode: 400, message: 'Invalid JSON format' })
   }
 
-  const strategy = body.strategy || 'merge'
+  const strategy = validated.strategy || 'merge'
   const stats = { profiles: 0, wowup: 0, layouts: 0, changelogs: 0, content: 0, skipped: 0, deleted: 0, errors: 0 }
 
   try {

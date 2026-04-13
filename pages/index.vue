@@ -6,13 +6,13 @@
 <template>
   <div>
     <!-- Hero Section — full viewport, fade in on load -->
-    <section class="relative flex flex-col" style="min-height: calc(100dvh - 5rem);">
+    <section aria-label="Hero" class="relative flex flex-col" style="min-height: calc(100dvh - 5rem);">
       <!-- Admin Edit Button -->
       <div v-if="isLoggedIn" class="absolute top-4 right-4 sm:right-8 z-10">
         <NuxtLink to="/admin/content/home"
           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
           :class="isDark ? 'bg-white/5 text-silver-400 hover:text-white hover:bg-white/10 border border-brand-400/15 backdrop-blur' : 'bg-white/80 text-gray-500 hover:text-gray-900 hover:bg-white border border-gray-200 backdrop-blur'">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+          <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
           Edit Page
         </NuxtLink>
       </div>
@@ -40,7 +40,7 @@
 
             <div class="flex items-center justify-center gap-4 fade-in fade-in-delay-3">
               <NuxtLink to="/strings" class="btn-gradient px-8 py-4 rounded-xl text-white font-semibold text-lg inline-flex items-center gap-2">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
+                <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
                 Import Strings
               </NuxtLink>
               <NuxtLink to="/guide"
@@ -75,7 +75,7 @@
                   :class="isDark ? 'text-silver-300 hover:text-brand-400' : 'text-gray-600 hover:text-brand-500'">
                   <span class="w-2 h-2 rounded-full bg-brand-400/40 group-hover:bg-brand-400 transition-colors" />
                   {{ addon }}
-                  <svg class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <svg aria-hidden="true" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                   </svg>
                 </NuxtLink>
@@ -92,7 +92,7 @@
       :style="{ opacity: scrollIndicatorOpacity }">
       <div class="scroll-bounce backdrop-blur-sm rounded-full p-2"
         :class="isDark ? 'bg-brand-950/60' : 'bg-white/60'">
-        <svg class="w-7 h-7" :class="isDark ? 'text-brand-400/70' : 'text-blue-400'" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <svg aria-hidden="true" class="w-7 h-7" :class="isDark ? 'text-brand-400/70' : 'text-blue-400'" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </div>
@@ -101,7 +101,7 @@
     <div class="section-divider" />
 
     <!-- Features — scroll reveal -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+    <section aria-label="Features" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
       <div ref="featuresHeading" class="text-center mb-16 scroll-reveal">
         <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.features_heading?.title || 'Why MagguuUI?' }}</span></h2>
         <p :class="isDark ? 'text-silver-500' : 'text-gray-500'" class="text-lg">{{ content?.features_heading?.subtitle || 'Everything you need — in one package' }}</p>
@@ -130,12 +130,15 @@ import { sanitizeRichHtml } from '~/utils/richText'
 
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
-const siteSettings = await usePublicSiteSettings()
+const siteSettings = usePublicSiteSettings()
 const homeMetaTitle = computed(() => siteSettings.value.meta_title || 'MagguuUI - Your WoW Interface, perfected.')
 const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'High-quality import strings for ElvUI, Plater, BigWigs, Details & more. Simply copy and paste into WoW.')
 const homeOgImage = computed(() => siteSettings.value.og_image_url || 'https://ui.magguu.xyz/logo.png')
 
 useHead({
+  link: [
+    { rel: 'canonical', href: 'https://ui.magguu.xyz/' },
+  ],
   script: [
     {
       type: 'application/ld+json',

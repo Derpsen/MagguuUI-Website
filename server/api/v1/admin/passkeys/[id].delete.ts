@@ -16,5 +16,5 @@ export default defineEventHandler(async (event) => {
   }
 
   const deleted = deletePasskey(id, auth.userId)
-  return { success: true, data: { id: deleted.id } }
+  return apiSuccess({ id: deleted.id })
 })

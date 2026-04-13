@@ -16,5 +16,5 @@ export default defineEventHandler(async () => {
     .orderBy(asc(profiles.addon), asc(profiles.sortOrder))
     .all()
 
-  return { success: true, data: allProfiles }
+  return apiSuccess(allProfiles)
 })

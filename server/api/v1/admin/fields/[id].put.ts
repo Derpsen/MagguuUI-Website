@@ -5,6 +5,7 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { fieldDefinitions } from '~/server/database/schema'
+import { validateBody, fieldDefinitionUpdateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const id = Number(getRouterParam(event, 'id'))
@@ -14,19 +15,20 @@ export default defineEventHandler(async (event) => {
   if (!existing) throw createError({ statusCode: 404, message: 'Field not found' })
 
   const body = await readBody(event)
+  const data = validateBody(fieldDefinitionUpdateSchema, body)
 
   const result = db.update(fieldDefinitions)
     .set({
-      ...(body.fieldLabel !== undefined && { fieldLabel: body.fieldLabel }),
-      ...(body.fieldType !== undefined && { fieldType: body.fieldType }),
-      ...(body.fieldOptions !== undefined && { fieldOptions: body.fieldOptions ? JSON.stringify(body.fieldOptions) : null }),
-      ...(body.isRequired !== undefined && { isRequired: body.isRequired }),
-      ...(body.sortOrder !== undefined && { sortOrder: body.sortOrder }),
+      ...(data.fieldLabel !== undefined && { fieldLabel: data.fieldLabel }),
+      ...(data.fieldType !== undefined && { fieldType: data.fieldType }),
+      ...(data.fieldOptions !== undefined && { fieldOptions: data.fieldOptions != null ? JSON.stringify(data.fieldOptions) : null }),
+      ...(data.isRequired !== undefined && { isRequired: data.isRequired }),
+      ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
       updatedAt: new Date(),
     })
     .where(eq(fieldDefinitions.id, id))
     .returning()
     .get()
 
-  return { success: true, data: result }
+  return apiSuccess(result)
 })

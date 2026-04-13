@@ -28,5 +28,5 @@ export default defineEventHandler(async (event) => {
 
   unlockAccount(id)
 
-  return { success: true, data: { id, message: 'Account unlocked' } }
+  return apiSuccess({ id, message: 'Account unlocked' })
 })

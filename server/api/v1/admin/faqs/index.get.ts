@@ -8,5 +8,5 @@ import { faqs } from '~/server/database/schema'
 
 export default defineEventHandler(async () => {
   const all = db.select().from(faqs).orderBy(asc(faqs.sortOrder), asc(faqs.id)).all()
-  return { success: true, data: all }
+  return apiSuccess(all)
 })

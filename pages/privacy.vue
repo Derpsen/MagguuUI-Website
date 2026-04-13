@@ -142,5 +142,6 @@ await usePublicPageSeo({
   title: 'Privacy Policy',
   description: 'Privacy policy for MagguuUI in accordance with GDPR.',
   path: '/privacy',
+  robots: 'noindex, follow',
 })
 </script>

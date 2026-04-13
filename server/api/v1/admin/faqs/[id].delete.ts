@@ -22,5 +22,5 @@ export default defineEventHandler(async (event) => {
     entityName: existing.question.substring(0, 60),
   })
 
-  return { success: true, data: { id } }
+  return apiSuccess({ id })
 })

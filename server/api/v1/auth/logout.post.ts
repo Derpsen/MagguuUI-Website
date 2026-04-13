@@ -10,7 +10,7 @@ import { revokeSession } from '~/server/utils/session'
 export default defineEventHandler(async (event) => {
   const token = extractToken(event)
   clearAuthCookie(event)
-  if (!token) return { success: true }
+  if (!token) return apiSuccess(null)
 
   try {
     const payload = verifyToken(token)
@@ -21,5 +21,5 @@ export default defineEventHandler(async (event) => {
     // Token already invalid — just proceed
   }
 
-  return { success: true, data: { message: 'Logged out' } }
+  return apiSuccess({ message: 'Logged out' })
 })

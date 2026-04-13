@@ -33,5 +33,5 @@ export default defineEventHandler(async (event) => {
 
   logActivity({ action: 'updated', entityType: 'profile', entityId: id, entityName: `${existing.addon} — ${existing.profile}`, details: 'visibility toggled' })
   triggerGitHubSync(`profile-toggled: ${existing.addon} — ${existing.profile}`).catch(() => {})
-  return { success: true, data: result }
+  return apiSuccess(result)
 })

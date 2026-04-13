@@ -6,13 +6,11 @@
 import { randomBytes, createHash } from 'crypto'
 import { db } from '~/server/database'
 import { apiKeys } from '~/server/database/schema'
+import { validateBody, apiKeyCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-
-  if (!body?.name?.trim()) {
-    throw createError({ statusCode: 400, message: 'Name required' })
-  }
+  const data = validateBody(apiKeyCreateSchema, body)
 
   // Generate a random API key
   const rawKey = 'mgui_' + randomBytes(32).toString('hex')
@@ -20,10 +18,10 @@ export default defineEventHandler(async (event) => {
   const keyPreview = rawKey.slice(0, 9) + '...' + rawKey.slice(-4)
 
   const result = db.insert(apiKeys).values({
-    name: body.name.trim(),
+    name: data.name.trim(),
     keyHash,
     keyPreview,
-    permissions: body.permissions || 'read',
+    permissions: data.permissions || 'read',
   }).returning({
     id: apiKeys.id,
     name: apiKeys.name,

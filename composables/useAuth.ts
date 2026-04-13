@@ -16,6 +16,22 @@ interface AuthSessionPayload {
   sessionId?: number | null
 }
 
+interface LoginResponse {
+  success: boolean
+  data: {
+    user: AuthUser
+    sessionId: number
+  }
+}
+
+interface SessionResponse {
+  success: boolean
+  data: {
+    id: number
+    user: AuthUser
+  }
+}
+
 export function useAuth() {
   const user = useState<AuthUser | null>('auth-user', () => null)
   const sessionId = useState<number | null>('auth-session-id', () => null)
@@ -32,13 +48,9 @@ export function useAuth() {
     sessionId.value = null
   }
 
-  function hydrateFromStorage() {
-    if (import.meta.server || initialized.value) return
+  // Initialize once on client-side
+  if (import.meta.client && !initialized.value) {
     initialized.value = true
-  }
-
-  if (import.meta.client) {
-    hydrateFromStorage()
   }
 
   const isLoggedIn = computed(() => !!user.value)
@@ -55,7 +67,7 @@ export function useAuth() {
     restoring.value = true
 
     try {
-      const response = await $fetch<any>('/api/v1/admin/sessions/current', {
+      const response = await $fetch<SessionResponse>('/api/v1/admin/sessions/current', {
         credentials: 'include',
       })
 
@@ -75,7 +87,7 @@ export function useAuth() {
   }
 
   async function login(username: string, password: string) {
-    const response = await $fetch<any>('/api/v1/auth/login', {
+    const response = await $fetch<LoginResponse>('/api/v1/auth/login', {
       method: 'POST',
       body: { username, password },
       credentials: 'include',
@@ -113,7 +125,6 @@ export function useAuth() {
     sessionId,
     restoring,
     isLoggedIn,
-    hydrateFromStorage,
     setSession,
     clearSession,
     restoreSession,

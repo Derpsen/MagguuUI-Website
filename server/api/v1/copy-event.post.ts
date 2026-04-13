@@ -14,7 +14,7 @@ const ALLOWED_TYPES = new Set(['profile', 'wowup', 'layout'])
 export default defineEventHandler(async (event) => {
   // Check if copy event tracking is enabled in settings
   if (!isCopyEventTrackingEnabled()) {
-    return { success: true }
+    return apiSuccess(null)
   }
 
   const ip = getClientIp(event)
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
   const { allowed } = checkRateLimit(`copy-event:${ip}`, 60, 60 * 1000, 60 * 1000)
   if (!allowed) {
     // Silently drop — tracking is best-effort and must not break UX.
-    return { success: true }
+    return apiSuccess(null)
   }
 
   const body = await readBody(event)
@@ -41,5 +41,5 @@ export default defineEventHandler(async (event) => {
     db.insert(copyEvents).values({ stringType, stringId, ip }).run()
   } catch { /* silently fail - tracking should not break UX */ }
 
-  return { success: true }
+  return apiSuccess(null)
 })

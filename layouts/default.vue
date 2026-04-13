@@ -378,7 +378,7 @@ const showBackToTop = ref(false)
 const scrollProgress = ref(0)
 const { user, isLoggedIn, logout } = useAuth()
 const isDark = useIsDark()
-const siteSettings = await usePublicSiteSettings()
+const siteSettings = usePublicSiteSettings()
 const siteName = computed(() => siteSettings.value.site_name || 'MagguuUI')
 
 usePageTracking()

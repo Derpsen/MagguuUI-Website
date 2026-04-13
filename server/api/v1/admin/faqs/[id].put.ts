@@ -5,6 +5,7 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { faqs } from '~/server/database/schema'
+import { validateBody, faqUpdateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const id = Number(getRouterParam(event, 'id'))
@@ -14,14 +15,15 @@ export default defineEventHandler(async (event) => {
   if (!existing) throw createError({ statusCode: 404, message: 'Not found' })
 
   const body = await readBody(event)
+  const data = validateBody(faqUpdateSchema, body)
 
   const result = db.update(faqs)
     .set({
-      ...(body.category !== undefined && { category: body.category }),
-      ...(body.question !== undefined && { question: body.question }),
-      ...(body.answer !== undefined && { answer: body.answer }),
-      ...(body.sortOrder !== undefined && { sortOrder: body.sortOrder }),
-      ...(body.isVisible !== undefined && { isVisible: body.isVisible }),
+      ...(data.category !== undefined && { category: data.category }),
+      ...(data.question !== undefined && { question: data.question }),
+      ...(data.answer !== undefined && { answer: data.answer }),
+      ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
+      ...(data.isVisible !== undefined && { isVisible: data.isVisible }),
       updatedAt: new Date(),
     })
     .where(eq(faqs.id, id))
@@ -31,8 +33,8 @@ export default defineEventHandler(async (event) => {
     action: 'updated',
     entityType: 'faq',
     entityId: id,
-    entityName: (body.question || existing.question).substring(0, 60),
+    entityName: (data.question || existing.question).substring(0, 60),
   })
 
-  return { success: true, data: result }
+  return apiSuccess(result)
 })

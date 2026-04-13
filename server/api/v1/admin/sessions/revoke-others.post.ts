@@ -23,8 +23,5 @@ export default defineEventHandler(async (event) => {
 
   revokeAllUserSessions(auth.userId, currentSessionId)
 
-  return {
-    success: true,
-    data: { revokedCount: countResult.count },
-  }
+  return apiSuccess({ revokedCount: countResult.count })
 })

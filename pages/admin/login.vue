@@ -73,12 +73,12 @@
 
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-700'">Username</label>
-            <UInput v-model="form.username" placeholder="admin" icon="i-heroicons-user" size="lg" autofocus @keyup.enter="handleLogin" />
+            <label for="login-username" class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-700'">Username</label>
+            <UInput id="login-username" v-model="form.username" placeholder="admin" icon="i-heroicons-user" size="lg" autofocus @keyup.enter="handleLogin" />
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-700'">Password</label>
-            <UInput v-model="form.password" type="password" placeholder="••••••••" icon="i-heroicons-lock-closed" size="lg" @keyup.enter="handleLogin" />
+            <label for="login-password" class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-700'">Password</label>
+            <UInput id="login-password" v-model="form.password" type="password" placeholder="••••••••" icon="i-heroicons-lock-closed" size="lg" @keyup.enter="handleLogin" />
           </div>
           <UAlert v-if="error" :color="isLocked ? 'warning' : 'error'" variant="subtle" :icon="isLocked ? 'i-heroicons-lock-closed' : 'i-heroicons-exclamation-circle'" :title="error" />
           <UButton block size="lg" :loading="loading" @click="handleLogin">Sign In</UButton>

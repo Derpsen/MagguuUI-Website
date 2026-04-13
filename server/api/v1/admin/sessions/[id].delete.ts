@@ -37,5 +37,5 @@ export default defineEventHandler(async (event) => {
 
   revokeSession(id)
 
-  return { success: true, data: { id } }
+  return apiSuccess({ id })
 })

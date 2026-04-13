@@ -49,23 +49,23 @@
         <div class="space-y-4">
           <div class="admin-form-grid admin-form-grid--2">
             <div class="admin-field">
-              <label class="admin-field__label">Heading line 1</label>
-              <UInput v-model="form.hero.title" :disabled="saving" placeholder="Your WoW Interface," />
+              <label for="home-hero-title" class="admin-field__label">Heading line 1</label>
+              <UInput id="home-hero-title" v-model="form.hero.title" :disabled="saving" placeholder="Your WoW Interface," />
               <p class="admin-field__hint" :class="counterClass(form.hero.title?.length || 0, 40)">
                 {{ form.hero.title?.length || 0 }}/40
               </p>
             </div>
             <div class="admin-field">
-              <label class="admin-field__label">Heading line 2</label>
-              <UInput v-model="form.hero.title2" :disabled="saving" placeholder="perfected." />
+              <label for="home-hero-title2" class="admin-field__label">Heading line 2</label>
+              <UInput id="home-hero-title2" v-model="form.hero.title2" :disabled="saving" placeholder="perfected." />
               <p class="admin-field__hint" :class="counterClass(form.hero.title2?.length || 0, 30)">
                 {{ form.hero.title2?.length || 0 }}/30
               </p>
             </div>
           </div>
           <div class="admin-field">
-            <label class="admin-field__label">Subtitle</label>
-            <TipTapEditor v-model="form.hero.description" placeholder="Short description..." min-height="80px" />
+            <label for="home-hero-description" class="admin-field__label">Subtitle</label>
+            <TipTapEditor id="home-hero-description" v-model="form.hero.description" placeholder="Short description..." min-height="80px" />
           </div>
         </div>
       </AdminPanel>
@@ -76,23 +76,23 @@
           <div class="admin-subpanel space-y-3">
             <p class="admin-row__eyebrow">Addons section</p>
             <div class="admin-field">
-              <label class="admin-field__label">Title</label>
-              <UInput v-model="form.addons.title" :disabled="saving" placeholder="Supported Addons" />
+              <label for="home-addons-title" class="admin-field__label">Title</label>
+              <UInput id="home-addons-title" v-model="form.addons.title" :disabled="saving" placeholder="Supported Addons" />
             </div>
             <div class="admin-field">
-              <label class="admin-field__label">Subtitle</label>
-              <UInput v-model="form.addons.subtitle" :disabled="saving" placeholder="Profiles for the most popular WoW addons" />
+              <label for="home-addons-subtitle" class="admin-field__label">Subtitle</label>
+              <UInput id="home-addons-subtitle" v-model="form.addons.subtitle" :disabled="saving" placeholder="Profiles for the most popular WoW addons" />
             </div>
           </div>
           <div class="admin-subpanel space-y-3">
             <p class="admin-row__eyebrow">Features section</p>
             <div class="admin-field">
-              <label class="admin-field__label">Title</label>
-              <UInput v-model="form.features_heading.title" :disabled="saving" placeholder="Why MagguuUI?" />
+              <label for="home-features-title" class="admin-field__label">Title</label>
+              <UInput id="home-features-title" v-model="form.features_heading.title" :disabled="saving" placeholder="Why MagguuUI?" />
             </div>
             <div class="admin-field">
-              <label class="admin-field__label">Subtitle</label>
-              <UInput v-model="form.features_heading.subtitle" :disabled="saving" placeholder="Everything you need in one package" />
+              <label for="home-features-subtitle" class="admin-field__label">Subtitle</label>
+              <UInput id="home-features-subtitle" v-model="form.features_heading.subtitle" :disabled="saving" placeholder="Everything you need in one package" />
             </div>
           </div>
         </div>
@@ -120,12 +120,13 @@
             <!-- Content -->
             <div class="flex-1 space-y-3">
               <div class="admin-field">
-                <label class="admin-field__label">Title</label>
-                <UInput v-model="form.features[`feature_${index}_title`]" :disabled="saving" :placeholder="`Feature ${index}`" />
+                <label :for="`home-feature-${index}-title`" class="admin-field__label">Title</label>
+                <UInput :id="`home-feature-${index}-title`" v-model="form.features[`feature_${index}_title`]" :disabled="saving" :placeholder="`Feature ${index}`" />
               </div>
               <div class="admin-field">
-                <label class="admin-field__label">Description</label>
+                <label :for="`home-feature-${index}-description`" class="admin-field__label">Description</label>
                 <TipTapEditor
+                  :id="`home-feature-${index}-description`"
                   v-model="form.features[`feature_${index}_text`]"
                   placeholder="Feature description..."
                   min-height="80px"

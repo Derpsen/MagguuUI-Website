@@ -17,5 +17,5 @@ export default defineEventHandler(async () => {
     lockedUntil: users.lockedUntil,
   }).from(users).all()
 
-  return { success: true, data: rows }
+  return apiSuccess(rows)
 })

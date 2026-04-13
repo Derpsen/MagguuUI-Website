@@ -8,20 +8,12 @@ import bcrypt from 'bcrypt'
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { users } from '~/server/database/schema'
+import { validateBody, passwordChangeSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const auth = requireAuth(event)
   const body = await readBody(event)
-
-  if (!body?.currentPassword || !body?.newPassword) {
-    throw createError({ statusCode: 400, message: 'Current and new password required' })
-  }
-
-  const { passwordSchema } = await import('~/server/utils/validation')
-  const pwResult = passwordSchema.safeParse(body.newPassword)
-  if (!pwResult.success) {
-    throw createError({ statusCode: 400, message: pwResult.error.issues[0].message })
-  }
+  const data = validateBody(passwordChangeSchema, body)
 
   // Get current user
   const user = db.select().from(users).where(eq(users.id, auth.userId)).get()
@@ -30,17 +22,17 @@ export default defineEventHandler(async (event) => {
   }
 
   // Verify current password
-  const valid = await bcrypt.compare(body.currentPassword, user.passwordHash)
+  const valid = await bcrypt.compare(data.currentPassword, user.passwordHash)
   if (!valid) {
     throw createError({ statusCode: 401, message: 'Current password is incorrect' })
   }
 
   // Update password
-  const hash = await bcrypt.hash(body.newPassword, 12)
+  const hash = await bcrypt.hash(data.newPassword, 12)
   db.update(users)
     .set({ passwordHash: hash, updatedAt: new Date() })
     .where(eq(users.id, auth.userId))
     .run()
 
-  return { success: true, data: { message: 'Password changed' } }
+  return apiSuccess({ message: 'Password changed' })
 })

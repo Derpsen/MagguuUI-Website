@@ -6,26 +6,24 @@
 
 import { db } from '~/server/database'
 import { profiles } from '~/server/database/schema'
+import { validateBody, profileCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-
-  if (!body?.addon || !body?.profile || !body?.string) {
-    throw createError({ statusCode: 400, message: 'Addon, Profile and String are required' })
-  }
+  const data = validateBody(profileCreateSchema, body)
 
   const result = db.insert(profiles).values({
-    addon: body.addon,
-    profile: body.profile,
-    string: body.string,
-    description: body.description || null,
-    sortOrder: body.sortOrder ?? 0,
-    isVisible: body.isVisible ?? true,
-    customFields: body.customFields ? (typeof body.customFields === 'string' ? body.customFields : JSON.stringify(body.customFields)) : null,
+    addon: data.addon,
+    profile: data.profile,
+    string: data.string,
+    description: data.description ?? null,
+    sortOrder: data.sortOrder ?? 0,
+    isVisible: data.isVisible ?? true,
+    customFields: data.customFields ?? null,
   }).returning().get()
 
   setResponseStatus(event, 201)
-  logActivity({ action: 'created', entityType: 'profile', entityId: result.id, entityName: `${body.addon} — ${body.profile}`, autoChangelog: true })
-  triggerGitHubSync(`profile-created: ${body.addon} — ${body.profile}`).catch(() => {})
-  return { success: true, data: result }
+  logActivity({ action: 'created', entityType: 'profile', entityId: result.id, entityName: `${data.addon} — ${data.profile}`, autoChangelog: true })
+  triggerGitHubSync(`profile-created: ${data.addon} — ${data.profile}`).catch(() => {})
+  return apiSuccess(result)
 })

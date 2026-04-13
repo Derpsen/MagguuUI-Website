@@ -6,21 +6,15 @@
 import { inArray } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { profiles } from '~/server/database/schema'
+import { validateBody, bulkDeleteSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
+  const data = validateBody(bulkDeleteSchema, body)
 
-  if (!Array.isArray(body?.ids) || body.ids.length === 0) {
-    throw createError({ statusCode: 400, message: 'IDs array required' })
-  }
+  db.delete(profiles).where(inArray(profiles.id, data.ids)).run()
+  logActivity({ action: 'deleted', entityType: 'profile', entityName: `${data.ids.length} profiles`, details: `Bulk deleted IDs: ${data.ids.join(', ')}` })
+  triggerGitHubSync(`profiles-bulk-deleted: ${data.ids.length} profiles`).catch(() => {})
 
-  const ids = body.ids.map(Number).filter((n: number) => !isNaN(n))
-  if (ids.length === 0) {
-    throw createError({ statusCode: 400, message: 'No valid IDs provided' })
-  }
-  db.delete(profiles).where(inArray(profiles.id, ids)).run()
-  logActivity({ action: 'deleted', entityType: 'profile', entityName: `${ids.length} profiles`, details: `Bulk deleted IDs: ${ids.join(', ')}` })
-  triggerGitHubSync(`profiles-bulk-deleted: ${ids.length} profiles`).catch(() => {})
-
-  return { success: true, data: { deleted: ids.length } }
+  return apiSuccess({ deleted: data.ids.length })
 })

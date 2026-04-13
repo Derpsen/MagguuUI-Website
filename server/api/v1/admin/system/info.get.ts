@@ -26,26 +26,34 @@ export default defineEventHandler(async (event) => {
     } catch { /* no WAL file */ }
   } catch { /* file not found */ }
 
-  // Row counts for main tables
-  const getCount = (table: string) => {
+  // Row counts for main tables — use a whitelist to prevent SQL injection
+  // via table name interpolation.
+  const ALLOWED_TABLES = [
+    'profiles', 'wowup_strings', 'character_layouts', 'changelogs',
+    'users', 'sessions', 'login_attempts', 'passkeys', 'activity_log',
+    'api_keys', 'page_views', 'copy_events',
+  ] as const
+
+  const safeTableCount = (table: string): number => {
+    if (!(ALLOWED_TABLES as readonly string[]).includes(table)) return 0
     try {
-      return (sqlite.prepare(`SELECT COUNT(*) as count FROM ${table}`).get() as any)?.count || 0
+      return (sqlite.prepare(`SELECT COUNT(*) as count FROM "${table}"`).get() as any)?.count || 0
     } catch { return 0 }
   }
 
   const tableCounts = {
-    profiles: getCount('profiles'),
-    wowupStrings: getCount('wowup_strings'),
-    characterLayouts: getCount('character_layouts'),
-    changelogs: getCount('changelogs'),
-    users: getCount('users'),
-    sessions: getCount('sessions'),
-    loginAttempts: getCount('login_attempts'),
-    passkeys: getCount('passkeys'),
-    activityLog: getCount('activity_log'),
-    apiKeys: getCount('api_keys'),
-    pageViews: getCount('page_views'),
-    copyEvents: getCount('copy_events'),
+    profiles: safeTableCount('profiles'),
+    wowupStrings: safeTableCount('wowup_strings'),
+    characterLayouts: safeTableCount('character_layouts'),
+    changelogs: safeTableCount('changelogs'),
+    users: safeTableCount('users'),
+    sessions: safeTableCount('sessions'),
+    loginAttempts: safeTableCount('login_attempts'),
+    passkeys: safeTableCount('passkeys'),
+    activityLog: safeTableCount('activity_log'),
+    apiKeys: safeTableCount('api_keys'),
+    pageViews: safeTableCount('page_views'),
+    copyEvents: safeTableCount('copy_events'),
   }
 
   // App version from runtime config
@@ -57,24 +65,21 @@ export default defineEventHandler(async (event) => {
     'SELECT COUNT(*) as count FROM sessions WHERE is_revoked = 0 AND expires_at > ?'
   ).get(Math.floor(Date.now() / 1000)) as any)?.count || 0
 
-  return {
-    success: true,
-    data: {
-      database: {
-        sizeBytes: dbSizeBytes,
-        sizeFormatted: formatBytes(dbSizeBytes),
-        tables: tableCounts,
-      },
-      app: {
-        version: appVersion,
-        nodeVersion: process.version,
-        platform: process.platform,
-        uptime: process.uptime(),
-        uptimeFormatted: formatUptime(process.uptime()),
-      },
-      activeSessions,
+  return apiSuccess({
+    database: {
+      sizeBytes: dbSizeBytes,
+      sizeFormatted: formatBytes(dbSizeBytes),
+      tables: tableCounts,
     },
-  }
+    app: {
+      version: appVersion,
+      nodeVersion: process.version,
+      platform: process.platform,
+      uptime: process.uptime(),
+      uptimeFormatted: formatUptime(process.uptime()),
+    },
+    activeSessions,
+  })
 })
 
 function formatBytes(bytes: number): string {

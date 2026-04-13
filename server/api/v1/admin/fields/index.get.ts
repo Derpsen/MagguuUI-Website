@@ -23,5 +23,5 @@ export default defineEventHandler(async (event) => {
       .all()
   }
 
-  return { success: true, data: results }
+  return apiSuccess(results)
 })

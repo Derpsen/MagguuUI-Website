@@ -5,20 +5,19 @@
  */
 
 import { renamePasskey } from '~/server/utils/webauthn'
+import { validateBody, passkeyRenameSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const auth = requireAuth(event)
   const id = Number(getRouterParam(event, 'id'))
-  const body = await readBody(event)
 
   if (!id || isNaN(id)) {
     throw createError({ statusCode: 400, message: 'Invalid passkey ID' })
   }
 
-  if (!body?.deviceName?.trim()) {
-    throw createError({ statusCode: 400, message: 'Device name is required' })
-  }
+  const body = await readBody(event)
+  const data = validateBody(passkeyRenameSchema, body)
 
-  const updated = renamePasskey(id, auth.userId, body.deviceName.trim())
-  return { success: true, data: updated }
+  const updated = renamePasskey(id, auth.userId, data.deviceName.trim())
+  return apiSuccess(updated)
 })

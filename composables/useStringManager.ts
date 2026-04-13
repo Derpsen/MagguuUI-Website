@@ -5,16 +5,24 @@
  * lifecycle logic shared by profiles, wowup, and layouts admin pages.
  */
 
-interface StringManagerConfig {
+interface StringItem {
+  id: number
+  isVisible: boolean
+  sortOrder: number
+  [key: string]: unknown
+}
+
+interface StringManagerConfig<T extends StringItem> {
   apiBase: string
   entityName: string
   entityNamePlural: string
-  stringField: string
-  defaultForm: () => Record<string, any>
-  flattenResponse?: (data: any) => any[]
+  /** Key of T whose value is the import string to copy to clipboard */
+  stringField: keyof T & string
+  defaultForm: () => Partial<T>
+  flattenResponse?: (data: unknown) => T[]
 }
 
-export function useStringManager(config: StringManagerConfig) {
+export function useStringManager<T extends StringItem = StringItem>(config: StringManagerConfig<T>) {
   const { apiFetch } = useApi()
   const toast = useToast()
   const route = useRoute()
@@ -23,21 +31,21 @@ export function useStringManager(config: StringManagerConfig) {
   // State
   // ---------------------------------------------------------------------------
 
-  const items = ref<any[]>([])
+  const items = ref<T[]>([]) as Ref<T[]>
   const loading = ref(true)
   const search = ref('')
   const selected = reactive(new Set<number>())
 
   // Modal state
   const modalOpen = ref(false)
-  const form = ref<Record<string, any>>(config.defaultForm())
+  const form = ref<Partial<T>>(config.defaultForm()) as Ref<Partial<T>>
   const formError = ref('')
   const saving = ref(false)
-  const editingItem = ref<any | null>(null)
+  const editingItem = ref<T | null>(null) as Ref<T | null>
 
   // Delete modal state
   const deleteModalOpen = ref(false)
-  const deletingItem = ref<any | null>(null)
+  const deletingItem = ref<T | null>(null) as Ref<T | null>
   const bulkDeleteModalOpen = ref(false)
 
   // Last-updated ticker
@@ -53,11 +61,11 @@ export function useStringManager(config: StringManagerConfig) {
   // Selection helpers (pure functions — pages wrap them in computed)
   // ---------------------------------------------------------------------------
 
-  function isAllSelected(filteredItems: any[]): boolean {
+  function isAllSelected(filteredItems: T[]): boolean {
     return filteredItems.length > 0 && filteredItems.every(item => selected.has(item.id))
   }
 
-  function isSomeSelected(filteredItems: any[]): boolean {
+  function isSomeSelected(filteredItems: T[]): boolean {
     return filteredItems.some(item => selected.has(item.id))
   }
 
@@ -65,7 +73,7 @@ export function useStringManager(config: StringManagerConfig) {
     selected.has(id) ? selected.delete(id) : selected.add(id)
   }
 
-  function toggleSelectAll(filteredItems: any[]) {
+  function toggleSelectAll(filteredItems: T[]) {
     if (isAllSelected(filteredItems)) {
       filteredItems.forEach(item => selected.delete(item.id))
     } else {
@@ -93,7 +101,7 @@ export function useStringManager(config: StringManagerConfig) {
   async function load() {
     loading.value = true
     try {
-      const data = await apiFetch<any>(config.apiBase)
+      const data = await apiFetch<T[]>(config.apiBase)
       items.value = config.flattenResponse ? config.flattenResponse(data) : data
       lastLoaded.value = new Date()
       updateLastUpdatedText()
@@ -111,19 +119,19 @@ export function useStringManager(config: StringManagerConfig) {
     modalOpen.value = true
   }
 
-  function openEdit(item: any) {
+  function openEdit(item: T) {
     editingItem.value = item
     formError.value = ''
-    const fresh: Record<string, any> = {}
+    const fresh: Partial<T> = {}
     const defaults = config.defaultForm()
-    for (const key of Object.keys(defaults)) {
+    for (const key of Object.keys(defaults) as Array<keyof T & string>) {
       fresh[key] = item[key] !== undefined ? item[key] : defaults[key]
     }
     form.value = fresh
     modalOpen.value = true
   }
 
-  async function save(extraFields?: Record<string, any>) {
+  async function save(extraFields?: Partial<T>) {
     saving.value = true
     formError.value = ''
 
@@ -140,14 +148,15 @@ export function useStringManager(config: StringManagerConfig) {
 
       modalOpen.value = false
       await load()
-    } catch (error: any) {
-      formError.value = error?.data?.message || `Error saving ${config.entityName}`
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } }
+      formError.value = err?.data?.message || `Error saving ${config.entityName}`
     } finally {
       saving.value = false
     }
   }
 
-  async function toggleVisibility(item: any) {
+  async function toggleVisibility(item: T) {
     try {
       await apiFetch(`${config.apiBase}/${item.id}`, {
         method: 'PATCH',
@@ -159,7 +168,7 @@ export function useStringManager(config: StringManagerConfig) {
     }
   }
 
-  function confirmDelete(item: any) {
+  function confirmDelete(item: T) {
     deletingItem.value = item
     deleteModalOpen.value = true
   }
@@ -196,8 +205,8 @@ export function useStringManager(config: StringManagerConfig) {
   // Clipboard
   // ---------------------------------------------------------------------------
 
-  async function copyString(item: any) {
-    const text: string = item[config.stringField] ?? ''
+  async function copyString(item: T) {
+    const text = String(item[config.stringField] ?? '')
     try {
       await navigator.clipboard.writeText(text)
       toast.add({ title: `Copied to clipboard`, color: 'success' })
@@ -231,7 +240,7 @@ export function useStringManager(config: StringManagerConfig) {
     dragOverIdx.value = null
   }
 
-  async function onDrop(event: DragEvent, toIdx: number, filteredItems: any[]) {
+  async function onDrop(event: DragEvent, toIdx: number, filteredItems: T[]) {
     event.preventDefault()
     const fromIdx = dragIdx.value
     resetDrag()
@@ -239,6 +248,7 @@ export function useStringManager(config: StringManagerConfig) {
 
     const ordered = [...filteredItems]
     const [moved] = ordered.splice(fromIdx, 1)
+    if (!moved) return
     ordered.splice(toIdx, 0, moved)
 
     // Re-sort the full items array to match the new filtered order

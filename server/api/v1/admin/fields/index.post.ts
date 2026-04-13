@@ -5,27 +5,25 @@
 
 import { db } from '~/server/database'
 import { fieldDefinitions } from '~/server/database/schema'
+import { validateBody, fieldDefinitionCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-
-  if (!body?.entityType || !body?.fieldName || !body?.fieldLabel) {
-    throw createError({ statusCode: 400, message: 'entityType, fieldName and fieldLabel are required' })
-  }
+  const data = validateBody(fieldDefinitionCreateSchema, body)
 
   // Sanitize fieldName to be a valid key
-  const fieldName = body.fieldName.toLowerCase().replace(/[^a-z0-9_]/g, '_')
+  const fieldName = data.fieldName.toLowerCase().replace(/[^a-z0-9_]/g, '_')
 
   const result = db.insert(fieldDefinitions).values({
-    entityType: body.entityType,
+    entityType: data.entityType,
     fieldName,
-    fieldLabel: body.fieldLabel,
-    fieldType: body.fieldType || 'text',
-    fieldOptions: body.fieldOptions ? JSON.stringify(body.fieldOptions) : null,
-    isRequired: body.isRequired ?? false,
-    sortOrder: body.sortOrder ?? 0,
+    fieldLabel: data.fieldLabel,
+    fieldType: data.fieldType || 'text',
+    fieldOptions: data.fieldOptions != null ? JSON.stringify(data.fieldOptions) : null,
+    isRequired: data.isRequired ?? false,
+    sortOrder: data.sortOrder ?? 0,
   }).returning().get()
 
   setResponseStatus(event, 201)
-  return { success: true, data: result }
+  return apiSuccess(result)
 })

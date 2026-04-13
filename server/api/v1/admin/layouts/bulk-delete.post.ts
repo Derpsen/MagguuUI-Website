@@ -6,20 +6,14 @@
 import { inArray } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { characterLayouts } from '~/server/database/schema'
+import { validateBody, bulkDeleteSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
+  const data = validateBody(bulkDeleteSchema, body)
 
-  if (!Array.isArray(body?.ids) || body.ids.length === 0) {
-    throw createError({ statusCode: 400, message: 'IDs array required' })
-  }
-
-  const ids = body.ids.map(Number).filter((n: number) => !isNaN(n))
-  if (ids.length === 0) {
-    throw createError({ statusCode: 400, message: 'No valid IDs provided' })
-  }
-  db.delete(characterLayouts).where(inArray(characterLayouts.id, ids)).run()
-  logActivity({ action: 'deleted', entityType: 'layout', entityName: `${ids.length} layouts`, details: `Bulk deleted IDs: ${ids.join(', ')}` })
-  triggerGitHubSync(`layouts-bulk-deleted: ${ids.length} items`).catch(() => {})
-  return { success: true, data: { deleted: ids.length } }
+  db.delete(characterLayouts).where(inArray(characterLayouts.id, data.ids)).run()
+  logActivity({ action: 'deleted', entityType: 'layout', entityName: `${data.ids.length} layouts`, details: `Bulk deleted IDs: ${data.ids.join(', ')}` })
+  triggerGitHubSync(`layouts-bulk-deleted: ${data.ids.length} items`).catch(() => {})
+  return apiSuccess({ deleted: data.ids.length })
 })

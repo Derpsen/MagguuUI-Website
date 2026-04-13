@@ -147,8 +147,8 @@
           <div class="space-y-4">
             <div class="flex items-end gap-4">
               <div class="admin-field flex-1">
-                <label class="admin-field__label">Version</label>
-                <UInput v-model="form.version" placeholder="e.g. 2.1.0 or auto" :disabled="saving" />
+                <label for="changelog-version" class="admin-field__label">Version</label>
+                <UInput id="changelog-version" v-model="form.version" placeholder="e.g. 2.1.0 or auto" :disabled="saving" />
               </div>
               <div class="flex items-center gap-2 pb-1">
                 <USwitch v-model="form.isPublished" :disabled="saving" />
@@ -157,8 +157,8 @@
             </div>
 
             <div class="admin-field">
-              <label class="admin-field__label">Content</label>
-              <TipTapEditor v-model="form.content" placeholder="What changed in this version..." min-height="300px" />
+              <label for="changelog-content" class="admin-field__label">Content</label>
+              <TipTapEditor id="changelog-content" v-model="form.content" placeholder="What changed in this version..." min-height="300px" />
             </div>
 
             <UAlert v-if="formError" color="error" variant="subtle" :title="formError" />

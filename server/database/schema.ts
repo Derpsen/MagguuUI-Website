@@ -1,5 +1,5 @@
 /**
- * MagguuUI v2 — Database Schema
+ * MagguuUI v3 — Database Schema
  *
  * All tables for the application defined with Drizzle ORM.
  * Database: SQLite (WAL mode)
@@ -65,7 +65,9 @@ export const characterLayouts = sqliteTable('character_layouts', {
   isVisible: integer('is_visible', { mode: 'boolean' }).notNull().default(true),
   customFields: text('custom_fields'), // JSON
   ...timestamps,
-})
+}, (table) => ({
+  classSpecIdx: index('idx_character_layouts_class_spec').on(table.className, table.spec),
+}))
 
 // ─── Field Definitions ─────────────────────────────
 // Dynamic field schema per entity type
@@ -95,7 +97,9 @@ export const changelogs = sqliteTable('changelogs', {
   isPublished: integer('is_published', { mode: 'boolean' }).notNull().default(false),
   publishedAt: integer('published_at', { mode: 'timestamp' }),
   ...timestamps,
-})
+}, (table) => ({
+  publishedIdx: index('idx_changelogs_published').on(table.isPublished, table.publishedAt),
+}))
 
 // ─── Site Content ──────────────────────────────────
 // Editable website text blocks (key-value per page/section)
@@ -139,7 +143,7 @@ export const activityLog = sqliteTable('activity_log', {
   entityId: integer('entity_id'),
   entityName: text('entity_name').notNull(),
   details: text('details'), // JSON with change details
-  userId: integer('user_id'),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'set null' }),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -167,7 +171,7 @@ export const users = sqliteTable('users', {
 
 export const sessions = sqliteTable('sessions', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: integer('user_id').notNull(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   tokenHash: text('token_hash').notNull(),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
@@ -214,7 +218,7 @@ export const loginAttempts = sqliteTable('login_attempts', {
 
 export const passkeys = sqliteTable('passkeys', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: integer('user_id').notNull(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   credentialId: text('credential_id').notNull().unique(),
   publicKey: text('public_key').notNull(),           // base64url-encoded
   counter: integer('counter').notNull().default(0),

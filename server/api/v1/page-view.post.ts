@@ -46,7 +46,7 @@ if (!g.__pageViewDedupTimer) {
 export default defineEventHandler(async (event) => {
   // Check if page view tracking is enabled in settings
   if (!isPageViewTrackingEnabled()) {
-    return { success: true }
+    return apiSuccess(null)
   }
 
   const ip = getClientIp(event)
@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
   // 120 page views / minute / IP — silently drop above that.
   const { allowed } = checkRateLimit(`page-view:${ip}`, 120, 60 * 1000, 60 * 1000)
   if (!allowed) {
-    return { success: true }
+    return apiSuccess(null)
   }
 
   const body = await readBody(event)
@@ -66,7 +66,7 @@ export default defineEventHandler(async (event) => {
   // Dedup check
   const dedupKey = `${ip}:${body.path}`
   if (recentViews.has(dedupKey)) {
-    return { success: true }
+    return apiSuccess(null)
   }
   recentViews.set(dedupKey, Date.now())
 
@@ -84,5 +84,5 @@ export default defineEventHandler(async (event) => {
     }).run()
   } catch { /* silently fail — tracking should not break UX */ }
 
-  return { success: true }
+  return apiSuccess(null)
 })

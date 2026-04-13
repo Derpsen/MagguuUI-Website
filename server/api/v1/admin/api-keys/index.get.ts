@@ -16,5 +16,5 @@ export default defineEventHandler(async () => {
     createdAt: apiKeys.createdAt,
   }).from(apiKeys).all()
 
-  return { success: true, data: rows }
+  return apiSuccess(rows)
 })

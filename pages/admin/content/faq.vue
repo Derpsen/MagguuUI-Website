@@ -103,8 +103,8 @@
               <div class="px-4 pb-4 pt-1 space-y-4 border-t" :class="isDark ? 'border-white/6' : 'border-slate-100'">
                 <div class="admin-form-grid admin-form-grid--2">
                   <div class="admin-field">
-                    <label class="admin-field__label">Category</label>
-                    <USelect v-model="faq.category" :items="categoryOptions" />
+                    <label :for="`faq-inline-category-${faq.id}`" class="admin-field__label">Category</label>
+                    <USelect :id="`faq-inline-category-${faq.id}`" v-model="faq.category" :items="categoryOptions" />
                   </div>
                   <div class="admin-switch-row">
                     <div class="admin-switch-row__content">
@@ -114,12 +114,12 @@
                   </div>
                 </div>
                 <div class="admin-field">
-                  <label class="admin-field__label">Question</label>
-                  <UInput v-model="faq.question" />
+                  <label :for="`faq-inline-question-${faq.id}`" class="admin-field__label">Question</label>
+                  <UInput :id="`faq-inline-question-${faq.id}`" v-model="faq.question" />
                 </div>
                 <div class="admin-field">
-                  <label class="admin-field__label">Answer</label>
-                  <TipTapEditor v-model="faq.answer" placeholder="Write the answer..." min-height="150px" />
+                  <label :for="`faq-inline-answer-${faq.id}`" class="admin-field__label">Answer</label>
+                  <TipTapEditor :id="`faq-inline-answer-${faq.id}`" v-model="faq.answer" placeholder="Write the answer..." min-height="150px" />
                 </div>
                 <div class="flex justify-end gap-2">
                   <UButton variant="ghost" color="neutral" size="sm" @click="cancelEdit(faq)">Cancel</UButton>
@@ -152,8 +152,8 @@
           <div class="mt-6 space-y-4">
             <div class="admin-form-grid admin-form-grid--2">
               <div class="admin-field">
-                <label class="admin-field__label">Category</label>
-                <USelect v-model="createForm.category" :items="categoryOptions" />
+                <label for="faq-create-category" class="admin-field__label">Category</label>
+                <USelect id="faq-create-category" v-model="createForm.category" :items="categoryOptions" />
               </div>
               <div class="admin-switch-row">
                 <div class="admin-switch-row__content">
@@ -164,12 +164,12 @@
               </div>
             </div>
             <div class="admin-field">
-              <label class="admin-field__label">Question</label>
-              <UInput v-model="createForm.question" placeholder="What is MagguuUI?" />
+              <label for="faq-create-question" class="admin-field__label">Question</label>
+              <UInput id="faq-create-question" v-model="createForm.question" placeholder="What is MagguuUI?" />
             </div>
             <div class="admin-field">
-              <label class="admin-field__label">Answer</label>
-              <TipTapEditor v-model="createForm.answer" placeholder="Write the answer..." min-height="180px" />
+              <label for="faq-create-answer" class="admin-field__label">Answer</label>
+              <TipTapEditor id="faq-create-answer" v-model="createForm.answer" placeholder="Write the answer..." min-height="180px" />
             </div>
           </div>
 

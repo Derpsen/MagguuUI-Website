@@ -37,5 +37,5 @@ export default defineEventHandler(async (event) => {
     recentFailed: (sqlite.prepare('SELECT COUNT(*) as count FROM login_attempts WHERE success = 0 AND created_at > ?').get(weekAgo) as any).count,
   }
 
-  return { success: true, data: attempts, meta: { stats } }
+  return apiSuccess(attempts, { stats })
 })

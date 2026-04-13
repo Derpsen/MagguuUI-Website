@@ -10,6 +10,7 @@
             type="text"
             class="admin-command__input"
             placeholder="Search pages, actions and tools"
+            aria-label="Search admin pages and actions"
             @keydown.down.prevent="moveDown"
             @keydown.up.prevent="moveUp"
             @keydown.enter.prevent="selectItem"

@@ -6,7 +6,7 @@
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <div class="text-center mb-12 fade-in heading-glow">
       <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
-        <svg class="w-8 h-8 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+        <svg aria-hidden="true" class="w-8 h-8 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
           <path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" />
         </svg>
         <span class="text-gradient">Import Strings</span>
@@ -17,7 +17,7 @@
     <details class="glass-card rounded-2xl p-5 sm:p-6 mb-6 fade-in fade-in-delay-1 group">
       <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold list-none">
         <span class="flex items-center gap-2" :class="isDark ? 'text-white' : 'text-gray-900'">
-          <svg class="w-4 h-4 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <svg aria-hidden="true" class="w-4 h-4 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
           </svg>
           New here? What is an import string?
@@ -48,8 +48,12 @@
 
     <div class="glass-card rounded-2xl p-6 sm:p-8 fade-in fade-in-delay-1">
       <!-- Tabs -->
-      <div class="flex flex-wrap justify-center gap-2 mb-6">
+      <div class="flex flex-wrap justify-center gap-2 mb-6" role="tablist" aria-label="Import string categories">
         <button v-for="tab in tabs" :key="tab.value"
+          role="tab"
+          :id="`tab-${tab.value}`"
+          :aria-selected="activeTab === tab.value"
+          :aria-controls="`tabpanel-${tab.value}`"
           class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
           :class="activeTab === tab.value ? 'tab-active' : 'tab-inactive'"
           @click="activeTab = tab.value">
@@ -59,7 +63,7 @@
       </div>
 
       <!-- ═══ Cooldown Layouts ═══ -->
-      <div v-if="activeTab === 'layouts'">
+      <div v-if="activeTab === 'layouts'" role="tabpanel" id="tabpanel-layouts" aria-labelledby="tab-layouts">
         <div v-if="layoutList.length" class="space-y-5">
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Class</label>
@@ -116,7 +120,7 @@
       </div>
 
       <!-- ═══ Addon Profiles ═══ -->
-      <div v-if="activeTab === 'profiles'">
+      <div v-if="activeTab === 'profiles'" role="tabpanel" id="tabpanel-profiles" aria-labelledby="tab-profiles">
         <div v-if="profileList.length" class="space-y-5">
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Addon</label>
@@ -173,7 +177,7 @@
       </div>
 
       <!-- ═══ WowUp ═══ -->
-      <div v-if="activeTab === 'wowup'">
+      <div v-if="activeTab === 'wowup'" role="tabpanel" id="tabpanel-wowup" aria-labelledby="tab-wowup">
         <div v-if="wowupList.length" class="space-y-5">
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Package</label>

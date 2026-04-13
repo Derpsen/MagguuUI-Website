@@ -5,6 +5,7 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { changelogs } from '~/server/database/schema'
+import { validateBody, changelogUpdateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const id = Number(getRouterParam(event, 'id'))
@@ -14,23 +15,24 @@ export default defineEventHandler(async (event) => {
   if (!existing) throw createError({ statusCode: 404, message: 'Not found' })
 
   const body = await readBody(event)
+  const data = validateBody(changelogUpdateSchema, body)
 
   // Set publishedAt when first published
   let publishedAt = existing.publishedAt
-  if (body.isPublished && !existing.isPublished) {
+  if (data.isPublished && !existing.isPublished) {
     publishedAt = new Date()
   }
 
   const result = db.update(changelogs)
     .set({
-      ...(body.version !== undefined && { version: body.version }),
-      ...(body.content !== undefined && { content: body.content }),
-      ...(body.contentEn !== undefined && { contentEn: body.contentEn }),
-      ...(body.isPublished !== undefined && { isPublished: body.isPublished, publishedAt }),
+      ...(data.version !== undefined && { version: data.version }),
+      ...(data.content !== undefined && { content: data.content }),
+      ...(data.contentEn !== undefined && { contentEn: data.contentEn }),
+      ...(data.isPublished !== undefined && { isPublished: data.isPublished, publishedAt }),
       updatedAt: new Date(),
     })
     .where(eq(changelogs.id, id))
     .returning().get()
 
-  return { success: true, data: result }
+  return apiSuccess(result)
 })

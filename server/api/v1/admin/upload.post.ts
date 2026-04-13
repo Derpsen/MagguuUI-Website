@@ -61,25 +61,25 @@ export default defineEventHandler(async (event) => {
   const formData = await readMultipartFormData(event)
 
   if (!formData || formData.length === 0) {
-    throw createError({ statusCode: 400, message: 'No file uploaded' })
+    apiError('NO_FILE', 'No file uploaded', 400)
   }
 
-  const file = formData.find(f => f.name === 'file')
+  const file = formData!.find(f => f.name === 'file')
   if (!file || !file.data) {
-    throw createError({ statusCode: 400, message: 'No file found' })
+    apiError('NO_FILE', 'No file found', 400)
   }
 
-  if (file.data.byteLength > MAX_UPLOAD_BYTES) {
-    throw createError({ statusCode: 400, message: 'Image exceeds the 5 MB upload limit' })
+  if (file!.data.byteLength > MAX_UPLOAD_BYTES) {
+    apiError('FILE_TOO_LARGE', 'Image exceeds the 5 MB upload limit', 400)
   }
 
-  const detectedType = detectImageType(file.data)
+  const detectedType = detectImageType(file!.data)
   if (!detectedType) {
-    throw createError({ statusCode: 400, message: 'Invalid image file' })
+    apiError('INVALID_FILE', 'Invalid image file', 400)
   }
 
-  if (file.type && file.type !== detectedType.mime) {
-    throw createError({ statusCode: 400, message: 'Uploaded file type does not match file contents' })
+  if (file!.type && file!.type !== detectedType!.mime) {
+    apiError('TYPE_MISMATCH', 'Uploaded file type does not match file contents', 400)
   }
 
   // Generate safe filename from detected content type (not user-provided extension).
@@ -89,5 +89,5 @@ export default defineEventHandler(async (event) => {
   await mkdir(uploadsDir, { recursive: true })
   await writeFile(join(uploadsDir, filename), file.data)
 
-  return { success: true, data: { filename } }
+  return apiSuccess({ filename })
 })

@@ -20,7 +20,8 @@
             v-if="!collapsed"
             class="ml-auto p-1 rounded-sm transition-colors shrink-0"
             :class="isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.06]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'"
-            :title="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+            title="Collapse sidebar"
+            aria-label="Collapse sidebar"
             @click="collapsed = !collapsed"
           >
             <UIcon name="i-heroicons-chevron-double-left" class="h-4 w-4" />
@@ -29,6 +30,8 @@
             v-else
             class="mx-auto p-1 rounded-sm transition-colors"
             :class="isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.06]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'"
+            title="Expand sidebar"
+            aria-label="Expand sidebar"
             @click="collapsed = !collapsed"
           >
             <UIcon name="i-heroicons-chevron-double-right" class="h-4 w-4" />
@@ -55,6 +58,7 @@
               v-else
               class="flex w-full items-center justify-between px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest transition-colors"
               :class="isDark ? 'text-white/40 hover:text-white/60' : 'text-slate-400 hover:text-slate-600'"
+              :aria-expanded="openSections[section.title] ? 'true' : 'false'"
               @click="toggleSection(section.title)"
             >
               <span>{{ section.title }}</span>
@@ -91,6 +95,7 @@
                       isRouteActive(item.to) ? 'vben-nav-item--active' : '',
                     ]"
                     :title="collapsed ? item.label : undefined"
+                    :aria-label="collapsed ? item.label : undefined"
                   >
                     <UIcon :name="item.icon" class="h-[18px] w-[18px] shrink-0" />
                     <span v-if="!collapsed" class="min-w-0 flex-1 truncate">{{ item.label }}</span>
@@ -127,10 +132,10 @@
               <span v-if="!collapsed" class="truncate text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ user?.username || 'Admin' }}</span>
             </div>
             <div class="flex items-center gap-1">
-              <button class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-white/40 hover:text-white hover:bg-white/[0.06]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'" :title="isDark ? 'Light mode' : 'Dark mode'" @click="toggleTheme">
+              <button class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-white/40 hover:text-white hover:bg-white/[0.06]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'" :title="isDark ? 'Light mode' : 'Dark mode'" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
                 <UIcon :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'" class="h-4 w-4" />
               </button>
-              <button class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-white/40 hover:text-white hover:bg-white/[0.06]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'" title="Logout" @click="handleLogout">
+              <button class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-white/40 hover:text-white hover:bg-white/[0.06]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'" title="Logout" aria-label="Logout" @click="handleLogout">
                 <UIcon name="i-heroicons-arrow-right-on-rectangle" class="h-4 w-4" />
               </button>
             </div>
@@ -152,7 +157,7 @@
           class="sticky top-0 z-20 flex h-[50px] items-center gap-3 border-b px-4"
           :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-[hsl(240,5.9%,90%)]'"
         >
-          <button class="p-1.5 rounded-md lg:hidden" :class="isDark ? 'text-white/60 hover:text-white hover:bg-white/[0.06]' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'" @click="sidebarOpen = !sidebarOpen">
+          <button class="p-1.5 rounded-md lg:hidden" :class="isDark ? 'text-white/60 hover:text-white hover:bg-white/[0.06]' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'" :aria-label="sidebarOpen ? 'Close menu' : 'Open menu'" @click="sidebarOpen = !sidebarOpen">
             <UIcon name="i-heroicons-bars-3" class="h-5 w-5" />
           </button>
 
@@ -176,6 +181,7 @@
           <div class="ml-auto flex items-center gap-1">
             <button
               class="vben-header-btn hidden md:inline-flex"
+              aria-label="Open command palette"
               @click="cmdPalette?.open()"
             >
               <UIcon name="i-heroicons-magnifying-glass" class="h-4 w-4" />
@@ -186,13 +192,13 @@
               </kbd>
             </button>
 
-            <button class="vben-header-btn md:hidden" @click="cmdPalette?.open()">
+            <button class="vben-header-btn md:hidden" aria-label="Open command palette" @click="cmdPalette?.open()">
               <UIcon name="i-heroicons-magnifying-glass" class="h-4 w-4" />
             </button>
 
             <!-- Notifications -->
             <div ref="notifWrapRef" class="relative">
-              <button ref="notifButtonRef" class="vben-header-btn relative" @click="notifOpen = !notifOpen">
+              <button ref="notifButtonRef" class="vben-header-btn relative" aria-label="Notifications" :aria-expanded="notifOpen" @click="notifOpen = !notifOpen">
                 <UIcon name="i-heroicons-bell" class="h-4 w-4" />
                 <span v-if="notifCount > 0" class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                   {{ notifCount }}
@@ -250,19 +256,19 @@
               </Transition>
             </div>
 
-            <button class="vben-header-btn hidden md:inline-flex" title="Settings" @click="settingsDrawer?.toggle()">
+            <button class="vben-header-btn hidden md:inline-flex" title="Settings" aria-label="Settings" @click="settingsDrawer?.toggle()">
               <UIcon name="i-heroicons-cog-6-tooth" class="h-4 w-4" />
             </button>
 
-            <button class="vben-header-btn hidden md:inline-flex" title="Fullscreen" @click="toggleFullscreen">
+            <button class="vben-header-btn hidden md:inline-flex" title="Fullscreen" :aria-label="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'" @click="toggleFullscreen">
               <UIcon :name="isFullscreen ? 'i-heroicons-arrows-pointing-in' : 'i-heroicons-arrows-pointing-out'" class="h-4 w-4" />
             </button>
 
-            <button class="vben-header-btn" :title="isDark ? 'Light mode' : 'Dark mode'" @click="toggleTheme">
+            <button class="vben-header-btn" :title="isDark ? 'Light mode' : 'Dark mode'" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
               <UIcon :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'" class="h-4 w-4" />
             </button>
 
-            <NuxtLink to="/" class="vben-header-btn" title="View site">
+            <NuxtLink to="/" class="vben-header-btn" title="View site" aria-label="View site">
               <UIcon name="i-heroicons-arrow-top-right-on-square" class="h-4 w-4" />
             </NuxtLink>
           </div>
@@ -280,7 +286,7 @@
       </div>
 
       <!-- Mobile Dock -->
-      <nav class="admin-mobile-dock lg:hidden">
+      <nav class="admin-mobile-dock lg:hidden" aria-label="Mobile navigation">
         <NuxtLink
           v-for="item in dockLinks"
           :key="item.to"

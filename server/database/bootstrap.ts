@@ -39,6 +39,7 @@ export const DATABASE_BOOTSTRAP_SQL = `
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
   );
+  CREATE INDEX IF NOT EXISTS idx_character_layouts_class_spec ON character_layouts(class_name, spec);
 
   CREATE TABLE IF NOT EXISTS field_definitions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,6 +65,7 @@ export const DATABASE_BOOTSTRAP_SQL = `
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
   );
+  CREATE INDEX IF NOT EXISTS idx_changelogs_published ON changelogs(is_published, published_at);
 
   CREATE TABLE IF NOT EXISTS site_content (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -245,6 +247,17 @@ export const SAFE_COLUMN_MIGRATIONS = [
   'ALTER TABLE changelogs ADD COLUMN content_en TEXT',
   'ALTER TABLE users ADD COLUMN is_locked INTEGER NOT NULL DEFAULT 0',
   'ALTER TABLE users ADD COLUMN locked_until INTEGER',
+  // Performance indexes added 2026-04
+  'CREATE INDEX IF NOT EXISTS idx_activity_log_entity_type_created_at ON activity_log(entity_type, created_at)',
+  'CREATE INDEX IF NOT EXISTS idx_activity_log_user_id_created_at ON activity_log(user_id, created_at)',
+  'CREATE INDEX IF NOT EXISTS idx_api_logs_created_at ON api_logs(created_at)',
+  'CREATE INDEX IF NOT EXISTS idx_copy_events_string_type_string_id ON copy_events(string_type, string_id)',
+  'CREATE INDEX IF NOT EXISTS idx_copy_events_created_at ON copy_events(created_at)',
+  'CREATE INDEX IF NOT EXISTS idx_page_views_path_created_at ON page_views(path, created_at)',
+  'CREATE INDEX IF NOT EXISTS idx_page_views_created_at ON page_views(created_at)',
+  'CREATE INDEX IF NOT EXISTS idx_webauthn_challenges_expires_at ON webauthn_challenges(expires_at)',
+  'CREATE INDEX IF NOT EXISTS idx_changelogs_published ON changelogs(is_published, published_at)',
+  'CREATE INDEX IF NOT EXISTS idx_character_layouts_class_spec ON character_layouts(class_name, spec)',
 ] as const
 
 type SqliteBootstrapConnection = {

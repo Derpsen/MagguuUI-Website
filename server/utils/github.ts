@@ -91,13 +91,25 @@ async function doGitHubDispatch(reasons: string[]) {
       }).run()
     } catch { /* logging is best-effort */ }
   } catch (err: any) {
-    console.error(`[GitHub] Sync dispatch failed:`, err?.message || err)
+    const statusCode = err?.response?.status || err?.statusCode || err?.status
+    const githubMessage = err?.data?.message || err?.response?._data?.message || err?.message || 'unknown'
+
+    let friendly = githubMessage
+    if (statusCode === 401) {
+      friendly = 'Token invalid or expired (401) — regenerate NUXT_GITHUB_TOKEN'
+    } else if (statusCode === 403) {
+      friendly = `Token lacks permission for ${owner}/${repo} (403) — grant repo Contents:write`
+    } else if (statusCode === 404) {
+      friendly = `Repo ${owner}/${repo} not found (404) — check NUXT_GITHUB_REPO and token access`
+    }
+
+    console.error(`[GitHub] Sync dispatch failed: ${friendly}`)
 
     try {
       db.insert(syncHistory).values({
         triggerSource: 'auto-sync',
         status: 'error',
-        details: `Failed: ${err?.message || 'unknown'} — Changes: ${reasons.join(', ')}`,
+        details: `${friendly} — Changes: ${reasons.join(', ')}`,
       }).run()
     } catch { /* logging is best-effort */ }
   }

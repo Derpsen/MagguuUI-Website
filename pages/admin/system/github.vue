@@ -30,7 +30,7 @@
     </div>
 
     <div class="grid gap-5 xl:grid-cols-2">
-      <AdminPanel title="Connection" description="Repository status, permissions and webhook endpoint." icon="i-simple-icons-github">
+      <AdminPanel title="Connection" description="Repository status and permissions." icon="i-simple-icons-github">
         <template #actions>
           <UButton
             size="sm"
@@ -58,30 +58,16 @@
             </div>
           </div>
 
-          <!-- Webhook row (compact, inline) -->
-          <div
-            class="flex items-center gap-3 rounded-lg border px-3.5 py-2.5"
-            :class="isDark ? 'border-[hsl(240,3.7%,22%)] bg-[hsl(222.34,10.43%,12.27%)]' : 'border-slate-200 bg-white'"
-          >
-            <UIcon name="i-heroicons-link" class="h-4 w-4 shrink-0 text-slate-400" />
-            <code class="min-w-0 flex-1 truncate text-xs text-slate-600 dark:text-slate-400">{{ webhookVisible ? webhookUrl : maskedWebhook }}</code>
-            <div class="flex shrink-0 items-center gap-1">
-              <UButton
-                size="xs"
-                variant="ghost"
-                color="neutral"
-                :icon="webhookVisible ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
-                @click="webhookVisible = !webhookVisible"
-              />
-              <UButton
-                size="xs"
-                variant="ghost"
-                color="neutral"
-                :icon="webhookCopied ? 'i-heroicons-check' : 'i-heroicons-clipboard-document'"
-                @click="copyWebhookUrl"
-              >
-                {{ webhookCopied ? "Copied" : "Copy" }}
-              </UButton>
+          <!-- Push error hint (only shown when the most recent push failed) -->
+          <div v-if="pushError" class="admin-inline-note !border-red-500/30 !bg-red-500/5">
+            <UIcon name="i-heroicons-exclamation-triangle" class="h-4 w-4 shrink-0 text-red-500" />
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-red-700 dark:text-red-300">Last push failed</p>
+              <p class="mt-0.5 text-xs text-slate-600 dark:text-slate-400">{{ pushError }}</p>
+              <p v-if="pushErrorHint" class="mt-1 text-xs text-slate-500 dark:text-slate-500">
+                <UIcon name="i-heroicons-light-bulb" class="h-3 w-3 inline -mt-0.5" />
+                {{ pushErrorHint }}
+              </p>
             </div>
           </div>
 
@@ -380,7 +366,6 @@
 <script setup lang="ts">
 definePageMeta({ layout: "admin" })
 
-const isDark = useIsDark()
 const toast = useToast()
 const { apiFetch } = useApi()
 
@@ -513,30 +498,22 @@ function syncBadgeColor(statusValue: string) {
   return "info"
 }
 
-const webhookUrl = computed(() => {
-  if (import.meta.client) return `${window.location.origin}/api/v1/webhooks/github`
-  return "/api/v1/webhooks/github"
-})
-
-const maskedWebhook = computed(() => "*".repeat(webhookUrl.value.length))
-const webhookCopied = ref(false)
-const webhookVisible = ref(false)
-
-async function copyWebhookUrl() {
-  try {
-    await navigator.clipboard.writeText(webhookUrl.value)
-  } catch {
-    const element = document.createElement("textarea")
-    element.value = webhookUrl.value
-    document.body.appendChild(element)
-    element.select()
-    document.execCommand("copy")
-    document.body.removeChild(element)
+// Push error feedback — populated when doPush() fails so we can surface
+// a helpful hint (Token scope, repo access, etc.) instead of a cryptic toast.
+const pushError = ref<string | null>(null)
+const pushErrorHint = computed(() => {
+  const err = pushError.value?.toLowerCase() || ""
+  if (err.includes("403") || err.includes("permission") || err.includes("scope")) {
+    return "Check that the token has the \"repo\" scope (classic PAT) or \"Contents: write\" permission for this repo (fine-grained PAT)."
   }
-
-  webhookCopied.value = true
-  setTimeout(() => { webhookCopied.value = false }, 2000)
-}
+  if (err.includes("401") || err.includes("invalid") || err.includes("expired")) {
+    return "Regenerate NUXT_GITHUB_TOKEN in .env and restart the container."
+  }
+  if (err.includes("404") || err.includes("not found")) {
+    return "Verify NUXT_GITHUB_REPO points to an existing repo and the token has access to it."
+  }
+  return null
+})
 
 async function loadStatus() {
   statusLoading.value = true
@@ -612,12 +589,15 @@ async function doPullProfiles() {
 
 async function doPush() {
   pushing.value = true
+  pushError.value = null
   try {
     await apiFetch("/api/v1/admin/github/push", { method: "POST", body: { reason: "manual-push" } })
     toast.add({ title: "GitHub sync triggered", color: "success" })
     await loadStatus()
   } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Push error", color: "error" })
+    const msg = error?.data?.message || error?.message || "Push error"
+    pushError.value = msg
+    toast.add({ title: msg, color: "error" })
   } finally {
     pushing.value = false
   }

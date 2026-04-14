@@ -52,16 +52,29 @@ export default defineEventHandler(async (event) => {
       data: { message: 'GitHub Sync triggered', repo: `${owner}/${repo}` },
     }
   } catch (err: any) {
-    // Log failure
+    const statusCode = err?.response?.status || err?.statusCode || err?.status
+    const githubMessage = err?.data?.message || err?.response?._data?.message || err?.message || 'Unknown error'
+
+    // Map common GitHub API errors to actionable hints.
+    let friendly = githubMessage
+    if (statusCode === 401) {
+      friendly = 'Token invalid or expired. Regenerate NUXT_GITHUB_TOKEN and restart the container.'
+    } else if (statusCode === 403) {
+      friendly = `Token lacks permission for ${owner}/${repo}. Classic PAT: enable "repo" scope. Fine-Grained PAT: grant "Contents: write" on ${owner}/${repo}.`
+    } else if (statusCode === 404) {
+      friendly = `Repo ${owner}/${repo} not found or token has no access to it. For Fine-Grained PATs, make sure the repo is explicitly selected.`
+    }
+
+    // Log failure with the friendly hint so sync history is useful.
     db.insert(syncHistory).values({
       triggerSource: reason,
       status: 'error',
-      details: err?.message || 'Unknown error',
+      details: friendly,
     }).run()
 
     throw createError({
-      statusCode: 502,
-      message: `GitHub API error: ${err?.message || 'Unknown'}`,
+      statusCode: statusCode === 401 || statusCode === 403 ? statusCode : 502,
+      message: friendly,
     })
   }
 })

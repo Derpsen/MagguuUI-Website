@@ -144,8 +144,10 @@ else
 fi
 
 # ── 2. Docker Image nur bei neuem Commit bauen ─────────────
+BUILD_DURATION=""
 if [ "${SHOULD_BUILD}" = "1" ]; then
     BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    BUILD_START=$(date +%s)
 
     log "Baue Docker Image: ${IMAGE_NAME} (Commit ${CURRENT_COMMIT_SHORT})..."
     echo ""
@@ -157,8 +159,12 @@ if [ "${SHOULD_BUILD}" = "1" ]; then
         -t "${IMAGE_NAME}" \
         .
 
+    BUILD_END=$(date +%s)
+    BUILD_SECS=$((BUILD_END - BUILD_START))
+    BUILD_DURATION="$((BUILD_SECS / 60))m $((BUILD_SECS % 60))s"
+
     echo ""
-    ok "Image gebaut: ${IMAGE_NAME}"
+    ok "Image gebaut: ${IMAGE_NAME} (in ${BUILD_DURATION})"
 else
     if container_exists; then
         ok "Kein neuer Commit - Build und Container-Recreate werden übersprungen"
@@ -192,26 +198,35 @@ if [ "${HEALTH_OK}" != "1" ]; then
     warn "Container antwortet nach 60s noch nicht — prüfe 'docker logs ${CONTAINER_NAME}'"
 fi
 
-# ── 4. Alte Images + Build Cache aufräumen ─────────────────
+# ── 4. Nur dangling Images aufräumen ───────────────────────
+# NOTE: Wir lassen den Build-Cache absichtlich stehen — der npm cache-mount
+# aus dem Dockerfile macht den nächsten Build deutlich schneller. Build-Cache
+# kann bei Bedarf manuell mit `docker builder prune -f` gelöscht werden.
 if [ "${SHOULD_BUILD}" = "1" ]; then
-    log "Räume alte Images auf..."
+    log "Räume dangling Images auf..."
     IMG_CLEANED=$(docker image prune -f 2>/dev/null | grep "Total reclaimed" || echo "0B")
     ok "Image Cleanup: ${IMG_CLEANED}"
-
-    log "Räume Build Cache auf..."
-    CACHE_CLEANED=$(docker builder prune -f 2>/dev/null | grep -i "total" | tail -1 || echo "0B")
-    ok "Build Cache Cleanup: ${CACHE_CLEANED}"
 fi
 
 # ── 5. Zusammenfassung ─────────────────────────────────────
+IMAGE_SIZE=$(docker image inspect "${IMAGE_NAME}" --format '{{.Size}}' 2>/dev/null | awk '{ printf "%.1f MB", $1/1024/1024 }' || echo "unknown")
+
 echo ""
 echo -e "${GREEN}═══════════════════════════════════════════${NC}"
 echo -e "${GREEN}  Rebuild abgeschlossen!${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════${NC}"
 echo ""
 echo -e "  Container:  ${CONTAINER_NAME}"
-echo -e "  Image:      ${IMAGE_NAME}"
+echo -e "  Image:      ${IMAGE_NAME} (${IMAGE_SIZE})"
 echo -e "  Template:   ${TEMPLATE}"
+if [ -n "${EXISTING_COMMIT_SHORT}" ] && [ "${EXISTING_COMMIT}" != "${CURRENT_COMMIT}" ]; then
+    echo -e "  Commit:     ${EXISTING_COMMIT_SHORT} → ${CURRENT_COMMIT_SHORT}"
+else
+    echo -e "  Commit:     ${CURRENT_COMMIT_SHORT}"
+fi
+if [ -n "${BUILD_DURATION}" ]; then
+    echo -e "  Build-Zeit: ${BUILD_DURATION}"
+fi
 echo ""
 echo -e "  Logs:       docker logs -f ${CONTAINER_NAME}"
 echo -e "  Shell:      docker exec -it ${CONTAINER_NAME} bash"

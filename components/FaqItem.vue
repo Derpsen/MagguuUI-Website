@@ -15,7 +15,7 @@
       <span class="font-medium text-sm sm:text-[0.95rem] leading-snug" :class="isDark ? 'text-white' : 'text-gray-900'">
         {{ question }}
       </span>
-      <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0 transition-transform duration-300" aria-hidden="true"
+      <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0 transition-transform duration-300"
         :class="[open ? 'rotate-180' : '', isDark ? 'text-brand-400' : 'text-blue-500']"
         fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />

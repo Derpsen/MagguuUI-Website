@@ -89,9 +89,9 @@
           class="group rounded-xl border p-4 transition-all duration-200"
           :class="[
             isDark
-              ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)] hover:border-blue-500/40'
-              : 'bg-white border-slate-200 hover:border-blue-400/50',
-            'hover:shadow-lg hover:shadow-blue-500/5',
+              ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)] hover:border-primary/40'
+              : 'bg-white border-slate-200 hover:border-primary/50',
+            'hover:shadow-lg hover:shadow-primary/5',
           ]"
         >
           <div class="flex items-center gap-3">
@@ -193,8 +193,7 @@
               </div>
               <NuxtLink
                 to="/admin/system/activity"
-                class="text-xs font-medium transition-colors"
-                :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'"
+                class="text-xs font-medium transition-colors text-primary hover:opacity-80"
               >
                 View all
               </NuxtLink>

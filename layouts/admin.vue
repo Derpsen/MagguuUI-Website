@@ -125,8 +125,7 @@
         <div class="shrink-0 border-t px-3 py-3" :class="isDark ? 'border-white/8' : 'border-slate-200'">
           <div class="flex items-center gap-2" :class="collapsed ? 'flex-col' : ''">
             <div class="flex min-w-0 items-center gap-2" :class="collapsed ? 'justify-center' : 'flex-1'">
-              <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                :class="isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-50 text-blue-600'">
+              <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold bg-primary/15 text-primary">
                 {{ userInitial }}
               </span>
               <span v-if="!collapsed" class="truncate text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ user?.username || 'Admin' }}</span>
@@ -163,7 +162,7 @@
 
           <!-- Breadcrumbs -->
           <nav class="flex items-center gap-1.5 text-sm min-w-0">
-            <NuxtLink to="/admin" class="shrink-0 transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'">
+            <NuxtLink to="/admin" class="shrink-0 transition-colors text-primary hover:opacity-80">
               <UIcon name="i-heroicons-squares-2x2" class="h-4 w-4" />
             </NuxtLink>
             <Transition name="breadcrumb-slide" mode="out-in">
@@ -477,13 +476,13 @@ watch(() => route.fullPath, () => {
   color: var(--admin-fg);
 }
 .vben-nav-item--active {
-  background: hsl(212 100% 45% / 0.12);
-  color: hsl(212 100% 50%);
+  background: color-mix(in oklab, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
   font-weight: 600;
 }
 html.dark .vben-nav-item--active {
-  background: hsl(212 100% 50% / 0.15);
-  color: hsl(212 100% 65%);
+  background: color-mix(in oklab, var(--ui-primary) 18%, transparent);
+  color: var(--ui-primary);
 }
 
 .vben-header-btn {

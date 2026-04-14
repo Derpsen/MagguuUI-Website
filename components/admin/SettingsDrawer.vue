@@ -34,7 +34,7 @@
                 :key="mode.value"
                 class="flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium border transition-colors"
                 :class="colorMode.preference === mode.value
-                  ? (isDark ? 'bg-white/10 border-white/20 text-white' : 'bg-blue-50 border-blue-200 text-blue-700')
+                  ? 'bg-primary/15 border-primary/30 text-primary'
                   : (isDark ? 'border-white/8 text-white/50 hover:text-white hover:bg-white/[0.04]' : 'border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50')"
                 @click="colorMode.preference = mode.value"
               >

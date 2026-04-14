@@ -48,7 +48,7 @@ onUnmounted(() => {
       <!-- Active indicator line -->
       <span
         v-if="isActive(tab.path)"
-        class="absolute inset-x-0 bottom-0 h-0.5 bg-[hsl(212,100%,45%)]"
+        class="absolute inset-x-0 bottom-0 h-0.5 bg-primary"
       />
 
       <UIcon v-if="tab.icon" :name="tab.icon" class="h-3.5 w-3.5 shrink-0 opacity-70" />

@@ -81,7 +81,6 @@
 <script setup lang="ts">
 const isDark = useIsDark()
 const colorMode = useColorMode()
-const appConfig = useAppConfig()
 
 const open = ref(false)
 
@@ -110,7 +109,11 @@ const colors = [
 
 function applyColor(color: string) {
   selectedColor.value = color
-  appConfig.ui.colors.primary = color
+  // updateAppConfig triggers NuxtUI's reactive color plugin to regenerate
+  // the :root CSS variables (--ui-color-primary-*). Direct mutation of
+  // appConfig.ui.colors.primary does NOT reliably fire the computed in the
+  // NuxtUI colors plugin, so we use the official helper instead.
+  updateAppConfig({ ui: { colors: { primary: color } } })
   localStorage.setItem('admin-primary-color', color)
 }
 
@@ -118,7 +121,7 @@ onMounted(() => {
   const saved = localStorage.getItem('admin-primary-color')
   if (saved && colors.some(c => c.name === saved)) {
     selectedColor.value = saved
-    appConfig.ui.colors.primary = saved
+    updateAppConfig({ ui: { colors: { primary: saved } } })
   }
 })
 </script>

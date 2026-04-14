@@ -198,14 +198,21 @@ if [ "${HEALTH_OK}" != "1" ]; then
     warn "Container antwortet nach 60s noch nicht — prüfe 'docker logs ${CONTAINER_NAME}'"
 fi
 
-# ── 4. Nur dangling Images aufräumen ───────────────────────
-# NOTE: Wir lassen den Build-Cache absichtlich stehen — der npm cache-mount
-# aus dem Dockerfile macht den nächsten Build deutlich schneller. Build-Cache
-# kann bei Bedarf manuell mit `docker builder prune -f` gelöscht werden.
+# ── 4. Aufräumen: alte Images + alter Build-Cache ──────────
+# Strategie:
+#   - Dangling Images (z.B. alte nuxt-Tags von vorherigen Builds) → immer weg
+#   - Build-Cache älter als 7 Tage → weg, damit nichts unbegrenzt wächst
+#   - Build-Cache der letzten 7 Tage bleibt → npm cache-mount macht die
+#     nächsten Builds viel schneller
+#   - Manuell alles plätten geht weiterhin mit: docker builder prune -af
 if [ "${SHOULD_BUILD}" = "1" ]; then
     log "Räume dangling Images auf..."
     IMG_CLEANED=$(docker image prune -f 2>/dev/null | grep "Total reclaimed" || echo "0B")
     ok "Image Cleanup: ${IMG_CLEANED}"
+
+    log "Räume Build-Cache älter als 7 Tage auf..."
+    CACHE_CLEANED=$(docker builder prune -f --filter "until=168h" 2>/dev/null | grep -i "total" | tail -1 || echo "0B")
+    ok "Build Cache Cleanup: ${CACHE_CLEANED}"
 fi
 
 # ── 5. Zusammenfassung ─────────────────────────────────────

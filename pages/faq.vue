@@ -32,10 +32,9 @@
     <!-- FAQ Sections -->
     <div v-if="hasFaqs" class="space-y-10">
       <section
-        v-for="(section, idx) in sections"
+        v-for="section in sections"
         :key="section.key"
         :ref="el => observe(el as HTMLElement)"
-        class="scroll-reveal"
       >
         <template v-if="faqData[section.key]?.length">
           <!-- Section Header -->

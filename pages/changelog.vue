@@ -9,7 +9,7 @@
       <NuxtLink to="/admin/content/changelog"
         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
         :class="isDark ? 'bg-white/5 text-silver-400 hover:text-white hover:bg-white/10 border border-brand-400/15' : 'bg-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-200 border border-gray-200'">
-        <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+        <UIcon name="i-heroicons-pencil-square" class="w-3.5 h-3.5" />
         Edit Changelog
       </NuxtLink>
     </div>
@@ -17,12 +17,12 @@
     <!-- Header -->
     <div class="text-center mb-14 fade-in heading-glow">
       <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
-        <svg aria-hidden="true" class="w-8 h-8 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
+        <UIcon name="i-heroicons-clock" class="w-8 h-8 text-brand-400 flex-shrink-0" />
         <span class="text-gradient">Changelog</span>
       </h1>
-      <p :class="isDark ? 'text-silver-500' : 'text-gray-500'" class="text-lg">What's new in MagguuUI?</p>
+      <p class="text-lg max-w-xl mx-auto" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+        Every update, improvement, and fix — tracked so you always know what changed.
+      </p>
     </div>
 
     <!-- Section Divider -->
@@ -84,14 +84,14 @@
       </div>
 
       <!-- Load More Button -->
-      <div v-if="hasMore" class="text-center mt-8">
+      <div v-if="hasMore" class="text-center mt-10">
         <button
-          class="glass glass-hover px-6 py-3 rounded-xl text-sm font-medium transition-all inline-flex items-center gap-2"
-          :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'"
+          class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-all border"
+          :class="isDark
+            ? 'bg-white/[0.03] border-white/8 text-silver-300 hover:text-white hover:bg-white/[0.06] hover:border-white/15'
+            : 'bg-white border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 hover:border-gray-300 shadow-sm'"
           @click="loadMore">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
+          <UIcon name="i-heroicons-arrow-down" class="w-4 h-4" />
           Load older entries
         </button>
       </div>
@@ -99,18 +99,17 @@
 
     <!-- Empty State -->
     <div v-else class="glass-card rounded-2xl p-16 text-center">
-      <svg class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-      </svg>
+      <UIcon name="i-heroicons-document-text" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" />
       <p :class="isDark ? 'text-silver-600' : 'text-gray-400'">No entries yet.</p>
     </div>
 
     <!-- Bottom CTA -->
-    <div class="text-center mt-12 pt-6 border-t fade-in"
+    <div class="text-center mt-14 pt-6 border-t fade-in"
       :class="isDark ? 'border-brand-400/10' : 'border-gray-200'">
       <p class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Browse the latest configurations on the
-        <NuxtLink to="/strings" class="text-brand-400 hover:underline">Import Strings</NuxtLink> page.
+        Ready to try the latest version? Head over to the
+        <NuxtLink to="/strings" class="text-brand-400 hover:underline">Import Strings</NuxtLink>
+        page and grab the newest profiles.
       </p>
     </div>
   </div>

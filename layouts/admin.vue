@@ -301,7 +301,7 @@
 
       <CommandPalette ref="cmdPalette" />
       <KeyboardShortcuts />
-      <AdminSettingsDrawer ref="settingsDrawer" />
+      <AdminSettingsDrawer ref="settingsDrawer" v-model:compact-sidebar="collapsed" />
     </div>
   </UApp>
 </template>
@@ -309,6 +309,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const colorMode = useColorMode()
+const appConfig = useAppConfig()
 const { user, logout } = useAuth()
 const isDark = useIsDark()
 const { notifications: notifItems, count: notifCount, refresh: notifRefresh, dismiss: notifDismiss } = useAdminNotifications()
@@ -430,6 +431,10 @@ onMounted(() => {
 
   isMac.value = /Mac|iPhone|iPad/.test(window.navigator.platform)
   collapsed.value = window.localStorage.getItem('admin-sidebar-collapsed') === '1'
+
+  // Restore primary color from localStorage
+  const savedColor = window.localStorage.getItem('admin-primary-color')
+  if (savedColor) appConfig.ui.colors.primary = savedColor
   document.addEventListener('click', onDocumentClick)
   updateLgBreakpoint()
   window.addEventListener('resize', updateLgBreakpoint)

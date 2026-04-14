@@ -58,10 +58,10 @@
                 ]"
                 :style="{ backgroundColor: color.hex, color: color.hex }"
                 :title="color.name"
-                @click="selectedColor = color.name"
+                @click="applyColor(color.name)"
               />
             </div>
-            <p class="mt-2 text-[11px]" :class="isDark ? 'text-white/30' : 'text-slate-400'">Visual only -- not yet wired to theme.</p>
+            <p class="mt-2 text-[11px]" :class="isDark ? 'text-white/30' : 'text-slate-400'">Changes the accent color across all admin UI.</p>
           </section>
 
           <!-- Layout -->
@@ -81,6 +81,7 @@
 <script setup lang="ts">
 const isDark = useIsDark()
 const colorMode = useColorMode()
+const appConfig = useAppConfig()
 
 const open = ref(false)
 
@@ -89,6 +90,7 @@ function toggle() {
 }
 
 defineExpose({ toggle })
+
 const selectedColor = ref('blue')
 const compactSidebar = defineModel<boolean>('compactSidebar', { default: false })
 
@@ -105,6 +107,20 @@ const colors = [
   { name: 'orange', hex: '#f97316' },
   { name: 'rose', hex: '#f43f5e' },
 ]
+
+function applyColor(color: string) {
+  selectedColor.value = color
+  appConfig.ui.colors.primary = color
+  localStorage.setItem('admin-primary-color', color)
+}
+
+onMounted(() => {
+  const saved = localStorage.getItem('admin-primary-color')
+  if (saved && colors.some(c => c.name === saved)) {
+    selectedColor.value = saved
+    appConfig.ui.colors.primary = saved
+  }
+})
 </script>
 
 <style scoped>

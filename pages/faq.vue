@@ -1,57 +1,87 @@
 <!--
-  FAQ Page - Frequently asked questions about MagguuUI
-  Fetches FAQ entries from API, grouped by category
+  FAQ Page — Frequently asked questions about MagguuUI
+  Grouped by category with accordion items, scroll-reveal, section dividers
 -->
 
 <template>
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <!-- Admin Edit Button -->
     <div v-if="isLoggedIn" class="flex justify-end mb-4">
       <NuxtLink to="/admin/content/faq"
         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
         :class="isDark ? 'bg-white/5 text-silver-400 hover:text-white hover:bg-white/10 border border-brand-400/15 backdrop-blur' : 'bg-white/80 text-gray-500 hover:text-gray-900 hover:bg-white border border-gray-200 backdrop-blur'">
-        <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+        <UIcon name="i-heroicons-pencil-square" class="w-3.5 h-3.5" />
         Edit FAQ
       </NuxtLink>
     </div>
 
-    <div class="text-center mb-12 fade-in heading-glow">
+    <!-- Header -->
+    <div class="text-center mb-14 fade-in heading-glow">
       <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
-        <svg aria-hidden="true" class="w-8 h-8 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
-        </svg>
+        <UIcon name="i-heroicons-question-mark-circle" class="w-8 h-8 text-brand-400 flex-shrink-0" />
         <span class="text-gradient">FAQ</span>
       </h1>
-      <p class="text-lg" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Frequently asked questions about MagguuUI
+      <p class="text-lg max-w-xl mx-auto" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+        Everything you need to know about setting up and using MagguuUI — from first install to fine-tuning.
       </p>
     </div>
 
-    <div class="space-y-6">
-      <div v-for="(section, idx) in sections" :key="section.key" class="fade-in" :class="idx > 0 ? `fade-in-delay-${idx}` : ''">
-        <h2 v-if="faqData[section.key]?.length" class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider mb-3 px-1"
-          :class="isDark ? 'text-brand-400' : 'text-blue-600'">
-          <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" :d="section.icon" />
-          </svg>
-          {{ section.label }}
-        </h2>
-        <div v-if="faqData[section.key]?.length" class="space-y-2">
-          <FaqItem v-for="faq in faqData[section.key]" :key="faq.id"
-            :question="faq.question" :answer="faq.answer" :is-dark="isDark" />
-        </div>
-      </div>
+    <!-- Section Divider -->
+    <div class="section-divider mb-10" />
+
+    <!-- FAQ Sections -->
+    <div v-if="hasFaqs" class="space-y-10">
+      <section
+        v-for="(section, idx) in sections"
+        :key="section.key"
+        :ref="el => observe(el as HTMLElement)"
+        class="scroll-reveal"
+      >
+        <template v-if="faqData[section.key]?.length">
+          <!-- Section Header -->
+          <div class="flex items-start gap-3 mb-4 px-1">
+            <span class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+              :class="isDark ? 'bg-brand-400/10 text-brand-400' : 'bg-blue-50 text-blue-600'">
+              <UIcon :name="section.icon" class="w-4 h-4" />
+            </span>
+            <div>
+              <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+                {{ section.label }}
+              </h2>
+              <p class="text-sm mt-0.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+                {{ section.description }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Items -->
+          <div class="space-y-2">
+            <FaqItem
+              v-for="faq in faqData[section.key]"
+              :key="faq.id"
+              :question="faq.question"
+              :answer="faq.answer"
+              :is-dark="isDark"
+            />
+          </div>
+        </template>
+      </section>
     </div>
 
-    <div v-if="!hasFaqs && !pending" class="text-center py-12">
-      <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">No FAQ entries yet.</p>
+    <!-- Empty State -->
+    <div v-else-if="!pending" class="glass-card rounded-2xl p-16 text-center">
+      <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" />
+      <p class="text-sm" :class="isDark ? 'text-silver-600' : 'text-gray-400'">No FAQ entries yet.</p>
     </div>
 
-    <div v-if="hasFaqs" class="text-center mt-12 pt-6 border-t fade-in"
+    <!-- Bottom CTA -->
+    <div v-if="hasFaqs" class="text-center mt-14 pt-6 border-t fade-in"
       :class="isDark ? 'border-brand-400/10' : 'border-gray-200'">
       <p class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Still have questions? Open an issue on
-        <a :href="githubIssuesUrl" target="_blank" rel="noopener noreferrer" class="text-brand-400 hover:underline">GitHub</a>
-        or check the <NuxtLink to="/guide" class="text-brand-400 hover:underline">Installation Guide</NuxtLink>.
+        Can't find what you're looking for? Check the
+        <NuxtLink to="/guide" class="text-brand-400 hover:underline">Installation Guide</NuxtLink>
+        or open an issue on
+        <a :href="githubIssuesUrl" target="_blank" rel="noopener noreferrer" class="text-brand-400 hover:underline">GitHub</a>.
       </p>
     </div>
   </div>
@@ -60,6 +90,7 @@
 <script setup lang="ts">
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
+const { observe } = useScrollReveal()
 const siteSettings = await usePublicPageSeo({
   title: 'FAQ',
   description: 'Frequently asked questions about MagguuUI - setup, addons, profiles, and troubleshooting.',
@@ -67,10 +98,30 @@ const siteSettings = await usePublicPageSeo({
 })
 
 const sections = [
-  { key: 'general', label: 'General', icon: 'M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z' },
-  { key: 'installation', label: 'Installation & Setup', icon: 'M11.42 15.17l-5.684 5.684a1.875 1.875 0 01-2.652-2.652l5.684-5.684m0 0l1.414-1.414a2.625 2.625 0 013.712 0l2.12 2.12a2.625 2.625 0 010 3.712l-1.414 1.414m0 0L18 20.25M2.25 12l8.954-8.955c.44-.439 1.168-.439 1.607 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25' },
-  { key: 'addons', label: 'Addons & Profiles', icon: 'M14.25 6.087c0-.355.186-.676.401-.959.221-.29.349-.634.349-1.003 0-1.036-1.007-1.875-2.25-1.875s-2.25.84-2.25 1.875c0 .369.128.713.349 1.003.215.283.401.604.401.959v0a.64.64 0 01-.657.643 48.491 48.491 0 01-4.163-.3c.186 1.613.79 3.08 1.742 4.295a48.224 48.224 0 013.127.297.643.643 0 01.657.643v0c0 .355-.186.676-.401.959a2.002 2.002 0 00-.349 1.003c0 1.035 1.007 1.875 2.25 1.875s2.25-.84 2.25-1.875c0-.369-.128-.713-.349-1.003a1.733 1.733 0 01-.401-.959v0c0-.374.312-.67.657-.643a48.497 48.497 0 014.163.3c-.186-1.613-.79-3.08-1.742-4.295a48.211 48.211 0 01-3.127-.297.643.643 0 01-.657-.643v0z' },
-  { key: 'troubleshooting', label: 'Troubleshooting', icon: 'M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z' },
+  {
+    key: 'general',
+    label: 'General',
+    description: 'What MagguuUI is, how it works, and what you get.',
+    icon: 'i-heroicons-information-circle',
+  },
+  {
+    key: 'installation',
+    label: 'Installation & Setup',
+    description: 'Getting started — from download to first login.',
+    icon: 'i-heroicons-wrench-screwdriver',
+  },
+  {
+    key: 'addons',
+    label: 'Addons & Profiles',
+    description: 'Import strings, profile management, and addon compatibility.',
+    icon: 'i-heroicons-puzzle-piece',
+  },
+  {
+    key: 'troubleshooting',
+    label: 'Troubleshooting',
+    description: 'Common issues and how to fix them.',
+    icon: 'i-heroicons-exclamation-triangle',
+  },
 ]
 
 const { data: rawData, pending } = await useFetch('/api/v1/faqs')

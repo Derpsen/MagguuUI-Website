@@ -57,8 +57,7 @@
 │   │   │   ├── AreaChart.vue   # 30-Tage Zeitreihen (Gradient-Fill, Tooltips)
 │   │   │   ├── BarChart.vue    # Hourly Distributions, 7-Tage Snapshots
 │   │   │   ├── DoughnutChart.vue # Breakdowns (Device, Browser, OS)
-│   │   │   ├── HorizontalBarChart.vue # Top-Listen (Referrers, Pages)
-│   │   │   └── SparkLine.vue   # Tiny Inline-Chart für MetricCards
+│   │   │   └── HorizontalBarChart.vue # Top-Listen (Referrers, Pages)
 │   │   ├── CrudModal.vue       # Shared Create/Edit Modal (#content Slot)
 │   │   ├── EmptyState.vue      # Leerer Zustand für Panels und Tabellen
 │   │   ├── MetricCard.vue      # KPI- und Trend-Karten
@@ -522,37 +521,6 @@ NUXT_WEBAUTHN_ORIGIN=      # Optional: erwarteter Origin für Passkeys
 ---
 
 ## Bekannte Issues & TODOs
-
-### ERLEDIGT
-- [x] **Admin Redesign System:** neues responsives Admin-Shell-System mit zentraler Navigation, Command Palette, Mobile Dock und wiederverwendbaren UI-Primitives
-- [x] **Core Admin Screens Refresh:** Dashboard sowie Profiles/WowUp/Layouts/Home/Settings/Stats/GitHub/Users auf konsistente Header-, Panel-, Table- und Sticky-Bar-Patterns umgestellt
-- [x] **Admin Design Overhaul (vben-style):** Glassmorphism durch clean vben-inspired Design-Token-System ersetzt (HSL-basierte Semantic Tokens, solide Backgrounds, flache Shadows)
-- [x] **ECharts Integration:** Apache ECharts via vue-echarts mit Tree-Shaking Plugin, 6 wiederverwendbare Chart-Komponenten (Area, Bar, Doughnut, HorizontalBar, SparkLine)
-- [x] **String Pages Deduplication:** useStringManager Composable + AdminStringTable + AdminCrudModal extrahiert, 3 Seiten von 1.647 auf 746 Zeilen reduziert (-55%)
-- [x] **System Pages Modernisierung:** Settings und Users mit Tab-Layouts, Activity mit Timeline-Darstellung
-- [x] **Shared Admin Helpers:** timeAgo, actionIcon, entityTypeLabel, formatBytes in utils/adminHelpers.ts konsolidiert
-- [x] **Public Addons Page:** Neue /addons Seite mit Required/Core/Optional Addon-Liste und CurseForge-Links
-- [x] **Dependency Updates:** Vue 3.5.32, TypeScript 6, NuxtUI 4.6.1, TipTap 3.22, Marked 18, alle Deps aktuell
-- [x] **UModal #content Slot Fix:** Alle 22 Modals in 9 Admin-Dateien auf `<template #content>` umgestellt
-- [x] **Light-Mode Fixes:** Modal Borders, Table Headers, Table Borders in profiles/wowup/layouts
-- [x] **Admin Header Context:** Header arbeitet mit Section-/Title-Kontext statt klassischer Breadcrumb-Leiste
-- [x] **Keyboard Shortcuts:** `?` öffnet Modal, `g d`/`g p` etc. für Navigation
-- [x] **Guide Admin Preview:** Preview-Tab im Guide-Editor mit eigener Timeline-Darstellung vorhanden
-- [x] **Guide Bottom Cards:** 3 feature-card Links (Strings, WowUp, FAQ) mit Hover-Highlighting
-- [x] **Homepage Scroll-Indikator:** Sticky overlay mit backdrop-blur, immer sichtbar
-- [x] **Changelog Pagination:** UButton statt raw `<button>`
-- [x] **Public Header Cleanup:** Mobile-Hamburger nur noch auf Mobile, Breadcrumbs entfernt, Footer ausgedünnt
-- [x] **Shared Public Backgrounds:** Homepage und Guide nutzen jetzt denselben Page-Background-Ansatz wie Strings/weitere Public-Seiten
-- [x] **Guide Top Simplified:** Install-Guide oben ohne eigene Hero-Glassbox oder Stat-Strip, nur noch Heading auf normalem Seitenhintergrund
-- [x] **Sticky Public Admin Bar:** eingeloggte Session-Leiste sitzt im sticky Public-Header und läuft beim Scrollen mit
-- [x] **Public Breadcrumb Removal:** Breadcrumbs im Public-Layout wieder entfernt
-- [x] **Mobile Menu Overlay:** Hamburger öffnet im Mobile-Breakpoint ein sichtbares Overlay statt eines unauffälligen In-Flow-Blocks
-
-- [x] **Auth State Cleanup:** `useAuth()` kapselt jetzt Storage-Hydration, Token-Expiry-Pruefung, Session-Persistenz und Passkey/Login-State gemeinsam; Admin-Middleware und Login-Seite greifen nicht mehr separat auf `localStorage` zu
-- [x] **Frontend Listener Cleanup:** Homepage-Observer/Scroll-Handler und der global genutzte Copy-Shortcut auf `strings.vue` werden sauber an- und abgemeldet
-- [x] **Deprecated Login History Endpoint Removed:** alter Compatibility-Endpoint `server/api/v1/admin/login-history.get.ts` wurde entfernt
-
-### VERBLEIBEND
 - [ ] **OG-Image als PNG:** SVG erstellt, aber Social-Media-Crawler brauchen PNG — manuelle Konvertierung nötig
 - [ ] **Apple Touch Icon PNG:** Nur Link-Tag hinzugefügt, eigentliches PNG muss erstellt werden
 - [ ] **Admin Smoke Tests:** Für den großen Admin-Refactor gibt es weiterhin keine automatisierten Build-/Smoke-Checks

@@ -43,104 +43,180 @@ export const DEFAULT_FAQS = [
   // ─── General ──────────────────────────────────────
   {
     category: 'general',
-    question: 'What exactly is MagguuUI?',
-    answer: 'MagguuUI is a World of Warcraft addon that sets up your entire user interface for you. Instead of spending hours configuring ElvUI, Plater, BigWigs, Details and the rest, you install MagguuUI, click Install All once, and the addon applies a curated profile to each supported addon. The result is a clean, ready-to-play UI in a few minutes.',
+    question: 'What is MagguuUI?',
+    answer: `MagguuUI is a **World of Warcraft UI pack** that configures your entire interface in one click.
+
+Instead of spending hours tweaking ElvUI, Plater, BigWigs, Details and the rest, you install MagguuUI, hit **Install All**, and a curated profile is applied to each supported addon.
+
+The result: a clean, ready-to-play UI in a few minutes.`,
     sortOrder: 0,
   },
   {
     category: 'general',
     question: 'Is MagguuUI free?',
-    answer: 'Yes. MagguuUI is free and open source under the GPL v3.0 license. You can download it from CurseForge, Wago Addons, or WoWInterface. There is no paid tier and no premium content.',
+    answer: `**Yes — free and open source** under the GPL v3.0 license.
+
+You can download it from:
+- [CurseForge](https://www.curseforge.com/wow/addons)
+- [Wago Addons](https://addons.wago.io/)
+- [WoWInterface](https://www.wowinterface.com/)
+
+There is no paid tier, no premium content, and no ads.`,
     sortOrder: 1,
   },
   {
     category: 'general',
-    question: 'Do I need every supported addon to use MagguuUI?',
-    answer: 'No. The only required addon is ElvUI — everything else is optional. MagguuUI checks which addons you have installed, configures the ones it finds, and skips the rest without errors. You can add more addons later and re-run Install All to configure them.',
+    question: 'Do I need every supported addon?',
+    answer: `**No — only ElvUI is required.** Everything else is optional.
+
+MagguuUI detects which addons you have enabled, configures those, and silently skips the rest. You can install more addons later and run **Install All** again to configure them.`,
     sortOrder: 2,
   },
   {
     category: 'general',
     question: 'Will MagguuUI overwrite my existing profiles?',
-    answer: 'MagguuUI uses a separate profile called "MagguuUI" inside each addon, so your own profiles are kept untouched. If a MagguuUI profile already exists from a previous install, the addon asks for confirmation before overwriting it.',
+    answer: `No. MagguuUI creates its own profile — literally named **"MagguuUI"** — inside each supported addon, so your personal profiles stay untouched.
+
+If a MagguuUI profile from a previous install is found, the installer will ask before overwriting it.`,
     sortOrder: 3,
   },
 
   // ─── Installation & Setup ─────────────────────────
   {
     category: 'installation',
-    question: 'What is the recommended setup flow for a brand new install?',
-    answer: '1) Install ElvUI 15+ from tukui.org. 2) Install MagguuUI from CurseForge, Wago Addons, or WoWInterface. 3) Log in on your main character — the installer opens automatically. 4) Click Install All. 5) Confirm the UI reload when prompted. That is the full setup.',
+    question: 'How do I set up MagguuUI from scratch?',
+    answer: `Five steps, takes about two minutes:
+
+1. Install **ElvUI 15+** from [tukui.org](https://www.tukui.org/)
+2. Install **MagguuUI** from CurseForge, Wago Addons, or WoWInterface
+3. Log in on your main character — the installer opens automatically
+4. Click **Install All**
+5. Confirm the UI reload when prompted
+
+That's it. You're done.`,
     sortOrder: 0,
   },
   {
     category: 'installation',
     question: 'I missed the installer popup — how do I open it again?',
-    answer: 'Type /mui or /mui install in chat. You can also click the MagguuUI minimap button, or open the installer from Game Menu → Options → AddOns → MagguuUI. The installer popup only auto-opens on first login per character; after that you trigger it manually whenever you need it.',
+    answer: `Any of these will re-open it:
+
+- Type \`/mui\` or \`/mui install\` in chat
+- Click the **MagguuUI minimap button**
+- Open it from **Game Menu → Options → AddOns → MagguuUI**
+
+The auto-popup only fires on first login per character. After that, you open it manually whenever you need.`,
     sortOrder: 1,
   },
   {
     category: 'installation',
-    question: 'What about my alts? Do I have to repeat everything?',
-    answer: 'No. After one successful Install All on the account, MagguuUI shows the much shorter Load Profiles popup on alts instead of the full installer. Just confirm it and the existing profiles are applied. You can also run /mui load manually if the popup did not appear.',
+    question: 'Do I have to repeat everything on my alts?',
+    answer: `No — alts are much faster.
+
+After one successful **Install All** on your account, MagguuUI shows a shorter **Load Profiles** popup on alts instead of the full installer. Just confirm it and the existing profiles are applied.
+
+You can also run \`/mui load\` manually if the popup didn't appear.`,
     sortOrder: 2,
   },
   {
     category: 'installation',
     question: 'Can I use MagguuUI without ElvUI?',
-    answer: 'No — ElvUI is the foundation everything else builds on. MagguuUI requires ElvUI version 15.00 or higher and will refuse to load profiles without it. Install ElvUI first, then install MagguuUI.',
+    answer: `**No.** ElvUI is the foundation everything else builds on.
+
+MagguuUI requires **ElvUI 15.00 or higher** and will refuse to load profiles without it. Install ElvUI first, then MagguuUI.`,
     sortOrder: 3,
   },
 
   // ─── Addons & Profiles ────────────────────────────
   {
     category: 'addons',
-    question: 'Which addons does Install All set up?',
-    answer: 'The core set is ElvUI, BetterCooldownManager, Blizzard EditMode, Plater, BigWigs, and Details. Optional integrations include Platynator, BuffReminders, MiniCC, ElvUI_WindTools, Plumber, GTFO, BugSack, NorthernSkyRaidTools, MPlusTimer and several more. MagguuUI installs profiles for whichever of those it finds enabled — missing addons are skipped silently.',
+    question: 'Which addons does Install All configure?',
+    answer: `**Core set** (always configured if installed):
+- ElvUI
+- BetterCooldownManager
+- Blizzard EditMode
+- Plater
+- BigWigs
+- Details
+
+**Optional integrations:** Platynator, BuffReminders, MiniCC, ElvUI_WindTools, Plumber, GTFO, BugSack, NorthernSkyRaidTools, MPlusTimer and a few more.
+
+MagguuUI configures whichever of these are enabled — missing addons are skipped silently.`,
     sortOrder: 0,
   },
   {
     category: 'addons',
     question: 'How do class layouts work?',
-    answer: 'MagguuUI ships pre-built cooldown layouts for every class and specialization. The right layout is applied automatically when you change spec, so you do not have to fiddle with cooldowns when respeccing for Mythic+, Raid, or PvP. You can also re-apply them manually from the installer.',
+    answer: `MagguuUI ships **pre-built cooldown layouts** for every class and specialization.
+
+The correct layout is applied automatically when you change spec — no fiddling with cooldowns when respeccing for Mythic+, Raid, or PvP.
+
+You can re-apply layouts manually from the installer at any time.`,
     sortOrder: 1,
   },
   {
     category: 'addons',
-    question: 'What is the difference between Install All and Load Profiles?',
-    answer: 'Install All is the full first-time setup — it (re-)imports every profile fresh and is what you run on your main character. Load Profiles only activates the profiles that are already in your saved variables, without re-importing them — it is the lightweight flow for alts and for quickly fixing things after switching addons.',
+    question: 'What\'s the difference between Install All and Load Profiles?',
+    answer: `**Install All** — full first-time setup. Re-imports every profile fresh. Run this on your main.
+
+**Load Profiles** — lightweight flow for alts. Just activates the profiles already in saved variables, without re-importing them.
+
+Rule of thumb: *Install All* on your main, *Load Profiles* on alts.`,
     sortOrder: 2,
   },
   {
     category: 'addons',
-    question: 'What are the WowUp Required and Optional strings on the website?',
-    answer: 'WowUp is one of the popular WoW addon managers. The Required and Optional lists on the website are import strings you can paste into WowUp to bulk-install all the addons MagguuUI integrates with. If you already use a different addon manager (CurseForge, Tukui Client, …) you can ignore these — they are just a convenience for WowUp users.',
+    question: 'What are the WowUp Required / Optional strings?',
+    answer: `[WowUp](https://wowup.io/) is a popular WoW addon manager. The **Required** and **Optional** lists on this site are import strings you can paste into WowUp to bulk-install every addon MagguuUI integrates with.
+
+Using CurseForge, Tukui Client, or another manager? You can safely ignore these — they're just a convenience for WowUp users.`,
     sortOrder: 3,
   },
 
   // ─── Troubleshooting ──────────────────────────────
   {
     category: 'troubleshooting',
-    question: 'Install All did not seem to do anything',
-    answer: 'Make sure ElvUI is enabled and at version 15.00 or higher. Also check that you are not in combat — MagguuUI waits until you leave combat before applying profiles. If both look fine, try /mui install to re-open the installer and run Install All again. A UI reload is required at the end — confirm the popup or run /reload manually.',
+    question: 'Install All didn\'t do anything',
+    answer: `Check these three things:
+
+1. **ElvUI enabled and version 15.00 or higher** — lower versions won't work
+2. **Not in combat** — MagguuUI waits until combat ends before applying profiles
+3. **UI reload confirmed** — required at the end of Install All
+
+If those look fine, run \`/mui install\` to re-open the installer and try again. You can also \`/reload\` manually if the popup didn't fire.`,
     sortOrder: 0,
   },
   {
     category: 'troubleshooting',
-    question: 'I do not get update hints in chat or as a popup',
-    answer: 'Open /mui settings and check Update Hint Mode. If it is set to Disabled, no hint is shown for new versions. Also note that once you click "Got it" on a version popup, that exact version will not notify you again — you will only see hints for newer releases after that.',
+    question: 'I don\'t see update hints in chat or as a popup',
+    answer: `Open \`/mui settings\` and check **Update Hint Mode**. If it's set to **Disabled**, no hints will appear for new versions.
+
+Note: once you click **"Got it"** on a version popup, *that specific version* will not notify you again — you'll only see hints for newer releases after that.`,
     sortOrder: 1,
   },
   {
     category: 'troubleshooting',
-    question: 'How do I reset everything and start fresh?',
-    answer: 'Open /mui settings and use Hard Reset. This wipes the MagguuUI saved variables and sends you back through the full installer on next reload. Your other addons keep their own profiles, but the MagguuUI-managed ones will be re-imported the next time you click Install All.',
+    question: 'How do I reset MagguuUI and start fresh?',
+    answer: `Open \`/mui settings\` and use **Hard Reset**.
+
+This wipes all MagguuUI saved variables and sends you back through the full installer on next reload. Your other addons keep their own profiles — only the MagguuUI-managed profiles will be re-imported when you click **Install All** again.`,
     sortOrder: 2,
   },
   {
     category: 'troubleshooting',
-    question: 'Where can I report bugs or ask for help?',
-    answer: 'Open the project page on CurseForge, Wago Addons, or WoWInterface and use the comments / issues section, or contact the author through the e-mail or GitHub link in the footer. When reporting a bug, please mention your WoW version, your ElvUI version, and the MagguuUI version (you can see it via /mui version).',
+    question: 'Where can I report a bug or ask for help?',
+    answer: `Best places for bug reports and questions:
+
+- **CurseForge / Wago / WoWInterface** comments and issues tabs
+- **GitHub** link in the footer
+- **Email** link in the footer
+
+When reporting a bug, please include:
+- Your WoW version
+- Your ElvUI version
+- Your MagguuUI version (run \`/mui version\`)
+
+This makes fixes much faster.`,
     sortOrder: 3,
   },
 ] as const

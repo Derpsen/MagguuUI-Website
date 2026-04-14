@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <!-- Admin Edit Button -->
     <div v-if="isLoggedIn" class="flex justify-end mb-4">
       <NuxtLink to="/admin/content/faq"
@@ -30,7 +30,7 @@
     <div class="section-divider mb-10" />
 
     <!-- FAQ Sections -->
-    <div v-if="hasFaqs" class="space-y-10">
+    <div v-if="hasFaqs" class="space-y-14">
       <section
         v-for="section in sections"
         :key="section.key"
@@ -38,23 +38,23 @@
       >
         <template v-if="faqData[section.key]?.length">
           <!-- Section Header -->
-          <div class="flex items-start gap-3 mb-4 px-1">
-            <span class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+          <div class="flex items-start gap-3.5 mb-6 px-1">
+            <span class="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
               :class="isDark ? 'bg-brand-400/10 text-brand-400' : 'bg-blue-50 text-blue-600'">
-              <UIcon :name="section.icon" class="w-4 h-4" />
+              <UIcon :name="section.icon" class="w-4.5 h-4.5" />
             </span>
-            <div>
-              <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+            <div class="flex-1">
+              <h2 class="text-base font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-900'">
                 {{ section.label }}
               </h2>
-              <p class="text-sm mt-0.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+              <p class="text-sm mt-1 leading-relaxed" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
                 {{ section.description }}
               </p>
             </div>
           </div>
 
           <!-- Items -->
-          <div class="space-y-2">
+          <div class="space-y-3">
             <FaqItem
               v-for="faq in faqData[section.key]"
               :key="faq.id"

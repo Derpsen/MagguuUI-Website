@@ -67,10 +67,16 @@
       </section>
     </div>
 
+    <!-- Loading State -->
+    <div v-if="pending && !hasFaqs" class="glass-card rounded-2xl p-16 text-center" role="status" aria-live="polite">
+      <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 mx-auto mb-3 animate-spin" :class="isDark ? 'text-silver-500' : 'text-gray-400'" />
+      <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-500'">Loading FAQ…</p>
+    </div>
+
     <!-- Empty State -->
-    <div v-else-if="!pending" class="glass-card rounded-2xl p-16 text-center">
+    <div v-else-if="!pending && !hasFaqs" class="glass-card rounded-2xl p-16 text-center">
       <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" />
-      <p class="text-sm" :class="isDark ? 'text-silver-600' : 'text-gray-400'">No FAQ entries yet.</p>
+      <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-500'">No FAQ entries yet.</p>
     </div>
 
     <!-- Bottom CTA -->

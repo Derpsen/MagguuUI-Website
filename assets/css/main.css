@@ -82,6 +82,13 @@ html, body, #__nuxt {
   min-height: 100%;
 }
 
+.public-shell :is(a, button, [role="button"], [role="tab"], summary, input, select, textarea):focus-visible,
+.public-shell [tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 2px solid var(--color-brand-400, #60a5fa);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
 .public-shell,
 .admin-shell {
   position: relative;
@@ -339,6 +346,111 @@ html, body, #__nuxt {
   background-position: 100% 100%;
   box-shadow: 0 6px 24px rgba(5, 150, 105, 0.3);
   transform: translateY(-1px);
+}
+
+/* ─── Unified Public Button Primitives ────────────────────── */
+/* Use these instead of hand-rolling per-page button styles. */
+
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1.25;
+  border: 1px solid transparent;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-ghost:disabled,
+.btn-icon:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Primary: main CTA (uses brand gradient) */
+.btn-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563EB 50%, #3B8BFF 100%);
+  background-size: 200% 200%;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.btn-primary:hover:not(:disabled) {
+  background-position: 100% 100%;
+  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+.btn-primary:active:not(:disabled) { transform: translateY(0); }
+
+/* Secondary: subdued filled action */
+.btn-secondary {
+  color: rgb(203 213 225);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+html:not(.dark) .btn-secondary {
+  color: rgb(55 65 81);
+  background: rgb(255 255 255 / 0.9);
+  border-color: rgb(219 234 254);
+  box-shadow: 0 1px 2px rgba(30, 64, 175, 0.05);
+}
+.btn-secondary:hover:not(:disabled) {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+html:not(.dark) .btn-secondary:hover:not(:disabled) {
+  color: rgb(17 24 39);
+  background: #fff;
+}
+
+/* Ghost: low-emphasis cancel/text action */
+.btn-ghost {
+  color: rgb(148 163 184);
+  background: transparent;
+}
+html:not(.dark) .btn-ghost {
+  color: rgb(107 114 128);
+}
+.btn-ghost:hover:not(:disabled) {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+html:not(.dark) .btn-ghost:hover:not(:disabled) {
+  color: rgb(17 24 39);
+  background: rgb(243 244 246);
+}
+
+/* Icon-only square button */
+.btn-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  color: rgb(148 163 184);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+html:not(.dark) .btn-icon {
+  color: rgb(107 114 128);
+  background: rgb(243 244 246);
+  border-color: rgb(229 231 235);
+}
+.btn-icon:hover:not(:disabled) {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+html:not(.dark) .btn-icon:hover:not(:disabled) {
+  color: rgb(17 24 39);
+  background: rgb(229 231 235);
 }
 
 /* ─── Custom Select Dropdown ────────────────────── */
@@ -1300,24 +1412,6 @@ html.dark .admin-shell {
 
 .admin-user-chip {
   padding: 0.45rem 0.6rem;
-}
-
-.admin-badge-counter {
-  position: absolute;
-  top: -0.2rem;
-  right: -0.15rem;
-  min-width: 1.15rem;
-  height: 1.15rem;
-  padding: 0 0.25rem;
-  border-radius: 999px;
-  background: #dc2626;
-  color: white;
-  font-size: 0.68rem;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--admin-card);
 }
 
 .admin-filterbar,

@@ -7,11 +7,6 @@ export function buildPublicPageTitle(pageTitle: string, siteName?: string | null
   return `${pageTitle} - ${resolvedSiteName}`
 }
 
-export function buildGitHubIssuesUrl(githubUrl?: string | null) {
-  const baseUrl = githubUrl || PUBLIC_SITE_SETTINGS_DEFAULTS.github_url
-  return baseUrl.endsWith('/issues') ? baseUrl : `${baseUrl.replace(/\/$/, '')}/issues`
-}
-
 export function buildPublicUrl(path: string, baseUrl = PUBLIC_SITE_BASE_URL) {
   return new URL(path, baseUrl).toString()
 }

@@ -22,7 +22,7 @@
           </svg>
           New here? What is an import string?
         </span>
-        <svg class="w-4 h-4 transition-transform group-open:rotate-180" :class="isDark ? 'text-silver-400' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <svg aria-hidden="true" class="w-4 h-4 transition-transform group-open:rotate-180" :class="isDark ? 'text-silver-400' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
         </svg>
       </summary>
@@ -63,7 +63,7 @@
       </div>
 
       <!-- ═══ Cooldown Layouts ═══ -->
-      <div v-if="activeTab === 'layouts'" role="tabpanel" id="tabpanel-layouts" aria-labelledby="tab-layouts">
+      <div v-if="activeTab === 'layouts'" role="tabpanel" id="tabpanel-layouts" aria-labelledby="tab-layouts" tabindex="0">
         <div v-if="layoutList.length" class="space-y-5">
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Class</label>
@@ -84,13 +84,14 @@
               <div class="flex gap-2">
                 <button class="flex-1 py-4 rounded-xl text-white font-semibold text-lg transition-all flex items-center justify-center gap-2"
                   :class="layoutCopied ? 'btn-gradient-green' : 'btn-gradient'" @click="copyLayout">
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
+                  <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
                   {{ layoutCopied ? 'Copied!' : 'Copy String' }}
                 </button>
                 <button v-if="isLoggedIn" class="px-4 py-4 rounded-xl transition-all flex items-center justify-center"
                   :class="isDark ? 'bg-white/5 hover:bg-white/10 text-silver-400 hover:text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-900'"
+                  aria-label="Edit layout"
                   @click="editLayout(selectedLayout)">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+                  <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
                 </button>
               </div>
               <div class="flex items-center justify-between text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
@@ -105,14 +106,14 @@
               </div>
               <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24">
                 <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
-                  {{ selectedLayout.importString?.substring(0, 500) }}{{ (selectedLayout.importString?.length || 0) > 500 ? '...' : '' }}
+                  {{ selectedLayout.importString?.substring(0, 200) }}{{ (selectedLayout.importString?.length || 0) > 200 ? '...' : '' }}
                 </p>
               </div>
             </div>
           </Transition>
         </div>
         <div v-else class="text-center py-16">
-          <svg class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <svg aria-hidden="true" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
           </svg>
           <p :class="isDark ? 'text-silver-600' : 'text-gray-400'">No layouts available yet.</p>
@@ -120,7 +121,7 @@
       </div>
 
       <!-- ═══ Addon Profiles ═══ -->
-      <div v-if="activeTab === 'profiles'" role="tabpanel" id="tabpanel-profiles" aria-labelledby="tab-profiles">
+      <div v-if="activeTab === 'profiles'" role="tabpanel" id="tabpanel-profiles" aria-labelledby="tab-profiles" tabindex="0">
         <div v-if="profileList.length" class="space-y-5">
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Addon</label>
@@ -141,13 +142,14 @@
               <div class="flex gap-2">
                 <button class="flex-1 py-4 rounded-xl text-white font-semibold text-lg transition-all flex items-center justify-center gap-2"
                   :class="profileCopied ? 'btn-gradient-green' : 'btn-gradient'" @click="copyProfile">
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
+                  <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
                   {{ profileCopied ? 'Copied!' : 'Copy String' }}
                 </button>
                 <button v-if="isLoggedIn" class="px-4 py-4 rounded-xl transition-all flex items-center justify-center"
                   :class="isDark ? 'bg-white/5 hover:bg-white/10 text-silver-400 hover:text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-900'"
+                  aria-label="Edit profile"
                   @click="editProfile(selectedProfile)">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+                  <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
                 </button>
               </div>
               <div class="flex items-center justify-between text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
@@ -162,14 +164,14 @@
               </div>
               <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24">
                 <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
-                  {{ selectedProfile.string?.substring(0, 500) }}{{ (selectedProfile.string?.length || 0) > 500 ? '...' : '' }}
+                  {{ selectedProfile.string?.substring(0, 200) }}{{ (selectedProfile.string?.length || 0) > 200 ? '...' : '' }}
                 </p>
               </div>
             </div>
           </Transition>
         </div>
         <div v-else class="text-center py-16">
-          <svg class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <svg aria-hidden="true" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
           </svg>
           <p :class="isDark ? 'text-silver-600' : 'text-gray-400'">No addon profiles available yet.</p>
@@ -177,7 +179,7 @@
       </div>
 
       <!-- ═══ WowUp ═══ -->
-      <div v-if="activeTab === 'wowup'" role="tabpanel" id="tabpanel-wowup" aria-labelledby="tab-wowup">
+      <div v-if="activeTab === 'wowup'" role="tabpanel" id="tabpanel-wowup" aria-labelledby="tab-wowup" tabindex="0">
         <div v-if="wowupList.length" class="space-y-5">
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Package</label>
@@ -190,13 +192,14 @@
               <div class="flex gap-2">
                 <button class="flex-1 py-4 rounded-xl text-white font-semibold text-lg transition-all flex items-center justify-center gap-2"
                   :class="wowupCopied ? 'btn-gradient-green' : 'btn-gradient'" @click="copyWowup">
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
+                  <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
                   {{ wowupCopied ? 'Copied!' : 'Copy String' }}
                 </button>
                 <button v-if="isLoggedIn" class="px-4 py-4 rounded-xl transition-all flex items-center justify-center"
                   :class="isDark ? 'bg-white/5 hover:bg-white/10 text-silver-400 hover:text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-900'"
+                  aria-label="Edit WowUp package"
                   @click="editWowup(selectedWowup)">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+                  <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
                 </button>
               </div>
               <div class="flex items-center justify-between text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
@@ -208,14 +211,14 @@
               </div>
               <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24">
                 <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
-                  {{ selectedWowup.string?.substring(0, 500) }}{{ (selectedWowup.string?.length || 0) > 500 ? '...' : '' }}
+                  {{ selectedWowup.string?.substring(0, 200) }}{{ (selectedWowup.string?.length || 0) > 200 ? '...' : '' }}
                 </p>
               </div>
             </div>
           </Transition>
         </div>
         <div v-else class="text-center py-16">
-          <svg class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <svg aria-hidden="true" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
           <p :class="isDark ? 'text-silver-600' : 'text-gray-400'">No WowUp strings available yet.</p>
@@ -224,48 +227,42 @@
     </div>
 
     <!-- ═══ Inline Edit Modal ═══ -->
-    <Teleport to="body">
-      <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100"
-        leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-        <div v-if="editModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="editModal = false">
-          <div class="fixed inset-0 bg-black/60" />
-          <div class="relative w-full max-w-2xl rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
-            :class="isDark ? 'bg-brand-800 border border-brand-400/15' : 'bg-white shadow-2xl border border-gray-200'">
-            <h2 class="text-lg font-semibold mb-6" :class="isDark ? 'text-white' : 'text-gray-900'">Edit</h2>
-            <div class="space-y-4">
-              <div v-if="editForm.type === 'profile'" class="grid grid-cols-2 gap-4">
-                <div><label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Addon</label>
-                  <input v-model="editForm.addon" class="w-full px-3 py-2 rounded-lg text-sm" :class="inputClass" /></div>
-                <div><label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Profile Name</label>
-                  <input v-model="editForm.profile" class="w-full px-3 py-2 rounded-lg text-sm" :class="inputClass" /></div>
-              </div>
-              <div v-if="editForm.type === 'wowup'">
-                <label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Name</label>
-                <input v-model="editForm.name" class="w-full px-3 py-2 rounded-lg text-sm" :class="inputClass" />
-              </div>
-              <div v-if="editForm.type === 'layout'" class="grid grid-cols-2 gap-4">
-                <div><label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Class</label>
-                  <input v-model="editForm.className" class="w-full px-3 py-2 rounded-lg text-sm" :class="inputClass" /></div>
-                <div><label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Specialization</label>
-                  <input v-model="editForm.spec" class="w-full px-3 py-2 rounded-lg text-sm" :class="inputClass" /></div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Import String</label>
-                <textarea v-model="editForm.string" rows="8" class="w-full px-3 py-2 rounded-lg text-xs font-mono" :class="inputClass" />
-              </div>
+    <UModal v-model:open="editModal" :ui="{ content: 'max-w-2xl' }" :title="'Edit'" aria-labelledby="edit-modal-title">
+      <template #content>
+        <div class="relative w-full rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
+          :class="isDark ? 'bg-brand-800 border border-brand-400/15' : 'bg-white shadow-2xl border border-gray-200'">
+          <h2 id="edit-modal-title" class="text-lg font-semibold mb-6" :class="isDark ? 'text-white' : 'text-gray-900'">Edit</h2>
+          <div class="space-y-4">
+            <div v-if="editForm.type === 'profile'" class="grid grid-cols-2 gap-4">
+              <div><label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Addon</label>
+                <input v-model="editForm.addon" class="w-full px-3 py-2 rounded-lg text-sm" :class="inputClass" /></div>
+              <div><label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Profile Name</label>
+                <input v-model="editForm.profile" class="w-full px-3 py-2 rounded-lg text-sm" :class="inputClass" /></div>
             </div>
-            <div class="flex justify-end gap-3 mt-6 pt-4" :class="isDark ? 'border-t border-brand-400/10' : 'border-t border-gray-100'">
-              <button class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'"
-                @click="editModal = false">Cancel</button>
-              <button class="btn-gradient px-4 py-2 rounded-lg text-sm font-medium text-white" :disabled="editSaving" @click="saveEdit">
-                {{ editSaving ? 'Loading...' : 'Save' }}
-              </button>
+            <div v-if="editForm.type === 'wowup'">
+              <label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Name</label>
+              <input v-model="editForm.name" class="w-full px-3 py-2 rounded-lg text-sm" :class="inputClass" />
+            </div>
+            <div v-if="editForm.type === 'layout'" class="grid grid-cols-2 gap-4">
+              <div><label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Class</label>
+                <input v-model="editForm.className" class="w-full px-3 py-2 rounded-lg text-sm" :class="inputClass" /></div>
+              <div><label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Specialization</label>
+                <input v-model="editForm.spec" class="w-full px-3 py-2 rounded-lg text-sm" :class="inputClass" /></div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-silver-300' : 'text-gray-700'">Import String</label>
+              <textarea v-model="editForm.string" rows="8" class="w-full px-3 py-2 rounded-lg text-xs font-mono" :class="inputClass" />
             </div>
           </div>
+          <div class="flex justify-end gap-3 mt-6 pt-4" :class="isDark ? 'border-t border-brand-400/10' : 'border-t border-gray-100'">
+            <button class="btn-ghost" @click="editModal = false">Cancel</button>
+            <button class="btn-primary" :disabled="editSaving" @click="saveEdit">
+              {{ editSaving ? 'Loading...' : 'Save' }}
+            </button>
+          </div>
         </div>
-      </Transition>
-    </Teleport>
+      </template>
+    </UModal>
   </div>
 </template>
 

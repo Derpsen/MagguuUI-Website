@@ -13,7 +13,7 @@
         <!-- Logo -->
         <div class="flex items-center gap-3 px-4 shrink-0" :style="{ height: '50px' }">
           <NuxtLink to="/admin" class="flex min-w-0 items-center gap-2.5">
-            <img src="/logo.svg" alt="MagguuUI" class="h-7 w-7 shrink-0">
+            <img src="/logo.svg" alt="MagguuUI" width="28" height="28" class="h-7 w-7 shrink-0">
             <span v-if="!collapsed" class="truncate text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">MagguuUI</span>
           </NuxtLink>
           <button

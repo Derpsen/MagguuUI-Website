@@ -101,7 +101,7 @@
     <div class="section-divider" />
 
     <!-- Features — scroll reveal -->
-    <section aria-label="Features" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+    <section aria-label="Features" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
       <div ref="featuresHeading" class="text-center mb-16 scroll-reveal">
         <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.features_heading?.title || 'Why MagguuUI?' }}</span></h2>
         <p :class="isDark ? 'text-silver-500' : 'text-gray-500'" class="text-lg">{{ content?.features_heading?.subtitle || 'Everything you need — in one package' }}</p>

@@ -100,7 +100,7 @@
     <!-- Empty State -->
     <div v-else class="glass-card rounded-2xl p-16 text-center">
       <UIcon name="i-heroicons-document-text" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" />
-      <p :class="isDark ? 'text-silver-600' : 'text-gray-400'">No entries yet.</p>
+      <p :class="isDark ? 'text-silver-400' : 'text-gray-500'">No entries yet.</p>
     </div>
 
     <!-- Bottom CTA -->

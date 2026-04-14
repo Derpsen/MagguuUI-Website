@@ -445,8 +445,7 @@ logActivity({
 - `.addon-pill` — Addon-Name Pills auf Homepage
 - `.drag-handle`, `.drag-row` — Drag & Drop Styles
 - `.tab-active`, `.tab-inactive` — Tab Styling
-- `.admin-fade-in`, `.admin-stagger-{1-6}` — Admin Panel Entrance Animations
-- `.admin-shell`, `.admin-sidebar-shell`, `.admin-toolbar-shell`, `.admin-main-shell` — neues responsives Admin-App-Shell-System
+- `.admin-shell`, `.admin-main-shell` — responsives Admin-App-Shell-System
 - `.admin-panel`, `.admin-metric-card`, `.admin-empty-state`, `.admin-inline-note` — standardisierte Karten-, KPI- und Status-Surfaces
 - `.admin-link`, `.admin-context-chip`, `.admin-search-trigger`, `.admin-icon-button`, `.admin-mobile-dock` — Navigation, Toolbar und Mobile-Navigation
 - `.admin-table`, `.admin-table-shell`, `.admin-filterbar`, `.admin-bulkbar`, `.admin-sticky-bar` — Tabellen-, Filter-, Bulk- und Save-Bar-Patterns

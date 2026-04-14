@@ -432,7 +432,9 @@ onMounted(() => {
   isMac.value = /Mac|iPhone|iPad/.test(window.navigator.platform)
   collapsed.value = window.localStorage.getItem('admin-sidebar-collapsed') === '1'
 
-  // Restore primary color from localStorage
+  // Restore primary color from localStorage — SettingsDrawer owns the
+  // palette definitions and CSS variable injection, so we only need to
+  // keep appConfig in sync here for the first paint.
   const savedColor = window.localStorage.getItem('admin-primary-color')
   if (savedColor) appConfig.ui.colors.primary = savedColor
   document.addEventListener('click', onDocumentClick)

@@ -58,73 +58,77 @@
         <UIcon name="i-heroicons-arrow-path" class="mx-auto h-8 w-8 animate-spin text-blue-500" />
       </div>
 
-      <!-- Timeline grouped by day -->
-      <div v-else-if="groupedEntries.length" class="mt-5 space-y-6" :class="loading ? 'opacity-60' : ''">
-        <div v-for="group in groupedEntries" :key="group.label">
-          <!-- Day header -->
-          <div class="mb-3 flex items-center gap-3">
+      <!-- Timeline grouped by day (collapsible per day, compact rows) -->
+      <div v-else-if="groupedEntries.length" class="mt-4 space-y-2" :class="loading ? 'opacity-60' : ''">
+        <div v-for="group in groupedEntries" :key="group.dateKey" class="admin-activity-group">
+          <!-- Day header (click to collapse) -->
+          <button
+            class="flex w-full items-center gap-3 py-1.5 text-left transition-colors hover:text-slate-700 dark:hover:text-slate-200"
+            :aria-expanded="!isDayCollapsed(group.dateKey)"
+            @click="toggleDay(group.dateKey)"
+          >
+            <UIcon
+              name="i-heroicons-chevron-down"
+              class="h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200"
+              :class="isDayCollapsed(group.dateKey) ? '-rotate-90' : ''"
+            />
             <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {{ group.label }}
             </span>
             <span class="admin-pill">{{ group.items.length }}</span>
             <div class="h-px flex-1 bg-slate-200/60 dark:bg-slate-700/40" />
-          </div>
+          </button>
 
-          <!-- Timeline entries -->
-          <div class="relative ml-4 border-l border-slate-200/70 pl-6 dark:border-slate-700/50">
-            <div v-for="item in group.items" :key="item.id" class="group relative pb-5 last:pb-0">
-              <!-- Timeline dot -->
+          <!-- Compact rows (hidden when day is collapsed) -->
+          <div v-show="!isDayCollapsed(group.dateKey)" class="mt-1.5 divide-y divide-slate-200/50 dark:divide-white/5">
+            <div v-for="item in group.items" :key="item.id">
+              <!-- Single compact row -->
               <div
-                class="absolute -left-[calc(1.5rem+5px)] top-1 flex h-2.5 w-2.5 items-center justify-center rounded-full ring-4 ring-white dark:ring-slate-900"
-                :class="dotColor(item.action)"
-              />
+                class="flex items-center gap-2.5 py-1.5 px-2 rounded-md transition-colors hover:bg-slate-100/60 dark:hover:bg-white/[0.02]"
+                :class="item.details ? 'cursor-pointer' : ''"
+                @click="item.details && toggleDetail(item.id)"
+              >
+                <!-- Action dot -->
+                <span
+                  class="h-1.5 w-1.5 shrink-0 rounded-full"
+                  :class="dotColor(item.action)"
+                />
+                <!-- Entity name -->
+                <span class="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
+                  {{ item.entityName }}
+                </span>
+                <!-- Action + type (subtle) -->
+                <span class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  {{ item.action }} &middot; {{ typeLabel(item.entityType) }}
+                  <span v-if="item.entityId" class="opacity-60">&middot; #{{ item.entityId }}</span>
+                </span>
+                <!-- Spacer + time -->
+                <span class="ml-auto shrink-0 text-xs tabular-nums text-slate-400 dark:text-slate-500">
+                  {{ formatTime(item.createdAt) }}
+                </span>
+                <!-- Expand hint if details available -->
+                <UIcon
+                  v-if="item.details"
+                  name="i-heroicons-chevron-down"
+                  class="h-3 w-3 shrink-0 text-slate-400 transition-transform duration-200"
+                  :class="expandedId === item.id ? 'rotate-180' : ''"
+                />
+              </div>
 
-              <!-- Entry card -->
-              <div class="admin-activity-row">
-                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" :class="actionTone(item.action)">
-                  <UIcon :name="actionIcon(item.action)" class="h-4 w-4" />
-                </div>
-
-                <div class="min-w-0 flex-1">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-[0.92rem] font-semibold text-slate-800 dark:text-slate-100">
-                      {{ item.entityName }}
-                    </span>
-                    <UBadge :color="actionBadgeColor(item.action)" variant="subtle" size="xs">{{ item.action }}</UBadge>
-                    <span class="admin-pill">{{ typeLabel(item.entityType) }}</span>
-                  </div>
-
-                  <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                    <span v-if="item.entityId">ID {{ item.entityId }} &middot; </span>
-                    {{ timeAgo(item.createdAt) }} &middot; {{ formatTime(item.createdAt) }}
-                  </p>
-
-                  <!-- Details expand -->
-                  <div v-if="item.details" class="mt-2">
-                    <UButton
-                      size="xs"
-                      color="neutral"
-                      variant="ghost"
-                      :icon="expandedId === item.id ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
-                      @click="toggleDetail(item.id)"
+              <!-- Details panel (only when expanded) -->
+              <div v-if="item.details && expandedId === item.id" class="ml-5 mb-2 mr-2">
+                <div class="admin-subpanel">
+                  <template v-if="parsedDetails(item.details)">
+                    <div
+                      v-for="(val, key) in parsedDetails(item.details)"
+                      :key="String(key)"
+                      class="flex items-baseline gap-3 py-1 text-sm not-last:border-b not-last:border-slate-200/40 dark:not-last:border-slate-700/30"
                     >
-                      {{ expandedId === item.id ? "Hide details" : "Details" }}
-                    </UButton>
-
-                    <div v-if="expandedId === item.id" class="admin-subpanel mt-2.5">
-                      <template v-if="parsedDetails(item.details)">
-                        <div
-                          v-for="(val, key) in parsedDetails(item.details)"
-                          :key="String(key)"
-                          class="flex items-baseline gap-3 py-1.5 text-sm not-last:border-b not-last:border-slate-200/40 dark:not-last:border-slate-700/30"
-                        >
-                          <span class="w-28 shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400">{{ humanizeKey(String(key)) }}</span>
-                          <span class="min-w-0 break-words text-slate-700 dark:text-slate-200">{{ formatValue(val) }}</span>
-                        </div>
-                      </template>
-                      <pre v-else class="whitespace-pre-wrap break-words text-xs text-slate-600 dark:text-slate-300">{{ formatDetailsRaw(item.details) }}</pre>
+                      <span class="w-28 shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400">{{ humanizeKey(String(key)) }}</span>
+                      <span class="min-w-0 break-words text-slate-700 dark:text-slate-200">{{ formatValue(val) }}</span>
                     </div>
-                  </div>
+                  </template>
+                  <pre v-else class="whitespace-pre-wrap break-words text-xs text-slate-600 dark:text-slate-300">{{ formatDetailsRaw(item.details) }}</pre>
                 </div>
               </div>
             </div>
@@ -286,6 +290,21 @@ function toggleSort() {
 
 function toggleDetail(id: number) {
   expandedId.value = expandedId.value === id ? null : id
+}
+
+// Collapsed day groups — per-session state (not persisted).
+// Default: all days expanded. Clicking the header toggles individual days.
+const collapsedDays = ref<Set<string>>(new Set())
+
+function isDayCollapsed(dateKey: string): boolean {
+  return collapsedDays.value.has(dateKey)
+}
+
+function toggleDay(dateKey: string) {
+  const next = new Set(collapsedDays.value)
+  if (next.has(dateKey)) next.delete(dateKey)
+  else next.add(dateKey)
+  collapsedDays.value = next
 }
 
 // Parse details JSON into key-value object, return null if not a flat object

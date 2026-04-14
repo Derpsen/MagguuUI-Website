@@ -11,6 +11,10 @@ import { eq, and } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { syncHistory, settings, profiles, wowupStrings, characterLayouts } from '~/server/database/schema'
 import { createSyncChangelog } from '~/server/utils/syncChangelog'
+import { checkRateLimit, getClientIp } from '~/server/utils/rateLimit'
+
+// GitHub webhook payloads are typically <1MB; cap well above that to reject abuse.
+const MAX_WEBHOOK_BODY_BYTES = 2 * 1024 * 1024 // 2 MB
 
 function upsertSetting(key: string, value: string) {
   const existing = db.select().from(settings).where(eq(settings.key, key)).get()
@@ -38,8 +42,28 @@ export default defineEventHandler(async (event) => {
   const eventType = getHeader(event, 'x-github-event') || ''
   const signature = getHeader(event, 'x-hub-signature-256') || null
 
+  // Rate limit unauthenticated hits (signature check is not enough: an attacker
+  // flooding with bad signatures still triggers a DB insert per request).
+  const ip = getClientIp(event)
+  const rl = checkRateLimit(`webhook:${ip}`, 60, 60 * 1000, 5 * 60 * 1000)
+  if (!rl.allowed) {
+    setResponseHeader(event, 'Retry-After', String(rl.retryAfter))
+    throw createError({ statusCode: 429, message: 'Too many webhook requests' })
+  }
+
+  // Reject oversized bodies early (Content-Length hint; raw-body read is still
+  // capped below in case the header is missing or lying).
+  const contentLength = Number(getHeader(event, 'content-length') || 0)
+  if (contentLength && contentLength > MAX_WEBHOOK_BODY_BYTES) {
+    throw createError({ statusCode: 413, message: 'Webhook payload too large' })
+  }
+
   // Read raw body for signature verification
   const rawBody = await readRawBody(event) || ''
+  const bodyByteLength = typeof rawBody === 'string' ? Buffer.byteLength(rawBody) : (rawBody as any)?.length || 0
+  if (bodyByteLength > MAX_WEBHOOK_BODY_BYTES) {
+    throw createError({ statusCode: 413, message: 'Webhook payload too large' })
+  }
   let body: any
   try {
     body = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody

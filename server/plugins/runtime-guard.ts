@@ -6,7 +6,10 @@
  */
 
 export default defineNitroPlugin(() => {
-  if (process.env.NODE_ENV !== 'production') return
+  // Treat any non-"development" env as production-safe: missing NODE_ENV must
+  // not bypass these guards, otherwise hardcoded fallbacks can leak into prod.
+  const isDev = process.env.NODE_ENV === 'development'
+  if (isDev) return
 
   const config = useRuntimeConfig()
   const problems: string[] = []

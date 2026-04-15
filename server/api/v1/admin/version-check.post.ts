@@ -67,7 +67,8 @@ export default defineEventHandler(async () => {
         publishedAt: response.published_at,
       },
     }
-  } catch (e: any) {
-    throw createError({ statusCode: 502, data: { success: false, error: { code: 'GITHUB_ERROR', message: e?.message || 'GitHub API error' } } })
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : 'GitHub API error'
+    throw createError({ statusCode: 502, data: { success: false, error: { code: 'GITHUB_ERROR', message } } })
   }
 })

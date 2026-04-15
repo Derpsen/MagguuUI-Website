@@ -20,5 +20,15 @@ export default defineEventHandler(async (event) => {
   if (!existing) throw createError({ statusCode: 404, message: 'User not found' })
 
   db.delete(users).where(eq(users.id, id)).run()
+
+  logActivity({
+    action: 'deleted',
+    entityType: 'user',
+    entityId: id,
+    entityName: existing.username,
+    details: { role: existing.role },
+    userId: auth.userId,
+  })
+
   return apiSuccess({ id })
 })

@@ -27,9 +27,23 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const validated = validateBody(githubImportSchema, body)
 
-  let data: any
+  interface ProfileImport { addon?: string, profile?: string, string?: string, description?: string | null, customFields?: string | null, sortOrder?: number, isVisible?: boolean }
+  interface WowupImport { name?: string, string?: string, category?: string | null, description?: string | null, sortOrder?: number, isVisible?: boolean }
+  interface LayoutImport { name?: string, className?: string | null, spec?: string | null, importString?: string, description?: string | null, sortOrder?: number, isVisible?: boolean }
+  interface ChangelogImport { version?: string, content?: string, contentEn?: string | null, isPublished?: boolean, publishedAt?: string | null }
+  interface ContentImport { page?: string, section?: string, key?: string, value?: string, locale?: string, type?: string }
+  interface ImportPayload {
+    profiles?: ProfileImport[]
+    wowupStrings?: WowupImport[]
+    layouts?: LayoutImport[]
+    changelogs?: ChangelogImport[]
+    content?: ContentImport[]
+  }
+  let data: ImportPayload
   try {
-    data = typeof validated.data === 'string' ? JSON.parse(validated.data as string) : validated.data
+    data = (typeof validated.data === 'string'
+      ? JSON.parse(validated.data as string)
+      : validated.data) as ImportPayload
   } catch {
     throw createError({ statusCode: 400, message: 'Invalid JSON format' })
   }
@@ -211,16 +225,17 @@ export default defineEventHandler(async (event) => {
       success: true,
       data: { message: 'Import successful', imported: stats },
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Import failed'
     db.insert(syncHistory).values({
       triggerSource: `json-import-${strategy}`,
       status: 'error',
-      details: err?.message || 'Import failed',
+      details: message,
     }).run()
 
     throw createError({
       statusCode: 500,
-      message: `Import error: ${err?.message || 'Unknown'}`,
+      message: `Import error: ${message}`,
     })
   }
 })

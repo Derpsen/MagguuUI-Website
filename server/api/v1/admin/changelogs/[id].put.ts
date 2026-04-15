@@ -8,6 +8,7 @@ import { changelogs } from '~/server/database/schema'
 import { validateBody, changelogUpdateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
+  const auth = requireAuth(event)
   const id = Number(getRouterParam(event, 'id'))
   if (isNaN(id)) throw createError({ statusCode: 400, message: 'Invalid ID' })
 
@@ -33,6 +34,15 @@ export default defineEventHandler(async (event) => {
     })
     .where(eq(changelogs.id, id))
     .returning().get()
+
+  logActivity({
+    action: 'updated',
+    entityType: 'changelog',
+    entityId: id,
+    entityName: result.version,
+    details: { published: result.isPublished },
+    userId: auth.userId,
+  })
 
   return apiSuccess(result)
 })

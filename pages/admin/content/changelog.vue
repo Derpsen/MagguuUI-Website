@@ -420,8 +420,8 @@ async function save() {
     }
     modalOpen.value = false
     await load()
-  } catch (error: any) {
-    formError.value = error?.data?.message || "Error"
+  } catch (error: unknown) {
+    formError.value = errorMessage(error, "Error")
   } finally {
     saving.value = false
   }

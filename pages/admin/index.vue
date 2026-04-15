@@ -899,7 +899,8 @@ async function refreshAll() {
 
 async function loadStoredVersion() {
   try {
-    const result = await apiFetch<any>('/api/v1/admin/github/status')
+    interface GithubStatus { latestVersion?: string, localVersion?: string | null }
+    const result = await apiFetch<GithubStatus>('/api/v1/admin/github/status')
     if (result?.latestVersion) {
       versionData.value = {
         latestVersion: result.latestVersion,

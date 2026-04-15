@@ -8,8 +8,16 @@
 import { db } from '~/server/database'
 import { syncHistory } from '~/server/database/schema'
 import { validateBody, githubPushSchema } from '~/server/utils/validation'
+import { parseGitHubError, githubErrorHint } from '~/server/utils/github'
 
 export default defineEventHandler(async (event) => {
+  const ip = getClientIp(event)
+  const { allowed, retryAfter } = checkRateLimit(`admin-gh-push:${ip}`, 10, 10 * 60 * 1000, 10 * 60 * 1000)
+  if (!allowed) {
+    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    throw createError({ statusCode: 429, message: `Too many GitHub sync requests. Wait ${Math.ceil(retryAfter / 60)} minutes.` })
+  }
+
   const body = await readBody(event) || {}
   const data = validateBody(githubPushSchema, body)
   const reason = data.reason || 'manual-push'
@@ -47,23 +55,10 @@ export default defineEventHandler(async (event) => {
       details: `Push to ${owner}/${repo} triggered`,
     }).run()
 
-    return {
-      success: true,
-      data: { message: 'GitHub Sync triggered', repo: `${owner}/${repo}` },
-    }
-  } catch (err: any) {
-    const statusCode = err?.response?.status || err?.statusCode || err?.status
-    const githubMessage = err?.data?.message || err?.response?._data?.message || err?.message || 'Unknown error'
-
-    // Map common GitHub API errors to actionable hints.
-    let friendly = githubMessage
-    if (statusCode === 401) {
-      friendly = 'Token invalid or expired. Regenerate NUXT_GITHUB_TOKEN and restart the container.'
-    } else if (statusCode === 403) {
-      friendly = `Token lacks permission for ${owner}/${repo}. Classic PAT: enable "repo" scope. Fine-Grained PAT: grant "Contents: write" on ${owner}/${repo}.`
-    } else if (statusCode === 404) {
-      friendly = `Repo ${owner}/${repo} not found or token has no access to it. For Fine-Grained PATs, make sure the repo is explicitly selected.`
-    }
+    return apiSuccess({ message: 'GitHub Sync triggered', repo: `${owner}/${repo}` })
+  } catch (err: unknown) {
+    const { status, message } = parseGitHubError(err)
+    const friendly = githubErrorHint(owner, repo, status, message)
 
     // Log failure with the friendly hint so sync history is useful.
     db.insert(syncHistory).values({
@@ -73,7 +68,7 @@ export default defineEventHandler(async (event) => {
     }).run()
 
     throw createError({
-      statusCode: statusCode === 401 || statusCode === 403 ? statusCode : 502,
+      statusCode: status === 401 || status === 403 ? status : 502,
       message: friendly,
     })
   }

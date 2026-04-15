@@ -60,13 +60,24 @@ export default defineEventHandler(async (event) => {
 
   // Read raw body for signature verification
   const rawBody = await readRawBody(event) || ''
-  const bodyByteLength = typeof rawBody === 'string' ? Buffer.byteLength(rawBody) : (rawBody as any)?.length || 0
+  const bodyByteLength = typeof rawBody === 'string'
+    ? Buffer.byteLength(rawBody)
+    : Buffer.isBuffer(rawBody) ? rawBody.length : 0
   if (bodyByteLength > MAX_WEBHOOK_BODY_BYTES) {
     throw createError({ statusCode: 413, message: 'Webhook payload too large' })
   }
-  let body: any
+  interface WebhookBody {
+    zen?: string
+    action?: string
+    release?: { tag_name?: string, body?: string, name?: string, published_at?: string, html_url?: string }
+    ref?: string
+    commits?: Array<{ added?: string[], modified?: string[], removed?: string[], message?: string, id?: string }>
+    pusher?: { name?: string }
+    workflow_run?: { name?: string, conclusion?: string, html_url?: string, head_branch?: string }
+  }
+  let body: WebhookBody
   try {
-    body = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody
+    body = (typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody) as WebhookBody
   } catch {
     throw createError({ statusCode: 400, message: 'Invalid JSON payload' })
   }
@@ -314,9 +325,9 @@ export default defineEventHandler(async (event) => {
                 }
               }
             }
-          } catch (err: any) {
+          } catch (err: unknown) {
             errors++
-            console.error(`Webhook auto-pull error for ${filePath}:`, err?.message)
+            console.error(`Webhook auto-pull error for ${filePath}:`, err instanceof Error ? err.message : String(err))
           }
 
           // Track result for changelog

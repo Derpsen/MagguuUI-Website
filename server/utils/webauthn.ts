@@ -41,24 +41,42 @@ const utf8ToUint8Array = (str: string): Uint8Array => new TextEncoder().encode(s
 
 /**
  * Get Relying Party configuration from runtimeConfig or request.
- * Falls back to auto-detection from the request URL.
+ *
+ * Precedence:
+ *  1. Explicit `NUXT_WEBAUTHN_RP_ID` / `NUXT_WEBAUTHN_ORIGIN` runtime config (preferred)
+ *  2. Derived from the incoming request URL (dev or missing env)
+ *  3. `localhost` fallback only in development
+ *
+ * In production we refuse to silently fall back to `localhost` — that would
+ * cause passkeys registered against a wrong RP-ID to fail later with a
+ * confusing mismatch. Missing config without a request context is fatal.
  */
 function getRpConfig(event?: H3Event) {
   const config = useRuntimeConfig()
-  let rpId = config.webauthnRpId
-  let origin = config.webauthnOrigin
+  const isDev = process.env.NODE_ENV === 'development'
   const rpName = config.webauthnRpName || 'MagguuUI Admin'
 
-  // Auto-detect from request if not configured
+  let rpId = config.webauthnRpId
+  let origin = config.webauthnOrigin
+
   if (event && (!rpId || !origin)) {
     const requestUrl = getRequestURL(event)
     if (!rpId) rpId = requestUrl.hostname
     if (!origin) origin = requestUrl.origin
   }
 
-  // Fallback defaults
-  if (!rpId) rpId = 'localhost'
-  if (!origin) origin = 'http://localhost:3000'
+  if (!rpId || !origin) {
+    if (isDev) {
+      rpId = rpId || 'localhost'
+      origin = origin || 'http://localhost:3000'
+    } else {
+      throw createError({
+        statusCode: 500,
+        message:
+          'WebAuthn RP configuration missing — set NUXT_WEBAUTHN_RP_ID and NUXT_WEBAUTHN_ORIGIN.',
+      })
+    }
+  }
 
   return { rpName, rpId, origin }
 }
@@ -256,8 +274,9 @@ export async function verifyPasskeyAuthentication(credential: AuthenticationResp
         transports: passkeyRow.transports ? JSON.parse(passkeyRow.transports) : undefined,
       },
     })
-  } catch (e: any) {
-    throw createError({ statusCode: 401, message: `Authentication failed: ${e.message}` })
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e)
+    throw createError({ statusCode: 401, message: `Authentication failed: ${msg}` })
   }
 
   if (!verification.verified) {

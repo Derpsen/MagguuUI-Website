@@ -8,6 +8,7 @@ import { fieldDefinitions } from '~/server/database/schema'
 import { validateBody, fieldDefinitionCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
+  const auth = requireAuth(event)
   const body = await readBody(event)
   const data = validateBody(fieldDefinitionCreateSchema, body)
 
@@ -23,6 +24,15 @@ export default defineEventHandler(async (event) => {
     isRequired: data.isRequired ?? false,
     sortOrder: data.sortOrder ?? 0,
   }).returning().get()
+
+  logActivity({
+    action: 'created',
+    entityType: 'field',
+    entityId: result.id,
+    entityName: `${result.entityType}.${result.fieldName}`,
+    details: { label: result.fieldLabel, type: result.fieldType },
+    userId: auth.userId,
+  })
 
   setResponseStatus(event, 201)
   return apiSuccess(result)

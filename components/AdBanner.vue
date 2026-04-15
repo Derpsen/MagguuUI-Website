@@ -45,13 +45,18 @@ function loadAdSenseScript() {
   scriptLoaded.value = true
 }
 
+interface AdSenseWindow extends Window {
+  adsbygoogle?: Array<Record<string, unknown>>
+}
+
 onMounted(() => {
   if (shouldShow.value) {
     loadAdSenseScript()
     nextTick(() => {
       try {
-        ;(window as any).adsbygoogle = (window as any).adsbygoogle || []
-        ;(window as any).adsbygoogle.push({})
+        const w = window as AdSenseWindow
+        w.adsbygoogle = w.adsbygoogle || []
+        w.adsbygoogle.push({})
       } catch {
         // Ad blocker or script not loaded
       }

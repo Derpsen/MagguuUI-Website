@@ -302,10 +302,12 @@ const isAdmin = computed(() => {
   return isLoggedIn.value
 })
 
-const { data: guideData, refresh: refreshGuide } = await useFetch('/api/v1/content/guide')
+interface GuideLocale { [k: string]: unknown }
+interface GuidePayload { en?: GuideLocale, de?: GuideLocale, [k: string]: unknown }
+const { data: guideData, refresh: refreshGuide } = await useFetch<{ data: GuidePayload }>('/api/v1/content/guide')
 
-const guideContent = computed(() => {
-  const raw = (guideData.value as any)?.data
+const guideContent = computed<GuideLocale>(() => {
+  const raw = guideData.value?.data
   return raw?.en || raw?.de || raw || {}
 })
 

@@ -191,6 +191,18 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
 
+interface Layout {
+  id: number
+  isVisible: boolean
+  sortOrder: number
+  name: string
+  className: string | null
+  spec: string | null
+  description: string | null
+  importString: string
+  [key: string]: unknown
+}
+
 const {
   items, loading, search, selected,
   modalOpen, form, formError, saving, editingItem,
@@ -203,7 +215,7 @@ const {
   openCreate, openEdit, save,
   toggleVisibility, confirmDelete, doDelete, doBulkDelete,
   copyString, setupLifecycle,
-} = useStringManager({
+} = useStringManager<Layout>({
   apiBase: '/api/v1/admin/layouts',
   entityName: 'layout',
   entityNamePlural: 'layouts',
@@ -218,16 +230,16 @@ const classFilter = ref('')
 const isFiltering = computed(() => search.value.trim() !== '' || classFilter.value !== '')
 
 const classOptions = computed(() => {
-  const classes = [...new Set(items.value.map((i: any) => i.className).filter(Boolean))].sort()
-  return [{ label: 'All Classes', value: '' }, ...classes.map(c => ({ label: c!, value: c! }))]
+  const classes = [...new Set(items.value.map(i => i.className).filter((c): c is string => Boolean(c)))].sort()
+  return [{ label: 'All Classes', value: '' }, ...classes.map(c => ({ label: c, value: c }))]
 })
 
 const filtered = computed(() => {
   let result = items.value
-  if (classFilter.value) result = result.filter((i: any) => i.className === classFilter.value)
+  if (classFilter.value) result = result.filter(i => i.className === classFilter.value)
   if (search.value) {
     const q = search.value.toLowerCase()
-    result = result.filter((i: any) =>
+    result = result.filter(i =>
       i.name.toLowerCase().includes(q)
       || i.className?.toLowerCase().includes(q)
       || i.spec?.toLowerCase().includes(q)
@@ -244,9 +256,9 @@ const columns = [
 ]
 
 const statCards = computed(() => {
-  const visibleCount = items.value.filter((i: any) => i.isVisible).length
-  const uniqueClasses = new Set(items.value.map((i: any) => i.className).filter(Boolean)).size
-  const uniqueSpecs = new Set(items.value.map((i: any) => i.spec).filter(Boolean)).size
+  const visibleCount = items.value.filter(i => i.isVisible).length
+  const uniqueClasses = new Set(items.value.map(i => i.className).filter(Boolean)).size
+  const uniqueSpecs = new Set(items.value.map(i => i.spec).filter(Boolean)).size
   return [
     { label: 'Total Layouts', value: items.value.length, icon: 'i-heroicons-user-circle', tone: 'brand' as const },
     { label: 'Visible', value: visibleCount, icon: 'i-heroicons-eye', tone: 'success' as const },

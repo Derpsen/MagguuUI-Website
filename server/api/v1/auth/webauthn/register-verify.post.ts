@@ -24,12 +24,9 @@ export default defineEventHandler(async (event) => {
     event,
   )
 
-  return {
-    success: true,
-    data: {
-      id: passkey.id,
-      deviceName: passkey.deviceName,
-      createdAt: passkey.createdAt,
-    },
-  }
+  return apiSuccess({
+    id: passkey.id,
+    deviceName: passkey.deviceName,
+    createdAt: passkey.createdAt,
+  })
 })

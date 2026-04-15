@@ -13,7 +13,7 @@ import { PUBLIC_SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
 export function usePublicSiteSettings() {
   const siteSettings = useState<Record<string, string>>('site-settings', () => ({ ...PUBLIC_SITE_SETTINGS_DEFAULTS }))
 
-  const { data } = useFetch('/api/v1/settings', {
+  const { data } = useFetch<{ success: boolean, data: Record<string, string> }>('/api/v1/settings', {
     key: 'public-site-settings',
     default: () => ({ success: true, data: {} as Record<string, string> }),
   })
@@ -21,7 +21,7 @@ export function usePublicSiteSettings() {
   // Reactively mirror the fetch result into shared state. Runs once on SSR
   // when useFetch resolves, and again on the client after hydration.
   watchEffect(() => {
-    const payload = (data.value as any)?.data
+    const payload = data.value?.data
     if (payload && typeof payload === 'object') {
       siteSettings.value = {
         ...PUBLIC_SITE_SETTINGS_DEFAULTS,

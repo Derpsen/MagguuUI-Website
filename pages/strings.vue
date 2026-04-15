@@ -298,13 +298,37 @@ const selectedClass = ref((route.query.class as string) || ''); const selectedSp
 const selectedAddon = ref((route.query.addon as string) || ''); const selectedProfileId = ref(''); const profileCopied = ref(false)
 const selectedWowupName = ref(''); const wowupCopied = ref(false)
 
-const { data: profileData, refresh: refreshProfiles } = await useFetch('/api/v1/profiles')
-const { data: wowupData, refresh: refreshWowup } = await useFetch('/api/v1/wowup')
-const { data: layoutData, refresh: refreshLayouts } = await useFetch('/api/v1/layouts')
+interface PublicProfile { id: number, profile: string, string: string, description?: string | null, [k: string]: unknown }
+interface PublicLayout { id: number, name?: string, className?: string | null, spec?: string | null, importString?: string, description?: string | null, [k: string]: unknown }
+interface PublicWowup { id: number, string: string, description?: string | null, [k: string]: unknown }
+type ProfileGroupedPublic = Record<string, PublicProfile[]>
+type WowupKeyedPublic = Record<string, PublicWowup>
 
-const profileList = computed(() => { const grouped = (profileData.value as any)?.data; if (!grouped || typeof grouped !== 'object') return []; const flat: any[] = []; for (const [addon, profiles] of Object.entries(grouped)) { for (const p of profiles as any[]) { flat.push({ ...p, addon }) } } return flat })
-const wowupList = computed(() => { const keyed = (wowupData.value as any)?.data; if (!keyed || typeof keyed !== 'object') return []; return Object.entries(keyed).map(([name, data]: [string, any]) => ({ name, ...data })) })
-const layoutList = computed(() => { const data = (layoutData.value as any)?.data; return Array.isArray(data) ? data : [] })
+const { data: profileData, refresh: refreshProfiles } = await useFetch<{ data: ProfileGroupedPublic }>('/api/v1/profiles')
+const { data: wowupData, refresh: refreshWowup } = await useFetch<{ data: WowupKeyedPublic }>('/api/v1/wowup')
+const { data: layoutData, refresh: refreshLayouts } = await useFetch<{ data: PublicLayout[] }>('/api/v1/layouts')
+
+type FlatProfile = PublicProfile & { addon: string }
+
+const profileList = computed<FlatProfile[]>(() => {
+  const grouped = profileData.value?.data
+  if (!grouped || typeof grouped !== 'object') return []
+  const flat: FlatProfile[] = []
+  for (const [addon, profiles] of Object.entries(grouped)) {
+    for (const p of profiles) flat.push({ ...p, addon })
+  }
+  return flat
+})
+type FlatWowup = PublicWowup & { name: string }
+const wowupList = computed<FlatWowup[]>(() => {
+  const keyed = wowupData.value?.data
+  if (!keyed || typeof keyed !== 'object') return []
+  return Object.entries(keyed).map(([name, data]) => ({ name, ...data }))
+})
+const layoutList = computed<PublicLayout[]>(() => {
+  const data = layoutData.value?.data
+  return Array.isArray(data) ? data : []
+})
 
 const tabs = computed(() => [
   { label: 'Cooldown Layouts', value: 'layouts', count: layoutList.value.length },
@@ -312,16 +336,31 @@ const tabs = computed(() => [
   { label: 'WowUp Import String', value: 'wowup', count: wowupList.value.length },
 ])
 
-const layoutClasses = computed(() => [...new Set(layoutList.value.map((l: any) => l.className).filter(Boolean))].sort())
-const layoutSpecs = computed(() => { if (!selectedClass.value) return []; return [...new Set(layoutList.value.filter((l: any) => l.className === selectedClass.value).map((l: any) => l.spec).filter(Boolean))].sort() })
-const selectedLayout = computed(() => { if (!selectedClass.value || !selectedSpec.value) return null; return layoutList.value.find((l: any) => l.className === selectedClass.value && l.spec === selectedSpec.value) })
-watch(() => selectedClass.value, () => { selectedSpec.value = '' ; nextTick(() => { if (layoutSpecs.value.length) selectedSpec.value = layoutSpecs.value[0] }) })
+const layoutClasses = computed(() => [...new Set(layoutList.value.map(l => l.className).filter((c): c is string => Boolean(c)))].sort())
+const layoutSpecs = computed(() => {
+  if (!selectedClass.value) return []
+  return [...new Set(layoutList.value.filter(l => l.className === selectedClass.value).map(l => l.spec).filter((s): s is string => Boolean(s)))].sort()
+})
+const selectedLayout = computed(() => {
+  if (!selectedClass.value || !selectedSpec.value) return null
+  return layoutList.value.find(l => l.className === selectedClass.value && l.spec === selectedSpec.value) ?? null
+})
+watch(() => selectedClass.value, () => { selectedSpec.value = '' ; nextTick(() => { if (layoutSpecs.value.length) selectedSpec.value = layoutSpecs.value[0] || '' }) })
 
-const profileAddons = computed(() => [...new Set(profileList.value.map((p: any) => p.addon))].sort())
-const addonProfiles = computed(() => { if (!selectedAddon.value) return []; return profileList.value.filter((p: any) => p.addon === selectedAddon.value) })
-const selectedProfile = computed(() => { if (!selectedProfileId.value) return null; return profileList.value.find((p: any) => p.id === Number(selectedProfileId.value)) })
+const profileAddons = computed(() => [...new Set(profileList.value.map(p => p.addon))].sort())
+const addonProfiles = computed(() => {
+  if (!selectedAddon.value) return []
+  return profileList.value.filter(p => p.addon === selectedAddon.value)
+})
+const selectedProfile = computed(() => {
+  if (!selectedProfileId.value) return null
+  return profileList.value.find(p => p.id === Number(selectedProfileId.value)) ?? null
+})
 watch(() => selectedAddon.value, () => { selectedProfileId.value = addonProfiles.value[0]?.id?.toString() || '' })
-const selectedWowup = computed(() => { if (!selectedWowupName.value) return null; return wowupList.value.find((w: any) => w.name === selectedWowupName.value) })
+const selectedWowup = computed(() => {
+  if (!selectedWowupName.value) return null
+  return wowupList.value.find(w => w.name === selectedWowupName.value) ?? null
+})
 
 // Auto-select first item in each category (respect URL params)
 watch(layoutClasses, (classes) => { if (classes.length && !selectedClass.value) selectedClass.value = classes[0] }, { immediate: true })
@@ -449,9 +488,9 @@ const editModal = ref(false)
 const editSaving = ref(false)
 const editForm = reactive({ type: '' as 'profile' | 'wowup' | 'layout', id: 0, addon: '', profile: '', name: '', className: '', spec: '', string: '' })
 
-function editProfile(p: any) { Object.assign(editForm, { type: 'profile', id: p.id, addon: p.addon, profile: p.profile, string: p.string }); editModal.value = true }
-function editWowup(w: any) { Object.assign(editForm, { type: 'wowup', id: w.id, name: w.name, string: w.string }); editModal.value = true }
-function editLayout(l: any) { Object.assign(editForm, { type: 'layout', id: l.id, className: l.className || '', spec: l.spec || '', string: l.importString || '' }); editModal.value = true }
+function editProfile(p: FlatProfile) { Object.assign(editForm, { type: 'profile', id: p.id, addon: p.addon, profile: p.profile, string: p.string }); editModal.value = true }
+function editWowup(w: FlatWowup) { Object.assign(editForm, { type: 'wowup', id: w.id, name: w.name, string: w.string }); editModal.value = true }
+function editLayout(l: PublicLayout) { Object.assign(editForm, { type: 'layout', id: l.id, className: l.className || '', spec: l.spec || '', string: l.importString || '' }); editModal.value = true }
 
 async function saveEdit() {
   editSaving.value = true

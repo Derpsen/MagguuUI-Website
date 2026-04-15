@@ -220,15 +220,23 @@ async function fetchFileFromGitHub(owner: string, repo: string, path: string, to
       return Buffer.from(response.content, 'base64').toString('utf-8')
     }
     return null
-  } catch (err: any) {
-    if (err?.response?.status === 404) return null
+  } catch (err: unknown) {
+    const status = (err as { response?: { status?: number } })?.response?.status
+    if (status === 404) return null
     throw err
   }
 }
 
 // ─── Handler ─────────────────────────────────────────────────
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  const ip = getClientIp(event)
+  const { allowed, retryAfter } = checkRateLimit(`admin-gh-pull:${ip}`, 5, 10 * 60 * 1000, 10 * 60 * 1000)
+  if (!allowed) {
+    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    throw createError({ statusCode: 429, message: `Too many GitHub pull requests. Wait ${Math.ceil(retryAfter / 60)} minutes.` })
+  }
+
   const config = useRuntimeConfig()
 
   if (!config.githubToken || !config.githubRepo) {
@@ -267,8 +275,9 @@ export default defineEventHandler(async () => {
             }
           }
         }
-      } catch (err: any) {
-        results.push({ file: addonConfig.file, addon: addonConfig.addon, status: `error: ${err?.message || 'unknown'}` })
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'unknown'
+        results.push({ file: addonConfig.file, addon: addonConfig.addon, status: `error: ${msg}` })
         errors++
       }
     }
@@ -291,8 +300,9 @@ export default defineEventHandler(async () => {
       } else {
         results.push({ file: 'Data/AddOns/WowUp.lua', addon: 'WowUp', status: 'not found' })
       }
-    } catch (err: any) {
-      results.push({ file: 'Data/AddOns/WowUp.lua', addon: 'WowUp', status: `error: ${err?.message || 'unknown'}` })
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'unknown'
+      results.push({ file: 'Data/AddOns/WowUp.lua', addon: 'WowUp', status: `error: ${msg}` })
       errors++
     }
 
@@ -323,8 +333,9 @@ export default defineEventHandler(async () => {
         }
 
         results.push({ file: `Data/Classes/${filename}`, addon: `${className} (${specs.length} specs)`, status: classStatus })
-      } catch (err: any) {
-        results.push({ file: `Data/Classes/${filename}`, addon: className, status: `error: ${err?.message || 'unknown'}` })
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'unknown'
+        results.push({ file: `Data/Classes/${filename}`, addon: className, status: `error: ${msg}` })
         errors++
       }
     }
@@ -363,21 +374,19 @@ export default defineEventHandler(async () => {
       details: `Pull: ${created} created, ${updated} updated, ${unchanged} unchanged, ${errors} errors`,
     }).run()
 
-    return {
-      success: true,
-      data: {
-        message: `Pull complete: ${created} created, ${updated} updated, ${unchanged} unchanged`,
-        results,
-        summary: { created, updated, unchanged, errors },
-      },
-    }
-  } catch (err: any) {
+    return apiSuccess({
+      message: `Pull complete: ${created} created, ${updated} updated, ${unchanged} unchanged`,
+      results,
+      summary: { created, updated, unchanged, errors },
+    })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
     db.insert(syncHistory).values({
       triggerSource: 'manual-pull',
       status: 'error',
-      details: err?.message || 'Unknown error',
+      details: message,
     }).run()
 
-    throw createError({ statusCode: 502, message: `GitHub API error: ${err?.message || 'Unknown'}` })
+    throw createError({ statusCode: 502, message: `GitHub API error: ${message}` })
   }
 })

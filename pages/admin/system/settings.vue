@@ -141,10 +141,10 @@
             <div v-for="link in linkFields" :key="link.key" class="admin-field">
               <label class="admin-field__label">{{ link.label }}</label>
               <div class="flex items-center gap-2">
-                <UInput v-model="(form as any)[link.key]" :disabled="saving" :placeholder="link.placeholder" class="flex-1" />
+                <UInput v-model="(form as Record<string, string>)[link.key]" :disabled="saving" :placeholder="link.placeholder" class="flex-1" />
                 <UButton
-                  v-if="(form as any)[link.key]"
-                  :href="(form as any)[link.key]"
+                  v-if="(form as Record<string, string>)[link.key]"
+                  :href="(form as Record<string, string>)[link.key]"
                   target="_blank"
                   icon="i-heroicons-arrow-top-right-on-square"
                   color="neutral"
@@ -355,7 +355,16 @@ const loading = ref(true)
 const saving = ref(false)
 const resetModal = ref(false)
 const downloadingBackup = ref(false)
-const sysInfo = ref<any>(null)
+interface SysInfo {
+  database?: {
+    sizeBytes?: number
+    sizeFormatted?: string
+    tables?: Record<string, number>
+  }
+  app?: { version?: string, nodeVersion?: string, platform?: string, uptime?: number, uptimeFormatted?: string }
+  activeSessions?: number
+}
+const sysInfo = ref<SysInfo | null>(null)
 
 type TabId = 'general' | 'seo' | 'security' | 'ads' | 'data'
 
@@ -426,7 +435,11 @@ const defaults: Record<string, string> = { ...SITE_SETTINGS_DEFAULTS }
 
 const form = reactive({ ...defaults })
 const original = ref({ ...defaults })
-const hasChanges = computed(() => Object.keys(form).some(key => (form as any)[key] !== (original.value as any)[key]))
+const hasChanges = computed(() => {
+  const f = form as Record<string, string>
+  const o = original.value as Record<string, string>
+  return Object.keys(form).some(key => f[key] !== o[key])
+})
 
 const dbTableDisplay = computed(() => {
   if (!sysInfo.value?.database?.tables) return {}
@@ -465,8 +478,9 @@ async function load() {
     ])
 
     if (data) {
+      const f = form as Record<string, string>
       for (const [key, value] of Object.entries(data)) {
-        if (key in form) (form as any)[key] = value
+        if (key in form) f[key] = value
       }
 
       original.value = { ...form }
@@ -485,8 +499,8 @@ async function save() {
     await apiFetch("/api/v1/admin/settings", { method: "PUT", body: { ...form } })
     original.value = { ...form }
     toast.add({ title: "Settings saved", color: "success", icon: "i-heroicons-check-circle" })
-  } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Error", color: "error", icon: "i-heroicons-x-circle" })
+  } catch (error: unknown) {
+    toast.add({ title: errorMessage(error, "Error"), color: "error", icon: "i-heroicons-x-circle" })
   } finally {
     saving.value = false
   }

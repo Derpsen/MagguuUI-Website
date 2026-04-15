@@ -9,6 +9,7 @@ import { apiKeys } from '~/server/database/schema'
 import { validateBody, apiKeyCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
+  const auth = requireAuth(event)
   const body = await readBody(event)
   const data = validateBody(apiKeyCreateSchema, body)
 
@@ -29,12 +30,18 @@ export default defineEventHandler(async (event) => {
     permissions: apiKeys.permissions,
   }).get()
 
+  logActivity({
+    action: 'created',
+    entityType: 'api-key',
+    entityId: result.id,
+    entityName: result.name,
+    details: { permissions: result.permissions, preview: result.keyPreview },
+    userId: auth.userId,
+  })
+
   setResponseStatus(event, 201)
-  return {
-    success: true,
-    data: {
-      ...result,
-      key: rawKey, // Full key returned only once!
-    },
-  }
+  return apiSuccess({
+    ...result,
+    key: rawKey, // Full key returned only once!
+  })
 })

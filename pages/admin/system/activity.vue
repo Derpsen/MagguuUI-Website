@@ -400,7 +400,8 @@ async function load() {
     if (dateTo.value) params.set("dateTo", dateTo.value)
     if (searchQuery.value) params.set("search", searchQuery.value)
 
-    const response = await apiFetch<any>(`/api/v1/admin/activity?${params}`)
+    interface ActivityResponse { items?: Activity[], total?: number, totalPages?: number }
+    const response = await apiFetch<ActivityResponse>(`/api/v1/admin/activity?${params}`)
     items.value = response?.items || []
     total.value = response?.total || 0
     totalPages.value = response?.totalPages || 1
@@ -413,7 +414,7 @@ async function load() {
 
 async function loadQuickStats() {
   try {
-    const response = await apiFetch<any>("/api/v1/admin/activity/stats")
+    const response = await apiFetch<{ created: number, updated: number, deleted: number }>("/api/v1/admin/activity/stats")
     if (response) quickStats.value = response
   } catch {
     quickStats.value = null

@@ -126,8 +126,9 @@ await usePublicPageSeo({
   path: '/changelog',
 })
 
-const { data: changelogData } = await useFetch('/api/v1/changelogs')
-const allEntries = computed(() => (changelogData.value as any)?.data || [])
+interface ChangelogPageEntry { id: number, version: string, content: string, contentEn?: string | null, publishedAt: string | number | null, [k: string]: unknown }
+const { data: changelogData } = await useFetch<{ data: ChangelogPageEntry[] }>('/api/v1/changelogs')
+const allEntries = computed<ChangelogPageEntry[]>(() => changelogData.value?.data || [])
 
 function renderMarkdown(text: string): string {
   return renderMarkdownToSafeHtml(text, { stripChangelogDateHeaders: true })
@@ -146,15 +147,15 @@ function toDateKey(date: string | Date | null): string {
 const groupedByDate = computed(() => {
   const entries = allEntries.value
   if (!entries.length) return []
-  const groupMap = new Map<string, any[]>()
+  const groupMap = new Map<string, ChangelogPageEntry[]>()
   for (const entry of entries) {
     const key = toDateKey(entry.publishedAt)
     if (!groupMap.has(key)) groupMap.set(key, [])
     groupMap.get(key)!.push(entry)
   }
-  const groups: { dateKey: string; dateFormatted: string; entries: any[] }[] = []
+  const groups: { dateKey: string, dateFormatted: string, entries: ChangelogPageEntry[] }[] = []
   for (const [dateKey, groupEntries] of groupMap) {
-    groups.push({ dateKey, dateFormatted: formatDate(groupEntries[0].publishedAt), entries: groupEntries })
+    groups.push({ dateKey, dateFormatted: formatDate(groupEntries[0]!.publishedAt), entries: groupEntries })
   }
   return groups
 })

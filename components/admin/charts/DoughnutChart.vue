@@ -41,7 +41,7 @@ const chartOption = computed(() => ({
     backgroundColor: isDark.value ? '#1e293b' : '#ffffff',
     borderColor: isDark.value ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
     textStyle: { color: isDark.value ? '#e2e8f0' : '#1e293b', fontSize: 12 },
-    formatter: (params: any) => `${params.name}: <b>${params.value}</b> (${params.percent}%)`,
+    formatter: (params: { name: string, value: number, percent: number }) => `${params.name}: <b>${params.value}</b> (${params.percent}%)`,
   },
   legend: {
     bottom: 0,

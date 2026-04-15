@@ -9,6 +9,7 @@ import { users } from '~/server/database/schema'
 import { validateBody, userCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
+  const auth = requireAuth(event)
   const body = await readBody(event)
   const data = validateBody(userCreateSchema, body)
 
@@ -21,10 +22,19 @@ export default defineEventHandler(async (event) => {
       role: data.role || 'admin',
     }).returning({ id: users.id, username: users.username, role: users.role }).get()
 
+    logActivity({
+      action: 'created',
+      entityType: 'user',
+      entityId: result.id,
+      entityName: result.username,
+      details: { role: result.role },
+      userId: auth.userId,
+    })
+
     setResponseStatus(event, 201)
     return apiSuccess(result)
-  } catch (e: any) {
-    if (e?.message?.includes('UNIQUE')) {
+  } catch (e: unknown) {
+    if (e instanceof Error && e.message.includes('UNIQUE')) {
       throw createError({ statusCode: 409, message: 'Username already exists' })
     }
     throw e

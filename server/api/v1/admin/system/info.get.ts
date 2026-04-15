@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
   const safeTableCount = (table: string): number => {
     if (!(ALLOWED_TABLES as readonly string[]).includes(table)) return 0
     try {
-      return (sqlite.prepare(`SELECT COUNT(*) as count FROM "${table}"`).get() as any)?.count || 0
+      return (sqlite.prepare(`SELECT COUNT(*) as count FROM "${table}"`).get() as { count: number } | undefined)?.count || 0
     } catch { return 0 }
   }
 
@@ -63,7 +63,7 @@ export default defineEventHandler(async (event) => {
   // Active sessions count
   const activeSessions = (sqlite.prepare(
     'SELECT COUNT(*) as count FROM sessions WHERE is_revoked = 0 AND expires_at > ?'
-  ).get(Math.floor(Date.now() / 1000)) as any)?.count || 0
+  ).get(Math.floor(Date.now() / 1000)) as { count: number } | undefined)?.count || 0
 
   return apiSuccess({
     database: {

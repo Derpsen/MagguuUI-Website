@@ -54,9 +54,10 @@ export default defineEventHandler(async () => {
       webhookUrl: `/api/v1/webhooks/github`,
       webhookSecretConfigured: !!config.githubWebhookSecret,
     })
-  } catch (err: any) {
-    const status = err?.response?.status || err?.statusCode
-    let errorMsg = err?.message || 'Unknown error'
+  } catch (err: unknown) {
+    const e = err as { response?: { status?: number }, statusCode?: number, message?: string }
+    const status = e?.response?.status || e?.statusCode
+    let errorMsg = (err instanceof Error ? err.message : null) || e?.message || 'Unknown error'
 
     if (status === 401) errorMsg = 'Token invalid or expired'
     else if (status === 403) errorMsg = 'Access denied — token does not have sufficient permissions'

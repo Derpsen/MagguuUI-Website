@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     result = await verifyPasskeyAuthentication(body.credential, event)
-  } catch (e: any) {
+  } catch (e: unknown) {
     // Log failed passkey attempt
     logLoginAttempt({
       username: 'passkey-attempt',
@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 401,
-      message: e.message || 'Passkey authentication failed',
+      message: e instanceof Error ? e.message : 'Passkey authentication failed',
     })
   }
 

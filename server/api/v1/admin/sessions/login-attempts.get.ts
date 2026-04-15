@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   const flaggedOnly = query.flaggedOnly === 'true'
 
   let sql = 'SELECT * FROM login_attempts'
-  const params: any[] = []
+  const params: number[] = []
 
   if (flaggedOnly) {
     sql += ' WHERE is_flagged = 1'
@@ -30,11 +30,14 @@ export default defineEventHandler(async (event) => {
   const thirtyDaysAgo = Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60
   const weekAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60
 
+  const countQuery = (s: string, arg: number) =>
+    (sqlite.prepare(s).get(arg) as { count: number } | undefined)?.count ?? 0
+
   const stats = {
-    totalAttempts: (sqlite.prepare('SELECT COUNT(*) as count FROM login_attempts WHERE created_at > ?').get(thirtyDaysAgo) as any).count,
-    failedAttempts: (sqlite.prepare('SELECT COUNT(*) as count FROM login_attempts WHERE success = 0 AND created_at > ?').get(thirtyDaysAgo) as any).count,
-    flaggedAttempts: (sqlite.prepare('SELECT COUNT(*) as count FROM login_attempts WHERE is_flagged = 1 AND created_at > ?').get(thirtyDaysAgo) as any).count,
-    recentFailed: (sqlite.prepare('SELECT COUNT(*) as count FROM login_attempts WHERE success = 0 AND created_at > ?').get(weekAgo) as any).count,
+    totalAttempts: countQuery('SELECT COUNT(*) as count FROM login_attempts WHERE created_at > ?', thirtyDaysAgo),
+    failedAttempts: countQuery('SELECT COUNT(*) as count FROM login_attempts WHERE success = 0 AND created_at > ?', thirtyDaysAgo),
+    flaggedAttempts: countQuery('SELECT COUNT(*) as count FROM login_attempts WHERE is_flagged = 1 AND created_at > ?', thirtyDaysAgo),
+    recentFailed: countQuery('SELECT COUNT(*) as count FROM login_attempts WHERE success = 0 AND created_at > ?', weekAgo),
   }
 
   return apiSuccess(attempts, { stats })

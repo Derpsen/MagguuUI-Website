@@ -197,26 +197,38 @@ useSeoMeta({
 })
 
 // Content fetching
-const { data: contentData } = await useFetch('/api/v1/content/home')
-const { data: profileData } = await useFetch('/api/v1/profiles')
-const { data: layoutData } = await useFetch('/api/v1/layouts')
-const { data: wowupData } = await useFetch('/api/v1/wowup')
-const { data: changelogData } = await useFetch('/api/v1/changelogs')
-const { data: latestChangeData } = await useFetch('/api/v1/latest-change')
+interface HomeContent {
+  hero?: { badge?: string, [k: string]: unknown }
+  features?: Record<string, string>
+  [k: string]: unknown
+}
+interface LatestChange { name?: string, action?: string }
+interface ProfileItem { id: number, profile: string, string: string, [k: string]: unknown }
+type ProfileGrouped = Record<string, ProfileItem[]>
+interface LayoutItem { id: number, className?: string | null, spec?: string | null, [k: string]: unknown }
+type WowupKeyed = Record<string, { string: string, [k: string]: unknown }>
+interface ChangelogEntry { id: number, version: string, [k: string]: unknown }
 
-const content = computed(() => (contentData.value as any)?.data)
+const { data: contentData } = await useFetch<{ data: HomeContent }>('/api/v1/content/home')
+const { data: profileData } = await useFetch<{ data: ProfileGrouped }>('/api/v1/profiles')
+const { data: layoutData } = await useFetch<{ data: LayoutItem[] }>('/api/v1/layouts')
+const { data: wowupData } = await useFetch<{ data: WowupKeyed }>('/api/v1/wowup')
+const { data: changelogData } = await useFetch<{ data: ChangelogEntry[] }>('/api/v1/changelogs')
+const { data: latestChangeData } = await useFetch<{ data: LatestChange | null }>('/api/v1/latest-change')
+
+const content = computed(() => contentData.value?.data)
 const addonNames = computed(() => {
-  const grouped = (profileData.value as any)?.data
+  const grouped = profileData.value?.data
   if (!grouped || typeof grouped !== 'object') return []
   return Object.keys(grouped)
 })
 
 // Badge text: show last changed string name
 const latestBadgeText = computed(() => {
-  const change = (latestChangeData.value as any)?.data
+  const change = latestChangeData.value?.data
   if (change?.name) {
     const actionMap: Record<string, string> = { created: 'New', updated: 'Updated', deleted: 'Removed' }
-    const action = actionMap[change.action] || 'Updated'
+    const action = actionMap[change.action || ''] || 'Updated'
     return `${action}: ${change.name}`
   }
   return content.value?.hero?.badge || 'New: String updates'
@@ -245,28 +257,28 @@ const features = computed(() => [
 
 const totalStrings = computed(() => {
   let count = 0
-  const grouped = (profileData.value as any)?.data
-  if (grouped && typeof grouped === 'object') { for (const profiles of Object.values(grouped)) { count += (profiles as any[]).length } }
-  const layouts = (layoutData.value as any)?.data
+  const grouped = profileData.value?.data
+  if (grouped && typeof grouped === 'object') { for (const profiles of Object.values(grouped)) { count += profiles.length } }
+  const layouts = layoutData.value?.data
   if (Array.isArray(layouts)) count += layouts.length
-  const wowup = (wowupData.value as any)?.data
+  const wowup = wowupData.value?.data
   if (wowup && typeof wowup === 'object') count += Object.keys(wowup).length
   return count
 })
 
 const categoryCount = computed(() => {
   let count = 0
-  const grouped = (profileData.value as any)?.data
+  const grouped = profileData.value?.data
   if (grouped && typeof grouped === 'object') count += Object.keys(grouped).length
-  const layouts = (layoutData.value as any)?.data
+  const layouts = layoutData.value?.data
   if (Array.isArray(layouts) && layouts.length > 0) count++
-  const wowup = (wowupData.value as any)?.data
+  const wowup = wowupData.value?.data
   if (wowup && typeof wowup === 'object' && Object.keys(wowup).length > 0) count++
   return count
 })
 
 const updateCount = computed(() => {
-  const entries = (changelogData.value as any)?.data
+  const entries = changelogData.value?.data
   return Array.isArray(entries) ? entries.length : 0
 })
 

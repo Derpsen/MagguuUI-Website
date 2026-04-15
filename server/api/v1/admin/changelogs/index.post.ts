@@ -7,6 +7,7 @@ import { changelogs } from '~/server/database/schema'
 import { validateBody, changelogCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
+  const auth = requireAuth(event)
   const body = await readBody(event)
   const data = validateBody(changelogCreateSchema, body)
 
@@ -17,6 +18,15 @@ export default defineEventHandler(async (event) => {
     isPublished: data.isPublished ?? false,
     publishedAt: data.isPublished ? new Date() : null,
   }).returning().get()
+
+  logActivity({
+    action: 'created',
+    entityType: 'changelog',
+    entityId: result.id,
+    entityName: result.version,
+    details: { published: result.isPublished },
+    userId: auth.userId,
+  })
 
   setResponseStatus(event, 201)
   return apiSuccess(result)

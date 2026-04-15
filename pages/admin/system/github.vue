@@ -389,12 +389,15 @@ interface StatusData {
   recentSyncs: SyncEntry[]
 }
 
+interface TestResult { success: boolean, data?: unknown, error?: string }
+interface VersionCheckDetails { latestVersion?: string, localVersion?: string | null, isUpToDate?: boolean, releaseName?: string, publishedAt?: string, [k: string]: unknown }
+
 const status = ref<StatusData | null>(null)
 const statusLoading = ref(false)
-const testResult = ref<any>(null)
+const testResult = ref<TestResult | null>(null)
 const testing = ref(false)
 const checking = ref(false)
-const versionCheckDetails = ref<any>(null)
+const versionCheckDetails = ref<VersionCheckDetails | null>(null)
 const pushing = ref(false)
 const pullingProfiles = ref(false)
 const syncPage = ref(1)
@@ -519,8 +522,8 @@ async function loadStatus() {
   statusLoading.value = true
   try {
     status.value = await apiFetch(`/api/v1/admin/github/status?syncPage=${syncPage.value}&syncLimit=10`) as StatusData
-  } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Status error", color: "error" })
+  } catch (error: unknown) {
+    toast.add({ title: errorMessage(error, "Status error"), color: "error" })
   } finally {
     statusLoading.value = false
   }
@@ -536,7 +539,8 @@ async function testConnection() {
   testing.value = true
   testResult.value = null
   try {
-    const response = await $fetch<any>("/api/v1/admin/github/test", {
+    interface TestResponse { success?: boolean, data?: unknown, error?: string }
+    const response = await $fetch<TestResponse>("/api/v1/admin/github/test", {
       method: "POST",
       credentials: "include",
     })
@@ -546,8 +550,8 @@ async function testConnection() {
     } else {
       testResult.value = { success: false, error: response?.error || "Unknown error" }
     }
-  } catch (error: any) {
-    testResult.value = { success: false, error: error?.data?.message || error?.message || "Connection failed" }
+  } catch (error: unknown) {
+    testResult.value = { success: false, error: errorMessage(error, "Connection failed") }
   } finally {
     testing.value = false
   }
@@ -559,8 +563,8 @@ async function doVersionCheck() {
     versionCheckDetails.value = await apiFetch("/api/v1/admin/version-check", { method: "POST" })
     toast.add({ title: "Version checked", color: "success" })
     await loadStatus()
-  } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Version check failed", color: "error" })
+  } catch (error: unknown) {
+    toast.add({ title: errorMessage(error, "Version check failed"), color: "error" })
   } finally {
     checking.value = false
   }
@@ -569,7 +573,9 @@ async function doVersionCheck() {
 async function doPullProfiles() {
   pullingProfiles.value = true
   try {
-    const response = await apiFetch<any>("/api/v1/admin/github/pull", { method: "POST" })
+    interface PullSummary { created?: number, updated?: number, unchanged?: number }
+    interface PullResponse { data?: { summary?: PullSummary }, summary?: PullSummary }
+    const response = await apiFetch<PullResponse>("/api/v1/admin/github/pull", { method: "POST" })
     const summary = response?.data?.summary || response?.summary
     if (summary) {
       toast.add({
@@ -580,8 +586,8 @@ async function doPullProfiles() {
       toast.add({ title: "Pull complete", color: "success" })
     }
     await loadStatus()
-  } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Pull error", color: "error" })
+  } catch (error: unknown) {
+    toast.add({ title: errorMessage(error, "Pull error"), color: "error" })
   } finally {
     pullingProfiles.value = false
   }
@@ -594,8 +600,8 @@ async function doPush() {
     await apiFetch("/api/v1/admin/github/push", { method: "POST", body: { reason: "manual-push" } })
     toast.add({ title: "GitHub sync triggered", color: "success" })
     await loadStatus()
-  } catch (error: any) {
-    const msg = error?.data?.message || error?.message || "Push error"
+  } catch (error: unknown) {
+    const msg = errorMessage(error, "Push error")
     pushError.value = msg
     toast.add({ title: msg, color: "error" })
   } finally {
@@ -618,13 +624,13 @@ async function doExport() {
     document.body.removeChild(anchor)
     URL.revokeObjectURL(url)
     toast.add({ title: "Export downloaded", color: "success" })
-  } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Export error", color: "error" })
+  } catch (error: unknown) {
+    toast.add({ title: errorMessage(error, "Export error"), color: "error" })
   }
 }
 
 const importModal = ref(false)
-const importData = ref<any>(null)
+const importData = ref<unknown>(null)
 const importStrategy = ref("merge")
 const importPreview = ref("")
 const importError = ref("")
@@ -698,7 +704,9 @@ async function doImport() {
   importError.value = ""
 
   try {
-    const response = await apiFetch<any>("/api/v1/admin/github/import", {
+    interface ImportStats { profiles?: number, wowup?: number, layouts?: number, changelogs?: number, content?: number, skipped?: number }
+    interface ImportResponse { imported?: ImportStats }
+    const response = await apiFetch<ImportResponse>("/api/v1/admin/github/import", {
       method: "POST",
       body: { data: importData.value, strategy: importStrategy.value },
     })
@@ -718,8 +726,8 @@ async function doImport() {
 
     closeImportModal()
     await loadStatus()
-  } catch (error: any) {
-    importError.value = error?.data?.message || "Import error"
+  } catch (error: unknown) {
+    importError.value = errorMessage(error, "Import error")
   } finally {
     importing.value = false
   }

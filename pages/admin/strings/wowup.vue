@@ -172,6 +172,17 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
 
+interface WowUpString {
+  id: number
+  isVisible: boolean
+  sortOrder: number
+  name: string
+  string: string
+  category?: string | null
+  description?: string | null
+  [key: string]: unknown
+}
+
 const {
   items, loading, search, selected,
   lastUpdatedText,
@@ -184,7 +195,7 @@ const {
   toggleVisibility, confirmDelete, doDelete, doBulkDelete,
   copyString, toggleSelect, toggleSelectAll,
   setupLifecycle,
-} = useStringManager({
+} = useStringManager<WowUpString>({
   apiBase: '/api/v1/admin/wowup',
   entityName: 'string',
   entityNamePlural: 'strings',
@@ -201,7 +212,7 @@ const isFiltering = computed(() => search.value.trim() !== '')
 const filtered = computed(() => {
   if (!search.value) return items.value
   const q = search.value.toLowerCase()
-  return items.value.filter((item: any) => item.name.toLowerCase().includes(q))
+  return items.value.filter(item => item.name.toLowerCase().includes(q))
 })
 
 function formatBytes(bytes: number) {
@@ -212,9 +223,9 @@ function formatBytes(bytes: number) {
 }
 
 const statCards = computed(() => {
-  const visible = items.value.filter((i: any) => i.isVisible).length
-  const hidden = items.value.filter((i: any) => !i.isVisible).length
-  const total = items.value.reduce((sum: number, i: any) => sum + (i.string?.length || 0), 0)
+  const visible = items.value.filter(i => i.isVisible).length
+  const hidden = items.value.filter(i => !i.isVisible).length
+  const total = items.value.reduce((sum, i) => sum + (i.string?.length || 0), 0)
   const avg = items.value.length > 0 ? total / items.value.length : 0
 
   return [

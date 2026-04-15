@@ -28,5 +28,14 @@ export default defineEventHandler(async (event) => {
 
   unlockAccount(id)
 
+  logActivity({
+    action: 'updated',
+    entityType: 'user',
+    entityId: id,
+    entityName: user.username,
+    details: 'account unlocked',
+    userId: auth.userId,
+  })
+
   return apiSuccess({ id, message: 'Account unlocked' })
 })

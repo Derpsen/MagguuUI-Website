@@ -11,6 +11,32 @@ import { syncHistory } from '~/server/database/schema'
 
 const DEBOUNCE_MS = 10_000 // 10 seconds
 
+/**
+ * Shape of errors thrown by ofetch/nitro when a GitHub API call fails.
+ * Only the bits we read are typed; unknown shapes fall back to string.
+ */
+interface GitHubFetchError {
+  response?: { status?: number, _data?: { message?: string } }
+  statusCode?: number
+  status?: number
+  data?: { message?: string }
+  message?: string
+}
+
+export function parseGitHubError(err: unknown): { status: number | undefined, message: string } {
+  const e = err as GitHubFetchError
+  const status = e?.response?.status || e?.statusCode || e?.status
+  const message = e?.data?.message || e?.response?._data?.message || e?.message || 'Unknown error'
+  return { status, message }
+}
+
+export function githubErrorHint(owner: string, repo: string, status: number | undefined, fallback: string) {
+  if (status === 401) return 'Token invalid or expired. Regenerate NUXT_GITHUB_TOKEN and restart the container.'
+  if (status === 403) return `Token lacks permission for ${owner}/${repo}. Classic PAT: enable "repo" scope. Fine-Grained PAT: grant "Contents: write" on ${owner}/${repo}.`
+  if (status === 404) return `Repo ${owner}/${repo} not found or token has no access to it. For Fine-Grained PATs, make sure the repo is explicitly selected.`
+  return fallback
+}
+
 // Module-level state (persists across requests in the same process)
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 let pendingReasons: string[] = []
@@ -90,9 +116,10 @@ async function doGitHubDispatch(reasons: string[]) {
           : `Batch sync: ${reasons.join(', ')}`,
       }).run()
     } catch { /* logging is best-effort */ }
-  } catch (err: any) {
-    const statusCode = err?.response?.status || err?.statusCode || err?.status
-    const githubMessage = err?.data?.message || err?.response?._data?.message || err?.message || 'unknown'
+  } catch (err: unknown) {
+    const e = err as { response?: { status?: number, _data?: { message?: string } }, statusCode?: number, status?: number, data?: { message?: string }, message?: string }
+    const statusCode = e?.response?.status || e?.statusCode || e?.status
+    const githubMessage = e?.data?.message || e?.response?._data?.message || e?.message || 'unknown'
 
     let friendly = githubMessage
     if (statusCode === 401) {

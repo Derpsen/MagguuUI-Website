@@ -187,6 +187,17 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
 
+interface Profile {
+  id: number
+  isVisible: boolean
+  sortOrder: number
+  addon: string
+  profile: string
+  string: string
+  description?: string | null
+  [key: string]: unknown
+}
+
 const {
   items, loading, search, selected,
   modalOpen, form, formError, saving, editingItem,
@@ -199,7 +210,7 @@ const {
   confirmDelete, doDelete, doBulkDelete,
   copyString, toggleSelect, toggleSelectAll,
   setupLifecycle,
-} = useStringManager({
+} = useStringManager<Profile>({
   apiBase: '/api/v1/admin/profiles',
   entityName: 'profile',
   entityNamePlural: 'profiles',
@@ -215,25 +226,25 @@ const addonFilter = ref('')
 const isFiltering = computed(() => search.value.trim() !== '' || addonFilter.value !== '')
 
 const addonOptions = computed(() => {
-  const addons = [...new Set(items.value.map((p: any) => p.addon))].sort()
+  const addons = [...new Set(items.value.map(p => p.addon))].sort()
   return [{ label: 'All Addons', value: '' }, ...addons.map(a => ({ label: a, value: a }))]
 })
 
 const filteredProfiles = computed(() => {
   let result = items.value
-  if (addonFilter.value) result = result.filter((p: any) => p.addon === addonFilter.value)
+  if (addonFilter.value) result = result.filter(p => p.addon === addonFilter.value)
   if (search.value) {
     const q = search.value.toLowerCase()
-    result = result.filter((p: any) => p.addon.toLowerCase().includes(q) || p.profile.toLowerCase().includes(q))
+    result = result.filter(p => p.addon.toLowerCase().includes(q) || p.profile.toLowerCase().includes(q))
   }
   return result
 })
 
 // --- Page-specific: stat cards with unique "Addons" metric ---
 const statCards = computed(() => {
-  const visible = items.value.filter((p: any) => p.isVisible).length
-  const hidden = items.value.filter((p: any) => !p.isVisible).length
-  const uniqueAddons = new Set(items.value.map((p: any) => p.addon)).size
+  const visible = items.value.filter(p => p.isVisible).length
+  const hidden = items.value.filter(p => !p.isVisible).length
+  const uniqueAddons = new Set(items.value.map(p => p.addon)).size
   return [
     { label: 'Total Profiles', value: items.value.length, icon: 'i-heroicons-cube', tone: 'brand' as const },
     { label: 'Visible', value: visible, icon: 'i-heroicons-eye', tone: 'success' as const },

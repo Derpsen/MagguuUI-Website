@@ -646,7 +646,11 @@ async function loadSessions() {
 async function loadAttempts() {
   attemptsLoading.value = true
   try {
-    const response = await $fetch<any>("/api/v1/admin/sessions/login-attempts?limit=100", {
+    interface LoginAttemptsResponse {
+      data?: LoginAttempt[]
+      meta?: { stats?: { totalAttempts: number, failedAttempts: number, flaggedAttempts: number, recentFailed: number } }
+    }
+    const response = await $fetch<LoginAttemptsResponse>("/api/v1/admin/sessions/login-attempts?limit=100", {
       credentials: "include",
     })
     loginAttemptsList.value = Array.isArray(response?.data) ? response.data : []
@@ -677,8 +681,8 @@ async function savePasskeyName(passkey: Passkey) {
     await apiFetch(`/api/v1/admin/passkeys/${passkey.id}`, { method: "PUT", body: { deviceName: editPasskeyName.value.trim() } })
     cancelPasskeyEdit()
     await loadPasskeys()
-  } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Failed to rename passkey", color: "error" })
+  } catch (error: unknown) {
+    toast.add({ title: errorMessage(error, "Failed to rename passkey"), color: "error" })
   }
 }
 
@@ -691,8 +695,8 @@ async function doDeletePasskey() {
     deletePasskeyModal.value = false
     deletePasskeyTarget.value = null
     await loadPasskeys()
-  } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Failed to delete passkey", color: "error" })
+  } catch (error: unknown) {
+    toast.add({ title: errorMessage(error, "Failed to delete passkey"), color: "error" })
   } finally {
     deletingPasskey.value = false
   }
@@ -701,16 +705,16 @@ async function doDeletePasskey() {
 async function registerPasskey() {
   registeringPasskey.value = true
   try {
-    const options = await apiFetch<any>("/api/v1/auth/webauthn/register-options", { method: "POST" })
+    const options = await apiFetch<import('@simplewebauthn/browser').PublicKeyCredentialCreationOptionsJSON>("/api/v1/auth/webauthn/register-options", { method: "POST" })
     const { startRegistration } = await import("@simplewebauthn/browser")
     const credential = await startRegistration({ optionsJSON: options })
     const deviceName = window.prompt('Name this passkey (for example "MacBook Pro")') || "Passkey"
     await apiFetch("/api/v1/auth/webauthn/register-verify", { method: "POST", body: { credential, deviceName } })
     toast.add({ title: "Passkey registered", color: "success", icon: "i-heroicons-finger-print" })
     await loadPasskeys()
-  } catch (error: any) {
-    if (error?.name === "NotAllowedError") toast.add({ title: "Passkey registration cancelled", color: "neutral" })
-    else toast.add({ title: error?.data?.message || error?.message || "Failed to register passkey", color: "error" })
+  } catch (error: unknown) {
+    if (asApiError(error).name === "NotAllowedError") toast.add({ title: "Passkey registration cancelled", color: "neutral" })
+    else toast.add({ title: errorMessage(error, "Failed to register passkey"), color: "error" })
   } finally {
     registeringPasskey.value = false
   }
@@ -721,8 +725,8 @@ async function endSession(id: number) {
     await apiFetch(`/api/v1/admin/sessions/${id}`, { method: "DELETE" })
     toast.add({ title: "Session ended", color: "success", icon: "i-heroicons-check-circle" })
     await loadSessions()
-  } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Failed to end session", color: "error" })
+  } catch (error: unknown) {
+    toast.add({ title: errorMessage(error, "Failed to end session"), color: "error" })
   }
 }
 
@@ -733,8 +737,8 @@ async function doRevokeAll() {
     toast.add({ title: `${response?.revokedCount || 0} session(s) ended`, color: "success", icon: "i-heroicons-check-circle" })
     revokeAllModal.value = false
     await loadSessions()
-  } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Failed to end sessions", color: "error" })
+  } catch (error: unknown) {
+    toast.add({ title: errorMessage(error, "Failed to end sessions"), color: "error" })
   } finally {
     revokingAll.value = false
   }
@@ -745,8 +749,8 @@ async function doUnlock(user: User) {
     await apiFetch(`/api/v1/admin/users/${user.id}/unlock`, { method: "POST" })
     toast.add({ title: `${user.username} unlocked`, color: "success", icon: "i-heroicons-lock-open" })
     await loadUsers()
-  } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Failed to unlock user", color: "error" })
+  } catch (error: unknown) {
+    toast.add({ title: errorMessage(error, "Failed to unlock user"), color: "error" })
   }
 }
 
@@ -763,8 +767,8 @@ async function doCreate() {
     createModal.value = false
     Object.assign(createForm, { username: "", password: "", role: "admin" })
     await loadUsers()
-  } catch (error: any) {
-    createError.value = error?.data?.message || "Failed to create user"
+  } catch (error: unknown) {
+    createError.value = errorMessage(error, "Failed to create user")
   } finally {
     creating.value = false
   }
@@ -779,8 +783,8 @@ async function doDelete() {
     delModal.value = false
     delUser.value = null
     await loadUsers()
-  } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Failed to delete user", color: "error" })
+  } catch (error: unknown) {
+    toast.add({ title: errorMessage(error, "Failed to delete user"), color: "error" })
   } finally {
     deleting.value = false
   }
@@ -794,8 +798,8 @@ async function changePassword() {
     toast.add({ title: "Password changed", color: "success", icon: "i-heroicons-check-circle" })
     pwForm.current = ""
     pwForm.newPw = ""
-  } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Current password is incorrect", color: "error" })
+  } catch (error: unknown) {
+    toast.add({ title: errorMessage(error, "Current password is incorrect"), color: "error" })
   } finally {
     pwSaving.value = false
   }

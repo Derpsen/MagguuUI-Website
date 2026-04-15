@@ -133,7 +133,7 @@ const passkeySupported = ref(false)
 
 async function checkPasskeys() {
   try {
-    const res = await $fetch<any>('/api/v1/auth/webauthn/login-options', { method: 'POST' })
+    const res = await $fetch<{ meta?: { hasPasskeys?: boolean } }>('/api/v1/auth/webauthn/login-options', { method: 'POST' })
     hasPasskeys.value = res?.meta?.hasPasskeys || false
   } catch { hasPasskeys.value = false }
 }
@@ -143,14 +143,14 @@ async function handleLogin() {
   if (!form.username || !form.password) { error.value = 'Please enter username and password'; return }
   loading.value = true; error.value = ''
   try { await login(form.username, form.password); router.push('/admin') }
-  catch (e: any) {
-    const status = e?.response?.status || e?.status || e?.statusCode
+  catch (e: unknown) {
+    const status = errorStatus(e)
     if (status === 423) {
       error.value = 'Account temporarily locked. Try again in 30 minutes.'
     } else if (status === 429) {
       error.value = 'Too many attempts. Please wait and try again.'
     } else {
-      error.value = e?.data?.message || e?.data?.error?.message || 'Invalid credentials'
+      error.value = errorMessage(e, 'Invalid credentials')
     }
   }
   finally { loading.value = false }
@@ -161,7 +161,7 @@ async function handlePasskeyLogin() {
   passkeyLoading.value = true; error.value = ''
   try {
     // 1. Get authentication options from server
-    const optionsRes = await $fetch<any>('/api/v1/auth/webauthn/login-options', { method: 'POST' })
+    const optionsRes = await $fetch<{ data?: import('@simplewebauthn/browser').PublicKeyCredentialRequestOptionsJSON }>('/api/v1/auth/webauthn/login-options', { method: 'POST' })
     if (!optionsRes?.data) {
       error.value = 'No passkeys registered yet'
       return
@@ -172,7 +172,13 @@ async function handlePasskeyLogin() {
     const credential = await startAuthentication({ optionsJSON: optionsRes.data })
 
     // 3. Verify with server
-    const verifyRes = await $fetch<any>('/api/v1/auth/webauthn/login-verify', {
+    interface VerifyResponse {
+      data?: {
+        user?: { id: number, username: string, role: string }
+        token?: string
+      }
+    }
+    const verifyRes = await $fetch<VerifyResponse>('/api/v1/auth/webauthn/login-verify', {
       method: 'POST',
       body: { credential },
     })
@@ -184,18 +190,18 @@ async function handlePasskeyLogin() {
     // 4. Store auth data via shared auth composable
     setSession(verifyRes.data)
     router.push('/admin')
-  } catch (e: any) {
+  } catch (e: unknown) {
     // User cancelled or error
-    if (e?.name === 'NotAllowedError') {
+    if (asApiError(e).name === 'NotAllowedError') {
       error.value = 'Passkey authentication cancelled'
     } else {
-      const status = e?.response?.status || e?.status || e?.statusCode
+      const status = errorStatus(e)
       if (status === 423) {
         error.value = 'Account temporarily locked. Try again in 30 minutes.'
       } else if (status === 429) {
         error.value = 'Too many attempts. Please wait and try again.'
       } else {
-        error.value = e?.data?.message || e?.message || 'Passkey authentication failed'
+        error.value = errorMessage(e, 'Passkey authentication failed')
       }
     }
   } finally { passkeyLoading.value = false }

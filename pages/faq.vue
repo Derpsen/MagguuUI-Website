@@ -129,9 +129,11 @@ const sections = [
   },
 ]
 
-const { data: rawData, pending } = await useFetch('/api/v1/faqs')
-const faqData = computed(() => (rawData.value as any)?.data || {})
-const hasFaqs = computed(() => Object.values(faqData.value).some((arr: any) => arr?.length > 0))
+interface FaqItem { id: number, question: string, answer: string, [k: string]: unknown }
+type FaqByCategory = Record<string, FaqItem[]>
+const { data: rawData, pending } = await useFetch<{ data: FaqByCategory }>('/api/v1/faqs')
+const faqData = computed<FaqByCategory>(() => rawData.value?.data || {})
+const hasFaqs = computed(() => Object.values(faqData.value).some(arr => arr?.length > 0))
 
 // FAQ JSON-LD structured data for rich snippets
 useHead({
@@ -140,7 +142,7 @@ useHead({
       type: 'application/ld+json',
       innerHTML: () => {
         const allFaqs = sections.flatMap(s =>
-          (faqData.value[s.key] || []).map((faq: any) => ({
+          (faqData.value[s.key] || []).map(faq => ({
             '@type': 'Question',
             name: faq.question,
             acceptedAnswer: { '@type': 'Answer', text: faq.answer },

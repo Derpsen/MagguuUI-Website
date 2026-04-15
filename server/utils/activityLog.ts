@@ -10,10 +10,20 @@ import { desc, eq } from 'drizzle-orm'
 
 interface LogOptions {
   action: 'created' | 'updated' | 'deleted'
-  entityType: 'profile' | 'wowup' | 'layout' | 'changelog' | 'content' | 'faq'
+  entityType:
+    | 'profile'
+    | 'wowup'
+    | 'layout'
+    | 'changelog'
+    | 'content'
+    | 'faq'
+    | 'user'
+    | 'api-key'
+    | 'field'
+    | 'setting'
   entityId?: number
   entityName: string
-  details?: Record<string, any> | string
+  details?: Record<string, unknown> | string
   userId?: number
   autoChangelog?: boolean
 }

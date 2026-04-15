@@ -76,7 +76,7 @@ const chartOption = computed(() => {
         position: 'right' as const,
         color: textColor,
         fontSize: 11,
-        formatter: (params: any) => params.value.toLocaleString(),
+        formatter: (params: { value: number }) => params.value.toLocaleString(),
       },
     }],
   }

@@ -39,7 +39,9 @@ export function applyPrivateApiHeadersToRecord(
   headers.Vary = mergeVary(existingVary ?? headers.Vary, PRIVATE_API_VARY_HEADERS)
 }
 
-export function applyPrivateApiHeaders(event: any) {
+import type { H3Event } from 'h3'
+
+export function applyPrivateApiHeaders(event: H3Event) {
   setResponseHeader(event, 'Cache-Control', PRIVATE_API_HEADER_VALUES.cacheControl)
   setResponseHeader(event, 'Pragma', PRIVATE_API_HEADER_VALUES.pragma)
   setResponseHeader(event, 'Expires', PRIVATE_API_HEADER_VALUES.expires)

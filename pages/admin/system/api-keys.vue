@@ -238,15 +238,15 @@ async function doCreate() {
   createError.value = ""
 
   try {
-    const response = await apiFetch<any>("/api/v1/admin/api-keys", { method: "POST", body: { ...createForm } })
+    const response = await apiFetch<{ key: string }>("/api/v1/admin/api-keys", { method: "POST", body: { ...createForm } })
     createModal.value = false
     newKeyFull.value = response.key
     keyCreatedModal.value = true
     keyCopied.value = false
     Object.assign(createForm, { name: "", permissions: "read" })
     await load()
-  } catch (error: any) {
-    createError.value = error?.data?.message || "Error"
+  } catch (error: unknown) {
+    createError.value = errorMessage(error, "Error")
   } finally {
     creating.value = false
   }
@@ -287,8 +287,8 @@ async function doDelete() {
     toast.add({ title: "API key deleted", color: "success" })
     delModal.value = false
     await load()
-  } catch (error: any) {
-    toast.add({ title: error?.data?.message || "Error", color: "error" })
+  } catch (error: unknown) {
+    toast.add({ title: errorMessage(error, "Error"), color: "error" })
   } finally {
     deleting.value = false
   }

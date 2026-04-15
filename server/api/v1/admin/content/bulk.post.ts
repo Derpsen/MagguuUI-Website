@@ -11,6 +11,7 @@ import { siteContent } from '~/server/database/schema'
 import { validateBody, contentBulkSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
+  const auth = requireAuth(event)
   const body = await readBody(event)
   const data = validateBody(contentBulkSchema, body)
 
@@ -51,6 +52,15 @@ export default defineEventHandler(async (event) => {
       }
     }
   })()
+
+  const pages = Array.from(new Set(data.items.map((i) => i.page)))
+  logActivity({
+    action: 'updated',
+    entityType: 'content',
+    entityName: pages.join(', ') || 'bulk',
+    details: { items: data.items.length, pages },
+    userId: auth.userId,
+  })
 
   return apiSuccess({ updated: data.items.length })
 })

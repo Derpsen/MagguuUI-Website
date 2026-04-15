@@ -16,6 +16,7 @@ import { validateBody } from '~/server/utils/validation'
 const settingsBodySchema = z.record(z.string().max(100), z.string().max(10_000))
 
 export default defineEventHandler(async (event) => {
+  const auth = requireAuth(event)
   const body = await readBody(event)
   const data = validateBody(settingsBodySchema, body)
 
@@ -40,6 +41,17 @@ export default defineEventHandler(async (event) => {
 
   // Clear settings cache so changes take effect immediately
   invalidateSettingsCache()
+
+  const changedKeys = Object.keys(data).filter((k) => !protectedKeys.includes(k))
+  if (changedKeys.length > 0) {
+    logActivity({
+      action: 'updated',
+      entityType: 'setting',
+      entityName: `${changedKeys.length} settings`,
+      details: { keys: changedKeys },
+      userId: auth.userId,
+    })
+  }
 
   return apiSuccess(data)
 })

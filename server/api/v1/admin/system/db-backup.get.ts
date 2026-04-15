@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
   let dbBuffer: Buffer
   try {
     dbBuffer = await readFile(dbPath)
-  } catch (e: any) {
+  } catch {
     throw createError({ statusCode: 500, message: 'Could not read database file' })
   }
 

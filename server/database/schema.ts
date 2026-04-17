@@ -229,7 +229,9 @@ export const passkeys = sqliteTable('passkeys', {
     .notNull()
     .default(sql`(unixepoch())`),
   lastUsed: integer('last_used', { mode: 'timestamp' }),
-})
+}, (table) => ({
+  userIdIdx: index('idx_passkeys_user_id').on(table.userId),
+}))
 
 // ─── WebAuthn Challenges ──────────────────────────
 // Temporary challenge storage for WebAuthn registration/authentication

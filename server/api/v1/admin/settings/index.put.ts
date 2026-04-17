@@ -5,7 +5,6 @@
  * Body: { "site_name": "MagguuUI", "site_description": "..." }
  */
 
-import { eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { db, sqlite } from '~/server/database'
 import { settings } from '~/server/database/schema'
@@ -23,19 +22,17 @@ export default defineEventHandler(async (event) => {
   // Protected keys — managed by version-check/webhook, not editable via settings
   const protectedKeys = ['addon_version', 'github_latest_version', 'github_last_check']
 
-  // Wrap all upserts in a single transaction to avoid N separate fsync round-trips.
+  // Single-statement upsert per key inside one transaction (one fsync, one query per key).
   sqlite.transaction(() => {
     for (const [key, value] of Object.entries(data)) {
       if (protectedKeys.includes(key)) continue
-      const existing = db.select().from(settings).where(eq(settings.key, key)).get()
-      if (existing) {
-        db.update(settings)
-          .set({ value, updatedAt: new Date() })
-          .where(eq(settings.key, key))
-          .run()
-      } else {
-        db.insert(settings).values({ key, value }).run()
-      }
+      db.insert(settings)
+        .values({ key, value })
+        .onConflictDoUpdate({
+          target: settings.key,
+          set: { value, updatedAt: new Date() },
+        })
+        .run()
     }
   })()
 

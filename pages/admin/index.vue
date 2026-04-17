@@ -920,8 +920,6 @@ function formatTrend(value?: number | null) {
   return `${value > 0 ? '+' : ''}${value}%`
 }
 
-// timeAgo, absoluteDate, activityTone, actionIcon, entityTypeLabel
-// are auto-imported from utils/adminHelpers.ts
 const typeLabel = entityTypeLabel
 
 onMounted(async () => {

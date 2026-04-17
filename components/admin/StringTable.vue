@@ -1,4 +1,10 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends TableItem">
+interface TableItem {
+  id: number
+  isVisible: boolean
+  [key: string]: unknown
+}
+
 interface Column {
   key: string
   label: string
@@ -6,7 +12,7 @@ interface Column {
 }
 
 defineProps<{
-  items: any[]
+  items: T[]
   columns: Column[]
   selected: Set<number>
   dragIdx: number | null
@@ -23,10 +29,10 @@ defineEmits<{
   'drag-over': [idx: number]
   'drop': [event: DragEvent, idx: number]
   'drag-end': []
-  'toggle-visibility': [item: any]
-  'edit': [item: any]
-  'copy': [item: any]
-  'delete': [item: any]
+  'toggle-visibility': [item: T]
+  'edit': [item: T]
+  'copy': [item: T]
+  'delete': [item: T]
 }>()
 </script>
 

@@ -454,7 +454,14 @@ function cancelEdit() {
 async function saveAll() {
   saving.value = true
   try {
-    const items: any[] = [
+    interface ContentBulkItem {
+      page: string
+      section: string
+      key: string
+      value: string
+      locale: string
+    }
+    const items: ContentBulkItem[] = [
       { page: 'guide', section: 'intro', key: 'title', value: editableTitle.value, locale: 'en' },
       { page: 'guide', section: 'intro', key: 'text', value: editableSubtitle.value, locale: 'en' },
     ]

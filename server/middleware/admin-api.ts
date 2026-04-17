@@ -1,10 +1,9 @@
-import { applyPrivateApiHeaders } from '~/server/utils/privateApiHeaders'
-
 /**
  * Server Middleware - Admin API Protection
  *
  * Automatically protects ALL /api/v1/admin/* routes.
  * Requires valid JWT Bearer token in Authorization header.
+ * Private cache headers are applied by middleware/private-api-headers.ts.
  */
 
 export default defineEventHandler((event) => {
@@ -12,9 +11,6 @@ export default defineEventHandler((event) => {
 
   // Only protect admin API routes
   if (!url.pathname.startsWith('/api/v1/admin')) return
-
-  // Keep rejected admin responses private and non-cacheable too.
-  applyPrivateApiHeaders(event)
 
   // Verify JWT
   const auth = requireAuth(event)

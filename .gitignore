@@ -18,6 +18,7 @@ uploads/
 .claude/
 .vscode/
 .idea/
+docs/superpowers/
 
 # Archives
 *.zip

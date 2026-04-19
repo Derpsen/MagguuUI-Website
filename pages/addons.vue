@@ -5,7 +5,7 @@
 <template>
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <div class="text-center mb-12 fade-in heading-glow">
-      <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
+      <h1 class="hero-serif text-4xl sm:text-5xl font-medium tracking-tight mb-4 flex items-center justify-center gap-3">
         <svg aria-hidden="true" class="w-8 h-8 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 6.087c0-.355.186-.676.401-.959.221-.29.349-.634.349-1.003 0-1.036-1.007-1.875-2.25-1.875s-2.25.84-2.25 1.875c0 .369.128.713.349 1.003.215.283.401.604.401.959v0a.64.64 0 01-.657.643 48.491 48.491 0 01-4.163-.3c.186 1.613.79 3.08 1.742 4.295a48.224 48.224 0 013.127.297.643.643 0 01.657.643v0c0 .355-.186.676-.401.959a2.002 2.002 0 00-.349 1.003c0 1.035 1.007 1.875 2.25 1.875s2.25-.84 2.25-1.875c0-.369-.128-.713-.349-1.003a1.733 1.733 0 01-.401-.959v0c0-.374.312-.67.657-.643a48.497 48.497 0 014.163.3c-.186-1.613-.79-3.08-1.742-4.295a48.211 48.211 0 01-3.127-.297.643.643 0 01-.657-.643v0z" />
         </svg>
@@ -19,7 +19,7 @@
     <div class="glass-card rounded-2xl p-5 sm:p-6 mb-10 fade-in fade-in-delay-1">
       <div class="flex items-start gap-3">
         <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0"
-          :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-blue-50 text-blue-700'">
+          :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-brand-50 text-brand-700'">
           <svg aria-hidden="true" class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
           </svg>
@@ -57,9 +57,9 @@
         <a v-for="addon in requiredAddons" :key="addon.name"
           :href="addon.url" target="_blank" rel="noopener noreferrer"
           class="glass-card rounded-xl p-5 flex items-start gap-4 transition-all hover:scale-[1.01] block cursor-pointer group"
-          :class="isDark ? 'hover:border-brand-400/20' : 'hover:border-blue-200'">
+          :class="isDark ? 'hover:border-brand-400/20' : 'hover:border-brand-200'">
           <span class="inline-flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0 text-lg"
-            :class="isDark ? 'bg-brand-400/10 text-brand-300' : 'bg-blue-50 text-blue-600'">
+            :class="isDark ? 'bg-brand-400/10 text-brand-300' : 'bg-brand-50 text-brand-600'">
             {{ addon.emoji }}
           </span>
           <div class="flex-1 min-w-0">
@@ -83,14 +83,14 @@
     <section class="mb-12 fade-in fade-in-delay-3">
       <div class="flex items-center gap-2 mb-5">
         <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg"
-          :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-blue-50 text-blue-700'">
+          :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-brand-50 text-brand-700'">
           <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
           </svg>
         </span>
         <h2 class="text-xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Core Addons</h2>
         <span class="ml-auto text-xs font-medium px-2.5 py-1 rounded-full"
-          :class="isDark ? 'bg-brand-400/10 text-brand-300 border border-brand-400/18' : 'bg-blue-50 text-blue-700 border border-blue-200'">
+          :class="isDark ? 'bg-brand-400/10 text-brand-300 border border-brand-400/18' : 'bg-brand-50 text-brand-700 border border-brand-200'">
           {{ coreAddons.length }} addons
         </span>
       </div>
@@ -101,9 +101,9 @@
         <component :is="addon.url ? 'a' : 'div'" v-for="addon in coreAddons" :key="addon.name"
           v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
           class="glass-card rounded-xl p-5 flex items-start gap-4 transition-all hover:scale-[1.01] group"
-          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-blue-200']">
+          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-brand-200']">
           <span class="inline-flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0 text-lg"
-            :class="isDark ? 'bg-brand-400/10 text-brand-300' : 'bg-blue-50 text-blue-600'">
+            :class="isDark ? 'bg-brand-400/10 text-brand-300' : 'bg-brand-50 text-brand-600'">
             {{ addon.emoji }}
           </span>
           <div class="flex-1 min-w-0">
@@ -141,7 +141,7 @@
         <component :is="addon.url ? 'a' : 'div'" v-for="addon in optionalAddons" :key="addon.name"
           v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
           class="glass-card rounded-xl p-4 flex items-start gap-3 transition-all hover:scale-[1.01] group"
-          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-blue-200']">
+          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-brand-200']">
           <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg flex-shrink-0 text-base"
             :class="isDark ? 'bg-white/[0.04] text-silver-400' : 'bg-gray-50 text-gray-500'">
             {{ addon.emoji }}

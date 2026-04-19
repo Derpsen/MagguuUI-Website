@@ -240,7 +240,7 @@ onBeforeUnmount(() => { editor.value?.destroy() })
   color: #111827;
 }
 .light .tiptap-content .ProseMirror a {
-  color: #2563EB;
+  color: #b5745c;
 }
 .light .tiptap-content .ProseMirror code {
   background: #f3f4f6;

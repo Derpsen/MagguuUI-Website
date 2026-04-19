@@ -16,7 +16,7 @@
 
     <!-- Header -->
     <div class="text-center mb-14 fade-in heading-glow">
-      <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
+      <h1 class="hero-serif text-4xl sm:text-5xl font-medium tracking-tight mb-4 flex items-center justify-center gap-3">
         <UIcon name="i-heroicons-clock" class="w-8 h-8 text-brand-400 flex-shrink-0" />
         <span class="text-gradient">Changelog</span>
       </h1>
@@ -32,7 +32,7 @@
     <div v-if="visibleGroups?.length" class="relative">
       <!-- Vertical line -->
       <div class="absolute left-[18px] sm:left-[22px] top-2 bottom-2 w-px"
-        :class="isDark ? 'bg-brand-400/10' : 'bg-blue-100'" />
+        :class="isDark ? 'bg-brand-400/10' : 'bg-brand-100'" />
 
       <div class="space-y-6">
         <div v-for="(group, groupIdx) in visibleGroups" :key="group.dateKey"
@@ -42,11 +42,11 @@
           <div class="absolute left-[12px] sm:left-[16px] top-7 w-3 h-3 rounded-full ring-4 transition-all"
             :class="isDark
               ? 'bg-silver-600 ring-brand-950 group-hover:bg-brand-400 group-hover:ring-brand-400/20 group-hover:shadow-[0_0_8px_rgba(59,139,255,0.3)]'
-              : 'bg-gray-300 ring-white group-hover:bg-blue-500 group-hover:ring-blue-100 group-hover:shadow-[0_0_8px_rgba(37,99,235,0.3)]'" />
+              : 'bg-gray-300 ring-white group-hover:bg-brand-500 group-hover:ring-brand-100 group-hover:shadow-[0_0_8px_rgba(37,99,235,0.3)]'" />
 
           <!-- Date Group Card -->
           <div class="glass-card rounded-2xl p-6 sm:p-7 transition-all"
-            :class="isDark ? 'group-hover:border-brand-400/15 group-hover:shadow-lg group-hover:shadow-brand-400/5' : 'group-hover:border-blue-200 group-hover:shadow-lg group-hover:shadow-blue-100'">
+            :class="isDark ? 'group-hover:border-brand-400/15 group-hover:shadow-lg group-hover:shadow-brand-400/5' : 'group-hover:border-brand-200 group-hover:shadow-lg group-hover:shadow-blue-100'">
 
             <!-- Date Header -->
             <div class="flex items-center gap-3 mb-5">
@@ -56,7 +56,7 @@
               </span>
               <span v-if="groupIdx === 0 && !hasLoadedMore"
                 class="text-xs font-semibold px-2 py-0.5 rounded-full"
-                :class="isDark ? 'bg-brand-400/15 text-brand-300' : 'bg-blue-50 text-blue-600'">
+                :class="isDark ? 'bg-brand-400/15 text-brand-300' : 'bg-brand-50 text-brand-600'">
                 Latest
               </span>
             </div>

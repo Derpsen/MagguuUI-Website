@@ -31,7 +31,7 @@
         </NuxtLink>
         <button @click="handleError" class="px-6 py-3 rounded-xl font-semibold transition-all inline-flex items-center gap-2"
           :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'"
-          :style="isDark ? 'background: rgba(15, 28, 52, 0.6); border: 1px solid rgba(59, 139, 255, 0.1);' : 'background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(59, 139, 255, 0.12);'">
+          :style="isDark ? 'background: rgba(32, 28, 24, 0.6); border: 1px solid rgba(201, 135, 106, 0.1);' : 'background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(201, 135, 106, 0.12);'">
           Go Back
         </button>
       </div>

@@ -28,7 +28,7 @@
         <button
           @click="editMode = true"
           class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-          :class="isDark ? 'bg-brand-400/10 text-brand-400 hover:bg-brand-400/20 border border-brand-400/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'"
+          :class="isDark ? 'bg-brand-400/10 text-brand-400 hover:bg-brand-400/20 border border-brand-400/20' : 'bg-brand-50 text-brand-600 hover:bg-brand-100 border border-brand-200'"
         >
           <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
           Edit Page
@@ -47,10 +47,10 @@
       <div
         v-if="editMode"
         class="flex items-center gap-2 mb-5 px-3 py-2 rounded-lg"
-        :class="isDark ? 'bg-brand-400/10 border border-brand-400/20' : 'bg-blue-50 border border-blue-200'"
+        :class="isDark ? 'bg-brand-400/10 border border-brand-400/20' : 'bg-brand-50 border border-brand-200'"
       >
         <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
-        <span class="text-xs font-medium" :class="isDark ? 'text-brand-400' : 'text-blue-600'">Edit mode — change text below, then click Save</span>
+        <span class="text-xs font-medium" :class="isDark ? 'text-brand-400' : 'text-brand-600'">Edit mode — change text below, then click Save</span>
       </div>
     </Transition>
 
@@ -67,7 +67,7 @@
 
     <section class="mb-8 sm:mb-10 fade-in">
       <div v-if="!editMode" class="max-w-4xl mx-auto text-center mb-7 sm:mb-8 heading-glow">
-        <h1 class="text-4xl sm:text-5xl font-bold leading-tight mb-4 flex items-center justify-center gap-3">
+        <h1 class="hero-serif text-4xl sm:text-5xl font-medium tracking-tight leading-tight mb-4 flex items-center justify-center gap-3">
           <span class="guide-heading-icon">
             <UIcon name="i-heroicons-book-open" class="w-7 h-7 sm:w-8 sm:h-8" />
           </span>
@@ -88,7 +88,7 @@
           <input
             v-model="editableTitle"
             class="w-full text-2xl sm:text-3xl font-bold rounded-2xl px-4 py-3 border-2 transition-colors outline-none"
-            :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-blue-200 focus:border-blue-500'"
+            :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-brand-200 focus:border-brand-500'"
           >
         </div>
         <div>
@@ -97,7 +97,7 @@
             v-model="editableSubtitle"
             rows="3"
             class="w-full text-base rounded-2xl px-4 py-3 border-2 transition-colors outline-none resize-none"
-            :class="isDark ? 'bg-brand-800/50 text-silver-300 border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-700 border-blue-200 focus:border-blue-500'"
+            :class="isDark ? 'bg-brand-800/50 text-silver-300 border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-700 border-brand-200 focus:border-brand-500'"
           ></textarea>
         </div>
       </div>
@@ -119,7 +119,7 @@
             class="relative rounded-[calc(2rem-1px)] p-5 sm:p-7 lg:p-8 transition-all"
             :class="isDark
               ? 'bg-[linear-gradient(160deg,rgba(10,20,40,0.96),rgba(9,18,35,0.92))] border border-brand-400/10 group-hover:border-brand-400/20'
-              : 'bg-[linear-gradient(160deg,rgba(255,255,255,0.98),rgba(247,250,255,0.96))] border border-blue-100 group-hover:border-blue-200 group-hover:shadow-xl group-hover:shadow-blue-100/50'"
+              : 'bg-[linear-gradient(160deg,rgba(255,255,255,0.98),rgba(247,250,255,0.96))] border border-brand-100 group-hover:border-brand-200 group-hover:shadow-xl group-hover:shadow-blue-100/50'"
           >
             <div class="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-6">
               <div class="sm:w-24 sm:flex-shrink-0">
@@ -171,7 +171,7 @@
                       <input
                         v-model="step.editableTitle"
                         class="w-full font-semibold rounded-xl px-3 py-2 border-2 transition-colors outline-none"
-                        :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-blue-200 focus:border-blue-500'"
+                        :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-brand-200 focus:border-brand-500'"
                       >
                     </div>
                     <div>
@@ -190,7 +190,7 @@
 
       <aside class="space-y-4 xl:sticky xl:top-28">
         <div class="glass-card rounded-[1.75rem] p-5 sm:p-6 fade-in">
-          <p class="text-xs font-semibold uppercase tracking-[0.22em] mb-2" :class="isDark ? 'text-brand-300' : 'text-blue-600'">Quick Flow</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] mb-2" :class="isDark ? 'text-brand-300' : 'text-brand-600'">Quick Flow</p>
           <h2 class="text-xl font-bold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Jump to any step</h2>
           <p class="text-sm leading-relaxed mb-5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
             Use this as a fast checklist while setting up your first character or re-checking a specific step.
@@ -202,7 +202,7 @@
               :key="`jump-${step.num}`"
               :href="`#step-${idx + 1}`"
               class="guide-jump-link flex items-center gap-3 rounded-2xl px-3 py-3 transition-all"
-              :class="isDark ? 'hover:bg-white/[0.04] border border-white/6' : 'hover:bg-blue-50 border border-blue-100'"
+              :class="isDark ? 'hover:bg-white/[0.04] border border-white/6' : 'hover:bg-brand-50 border border-brand-100'"
             >
               <span class="guide-jump-number" :style="stepNumberMiniStyle(idx)">
                 {{ String(idx + 1).padStart(2, '0') }}
@@ -248,7 +248,7 @@
       <div class="section-divider mb-10" />
       <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-[0.22em] mb-2" :class="isDark ? 'text-brand-300' : 'text-blue-600'">Next Moves</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] mb-2" :class="isDark ? 'text-brand-300' : 'text-brand-600'">Next Moves</p>
           <h2 class="text-2xl sm:text-3xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Your setup is ready. Now make it yours.</h2>
         </div>
         <p class="text-sm max-w-md" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
@@ -258,7 +258,7 @@
 
       <div class="grid md:grid-cols-3 gap-4">
         <NuxtLink to="/strings" class="guide-next-card group">
-          <div class="guide-next-icon" :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-blue-50 text-blue-600'">
+          <div class="guide-next-icon" :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-brand-50 text-brand-600'">
             <UIcon name="i-heroicons-bolt" class="w-5 h-5" />
           </div>
           <h3 class="text-lg font-semibold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Import Strings</h3>
@@ -339,7 +339,7 @@ const STEP_META = [
 ] as const
 
 const STEP_ACCENTS = [
-  { solid: '#3B8BFF', soft: 'rgba(59, 139, 255, 0.14)', glow: 'rgba(59, 139, 255, 0.24)', border: 'rgba(59, 139, 255, 0.35)' },
+  { solid: '#c9876a', soft: 'rgba(201, 135, 106, 0.14)', glow: 'rgba(201, 135, 106, 0.24)', border: 'rgba(201, 135, 106, 0.35)' },
   { solid: '#14b8a6', soft: 'rgba(20, 184, 166, 0.14)', glow: 'rgba(20, 184, 166, 0.24)', border: 'rgba(20, 184, 166, 0.35)' },
   { solid: '#f59e0b', soft: 'rgba(245, 158, 11, 0.14)', glow: 'rgba(245, 158, 11, 0.22)', border: 'rgba(245, 158, 11, 0.35)' },
   { solid: '#8b5cf6', soft: 'rgba(139, 92, 246, 0.14)', glow: 'rgba(139, 92, 246, 0.22)', border: 'rgba(139, 92, 246, 0.35)' },
@@ -493,10 +493,10 @@ async function saveAll() {
   width: 3.25rem;
   height: 3.25rem;
   border-radius: 1rem;
-  color: #60a5fa;
-  background: rgba(59, 139, 255, 0.12);
-  border: 1px solid rgba(59, 139, 255, 0.18);
-  box-shadow: 0 0 40px rgba(59, 139, 255, 0.12);
+  color: #d4a093;
+  background: rgba(201, 135, 106, 0.12);
+  border: 1px solid rgba(201, 135, 106, 0.18);
+  box-shadow: 0 0 40px rgba(201, 135, 106, 0.12);
   flex-shrink: 0;
 }
 
@@ -504,8 +504,8 @@ async function saveAll() {
 :global(html.light) .guide-heading-icon {
   color: #2563eb;
   background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(59, 139, 255, 0.14);
-  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.08);
+  border-color: rgba(201, 135, 106, 0.14);
+  box-shadow: 0 12px 30px rgba(181, 116, 92, 0.08);
 }
 
 .guide-step {
@@ -648,27 +648,27 @@ async function saveAll() {
   border-radius: 1.5rem;
   transition: all 0.25s ease;
   background: linear-gradient(160deg, rgba(11, 24, 45, 0.95), rgba(9, 18, 34, 0.92));
-  border: 1px solid rgba(59, 139, 255, 0.1);
+  border: 1px solid rgba(201, 135, 106, 0.1);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
 }
 
 .guide-next-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(59, 139, 255, 0.18);
+  border-color: rgba(201, 135, 106, 0.18);
   box-shadow: 0 22px 50px rgba(0, 0, 0, 0.24);
 }
 
 :global(.light) .guide-next-card,
 :global(html.light) .guide-next-card {
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.98), rgba(245, 248, 255, 0.96));
-  border-color: rgba(59, 139, 255, 0.12);
-  box-shadow: 0 16px 40px rgba(37, 99, 235, 0.08);
+  border-color: rgba(201, 135, 106, 0.12);
+  box-shadow: 0 16px 40px rgba(181, 116, 92, 0.08);
 }
 
 :global(.light) .guide-next-card:hover,
 :global(html.light) .guide-next-card:hover {
-  border-color: rgba(59, 139, 255, 0.2);
-  box-shadow: 0 22px 50px rgba(37, 99, 235, 0.12);
+  border-color: rgba(201, 135, 106, 0.2);
+  box-shadow: 0 22px 50px rgba(181, 116, 92, 0.12);
 }
 
 .guide-next-icon {
@@ -719,7 +719,7 @@ async function saveAll() {
 }
 
 .guide-content :deep(li)::marker {
-  color: rgba(59, 139, 255, 0.7);
+  color: rgba(201, 135, 106, 0.7);
 }
 
 .guide-content :deep(h1),
@@ -750,7 +750,7 @@ async function saveAll() {
   border-radius: 0.45rem;
   font-size: 0.85em;
   font-family: 'JetBrains Mono', monospace;
-  background: rgba(59, 139, 255, 0.12);
+  background: rgba(201, 135, 106, 0.12);
   color: #93bbff;
 }
 
@@ -760,7 +760,7 @@ async function saveAll() {
   border-radius: 1rem;
   overflow-x: auto;
   background: rgba(4, 10, 20, 0.55);
-  border: 1px solid rgba(59, 139, 255, 0.1);
+  border: 1px solid rgba(201, 135, 106, 0.1);
 }
 
 .guide-content :deep(pre code) {
@@ -769,7 +769,7 @@ async function saveAll() {
 }
 
 .guide-content :deep(blockquote) {
-  border-left: 3px solid rgba(59, 139, 255, 0.35);
+  border-left: 3px solid rgba(201, 135, 106, 0.35);
   padding-left: 1rem;
   margin: 0.8em 0;
   color: inherit;
@@ -778,7 +778,7 @@ async function saveAll() {
 
 .guide-content :deep(hr) {
   margin: 1rem 0;
-  border-color: rgba(59, 139, 255, 0.15);
+  border-color: rgba(201, 135, 106, 0.15);
 }
 
 .bar-enter-active,

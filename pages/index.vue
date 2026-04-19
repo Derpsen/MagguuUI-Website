@@ -22,20 +22,20 @@
             <!-- Badge — links to changelog, shows last change -->
             <NuxtLink to="/changelog" class="hero-badge inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium mb-10 fade-in cursor-pointer transition-all hover:scale-105"
               :style="isDark
-                ? 'background: rgba(59, 139, 255, 0.08); border: 1px solid rgba(59, 139, 255, 0.15); color: #60a5fa;'
-                : 'background: rgba(59, 139, 255, 0.06); border: 1px solid rgba(59, 139, 255, 0.15); color: #2563EB;'">
+                ? 'background: rgba(201, 135, 106, 0.08); border: 1px solid rgba(201, 135, 106, 0.15); color: #d4a093;'
+                : 'background: rgba(201, 135, 106, 0.06); border: 1px solid rgba(201, 135, 106, 0.15); color: #b5745c;'">
               <span>🚀</span>
               <span>{{ latestBadgeText }}</span>
             </NuxtLink>
 
-            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.1] mb-8 fade-in fade-in-delay-1">
+            <h1 class="hero-serif text-5xl sm:text-6xl lg:text-7xl font-medium leading-[1.05] tracking-tight mb-8 fade-in fade-in-delay-1">
               <span class="text-gradient">{{ content?.hero?.title || 'Your WoW Interface,' }}</span> <br />
               <span class="text-gradient">{{ content?.hero?.title2 || 'perfected.' }}</span>
             </h1>
 
             <div class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed fade-in fade-in-delay-2"
               :class="isDark ? 'text-silver-400' : 'text-gray-500'"
-              v-html="renderHomeRichText(content?.hero?.description || 'High-quality import strings for cooldowns, addon profiles, and more. Simply copy and paste into WoW.')"
+              v-html="renderHomeRichText(content?.hero?.description || 'MagguuUI is an in-game addon that installs and configures ElvUI, Plater, BigWigs, Details, Method Raid Tools and 20+ more addons for you. One click on Install All and your interface is done — no manual setup, no copy-pasting strings.')"
             />
 
             <div class="flex items-center justify-center gap-4 fade-in fade-in-delay-3">
@@ -52,7 +52,7 @@
 
             <div class="mt-14 w-full fade-in fade-in-delay-4">
               <div class="w-full max-w-md mx-auto h-px mb-10"
-                :class="isDark ? 'bg-gradient-to-r from-transparent via-brand-400/20 to-transparent' : 'bg-gradient-to-r from-transparent via-blue-200 to-transparent'" />
+                :class="isDark ? 'bg-gradient-to-r from-transparent via-brand-400/20 to-transparent' : 'bg-gradient-to-r from-transparent via-brand-200 to-transparent'" />
               <div class="flex items-center justify-center gap-16 sm:gap-24">
                 <div v-for="stat in stats" :key="stat.label" class="text-center">
                   <div class="text-4xl sm:text-5xl font-extrabold text-gradient mb-1.5">{{ stat.value }}</div>
@@ -63,9 +63,9 @@
           </div>
 
           <div class="mt-12 pt-10 border-t"
-            :class="isDark ? 'border-white/8' : 'border-blue-100'">
+            :class="isDark ? 'border-white/8' : 'border-brand-100'">
             <div ref="addonsHeading" class="text-center mb-8 scroll-reveal">
-              <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.addons?.title || 'Supported Addons' }}</span></h2>
+              <h2 class="hero-serif text-3xl sm:text-4xl font-medium tracking-tight mb-4"><span class="text-gradient">{{ content?.addons?.title || 'Supported Addons' }}</span></h2>
               <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'Profiles for the most popular WoW addons' }}</p>
             </div>
             <div v-if="addonNames.length" ref="addonPills" class="scroll-reveal scroll-reveal-delay-1">
@@ -92,7 +92,7 @@
       :style="{ opacity: scrollIndicatorOpacity }">
       <div class="scroll-bounce backdrop-blur-sm rounded-full p-2"
         :class="isDark ? 'bg-brand-950/60' : 'bg-white/60'">
-        <svg aria-hidden="true" class="w-7 h-7" :class="isDark ? 'text-brand-400/70' : 'text-blue-400'" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <svg aria-hidden="true" class="w-7 h-7" :class="isDark ? 'text-brand-400/70' : 'text-brand-400'" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </div>
@@ -103,7 +103,7 @@
     <!-- Features — scroll reveal -->
     <section aria-label="Features" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
       <div ref="featuresHeading" class="text-center mb-16 scroll-reveal">
-        <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.features_heading?.title || 'Why MagguuUI?' }}</span></h2>
+        <h2 class="hero-serif text-3xl sm:text-4xl font-medium tracking-tight mb-4"><span class="text-gradient">{{ content?.features_heading?.title || 'Why MagguuUI?' }}</span></h2>
         <p :class="isDark ? 'text-silver-500' : 'text-gray-500'" class="text-lg">{{ content?.features_heading?.subtitle || 'Everything you need — in one package' }}</p>
       </div>
       <div class="grid md:grid-cols-3 gap-6">
@@ -241,17 +241,17 @@ const features = computed(() => [
   {
     emoji: '⚡',
     title: content.value?.features?.feature_1_title || 'One-click setup',
-    text: content.value?.features?.feature_1_text || 'Install MagguuUI from CurseForge, log in once, click Install All. Every supported addon gets its profile applied automatically — missing addons are simply skipped.',
+    text: content.value?.features?.feature_1_text || 'Install MagguuUI, log in once, click **Install All**. Every supported addon — from ElvUI and Plater to MRT and BigWigs — gets its profile applied in the right order. Missing addons are skipped silently.',
   },
   {
     emoji: '🔄',
     title: content.value?.features?.feature_2_title || 'Always up to date',
-    text: content.value?.features?.feature_2_text || 'Profiles are tuned for the current WoW patch and updated regularly. MagguuUI tells you in chat or via popup whenever a new version is available.',
+    text: content.value?.features?.feature_2_text || 'Profiles are tuned for the current WoW patch and updated regularly. MagguuUI tells you in chat or via popup whenever a new version is available — and the in-game changelog shows you exactly what changed.',
   },
   {
     emoji: '🎯',
-    title: content.value?.features?.feature_3_title || 'Class layouts included',
-    text: content.value?.features?.feature_3_text || 'Cooldown layouts are pre-built for every class and specialization, and re-applied automatically when you change spec.',
+    title: content.value?.features?.feature_3_title || 'Class layouts + custom tags',
+    text: content.value?.features?.feature_3_text || 'Cooldown layouts are pre-built for every class and specialization and re-applied automatically on spec change. Native ElvUI tags `[mui:ilvl]` and `[mui:ilvl:setbonus]` drop item level and current tier set bonus directly into any unitframe name text.',
   },
 ])
 

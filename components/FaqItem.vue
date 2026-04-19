@@ -16,7 +16,7 @@
         {{ question }}
       </span>
       <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0 transition-transform duration-300"
-        :class="[open ? 'rotate-180' : '', isDark ? 'text-brand-400' : 'text-blue-500']"
+        :class="[open ? 'rotate-180' : '', isDark ? 'text-brand-400' : 'text-brand-500']"
         fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
       </svg>
@@ -81,5 +81,5 @@ html.dark .faq-answer :deep(strong) { color: #e2e8f0; }
 .faq-answer :deep(li:last-child) { margin-bottom: 0; }
 .faq-answer :deep(li > p) { margin-bottom: 0.3em; }
 .faq-answer :deep(code) { padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.85em; font-family: 'JetBrains Mono', ui-monospace, monospace; background: rgba(127, 127, 127, 0.12); }
-html.dark .faq-answer :deep(code) { background: rgba(59, 139, 255, 0.12); color: #cbd5e1; }
+html.dark .faq-answer :deep(code) { background: rgba(201, 135, 106, 0.12); color: #cbd5e1; }
 </style>

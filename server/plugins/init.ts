@@ -10,7 +10,7 @@
 import bcrypt from 'bcrypt'
 import { and, eq, count } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
-import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_SITE_CONTENT } from '~/server/database/defaultContent'
+import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_HOME_CONTENT, DEFAULT_SITE_CONTENT } from '~/server/database/defaultContent'
 import { users, siteContent, faqs, settings } from '~/server/database/schema'
 import { DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
@@ -106,47 +106,52 @@ export default defineNitroPlugin(async () => {
     }
 
     if (shouldSyncSeededContent) {
-      const existingGuideContent = db.select().from(siteContent)
-        .where(and(eq(siteContent.page, 'guide'), eq(siteContent.locale, DEFAULT_CONTENT_LOCALE)))
-        .all()
-      const guideByKey = new Map(existingGuideContent.map((item) => [`${item.section}:${item.key}:${item.locale}`, item]))
+      const syncSection = (page: 'home' | 'guide', entries: readonly typeof DEFAULT_GUIDE_CONTENT[number][]) => {
+        const existing = db.select().from(siteContent)
+          .where(and(eq(siteContent.page, page), eq(siteContent.locale, DEFAULT_CONTENT_LOCALE)))
+          .all()
+        const byKey = new Map(existing.map((item) => [`${item.section}:${item.key}:${item.locale}`, item]))
 
-      let guideInserted = 0
-      let guideUpdated = 0
+        let inserted = 0
+        let updated = 0
 
-      for (const entry of DEFAULT_GUIDE_CONTENT) {
-        const key = `${entry.section}:${entry.key}:${entry.locale}`
-        const existing = guideByKey.get(key)
+        for (const entry of entries) {
+          const key = `${entry.section}:${entry.key}:${entry.locale}`
+          const row = byKey.get(key)
 
-        if (!existing) {
-          db.insert(siteContent).values(entry).run()
-          guideInserted++
-          continue
+          if (!row) {
+            db.insert(siteContent).values(entry).run()
+            inserted++
+            continue
+          }
+
+          if (row.value !== entry.value
+            || row.sortOrder !== entry.sortOrder
+            || row.type !== entry.type) {
+            db.update(siteContent)
+              .set({
+                value: entry.value,
+                type: entry.type,
+                sortOrder: entry.sortOrder,
+                updatedAt: new Date(),
+              })
+              .where(eq(siteContent.id, row.id))
+              .run()
+            updated++
+          }
         }
 
-        if (existing.value !== entry.value
-          || existing.sortOrder !== entry.sortOrder
-          || existing.type !== entry.type) {
-          db.update(siteContent)
-            .set({
-              value: entry.value,
-              type: entry.type,
-              sortOrder: entry.sortOrder,
-              updatedAt: new Date(),
-            })
-            .where(eq(siteContent.id, existing.id))
-            .run()
-          guideUpdated++
+        if (inserted > 0 || updated > 0) {
+          console.log(`[Init] ${page} synced (inserted: ${inserted}, updated: ${updated})`)
+        } else {
+          console.log(`[Init] ${page} already up to date`)
         }
       }
 
-      if (guideInserted > 0 || guideUpdated > 0) {
-        console.log(`[Init] Guide synced (inserted: ${guideInserted}, updated: ${guideUpdated})`)
-      } else {
-        console.log('[Init] Guide already up to date')
-      }
+      syncSection('home', DEFAULT_HOME_CONTENT)
+      syncSection('guide', DEFAULT_GUIDE_CONTENT)
     } else {
-      console.log('[Init] Guide sync skipped (set NUXT_SYNC_SEEDED_CONTENT=true to force code-driven sync)')
+      console.log('[Init] Content sync skipped (set NUXT_SYNC_SEEDED_CONTENT=true to force code-driven sync)')
     }
   } catch (err) {
     console.error('[Init] Site content seeding failed:', err)

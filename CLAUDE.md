@@ -4,10 +4,10 @@ Public website + admin panel + REST API for WoW UI import strings (ElvUI, Plater
 
 ## Stack
 
-Nuxt 4.0 · Vue 3.5 · TypeScript 6 · NuxtUI 4.5 · Tailwind 4 (CSS-first) · Drizzle 0.45 · better-sqlite3 (WAL mode) · Node 24
+Nuxt 4.0 · Vue 3.5 · TypeScript 6 · NuxtUI 4.5 · Tailwind 4 (CSS-first) · Drizzle 0.45 · better-sqlite3 (WAL mode) · Node 24 · nuxt-og-image 6 (Satori renderer)
 
 Auth: JWT + HttpOnly cookie + WebAuthn/Passkeys (SimpleWebAuthn)
-Tooling: no ESLint/Prettier/tests. Validation via Zod.
+Tooling: no ESLint/Prettier. Validation via Zod. Smoke tests via Playwright (`tests/public-pages.spec.ts`, chromium-only).
 
 ## Architecture flow
 
@@ -24,17 +24,22 @@ Docker → Cloudflare Tunnel → ui.magguu.xyz
 npm run dev            # dev server
 npm run build          # production build (.output/)
 npm run verify         # clean + build + smoke test
+npm run verify:smoke   # smoke test against an already-built .output/
 npm run db:generate    # drizzle-kit: create migration files
 npm run db:push        # drizzle-kit: sync schema directly (dev)
 npm run db:studio      # DB GUI
 npm run db:seed        # seed default data
+npm run test           # Playwright smoke tests
+npm run test:ui        # Playwright UI mode
+npm run test:install   # Install chromium once (required before first test)
 ```
 
 ## Verification after changes
 
 1. `npm run build` — must succeed (no type errors surface here since TS is via Nuxt)
-2. Manual smoke: `npm run dev` and hit `/`, `/strings`, `/admin` golden paths
-3. For UI work: use `webapp-testing` skill with Playwright
+2. `npm run verify:smoke` — builds server, boots it on a free port, hits all public + admin endpoints, exercises the login/session/passkey/revoke/logout flow
+3. `npm test` — Playwright chromium smokes on the full public route list + color-mode toggle
+4. For UI work: use `webapp-testing` skill with Playwright for interactive debugging
 
 ## Critical gotchas
 
@@ -55,6 +60,16 @@ npm run db:seed        # seed default data
 **.env.example does NOT exist** — env vars documented in `docs/env-vars.md` only. Required: `NUXT_JWT_SECRET`, `NUXT_ADMIN_PASSWORD`. Optional: `NUXT_GITHUB_TOKEN`, `NUXT_WEBAUTHN_*`.
 
 **Runtime data is not in git** — `.env`, `data/*.db*`, `uploads/` are gitignored. Deploy preserves them across `git reset --hard`.
+
+**OG image templates need a `.satori.vue` suffix** — nuxt-og-image v6 requires the renderer suffix on component filenames. `components/OgImage/MagguuOg.satori.vue` is the site-wide default (set via `ogImage.defaults.component` in nuxt.config). Template uses flexbox with `display: flex` on every element — Satori requires it. Per-route customisation via `useOgImage()` / `defineOgImageComponent()` if needed.
+
+**Private-API headers for error responses** — admin/auth 401/403/5xx responses re-apply `Cache-Control: private, no-store, ...` via the `error` hook in `server/plugins/security-headers.ts`. h3's `sendError` otherwise defaults to `Cache-Control: no-cache`, which the verify-smoke script rejects. Don't remove the error hook.
+
+**Addon CHANGELOG autosync** — `server/api/v1/webhooks/github.post.ts` detects pushes to `Derpsen/MagguuUI` that touch `CHANGELOG.md`, fetches the file via raw GitHub, and upserts each `## v<semver> (<date>)` block into the `changelogs` table. Parser lives in `server/utils/parseAddonChangelog.ts`. Needs `NUXT_GITHUB_WEBHOOK_SECRET` env for signature verification.
+
+**Home content auto-seed on deploy** — `NUXT_SYNC_SEEDED_CONTENT=true` in the runtime env makes `server/plugins/init.ts` upsert `home`, `guide` and FAQ sections against `server/database/defaultContent.ts` on every startup. Without the env var, the seed only fires once on an empty DB.
+
+**Color mode default follows OS** — `nuxt.config.ts` has `colorMode.preference: 'system'` (fallback `dark`). Don't hardcode `'dark'` again; users complained about the flash.
 
 ## Deploy (Unraid)
 

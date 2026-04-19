@@ -135,7 +135,9 @@ async function verifyPublicApiFlows() {
 
   const heroTitle = homeContentBody?.data?.hero?.title
   if (typeof heroTitle !== 'string' || heroTitle.length === 0) {
-    fail('Public home content response did not include a non-empty hero title')
+    const keys = homeContentBody?.data ? Object.keys(homeContentBody.data) : []
+    const heroKeys = homeContentBody?.data?.hero ? Object.keys(homeContentBody.data.hero) : []
+    fail(`Public home content response did not include a non-empty hero title. sections=${JSON.stringify(keys)} hero_keys=${JSON.stringify(heroKeys)} body=${JSON.stringify(homeContentBody).slice(0, 800)}`)
   }
 
   const homeContentFallbackResponse = await fetch(`${baseUrl}/api/v1/content/home?locale=de`)

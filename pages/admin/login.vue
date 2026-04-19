@@ -24,7 +24,7 @@
             class="rounded-xl p-4 flex items-start gap-3 border"
             :class="isDark ? 'border-white/8 bg-white/[0.03]' : 'border-slate-200 bg-white'">
             <span class="inline-flex items-center justify-center w-10 h-10 rounded-lg flex-shrink-0"
-              :class="isDark ? 'bg-brand-500/12 text-brand-400' : 'bg-brand-50 text-brand-600'">
+              :class="isDark ? 'bg-blue-500/12 text-blue-400' : 'bg-blue-50 text-blue-600'">
               <UIcon :name="item.icon" class="w-5 h-5" />
             </span>
             <div>

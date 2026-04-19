@@ -1,8 +1,8 @@
 export default defineAppConfig({
   ui: {
     colors: {
-      primary: 'brand',
-      neutral: 'silver',
+      primary: 'blue',
+      neutral: 'slate',
     },
     button: {
       defaultVariants: {

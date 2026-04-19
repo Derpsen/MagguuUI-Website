@@ -5,7 +5,7 @@
 <template>
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <div class="text-center mb-12 fade-in heading-glow">
-      <h1 class="hero-serif text-4xl sm:text-5xl font-medium tracking-tight mb-4 flex items-center justify-center gap-3">
+      <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
         <svg aria-hidden="true" class="w-8 h-8 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
           <path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" />
         </svg>
@@ -278,7 +278,7 @@ await usePublicPageSeo({
 
 const inputClass = computed(() => isDark.value
   ? 'bg-brand-900/50 border border-brand-400/15 text-white focus:border-brand-400/30 focus:outline-none'
-  : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-brand-300 focus:outline-none')
+  : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-blue-300 focus:outline-none')
 
 const route = useRoute()
 const router = useRouter()

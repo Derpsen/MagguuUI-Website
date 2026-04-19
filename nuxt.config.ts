@@ -85,16 +85,10 @@ export default defineNuxtConfig({
   fonts: {
     families: [
       {
-        name: 'Inter',
+        name: 'Plus Jakarta Sans',
         provider: 'npm',
-        weights: ['400', '500', '600', '700'],
+        weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
-      },
-      {
-        name: 'Fraunces',
-        provider: 'npm',
-        weights: ['400', '500', '600', '700'],
-        styles: ['normal', 'italic'],
       },
       {
         name: 'JetBrains Mono',

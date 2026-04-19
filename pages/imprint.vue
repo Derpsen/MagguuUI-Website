@@ -5,7 +5,7 @@
 <template>
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <div class="text-center mb-12 fade-in heading-glow">
-      <h1 class="hero-serif text-4xl sm:text-5xl font-medium tracking-tight mb-4 flex items-center justify-center gap-3">
+      <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
         <svg aria-hidden="true" class="w-8 h-8 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75c-1.104 0-2 .896-2 2v.75H9a2.25 2.25 0 00-2.25 2.25v5.25A2.25 2.25 0 009 19.5h6a2.25 2.25 0 002.25-2.25v-5.25A2.25 2.25 0 0015 9.5h-1v-.75c0-1.104-.896-2-2-2z" />
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 12.75v1.5" />

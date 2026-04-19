@@ -17,7 +17,7 @@
 
     <!-- Header -->
     <div class="text-center mb-14 fade-in heading-glow">
-      <h1 class="hero-serif text-4xl sm:text-5xl font-medium tracking-tight mb-4 flex items-center justify-center gap-3">
+      <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
         <UIcon name="i-heroicons-question-mark-circle" class="w-8 h-8 text-brand-400 flex-shrink-0" />
         <span class="text-gradient">FAQ</span>
       </h1>
@@ -40,7 +40,7 @@
           <!-- Section Header -->
           <div class="flex items-start gap-3.5 mb-6 px-1">
             <span class="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-              :class="isDark ? 'bg-brand-400/10 text-brand-400' : 'bg-brand-50 text-brand-600'">
+              :class="isDark ? 'bg-brand-400/10 text-brand-400' : 'bg-blue-50 text-blue-600'">
               <UIcon :name="section.icon" class="w-4.5 h-4.5" />
             </span>
             <div class="flex-1">

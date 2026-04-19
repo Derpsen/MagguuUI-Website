@@ -19,9 +19,8 @@
     "db:seed": "tsx server/database/seed.ts"
   },
   "dependencies": {
-    "@fontsource/fraunces": "^5.2.8",
-    "@fontsource/inter": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@iconify-json/heroicons": "^1.2.0",
     "@iconify-json/simple-icons": "^1.2.0",
     "@nuxt/ui": "^4.5.0",

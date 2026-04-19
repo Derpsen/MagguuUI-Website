@@ -22,21 +22,21 @@
           <div class="flex items-center justify-between gap-3 lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-center">
             <NuxtLink to="/" class="flex items-center group shrink-0">
               <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl transition-transform duration-300 group-hover:scale-[1.04]"
-                :class="isDark ? 'bg-white/[0.06] border border-white/10' : 'bg-white/90 border border-brand-100 shadow-sm'">
+                :class="isDark ? 'bg-white/[0.06] border border-white/10' : 'bg-white/90 border border-blue-100 shadow-sm'">
                 <img src="/logo.svg" alt="MagguuUI" width="28" height="28" class="w-7 h-7" />
               </span>
             </NuxtLink>
 
             <div class="hidden lg:flex justify-center px-4">
               <nav class="inline-flex items-center gap-1.5 rounded-full p-1"
-                :class="isDark ? 'bg-white/[0.03] border border-white/8' : 'bg-white/80 border border-brand-100 shadow-sm'">
+                :class="isDark ? 'bg-white/[0.03] border border-white/8' : 'bg-white/80 border border-blue-100 shadow-sm'">
                 <NuxtLink
                   v-for="link in navLinks" :key="link.to" :to="link.to"
                   class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-all"
                   :class="isActive(link.to)
                     ? isDark
                       ? 'bg-brand-400/12 text-brand-300'
-                      : 'bg-brand-50 text-brand-700'
+                      : 'bg-blue-50 text-blue-700'
                     : isDark
                       ? 'text-silver-400 hover:text-white hover:bg-white/[0.05]'
                       : 'text-gray-500 hover:text-gray-900 hover:bg-white'"
@@ -50,7 +50,7 @@
             <div class="flex items-center gap-2">
               <button
                 class="admin-icon-button"
-                :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-500 hover:text-gray-900 hover:bg-white/90 border border-brand-100 shadow-sm'"
+                :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-500 hover:text-gray-900 hover:bg-white/90 border border-blue-100 shadow-sm'"
                 :title="isDark ? 'Light Theme' : 'Dark Theme'"
                 :aria-label="isDark ? 'Light Theme' : 'Dark Theme'"
                 @click="setTheme(isDark ? 'light' : 'dark')"
@@ -59,17 +59,17 @@
                 <UIcon v-else name="i-heroicons-moon" class="w-4.5 h-4.5" />
               </button>
 
-              <div class="hidden lg:block h-8 w-px" :class="isDark ? 'bg-white/8' : 'bg-brand-100'" />
+              <div class="hidden lg:block h-8 w-px" :class="isDark ? 'bg-white/8' : 'bg-blue-100'" />
 
               <NuxtLink v-if="isLoggedIn" to="/admin"
                 class="hidden md:inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-all"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.05] border border-white/8' : 'text-gray-700 hover:text-gray-900 hover:bg-white/90 border border-brand-100 shadow-sm'">
+                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.05] border border-white/8' : 'text-gray-700 hover:text-gray-900 hover:bg-white/90 border border-blue-100 shadow-sm'">
                 <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4" />
                 Admin
               </NuxtLink>
               <NuxtLink v-else to="/admin/login"
                 class="hidden md:inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-all"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.05] border border-white/8' : 'text-gray-700 hover:text-gray-900 hover:bg-white/90 border border-brand-100 shadow-sm'">
+                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.05] border border-white/8' : 'text-gray-700 hover:text-gray-900 hover:bg-white/90 border border-blue-100 shadow-sm'">
                 <UIcon name="i-heroicons-lock-closed" class="w-4 h-4" />
                 Login
               </NuxtLink>
@@ -81,7 +81,7 @@
               </NuxtLink>
 
               <button class="md:hidden admin-icon-button"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-600 hover:text-gray-900 hover:bg-white/90 border border-brand-100 shadow-sm'"
+                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-600 hover:text-gray-900 hover:bg-white/90 border border-blue-100 shadow-sm'"
                 :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
                 @click="mobileOpen = !mobileOpen">
                 <UIcon :name="mobileOpen ? 'i-heroicons-x-mark' : 'i-heroicons-bars-3'" class="w-5 h-5" />
@@ -90,7 +90,7 @@
           </div>
 
           <div class="hidden md:flex lg:hidden items-center justify-between gap-3 mt-3 pt-3"
-            :class="isDark ? 'border-t border-white/8' : 'border-t border-brand-100'">
+            :class="isDark ? 'border-t border-white/8' : 'border-t border-blue-100'">
             <nav class="flex flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap">
               <NuxtLink
                 v-for="link in navLinks" :key="link.to" :to="link.to"
@@ -98,7 +98,7 @@
                 :class="isActive(link.to)
                   ? isDark
                     ? 'bg-brand-400/12 text-brand-300'
-                    : 'bg-brand-50 text-brand-700'
+                    : 'bg-blue-50 text-blue-700'
                   : isDark
                     ? 'text-silver-400 hover:text-white hover:bg-white/[0.05]'
                     : 'text-gray-500 hover:text-gray-900 hover:bg-white'"
@@ -127,7 +127,7 @@
           <div
             v-if="isLoggedIn"
             class="mt-3 px-1 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b"
-            :class="isDark ? 'border-white/8' : 'border-brand-100'"
+            :class="isDark ? 'border-white/8' : 'border-blue-100'"
           >
             <div class="flex items-center gap-3">
               <span class="inline-flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0"
@@ -139,7 +139,7 @@
                   Admin session active
                 </p>
                 <p class="text-xs sm:text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-                  Logged in as <strong class="font-semibold" :class="isDark ? 'text-brand-300' : 'text-brand-700'">{{ user?.username }}</strong>
+                  Logged in as <strong class="font-semibold" :class="isDark ? 'text-brand-300' : 'text-blue-700'">{{ user?.username }}</strong>
                 </p>
               </div>
             </div>
@@ -147,7 +147,7 @@
             <div class="flex items-center gap-2">
               <NuxtLink to="/admin"
                 class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all"
-                :class="isDark ? 'text-brand-300 hover:text-white hover:bg-white/[0.05]' : 'text-brand-700 hover:text-brand-800 hover:bg-white/70'">
+                :class="isDark ? 'text-brand-300 hover:text-white hover:bg-white/[0.05]' : 'text-blue-700 hover:text-blue-800 hover:bg-white/70'">
                 <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4" />
                 Admin Panel
               </NuxtLink>
@@ -195,7 +195,7 @@
                 :class="isActive(link.to)
                   ? isDark
                     ? 'text-white border-brand-400/25'
-                    : 'text-gray-900 border-brand-200'
+                    : 'text-gray-900 border-blue-200'
                   : isDark
                     ? 'text-silver-300'
                     : 'text-gray-600'"
@@ -204,10 +204,10 @@
                   :class="isActive(link.to)
                     ? isDark
                       ? 'bg-brand-400/14 text-brand-300'
-                      : 'bg-brand-50 text-brand-600'
+                      : 'bg-blue-50 text-blue-600'
                     : isDark
                       ? 'bg-white/[0.05] text-silver-400'
-                      : 'bg-white text-gray-500 border border-brand-100'">
+                      : 'bg-white text-gray-500 border border-blue-100'">
                   <UIcon :name="link.icon" class="w-4 h-4" />
                 </span>
                 <span class="flex-1">{{ link.label }}</span>
@@ -216,7 +216,7 @@
             </div>
 
             <div class="flex items-center justify-between gap-3 mt-4 pt-4 border-t"
-              :class="isDark ? 'border-white/8' : 'border-brand-100'">
+              :class="isDark ? 'border-white/8' : 'border-blue-100'">
               <button
                 class="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-all"
                 :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.05]' : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'"
@@ -257,7 +257,7 @@
                   : 'border-amber-200'
                 : isDark
                   ? 'border-brand-400/12'
-                  : 'border-brand-100'">
+                  : 'border-blue-100'">
               <div class="flex items-start gap-3">
                 <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0"
                   :class="maintenanceMode
@@ -266,7 +266,7 @@
                       : 'bg-amber-50 text-amber-700'
                     : isDark
                       ? 'bg-brand-400/12 text-brand-300'
-                      : 'bg-brand-50 text-brand-700'">
+                      : 'bg-blue-50 text-blue-700'">
                   <UIcon :name="maintenanceMode ? 'i-heroicons-wrench-screwdriver' : 'i-heroicons-megaphone'" class="w-4.5 h-4.5" />
                 </span>
                 <div>
@@ -302,7 +302,7 @@
         <div class="surface-panel rounded-2xl overflow-hidden">
           <!-- Brand strip -->
           <div class="relative px-6 py-6 sm:py-7 text-center"
-            :class="isDark ? 'bg-gradient-to-r from-brand-950/60 via-brand-900/40 to-brand-950/60' : 'bg-gradient-to-r from-brand-50 via-brand-100/60 to-brand-50'">
+            :class="isDark ? 'bg-gradient-to-r from-brand-950/60 via-brand-900/40 to-brand-950/60' : 'bg-gradient-to-r from-blue-50 via-blue-100/60 to-blue-50'">
             <div class="flex items-center justify-center gap-3 mb-2">
               <img src="/logo.svg" alt="MagguuUI" width="24" height="24" loading="lazy" class="w-6 h-6" />
               <span class="text-lg font-bold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-900'">{{ siteName }}</span>
@@ -329,7 +329,7 @@
             </div>
 
             <div class="mt-4 pt-3 border-t flex flex-col items-center gap-3 sm:flex-row sm:justify-between"
-              :class="isDark ? 'border-white/6' : 'border-brand-100'">
+              :class="isDark ? 'border-white/6' : 'border-blue-100'">
               <span class="text-[11px]" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
                 &copy; {{ new Date().getFullYear() }} {{ siteName }} &mdash; All rights reserved.
               </span>
@@ -432,7 +432,7 @@ const siteStatusLabel = computed(() => {
 })
 const siteStatusDot = computed(() => {
   if (maintenanceMode.value) return 'bg-amber-400'
-  if (bannerText.value) return 'bg-brand-400'
+  if (bannerText.value) return 'bg-blue-400'
   return 'bg-emerald-400'
 })
 const siteStatusClasses = computed(() => {
@@ -444,7 +444,7 @@ const siteStatusClasses = computed(() => {
   if (bannerText.value) {
     return isDark.value
       ? 'bg-brand-400/10 text-brand-300 border border-brand-400/18'
-      : 'bg-brand-50 text-brand-700 border border-brand-100'
+      : 'bg-blue-50 text-blue-700 border border-blue-100'
   }
   return isDark.value
     ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-400/20'

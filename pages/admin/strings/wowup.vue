@@ -215,13 +215,6 @@ const filtered = computed(() => {
   return items.value.filter(item => item.name.toLowerCase().includes(q))
 })
 
-function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`
-  const kb = bytes / 1024
-  if (kb < 1024) return `${kb.toFixed(1)} KB`
-  return `${(kb / 1024).toFixed(1)} MB`
-}
-
 const statCards = computed(() => {
   const visible = items.value.filter(i => i.isVisible).length
   const hidden = items.value.filter(i => !i.isVisible).length

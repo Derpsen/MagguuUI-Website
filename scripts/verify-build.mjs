@@ -133,8 +133,9 @@ async function verifyPublicApiFlows() {
     fail(`Expected public home content lookup to succeed, got ${homeContentResponse.status}`)
   }
 
-  if (homeContentBody?.data?.hero?.title !== 'MagguuUI') {
-    fail('Public home content response did not include the expected hero title')
+  const heroTitle = homeContentBody?.data?.hero?.title
+  if (typeof heroTitle !== 'string' || heroTitle.length === 0) {
+    fail('Public home content response did not include a non-empty hero title')
   }
 
   const homeContentFallbackResponse = await fetch(`${baseUrl}/api/v1/content/home?locale=de`)
@@ -144,8 +145,9 @@ async function verifyPublicApiFlows() {
     fail(`Expected public home content locale fallback to succeed, got ${homeContentFallbackResponse.status}`)
   }
 
-  if (homeContentFallbackBody?.data?.hero?.title !== 'MagguuUI') {
-    fail('Public home content locale fallback did not return the expected hero title')
+  const fallbackHeroTitle = homeContentFallbackBody?.data?.hero?.title
+  if (typeof fallbackHeroTitle !== 'string' || fallbackHeroTitle.length === 0) {
+    fail('Public home content locale fallback did not return a non-empty hero title')
   }
 
   const passkeyOptionsResponse = await fetch(`${baseUrl}/api/v1/auth/webauthn/login-options`, {

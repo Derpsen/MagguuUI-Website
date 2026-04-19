@@ -188,7 +188,7 @@
           <div v-if="stats.avgStringSizes?.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div v-for="item in stats.avgStringSizes" :key="item.addon" class="admin-subpanel">
               <p class="admin-row__eyebrow">{{ item.addon }}</p>
-              <p class="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{{ formatSize(item.avg_size) }}</p>
+              <p class="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{{ formatBytes(item.avg_size) }}</p>
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ item.count }} profiles</p>
             </div>
           </div>
@@ -403,6 +403,4 @@ function methodColor(method: string): string {
   return colors[method] || 'neutral'
 }
 
-// formatBytes is auto-imported from utils/adminHelpers.ts
-const formatSize = formatBytes
 </script>

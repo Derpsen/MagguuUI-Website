@@ -30,6 +30,9 @@ function verifySignature(payload: string, signature: string | null, secret: stri
   const expected = 'sha256=' + createHmac('sha256', secret).update(payload).digest('hex')
   // Always compute expected hash to prevent timing attacks on missing signatures
   if (!signature) return false
+  // Length check first — timingSafeEqual throws on mismatched lengths which
+  // leaks a slightly different timing signature than a real byte compare.
+  if (Buffer.byteLength(signature) !== Buffer.byteLength(expected)) return false
   try {
     return timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
   } catch {
@@ -67,6 +70,24 @@ export default defineEventHandler(async (event) => {
   if (bodyByteLength > MAX_WEBHOOK_BODY_BYTES) {
     throw createError({ statusCode: 413, message: 'Webhook payload too large' })
   }
+
+  // Webhook secret is REQUIRED — refuse all calls if unset, to prevent
+  // unauthenticated writes into the DB via the auto-pull path. Check BEFORE
+  // JSON.parse so an unauthenticated attacker can't force large-payload parse
+  // cycles on the server.
+  if (!webhookSecret) {
+    throw createError({ statusCode: 503, message: 'Webhook secret not configured' })
+  }
+  const bodyStr = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody)
+  if (!verifySignature(bodyStr, signature, webhookSecret)) {
+    db.insert(syncHistory).values({
+      triggerSource: `webhook-${eventType}`,
+      status: 'error',
+      details: 'Invalid webhook signature',
+    }).run()
+    throw createError({ statusCode: 401, message: 'Invalid signature' })
+  }
+
   interface WebhookBody {
     zen?: string
     action?: string
@@ -82,21 +103,6 @@ export default defineEventHandler(async (event) => {
     body = (typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody) as WebhookBody
   } catch {
     throw createError({ statusCode: 400, message: 'Invalid JSON payload' })
-  }
-
-  // Webhook secret is REQUIRED — refuse all calls if unset, to prevent
-  // unauthenticated writes into the DB via the auto-pull path.
-  if (!webhookSecret) {
-    throw createError({ statusCode: 503, message: 'Webhook secret not configured' })
-  }
-  const bodyStr = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody)
-  if (!verifySignature(bodyStr, signature, webhookSecret)) {
-    db.insert(syncHistory).values({
-      triggerSource: `webhook-${eventType}`,
-      status: 'error',
-      details: 'Invalid webhook signature',
-    }).run()
-    throw createError({ statusCode: 401, message: 'Invalid signature' })
   }
 
   // Handle ping event (GitHub sends this when webhook is first configured)

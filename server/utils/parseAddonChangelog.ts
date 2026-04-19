@@ -28,7 +28,7 @@ export function parseAddonChangelog(markdown: string): ChangelogEntry[] {
     if (!currentVersion) return
     const content = currentLines
       .join('\n')
-      .replace(/^---\s*$/m, '')   // strip HR separators
+      .replace(/^---\s*$/gm, '')   // strip HR separators (every occurrence)
       .trim()
     if (content) {
       entries.push({

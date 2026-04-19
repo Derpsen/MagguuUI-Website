@@ -33,10 +33,12 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Group by section
-  const grouped: Record<string, Record<string, string>> = {}
+  // Group by section — Object.create(null) avoids prototype pollution if an
+  // admin-entered section name ever matches a native Object key (__proto__,
+  // constructor, …). This endpoint is public so the guard is cheap insurance.
+  const grouped: Record<string, Record<string, string>> = Object.create(null)
   for (const row of merged) {
-    if (!grouped[row.section]) grouped[row.section] = {}
+    if (!grouped[row.section]) grouped[row.section] = Object.create(null)
     grouped[row.section][row.key] = row.value
   }
 

@@ -4,10 +4,7 @@
 -->
 
 <template>
-  <article
-    class="feature-card rounded-2xl p-5 flex flex-col gap-4 group"
-    :class="isDark ? '' : ''"
-  >
+  <article class="feature-card rounded-2xl p-5 flex flex-col gap-4 group">
     <!-- Header row: icon + badge -->
     <div class="flex items-start justify-between gap-3">
       <span

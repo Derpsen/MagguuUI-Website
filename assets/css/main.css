@@ -71,7 +71,6 @@ code, pre, .font-mono {
    DARK THEME (default)
    ═══════════════════════════════════════════════════ */
 
-.dark body,
 html.dark body {
   background: #0a1628;
 }
@@ -697,7 +696,6 @@ html.light .guide-content a:hover { color: #1d4ed8; }
    LIGHT THEME
    ═══════════════════════════════════════════════════ */
 
-.light body,
 html.light body {
   background: #f0f4f8;
 }

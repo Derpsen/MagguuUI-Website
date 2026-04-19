@@ -80,8 +80,8 @@
                 {{ primaryAction.label }}
               </NuxtLink>
 
-              <button class="md:hidden admin-icon-button"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-600 hover:text-gray-900 hover:bg-white/90 border border-blue-100 shadow-sm'"
+              <button class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-full transition-all"
+                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.08] border border-white/10 bg-white/[0.03]' : 'text-gray-600 hover:text-gray-900 hover:bg-white border border-blue-100 bg-white/90 shadow-sm'"
                 :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
                 @click="mobileOpen = !mobileOpen">
                 <UIcon :name="mobileOpen ? 'i-heroicons-x-mark' : 'i-heroicons-bars-3'" class="w-5 h-5" />

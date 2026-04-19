@@ -164,13 +164,15 @@ interface AddonCardData {
 
 // ── Core addon set ────────────────────────────────────────────────────────────
 
+// API key is the raw folder/module name (no spaces) per server/database export.
+// The spaced alias 'Northern Sky Raid Tools' is legacy — the live API only
+// emits 'NorthernSkyRaidTools'.
 const coreAddonNames = new Set([
   'ElvUI',
   'Plater',
   'Platynator',
   'BigWigs',
   'NorthernSkyRaidTools',
-  'Northern Sky Raid Tools',
   'Details',
   'BetterCooldownManager',
   'Ayije_CDM',
@@ -186,12 +188,12 @@ const emojiMap: Record<string, string> = {
   Platynator: '🛡️',
   BigWigs: '⚠️',
   Details: '📊',
+  Details_iLvlDisplay: '🔢',
   BetterCooldownManager: '⚡',
   Ayije_CDM: '⏳',
   Blizzard_EditMode: '🖼️',
   MRT: '📋',
   NorthernSkyRaidTools: '🧭',
-  'Northern Sky Raid Tools': '🧭',
   BuffReminders: '💡',
   TargetedSpells: '🔮',
   MiniCC: '🕐',
@@ -223,12 +225,12 @@ const staticMeta: Record<string, { display: string }> = {
   Platynator: { display: 'Platynator' },
   BigWigs: { display: 'BigWigs' },
   Details: { display: 'Details!' },
+  Details_iLvlDisplay: { display: 'Details iLvl Display' },
   BetterCooldownManager: { display: 'BetterCooldownManager' },
   Ayije_CDM: { display: 'Ayije CDM' },
   Blizzard_EditMode: { display: 'Blizzard EditMode' },
   MRT: { display: 'Method Raid Tools' },
   NorthernSkyRaidTools: { display: 'Northern Sky Raid Tools' },
-  'Northern Sky Raid Tools': { display: 'Northern Sky Raid Tools' },
   BuffReminders: { display: 'BuffReminders' },
   TargetedSpells: { display: 'TargetedSpells' },
   MiniCC: { display: 'MiniCC' },
@@ -252,9 +254,14 @@ const staticMeta: Record<string, { display: string }> = {
 
 // ── API fetch ─────────────────────────────────────────────────────────────────
 
+interface ProfilesResponse {
+  success: boolean
+  data: Record<string, ProfileItem[]>
+}
+
 const { data: profilesData, pending, error } = await useAsyncData(
   'addon-profiles',
-  () => $fetch<Record<string, ProfileItem[]>>('/api/v1/profiles'),
+  () => $fetch<ProfilesResponse>('/api/v1/profiles').then(r => r.data ?? {}),
   { default: () => ({}) as Record<string, ProfileItem[]> },
 )
 

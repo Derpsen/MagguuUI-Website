@@ -40,7 +40,7 @@ withDefaults(defineProps<{
   padding: 80px;
   background: linear-gradient(135deg, #0a1628 0%, #142848 60%, #1a3460 100%);
   color: #E0E6EE;
-  font-family: Plus Jakarta Sans, sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   position: relative;
   overflow: hidden;
 }
@@ -112,7 +112,8 @@ withDefaults(defineProps<{
   gap: 16px;
   font-size: 22px;
   color: #64748b;
-  font-family: JetBrains Mono, monospace;
+  font-family: 'JetBrains Mono', monospace;
 }
-.og-footer .dot { color: #3B8BFF; display: flex; }
+.og-footer > * { display: flex; }
+.og-footer .dot { color: #3B8BFF; }
 </style>

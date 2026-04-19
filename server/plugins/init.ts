@@ -15,7 +15,14 @@ import { users, siteContent, faqs, settings } from '~/server/database/schema'
 import { DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
 
-export default defineNitroPlugin(async () => {
+// Nitro's runNitroPlugins calls plugins without awaiting their promise.
+// That means the HTTP server starts accepting requests while an async
+// plugin is still in an `await`. On Linux CI, bcrypt.hash(password, 12)
+// is slow enough that the first request (from Nuxt's SSR on /) arrives
+// BEFORE the site_content seed runs, populating the SWR route cache
+// with an empty response for the next 120 seconds. Keep this plugin
+// synchronous: better-sqlite3 is sync, bcrypt offers hashSync.
+export default defineNitroPlugin(() => {
   const config = useRuntimeConfig()
   const shouldSyncSeededContent = process.env.NUXT_SYNC_SEEDED_CONTENT === 'true'
 
@@ -52,7 +59,7 @@ export default defineNitroPlugin(async () => {
         throw new Error('Refusing to create the first admin user in production with an empty or default password. Set NUXT_ADMIN_PASSWORD to a strong value first.')
       }
 
-      const hash = await bcrypt.hash(password, 12)
+      const hash = bcrypt.hashSync(password, 12)
 
       db.insert(users).values({
         username: 'admin',
@@ -67,7 +74,7 @@ export default defineNitroPlugin(async () => {
     } else {
       const forceReset = process.env.NUXT_FORCE_PASSWORD_RESET === 'true'
       if (forceReset && config.adminPassword) {
-        const hash = await bcrypt.hash(config.adminPassword, 12)
+        const hash = bcrypt.hashSync(config.adminPassword, 12)
         db.update(users)
           .set({ passwordHash: hash, updatedAt: new Date() })
           .where(eq(users.username, 'admin'))

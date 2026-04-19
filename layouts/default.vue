@@ -49,14 +49,14 @@
 
             <div class="flex items-center gap-2">
               <button
-                class="admin-icon-button"
-                :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.06] border border-white/8' : 'text-gray-500 hover:text-gray-900 hover:bg-white/90 border border-blue-100 shadow-sm'"
-                :title="isDark ? 'Light Theme' : 'Dark Theme'"
-                :aria-label="isDark ? 'Light Theme' : 'Dark Theme'"
+                class="public-theme-toggle inline-flex items-center justify-center w-10 h-10 rounded-full transition-all"
+                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.08] border border-white/10 bg-white/[0.03]' : 'text-gray-600 hover:text-gray-900 hover:bg-white border border-blue-100 bg-white/90 shadow-sm'"
+                :title="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
+                :aria-label="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
                 @click="setTheme(isDark ? 'light' : 'dark')"
               >
-                <UIcon v-if="isDark" name="i-heroicons-sun" class="w-4.5 h-4.5" />
-                <UIcon v-else name="i-heroicons-moon" class="w-4.5 h-4.5" />
+                <UIcon v-if="isDark" name="i-heroicons-sun" class="w-5 h-5" />
+                <UIcon v-else name="i-heroicons-moon" class="w-5 h-5" />
               </button>
 
               <div class="hidden lg:block h-8 w-px" :class="isDark ? 'bg-white/8' : 'bg-blue-100'" />

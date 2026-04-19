@@ -9,9 +9,10 @@
 import { createHmac, timingSafeEqual } from 'crypto'
 import { eq, and } from 'drizzle-orm'
 import { db } from '~/server/database'
-import { syncHistory, settings, profiles, wowupStrings, characterLayouts } from '~/server/database/schema'
+import { syncHistory, settings, profiles, wowupStrings, characterLayouts, changelogs } from '~/server/database/schema'
 import { createSyncChangelog } from '~/server/utils/syncChangelog'
 import { checkRateLimit, getClientIp } from '~/server/utils/rateLimit'
+import { parseAddonChangelog } from '~/server/utils/parseAddonChangelog'
 
 // GitHub webhook payloads are typically <1MB; cap well above that to reject abuse.
 const MAX_WEBHOOK_BODY_BYTES = 2 * 1024 * 1024 // 2 MB
@@ -71,6 +72,7 @@ export default defineEventHandler(async (event) => {
     action?: string
     release?: { tag_name?: string, body?: string, name?: string, published_at?: string, html_url?: string }
     ref?: string
+    repository?: { full_name?: string }
     commits?: Array<{ added?: string[], modified?: string[], removed?: string[], message?: string, id?: string }>
     pusher?: { name?: string }
     workflow_run?: { name?: string, conclusion?: string, html_url?: string, head_branch?: string }
@@ -354,6 +356,67 @@ export default defineEventHandler(async (event) => {
           success: true,
           data: { event: 'push', ref, commits: commitCount, autoPull: true, imported, errors },
         }
+      }
+    }
+
+    // Changelog sync — fires when CHANGELOG.md is touched in the addon repo
+    const repoName = body.repository?.full_name || ''
+    const changelogTouched = commits.some(c =>
+      [...(c.added || []), ...(c.modified || [])].includes('CHANGELOG.md')
+    )
+
+    if (repoName === 'Derpsen/MagguuUI' && changelogTouched) {
+      const token = config.githubToken as string | undefined
+      let clResult = { inserted: 0, updated: 0, skipped: 0 }
+
+      try {
+        const rawUrl = `https://raw.githubusercontent.com/Derpsen/MagguuUI/main/CHANGELOG.md`
+        const fetchHeaders: Record<string, string> = { 'User-Agent': 'MagguuUI-WebAdmin' }
+        if (token) fetchHeaders['Authorization'] = `Bearer ${token}`
+
+        const markdown = await $fetch<string>(rawUrl, { headers: fetchHeaders, timeout: 15000 })
+        const entries = parseAddonChangelog(markdown)
+
+        for (const entry of entries) {
+          const existing = db.select().from(changelogs).where(eq(changelogs.version, entry.version)).get()
+          if (existing) {
+            if (existing.content !== entry.content) {
+              db.update(changelogs)
+                .set({ content: entry.content, contentEn: entry.content, updatedAt: new Date() })
+                .where(eq(changelogs.id, existing.id))
+                .run()
+              clResult.updated++
+            } else {
+              clResult.skipped++
+            }
+          } else {
+            db.insert(changelogs).values({
+              version: entry.version,
+              content: entry.content,
+              contentEn: entry.content,
+              isPublished: true,
+              publishedAt: entry.publishedAt,
+            }).run()
+            clResult.inserted++
+          }
+        }
+
+        db.insert(syncHistory).values({
+          triggerSource: 'github-changelog',
+          status: 'success',
+          details: JSON.stringify(clResult),
+        }).run()
+
+        return apiSuccess({ ok: true, result: clResult })
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error('Changelog webhook error:', msg)
+        db.insert(syncHistory).values({
+          triggerSource: 'github-changelog',
+          status: 'error',
+          details: msg,
+        }).run()
+        throw createError({ statusCode: 500, message: 'Changelog sync failed' })
       }
     }
 

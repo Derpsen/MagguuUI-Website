@@ -1,0 +1,40 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          NUXT_JWT_SECRET: ci-dummy-secret-must-be-32-chars-long-XXXXXXXXXX
+          NUXT_ADMIN_PASSWORD: ci-dummy
+
+      - run: npm run verify:smoke
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: public
+          path: .output/public
+          retention-days: 7

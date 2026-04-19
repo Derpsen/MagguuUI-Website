@@ -18,8 +18,28 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxt/ui',
+    'nuxt-og-image',
     // @nuxt/icon, @nuxtjs/color-mode, @nuxt/fonts are auto-registered by @nuxt/ui v4
   ],
+
+  site: {
+    url: 'https://ui.magguu.xyz',
+    name: defaultSiteName,
+  },
+
+  ogImage: {
+    defaults: {
+      component: 'MagguuOg',
+      width: 1200,
+      height: 630,
+      cacheMaxAgeSeconds: 60 * 60 * 24 * 7,
+    },
+    fonts: [
+      'Plus+Jakarta+Sans:700',
+      'Plus+Jakarta+Sans:500',
+      'JetBrains+Mono:500',
+    ],
+  },
 
   app: {
     head: {
@@ -65,7 +85,7 @@ export default defineNuxtConfig({
   },
 
   colorMode: {
-    preference: 'dark',
+    preference: 'system',
     fallback: 'dark',
   },
 

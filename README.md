@@ -130,34 +130,34 @@ Important values include:
 Do not commit `.env`, runtime database files, or uploads.
 
 
-## Deployment
+## Deployment (Unraid via GHCR)
 
-This project is deployed as a Dockerized Nuxt app on Unraid.
+Images are built by GitHub Actions (`.github/workflows/docker.yml`) and published to GitHub Container Registry as `ghcr.io/derpsen/magguuui-website:latest` on every push to `main`. Semver tags (`v1.2.3`) are also published automatically.
 
-Current deploy flow uses a Git checkout plus a Docker rebuild script that skips rebuilding when the checked-out commit is already packaged in the local image.
+**Install on Unraid (first time):**
 
-Build and runtime files:
+1. Docker tab → *Add Container* → paste the template URL into the *Template:* field:
+   ```
+   https://raw.githubusercontent.com/Derpsen/MagguuUI-Website/main/unraid/magguuui-website.xml
+   ```
+   If your Unraid version does not accept a URL in that field, copy `unraid/magguuui-website.xml` to `/boot/config/plugins/dockerMan/templates-user/` via SMB or a Unraid terminal:
+   ```bash
+   curl -fsSL -o /boot/config/plugins/dockerMan/templates-user/magguuui-website.xml \
+     https://raw.githubusercontent.com/Derpsen/MagguuUI-Website/main/unraid/magguuui-website.xml
+   ```
+2. Fill in the required env vars (`NUXT_JWT_SECRET`, `NUXT_ADMIN_PASSWORD`). See `docs/env-vars.md` for the full list — anything optional can stay empty until you need it.
+3. Point the reverse-proxy / Cloudflare Tunnel at the container's port 3000.
+4. *Apply*. The image pulls from GHCR and starts.
 
-- `Dockerfile`
-- `rebuild.sh`
+**Update:**
 
-Deploy/update on the server:
+Docker tab → *Check for Updates* at the top → when `magguuui-website` shows **update ready**, click *Apply Update*. Unraid pulls the new image and recreates the container with the same config in ~20 seconds. No SSH, no local rebuild, no `git reset`.
 
-```bash
-cd /mnt/user/appdata/nuxt
-git fetch origin main
-git reset --hard origin/main
-bash rebuild.sh
-```
+**Volumes that must persist** (configured by the template):
+- `/app/data` — SQLite DB + WAL files
+- `/app/uploads` — admin-uploaded assets
 
-Notes:
-
-- Git access on the server must be configured via PAT or SSH
-- `.env`, `data/`, and `uploads/` stay outside Git and should be copied back only when migrating a fresh deploy folder
-- `git reset --hard origin/main` is intended only for a clean deploy copy with no local code changes
-- `rebuild.sh` now compares the checked-out Git commit against the image label `org.opencontainers.image.revision` and skips the build when nothing changed
-- `FORCE_REBUILD=1 bash rebuild.sh` forces a fresh rebuild if you explicitly want one
-- the Docker image now carries OCI metadata for commit and build time, and the build no longer does redundant `docker pull` calls outside `docker build --pull`
+**Migrating from the old `rebuild.sh` flow:** stop the old container, rename/move `/mnt/user/appdata/nuxt/data` → `/mnt/user/appdata/magguuui-website/data` (same for `uploads`), delete the old container and image, then install via the template above. The old `rebuild.sh` is removed — all builds happen in CI now.
 
 ## Data and Runtime Behavior
 

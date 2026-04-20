@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>magguuui-website</Name>
+  <Repository>ghcr.io/derpsen/magguuui-website:latest</Repository>
+  <Registry>https://ghcr.io/derpsen/magguuui-website</Registry>
+  <Branch>
+    <Tag>latest</Tag>
+    <TagDescription>Stable build from main (auto-published by GitHub Actions)</TagDescription>
+  </Branch>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/Derpsen/MagguuUI-Website/issues</Support>
+  <Project>https://github.com/Derpsen/MagguuUI-Website</Project>
+  <Overview>Public website + admin panel + REST API for WoW UI import strings (ElvUI, Plater, BigWigs, Details, etc.). Nuxt 4 + SQLite (WAL) + Drizzle. Runs headless behind a reverse proxy / Cloudflare Tunnel. Live: ui.magguu.xyz.</Overview>
+  <Category>Network:Web Tools:</Category>
+  <WebUI>http://[IP]:[PORT:3000]/</WebUI>
+  <TemplateURL/>
+  <Icon>https://raw.githubusercontent.com/Derpsen/MagguuUI-Website/main/public/logo.png</Icon>
+  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+
+  <Config Name="WebUI Port" Target="3000" Default="3000" Mode="tcp" Description="HTTP port of the Nuxt server. Expose to your reverse proxy / Cloudflare Tunnel, not the public internet." Type="Port" Display="always" Required="true" Mask="false">3000</Config>
+
+  <Config Name="AppData (SQLite)" Target="/app/data" Default="/mnt/user/appdata/magguuui-website/data" Mode="rw" Description="SQLite database + WAL files. Persists across container rebuilds." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/magguuui-website/data</Config>
+
+  <Config Name="Uploads" Target="/app/uploads" Default="/mnt/user/appdata/magguuui-website/uploads" Mode="rw" Description="Admin-uploaded files (logos, OG overrides, etc.). Persists across container rebuilds." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/magguuui-website/uploads</Config>
+
+  <Config Name="NUXT_JWT_SECRET" Target="NUXT_JWT_SECRET" Default="" Mode="" Description="JWT signing key. Generate 64 random chars: openssl rand -hex 32. Changing it invalidates all existing sessions." Type="Variable" Display="always" Required="true" Mask="true"/>
+
+  <Config Name="NUXT_ADMIN_PASSWORD" Target="NUXT_ADMIN_PASSWORD" Default="" Mode="" Description="First admin password (bcrypt-hashed on first startup). Can be changed via admin UI after login. Set NUXT_FORCE_PASSWORD_RESET=true to reset to this value on next boot." Type="Variable" Display="always" Required="true" Mask="true"/>
+
+  <Config Name="NUXT_AUTH_COOKIE_NAME" Target="NUXT_AUTH_COOKIE_NAME" Default="magguuui_session" Mode="" Description="HttpOnly session cookie name." Type="Variable" Display="advanced" Required="false" Mask="false">magguuui_session</Config>
+
+  <Config Name="NUXT_WEBAUTHN_RP_ID" Target="NUXT_WEBAUTHN_RP_ID" Default="ui.magguu.xyz" Mode="" Description="Passkey relying-party ID. Must be the hostname users access (no protocol, no port). Required for passkeys in production — they fail silently if wrong." Type="Variable" Display="always" Required="false" Mask="false">ui.magguu.xyz</Config>
+
+  <Config Name="NUXT_WEBAUTHN_ORIGIN" Target="NUXT_WEBAUTHN_ORIGIN" Default="https://ui.magguu.xyz" Mode="" Description="Passkey origin. Full URL incl. https://. Required for passkeys in production." Type="Variable" Display="always" Required="false" Mask="false">https://ui.magguu.xyz</Config>
+
+  <Config Name="NUXT_API_KEY" Target="NUXT_API_KEY" Default="" Mode="" Description="External API key for GitHub Actions / CI calling the website's API. Leave empty if not used." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+
+  <Config Name="NUXT_GITHUB_TOKEN" Target="NUXT_GITHUB_TOKEN" Default="" Mode="" Description="GitHub Personal Access Token with read+write access to NUXT_GITHUB_REPO. Used for content sync (addon CHANGELOG)." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+
+  <Config Name="NUXT_GITHUB_REPO" Target="NUXT_GITHUB_REPO" Default="Derpsen/MagguuUI" Mode="" Description="owner/repo used for content sync." Type="Variable" Display="advanced" Required="false" Mask="false">Derpsen/MagguuUI</Config>
+
+  <Config Name="NUXT_GITHUB_WEBHOOK_SECRET" Target="NUXT_GITHUB_WEBHOOK_SECRET" Default="" Mode="" Description="HMAC secret for /api/v1/webhooks/github signature verification. Generate with: openssl rand -hex 32" Type="Variable" Display="advanced" Required="false" Mask="true"/>
+
+  <Config Name="NUXT_SYNC_SEEDED_CONTENT" Target="NUXT_SYNC_SEEDED_CONTENT" Default="" Mode="" Description="Set to 'true' to re-sync default home/guide/FAQ content on every startup. Leave empty for one-time seed only." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <Config Name="NUXT_FORCE_PASSWORD_RESET" Target="NUXT_FORCE_PASSWORD_RESET" Default="" Mode="" Description="Set to 'true' ONCE to force-reset the admin password to NUXT_ADMIN_PASSWORD on next boot. Unset afterwards." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <Config Name="NODE_ENV" Target="NODE_ENV" Default="production" Mode="" Description="Keep as 'production' on Unraid." Type="Variable" Display="advanced" Required="false" Mask="false">production</Config>
+
+  <Config Name="HOST" Target="HOST" Default="0.0.0.0" Mode="" Description="Interface the Nuxt server binds to." Type="Variable" Display="advanced" Required="false" Mask="false">0.0.0.0</Config>
+
+  <Config Name="PORT" Target="PORT" Default="3000" Mode="" Description="Internal port of the Nuxt server (must match the WebUI Port above)." Type="Variable" Display="advanced" Required="false" Mask="false">3000</Config>
+</Container>

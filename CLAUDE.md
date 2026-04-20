@@ -71,9 +71,13 @@ npm run test:install   # Install chromium once (required before first test)
 
 **Color mode default follows OS** — `nuxt.config.ts` has `colorMode.preference: 'system'` (fallback `dark`). Don't hardcode `'dark'` again; users complained about the flash.
 
-## Deploy (Unraid)
+## Deploy (Unraid via GHCR)
 
-`bash rebuild.sh` on Unraid. Smart skip: compares `git rev-parse HEAD` vs Docker image OCI label `org.opencontainers.image.revision` and only rebuilds if changed. Force with `FORCE_REBUILD=1`.
+CI-driven. Pushes to `main` trigger `.github/workflows/docker.yml`, which builds and publishes `ghcr.io/derpsen/magguuui-website:latest` (+ sha tag, + semver on `v*` tags). Unraid pulls the image via the community template at `unraid/magguuui-website.xml`. Update the running container with Unraid's *Check for Updates* → *Apply Update* — no SSH, no local docker build. The old `rebuild.sh` was removed.
+
+Volumes the template mounts (and that must persist across updates):
+- `/app/data` — SQLite DB + WAL
+- `/app/uploads` — admin-uploaded assets
 
 ## References
 
@@ -97,4 +101,4 @@ npm run test:install   # Install chromium once (required before first test)
 - NEVER put modal content in default slot of UModal — use `#content`
 - NEVER enable SSR on admin pages — token flash will leak
 - NEVER commit `.env`, `data/`, or `uploads/`
-- NEVER skip the rebuild.sh commit check — `FORCE_REBUILD=1` only when intentional
+- NEVER hand-build the image on Unraid — `docker.yml` in CI is the single source of truth. Fix the image at source, push, use Unraid's *Apply Update*.

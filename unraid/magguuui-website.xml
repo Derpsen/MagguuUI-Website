@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Container version="2">
-  <Name>magguuui-website</Name>
+  <Name>MagguuUI</Name>
   <Repository>ghcr.io/derpsen/magguuui-website:latest</Repository>
   <Registry>https://ghcr.io/derpsen/magguuui-website</Registry>
   <Branch>
@@ -28,9 +28,9 @@
 
   <Config Name="WebUI Port" Target="3000" Default="3000" Mode="tcp" Description="HTTP port of the Nuxt server. Expose to your reverse proxy / Cloudflare Tunnel, not the public internet." Type="Port" Display="always" Required="true" Mask="false">3000</Config>
 
-  <Config Name="AppData (SQLite)" Target="/app/data" Default="/mnt/user/appdata/magguuui-website/data" Mode="rw" Description="SQLite database + WAL files. Persists across container rebuilds." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/magguuui-website/data</Config>
+  <Config Name="AppData (SQLite)" Target="/app/data" Default="/mnt/user/appdata/MagguuUI/data" Mode="rw" Description="SQLite database + WAL files. Persists across container rebuilds." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/MagguuUI/data</Config>
 
-  <Config Name="Uploads" Target="/app/uploads" Default="/mnt/user/appdata/magguuui-website/uploads" Mode="rw" Description="Admin-uploaded files (logos, OG overrides, etc.). Persists across container rebuilds." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/magguuui-website/uploads</Config>
+  <Config Name="Uploads" Target="/app/uploads" Default="/mnt/user/appdata/MagguuUI/uploads" Mode="rw" Description="Admin-uploaded files (logos, OG overrides, etc.). Persists across container rebuilds." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/MagguuUI/uploads</Config>
 
   <Config Name="NUXT_JWT_SECRET" Target="NUXT_JWT_SECRET" Default="" Mode="" Description="JWT signing key. Generate 64 random chars: openssl rand -hex 32. Changing it invalidates all existing sessions." Type="Variable" Display="always" Required="true" Mask="true"/>
 

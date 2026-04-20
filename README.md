@@ -157,7 +157,23 @@ Docker tab → *Check for Updates* at the top → when `magguuui-website` shows 
 - `/app/data` — SQLite DB + WAL files
 - `/app/uploads` — admin-uploaded assets
 
-**Migrating from the old `rebuild.sh` flow:** stop the old container, rename/move `/mnt/user/appdata/nuxt/data` → `/mnt/user/appdata/magguuui-website/data` (same for `uploads`), delete the old container and image, then install via the template above. The old `rebuild.sh` is removed — all builds happen in CI now.
+**Migrating from the old `rebuild.sh` / `Nuxt` container:**
+
+```bash
+# on Unraid terminal
+docker stop Nuxt
+docker rm Nuxt
+docker image rm nuxt || true
+
+# rename appdata (keeps DB + uploads)
+mv /mnt/user/appdata/nuxt /mnt/user/appdata/MagguuUI
+mkdir -p /mnt/user/appdata/MagguuUI/data /mnt/user/appdata/MagguuUI/uploads
+
+# move any leftover bot.db / uploads into place if they're not already there
+# (only needed if the old layout had them at appdata root instead of data/)
+```
+
+Then install via the template above. The old `rebuild.sh` is removed — all builds happen in CI now.
 
 ## Data and Runtime Behavior
 

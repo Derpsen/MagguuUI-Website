@@ -67,6 +67,8 @@ npm run test:install   # Install chromium once (required before first test)
 
 **Addon CHANGELOG autosync** — `server/api/v1/webhooks/github.post.ts` detects pushes to `Derpsen/MagguuUI` that touch `CHANGELOG.md`, fetches the file via raw GitHub, and upserts each `## v<semver> (<date>)` block into the `changelogs` table. Parser lives in `server/utils/parseAddonChangelog.ts`. Needs `NUXT_GITHUB_WEBHOOK_SECRET` env for signature verification.
 
+**Addon catalogue autosync** — same webhook also detects pushes that touch `MagguuUI.toc`, parses `RequiredDeps` + `OptionalDeps`, and upserts the public addon list (`addons` table) used by `/addons`. Sync logic in `server/utils/syncAddons.ts` (transactional), parser in `server/utils/parseAddonToc.ts`, slug-keyed metadata defaults in `server/database/addonMetadata.ts`. Admin-edited rows (`source='manual'`) are protected — the auto-sync only refreshes `tocName`/`category`/`isAvailable` on `source='toc'` rows. Manual entries (e.g. Blizzard EditMode) live in `ADDON_DEFAULTS` and are seeded on first boot. Manual resync via admin: `POST /api/v1/admin/addons/resync` (button on `/admin/data/addons`). All three webhook handlers (Data/*.lua autopull, .toc, CHANGELOG) now run independently per push instead of short-circuiting after the first.
+
 **Home content auto-seed on deploy** — `NUXT_SYNC_SEEDED_CONTENT=true` in the runtime env makes `server/plugins/init.ts` upsert `home`, `guide` and FAQ sections against `server/database/defaultContent.ts` on every startup. Without the env var, the seed only fires once on an empty DB.
 
 **Color mode default follows OS** — `nuxt.config.ts` has `colorMode.preference: 'system'` (fallback `dark`). Don't hardcode `'dark'` again; users complained about the flash.

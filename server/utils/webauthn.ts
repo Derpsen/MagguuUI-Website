@@ -21,8 +21,27 @@ import type {
   AuthenticationResponseJSON,
 } from '@simplewebauthn/server'
 import { eq, and } from 'drizzle-orm'
+import { z } from 'zod'
 import { db, sqlite } from '~/server/database'
 import { passkeys, webauthnChallenges, users } from '~/server/database/schema'
+
+// Authenticator transports per WebAuthn spec + simplewebauthn extensions.
+// Anything outside this list is dropped so malformed DB rows can't break
+// the registration/authentication options building.
+const transportsSchema = z.array(
+  z.enum(['ble', 'cable', 'hybrid', 'internal', 'nfc', 'smart-card', 'usb']),
+)
+type Transport = z.infer<typeof transportsSchema>[number]
+
+function parseTransports(raw: string | null | undefined): Transport[] | undefined {
+  if (!raw) return undefined
+  try {
+    const parsed = transportsSchema.safeParse(JSON.parse(raw))
+    return parsed.success ? parsed.data : undefined
+  } catch {
+    return undefined
+  }
+}
 
 // ─── Internal DB row types ─────────────────────────
 
@@ -123,7 +142,7 @@ export async function generatePasskeyRegistrationOptions(userId: number, usernam
 
   const excludeCredentials = existingPasskeys.map(p => ({
     id: p.credentialId,
-    transports: p.transports ? JSON.parse(p.transports) : undefined,
+    transports: parseTransports(p.transports),
   }))
 
   const options = await generateRegistrationOptions({
@@ -219,7 +238,7 @@ export async function generatePasskeyAuthenticationOptions(event?: H3Event) {
 
   const allowCredentials = allPasskeys.map(p => ({
     id: p.credentialId,
-    transports: p.transports ? JSON.parse(p.transports) : undefined,
+    transports: parseTransports(p.transports),
   }))
 
   const options = await generateAuthenticationOptions({
@@ -271,7 +290,7 @@ export async function verifyPasskeyAuthentication(credential: AuthenticationResp
         id: passkeyRow.credentialId,
         publicKey: base64urlToBuffer(passkeyRow.publicKey),
         counter: passkeyRow.counter,
-        transports: passkeyRow.transports ? JSON.parse(passkeyRow.transports) : undefined,
+        transports: parseTransports(passkeyRow.transports),
       },
     })
   } catch (e: unknown) {

@@ -30,16 +30,17 @@ function runCleanup() {
 
 export default defineNitroPlugin(() => {
   // Run cleanup every 30 minutes
-  setInterval(() => {
+  const cleanupInterval = setInterval(() => {
     try {
       runCleanup()
     } catch (e) {
       console.error('[Cleanup] Error:', e)
     }
   }, 30 * 60 * 1000)
+  cleanupInterval.unref?.()
 
   // Run once on startup (after 5s delay to let DB initialize)
-  setTimeout(() => {
+  const startupTimer = setTimeout(() => {
     try {
       runCleanup()
       console.log('[Cleanup] ✓ Initial cleanup complete')
@@ -47,4 +48,5 @@ export default defineNitroPlugin(() => {
       console.error('[Cleanup] Initial cleanup error:', e)
     }
   }, 5000)
+  startupTimer.unref?.()
 })

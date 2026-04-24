@@ -232,9 +232,9 @@ interface StatsData {
   hourlyCopies?: HourlyPoint[]
   topReferrers?: Array<{ referrer: string; visits: number }>
   topPages?: Array<{ path: string; views: number; unique_visitors: number }>
-  deviceBreakdown?: Array<Record<string, any>>
-  browserBreakdown?: Array<Record<string, any>>
-  osBreakdown?: Array<Record<string, any>>
+  deviceBreakdown?: Array<{ device_type?: string | null; count: number }>
+  browserBreakdown?: Array<{ browser?: string | null; count: number }>
+  osBreakdown?: Array<{ os?: string | null; count: number }>
   topCopied?: Array<{ name: string; string_type: string; copies: number }>
   copiesByType?: Array<{ string_type: string; copies: number }>
   topEndpoints?: Array<{ method: string; endpoint: string; calls: number }>

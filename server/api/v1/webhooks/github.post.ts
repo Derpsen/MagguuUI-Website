@@ -134,14 +134,11 @@ export default defineEventHandler(async (event) => {
       details: `Release ${release.tag_name}: ${release.name || 'Unnamed'}`,
     }).run()
 
-    return {
-      success: true,
-      data: {
-        event: 'release',
-        version,
-        name: release.name,
-      },
-    }
+    return apiSuccess({
+      event: 'release',
+      version,
+      name: release.name,
+    })
   }
 
   // Handle push events — auto-pull Data/*.lua changes into DB
@@ -358,10 +355,7 @@ export default defineEventHandler(async (event) => {
           details: `Push by ${pusher}: ${dataFiles.size} Data/ files changed, ${imported} imported, ${errors} errors`,
         }).run()
 
-        return {
-          success: true,
-          data: { event: 'push', ref, commits: commitCount, autoPull: true, imported, errors },
-        }
+        return apiSuccess({ event: 'push', ref, commits: commitCount, autoPull: true, imported, errors })
       }
     }
 
@@ -433,10 +427,7 @@ export default defineEventHandler(async (event) => {
       details: `Push to ${ref} by ${pusher} (${commitCount} commit${commitCount !== 1 ? 's' : ''})`,
     }).run()
 
-    return {
-      success: true,
-      data: { event: 'push', ref, commits: commitCount },
-    }
+    return apiSuccess({ event: 'push', ref, commits: commitCount })
   }
 
   // Handle workflow_run events (GitHub Actions completed)
@@ -451,10 +442,7 @@ export default defineEventHandler(async (event) => {
       details: `${name}: ${status}`,
     }).run()
 
-    return {
-      success: true,
-      data: { event: 'workflow_run', name, status },
-    }
+    return apiSuccess({ event: 'workflow_run', name, status })
   }
 
   // Unhandled event type — log and accept

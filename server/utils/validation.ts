@@ -23,7 +23,7 @@ export function validateBody<T>(schema: ZodSchema<T>, body: unknown): T {
     return schema.parse(body)
   } catch (error) {
     if (error instanceof ZodError) {
-      const message = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+      const message = error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
       throw createError({
         statusCode: 400,
         data: {

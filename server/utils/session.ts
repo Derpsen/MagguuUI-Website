@@ -112,14 +112,22 @@ export function revokeSession(sessionId: number) {
 
 export function revokeAllUserSessions(userId: number, exceptSessionId?: number) {
   if (exceptSessionId) {
+    const rows = sqlite.prepare(
+      'SELECT id FROM sessions WHERE user_id = ? AND id != ? AND is_revoked = 0'
+    ).all(userId, exceptSessionId) as Array<{ id: number }>
     sqlite.prepare(
       'UPDATE sessions SET is_revoked = 1 WHERE user_id = ? AND id != ? AND is_revoked = 0'
     ).run(userId, exceptSessionId)
+    for (const row of rows) lastActiveCache.delete(row.id)
   } else {
+    const rows = db.select({ id: sessions.id }).from(sessions)
+      .where(and(eq(sessions.userId, userId), eq(sessions.isRevoked, false)))
+      .all()
     db.update(sessions)
       .set({ isRevoked: true })
       .where(and(eq(sessions.userId, userId), eq(sessions.isRevoked, false)))
       .run()
+    for (const row of rows) lastActiveCache.delete(row.id)
   }
 }
 

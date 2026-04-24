@@ -4,7 +4,7 @@
 
 - Project: `MagguuUI-Website`
 - Stack: Nuxt 4, Vue 3, TypeScript, Nuxt UI v4, Tailwind v4, SQLite (`better-sqlite3`), Drizzle ORM
-- Deployment: Docker on Unraid via `rebuild.sh`
+- Deployment: Docker on Unraid — image built by `.github/workflows/docker.yml` and published to GHCR; Unraid pulls via *Check for Updates* → *Apply Update*
 - Repo contains the public website, admin panel, and Nitro/API backend in one app
 
 ## Important Paths
@@ -13,7 +13,7 @@
 - Frontend: `pages/`, `components/`, `layouts/`, `assets/css/main.css`, `composables/`
 - Backend: `server/api/`, `server/utils/`, `server/plugins/`, `server/middleware/`
 - Database: `server/database/index.ts`, `server/database/schema.ts`, `drizzle.config.ts`
-- Deployment: `Dockerfile`, `.dockerignore`, `rebuild.sh`
+- Deployment: `Dockerfile`, `.dockerignore`, `.github/workflows/docker.yml`, `unraid/magguuui-website.xml`
 - Verification: `scripts/verify-build.mjs`
 
 ## Collaboration Notes
@@ -61,7 +61,7 @@
 ## Operational Notes
 
 - Runtime data lives outside Git in `data/` and `uploads/`.
-- `rebuild.sh` compares the Git commit against an OCI label and skips unnecessary builds.
+- Image tags are built and published by GitHub Actions on push to `main` and on `v*` tags; Unraid template pulls the published image.
 - Container intentionally runs as root because of the current Unraid volume setup.
 
 ## Latest Verification

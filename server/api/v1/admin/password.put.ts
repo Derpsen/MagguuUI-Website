@@ -9,6 +9,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { users } from '~/server/database/schema'
 import { validateBody, passwordChangeSchema } from '~/server/utils/validation'
+import { revokeAllUserSessions } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
   const auth = requireAuth(event)
@@ -33,6 +34,11 @@ export default defineEventHandler(async (event) => {
     .set({ passwordHash: hash, updatedAt: new Date() })
     .where(eq(users.id, auth.userId))
     .run()
+
+  // Revoke all other active sessions — the current session keeps working, any
+  // other device/browser has to re-authenticate with the new password.
+  const currentSessionId = event.context.sessionId as number | undefined
+  revokeAllUserSessions(auth.userId, currentSessionId)
 
   return apiSuccess({ message: 'Password changed' })
 })

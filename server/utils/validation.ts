@@ -64,6 +64,26 @@ export const wowupCreateSchema = z.object({
 
 export const wowupUpdateSchema = wowupCreateSchema.partial()
 
+// ─── Addons ──────────────────────────────────────
+
+export const addonCategorySchema = z.enum(['required', 'core', 'optional'])
+
+export const addonCreateSchema = z.object({
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase, digits, or hyphens'),
+  tocName: z.string().max(100).optional().nullable(),
+  name: z.string().min(1).max(150),
+  category: addonCategorySchema,
+  emoji: z.string().max(10).optional().nullable(),
+  description: z.string().max(2000).optional().nullable(),
+  url: z.string().url().max(500).optional().nullable(),
+  sortOrder: z.number().int().optional(),
+  isVisible: z.boolean().optional(),
+})
+
+export const addonUpdateSchema = addonCreateSchema.partial().extend({
+  isAvailable: z.boolean().optional(),
+})
+
 // ─── Character Layouts ────────────────────────────
 
 export const layoutCreateSchema = z.object({

@@ -1,8 +1,9 @@
 <!--
   Addons Page — Required, core, and optional addons configured by MagguuUI.
-  List mirrors the Setup/AddOns handlers shipped in the WoW addon so every
-  supported addon is visible here regardless of whether profile data has
-  landed in the CMS yet.
+  Rendered from the `addons` table, which the GitHub webhook keeps in sync
+  with `MagguuUI.toc` (OptionalDeps + RequiredDeps). Admin can override any
+  field per-row and add manual entries (e.g. Blizzard EditMode) that aren't
+  expressed as a .toc dependency.
 -->
 
 <template>
@@ -57,7 +58,7 @@
         </span>
       </div>
       <div class="space-y-3">
-        <a v-for="addon in requiredAddons" :key="addon.name"
+        <a v-for="addon in requiredAddons" :key="addon.slug"
           :href="addon.url" target="_blank" rel="noopener noreferrer"
           class="glass-card rounded-xl p-5 flex items-start gap-4 transition-all hover:scale-[1.01] block cursor-pointer group"
           :class="isDark ? 'hover:border-brand-400/20' : 'hover:border-blue-200'">
@@ -101,7 +102,7 @@
         Strongly recommended &mdash; these addons form the backbone of the MagguuUI experience.
       </p>
       <div class="grid sm:grid-cols-2 gap-3">
-        <component :is="addon.url ? 'a' : 'div'" v-for="addon in coreAddons" :key="addon.name"
+        <component :is="addon.url ? 'a' : 'div'" v-for="addon in coreAddons" :key="addon.slug"
           v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
           class="glass-card rounded-xl p-5 flex items-start gap-4 transition-all hover:scale-[1.01] group"
           :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-blue-200']">
@@ -141,7 +142,7 @@
         Install any of these for extra functionality &mdash; MagguuUI will configure them automatically if present.
       </p>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <component :is="addon.url ? 'a' : 'div'" v-for="addon in optionalAddons" :key="addon.name"
+        <component :is="addon.url ? 'a' : 'div'" v-for="addon in optionalAddons" :key="addon.slug"
           v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
           class="glass-card rounded-xl p-4 flex items-start gap-3 transition-all hover:scale-[1.01] group"
           :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-blue-200']">
@@ -183,199 +184,22 @@ usePublicPageSeo({
 })
 
 interface Addon {
+  slug: string
   name: string
-  emoji: string
-  description: string
-  url?: string
+  emoji: string | null
+  description: string | null
+  url: string | null
 }
 
-const CF = 'https://www.curseforge.com/wow/addons'
+interface AddonsResponse {
+  required: Addon[]
+  core: Addon[]
+  optional: Addon[]
+  total: number
+}
 
-const requiredAddons: Addon[] = [
-  {
-    name: 'ElvUI',
-    emoji: '🎨',
-    description: 'The complete UI replacement framework that MagguuUI is built on. Handles action bars, unit frames, chat, bags, maps, and more. Required version: 15.00 or higher.',
-    url: 'https://tukui.org/elvui',
-  },
-]
-
-const coreAddons: Addon[] = [
-  {
-    name: 'Plater',
-    emoji: '🎯',
-    description: 'Nameplate addon with per-mob customization, scripting, and mod support.',
-    url: `${CF}/plater-nameplates`,
-  },
-  {
-    name: 'BigWigs',
-    emoji: '⏱️',
-    description: 'Boss mod for raid and dungeon encounters with timers, alerts, and proximity.',
-    url: `${CF}/big-wigs`,
-  },
-  {
-    name: 'Details!',
-    emoji: '📊',
-    description: 'Damage and healing meter with extensive statistics and plugin support.',
-    url: `${CF}/details`,
-  },
-  {
-    name: 'BetterCooldownManager',
-    emoji: '⚡',
-    description: 'Tracks party and raid cooldowns with a clean bar/icon display.',
-    url: `${CF}/bettercooldownmanager`,
-  },
-  {
-    name: 'Ayije CDM',
-    emoji: '⏳',
-    description: 'Cooldown manager with a compact interface for tracking group abilities.',
-    url: 'https://wago.io/ayijeCDM',
-  },
-  {
-    name: 'Method Raid Tools',
-    emoji: '📋',
-    description: 'Raid notes, cooldown assignments, marks, raid groups, and timers — the competitive-raid toolkit.',
-    url: `${CF}/method-raid-tools`,
-  },
-  {
-    name: 'Blizzard EditMode',
-    emoji: '🖼️',
-    description: 'Built-in WoW layout system — MagguuUI applies a pre-configured layout automatically.',
-  },
-]
-
-const optionalAddons: Addon[] = [
-  {
-    name: 'Platynator',
-    emoji: '🛡️',
-    description: 'Additional nameplate tweaks and color coding for Plater.',
-    url: `${CF}/platynator`,
-  },
-  {
-    name: 'Northern Sky Raid Tools',
-    emoji: '🧭',
-    description: 'Raid assignment and note distribution tool for organized groups.',
-    url: `${CF}/northern-sky-raid-tools`,
-  },
-  {
-    name: 'Details iLvl Display',
-    emoji: '🔢',
-    description: 'Adds item level and tier-set bonus columns to Details! bars.',
-    url: `${CF}/details-ilvldisplay`,
-  },
-  {
-    name: 'BuffReminders',
-    emoji: '💡',
-    description: 'Reminds you to apply missing buffs like food, flask, or rune.',
-    url: `${CF}/buffreminders`,
-  },
-  {
-    name: 'TargetedSpells',
-    emoji: '🔮',
-    description: 'Shows incoming spells targeted at you with visual indicators.',
-    url: `${CF}/targetedspells`,
-  },
-  {
-    name: 'MiniCC',
-    emoji: '🕐',
-    description: 'Lightweight cooldown count text on action bar buttons.',
-    url: `${CF}/minicc`,
-  },
-  {
-    name: 'MiniCE',
-    emoji: '🕑',
-    description: 'Minimalist cooldown edge animation for action bar buttons.',
-    url: `${CF}/minice`,
-  },
-  {
-    name: 'ElvUI WindTools',
-    emoji: '🌬️',
-    description: 'Feature-rich ElvUI plugin with extra modules, skins, and QoL tweaks.',
-    url: `${CF}/elvui-windtools`,
-  },
-  {
-    name: 'ExwindTools',
-    emoji: '🔧',
-    description: 'Extended toolkit with additional UI modules and utilities.',
-    url: `${CF}/exwindtools`,
-  },
-  {
-    name: 'HandyNotes',
-    emoji: '📍',
-    description: 'Pins custom notes and collectible locations on your world map.',
-    url: `${CF}/handynotes`,
-  },
-  {
-    name: 'HandyNotes MapNotes',
-    emoji: '🗺️',
-    description: 'Adds instance entrances, portals, and transport icons to the map.',
-    url: `${CF}/handynotes-mapnotes`,
-  },
-  {
-    name: 'EasyExperienceBar',
-    emoji: '📈',
-    description: 'Clean, configurable experience and reputation bar replacement.',
-    url: `${CF}/easy-experience-bar`,
-  },
-  {
-    name: 'WIM',
-    emoji: '💬',
-    description: 'WoW Instant Messenger — gives whispers their own chat windows.',
-    url: `${CF}/wim-3`,
-  },
-  {
-    name: 'GTFO',
-    emoji: '🚨',
-    description: 'Plays an alert sound when you stand in fire or other bad stuff.',
-    url: `${CF}/gtfo`,
-  },
-  {
-    name: 'BugSack',
-    emoji: '🪲',
-    description: 'Collects Lua errors silently so they don\'t interrupt gameplay.',
-    url: `${CF}/bugsack`,
-  },
-  {
-    name: 'GroupfinderFlags',
-    emoji: '🏁',
-    description: 'Adds visual flags and filters to the group finder UI.',
-    url: `${CF}/groupfinderflags`,
-  },
-  {
-    name: 'Falcon',
-    emoji: '🦅',
-    description: 'Skyriding companion addon with speed and ability tracking.',
-    url: `${CF}/falcon`,
-  },
-  {
-    name: 'CursorTrail',
-    emoji: '✨',
-    description: 'Adds a visual trail effect to your mouse cursor in-game.',
-    url: `${CF}/cursor-trail`,
-  },
-  {
-    name: 'MPlusTimer',
-    emoji: '⏲️',
-    description: 'Mythic+ dungeon timer with detailed split tracking per boss.',
-    url: `${CF}/mplustimer`,
-  },
-  {
-    name: 'Plumber',
-    emoji: '🔩',
-    description: 'Quality-of-life tweaks for Blizzard UI elements like Delves and warband bank.',
-    url: `${CF}/plumber`,
-  },
-  {
-    name: 'WaypointUI',
-    emoji: '📌',
-    description: 'Customizable waypoint arrow and coordinate display.',
-    url: `${CF}/waypointui`,
-  },
-  {
-    name: 'TalentTreeTweaks',
-    emoji: '🌳',
-    description: 'Enhancements for the talent tree UI with better search and import tools.',
-    url: `${CF}/talent-tree-tweaks`,
-  },
-]
+const { data } = await useFetch<{ data: AddonsResponse }>('/api/v1/addons')
+const requiredAddons = computed<Addon[]>(() => data.value?.data?.required ?? [])
+const coreAddons = computed<Addon[]>(() => data.value?.data?.core ?? [])
+const optionalAddons = computed<Addon[]>(() => data.value?.data?.optional ?? [])
 </script>

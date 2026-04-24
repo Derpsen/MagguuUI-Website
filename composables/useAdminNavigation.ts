@@ -97,6 +97,14 @@ const adminSections: AdminNavSection[] = [
         description: 'Class and specialization layout imports.',
         hint: 'Organize class and specialization layouts with clearer metadata, visibility states and sorting.',
       },
+      {
+        to: '/admin/data/addons',
+        label: 'Addons',
+        heading: 'Addon Catalogue',
+        icon: 'i-heroicons-puzzle-piece',
+        description: 'Public addon list — synced from MagguuUI.toc, editable per row.',
+        hint: 'Auto-synced from the addon repo; tweak emoji, description or category here without breaking the sync.',
+      },
     ],
   },
   {

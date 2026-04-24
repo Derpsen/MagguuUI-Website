@@ -234,6 +234,25 @@ export const DATABASE_BOOTSTRAP_SQL = `
     updated_at INTEGER NOT NULL
   );
   CREATE INDEX IF NOT EXISTS idx_rate_limits_updated_at ON rate_limits(updated_at);
+
+  CREATE TABLE IF NOT EXISTS addons (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug TEXT NOT NULL UNIQUE,
+    toc_name TEXT,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'optional',
+    emoji TEXT,
+    description TEXT,
+    url TEXT,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    is_visible INTEGER NOT NULL DEFAULT 1,
+    is_available INTEGER NOT NULL DEFAULT 1,
+    source TEXT NOT NULL DEFAULT 'toc',
+    last_synced_at INTEGER,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+  CREATE INDEX IF NOT EXISTS idx_addons_category_sort ON addons(category, sort_order);
 `
 
 export const SAFE_COLUMN_MIGRATIONS = [

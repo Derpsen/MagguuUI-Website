@@ -13,6 +13,7 @@ import { syncHistory, settings, profiles, wowupStrings, characterLayouts, change
 import { createSyncChangelog } from '~/server/utils/syncChangelog'
 import { checkRateLimit, getClientIp } from '~/server/utils/rateLimit'
 import { parseAddonChangelog } from '~/server/utils/parseAddonChangelog'
+import { syncAddonsFromToc } from '~/server/utils/syncAddons'
 
 // GitHub webhook payloads are typically <1MB; cap well above that to reject abuse.
 const MAX_WEBHOOK_BODY_BYTES = 2 * 1024 * 1024 // 2 MB
@@ -370,8 +371,39 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Changelog sync — fires when CHANGELOG.md is touched in the addon repo
+    // Addon-list sync — fires when MagguuUI.toc is touched in the addon repo
     const repoName = body.repository?.full_name || ''
+    const tocTouched = commits.some(c =>
+      [...(c.added || []), ...(c.modified || [])].includes('MagguuUI.toc')
+    )
+
+    if (repoName === 'Derpsen/MagguuUI' && tocTouched) {
+      const token = config.githubToken as string | undefined
+      try {
+        const rawUrl = `https://raw.githubusercontent.com/Derpsen/MagguuUI/main/MagguuUI.toc`
+        const fetchHeaders: Record<string, string> = { 'User-Agent': 'MagguuUI-WebAdmin' }
+        if (token) fetchHeaders['Authorization'] = `Bearer ${token}`
+
+        const tocContent = await $fetch<string>(rawUrl, { headers: fetchHeaders, timeout: 15000 })
+        const result = syncAddonsFromToc(tocContent)
+
+        db.insert(syncHistory).values({
+          triggerSource: 'github-toc',
+          status: 'success',
+          details: `Addons synced — inserted: ${result.inserted}, updated: ${result.updated}, removed: ${result.unavailable}`,
+        }).run()
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error('TOC webhook error:', msg)
+        db.insert(syncHistory).values({
+          triggerSource: 'github-toc',
+          status: 'error',
+          details: msg,
+        }).run()
+      }
+    }
+
+    // Changelog sync — fires when CHANGELOG.md is touched in the addon repo
     const changelogTouched = commits.some(c =>
       [...(c.added || []), ...(c.modified || [])].includes('CHANGELOG.md')
     )

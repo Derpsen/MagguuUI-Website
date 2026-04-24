@@ -341,6 +341,29 @@ export const pageViews = sqliteTable('page_views', {
   createdAtIdx: index('idx_page_views_created_at').on(table.createdAt),
 }))
 
+// ─── Addons ────────────────────────────────────────
+// Supported WoW addons surfaced on /addons page.
+// Auto-synced from MagguuUI.toc OptionalDeps + RequiredDeps via webhook.
+
+export const addons = sqliteTable('addons', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  slug: text('slug').notNull().unique(),
+  tocName: text('toc_name'),
+  name: text('name').notNull(),
+  category: text('category').notNull().default('optional'), // 'required' | 'core' | 'optional'
+  emoji: text('emoji'),
+  description: text('description'),
+  url: text('url'),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isVisible: integer('is_visible', { mode: 'boolean' }).notNull().default(true),
+  isAvailable: integer('is_available', { mode: 'boolean' }).notNull().default(true),
+  source: text('source').notNull().default('toc'), // 'toc' | 'manual'
+  lastSyncedAt: integer('last_synced_at', { mode: 'timestamp' }),
+  ...timestamps,
+}, (table) => ({
+  categorySortIdx: index('idx_addons_category_sort').on(table.category, table.sortOrder),
+}))
+
 // ─── Rate Limits ──────────────────────────────────
 // Persistent request throttling state per key (e.g. login:IP)
 

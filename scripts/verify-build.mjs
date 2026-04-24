@@ -200,12 +200,32 @@ async function verifyPublicApiFlows() {
     fail('Public WowUp response did not include numeric meta.count')
   }
 
+  const publicAddonsResponse = await fetch(`${baseUrl}/api/v1/addons`)
+  const publicAddonsBody = await publicAddonsResponse.json()
+
+  if (!publicAddonsResponse.ok || !publicAddonsBody?.success) {
+    fail(`Expected public addons lookup to succeed, got ${publicAddonsResponse.status}`)
+  }
+
+  const addonData = publicAddonsBody?.data
+  if (!addonData
+    || !Array.isArray(addonData.required)
+    || !Array.isArray(addonData.core)
+    || !Array.isArray(addonData.optional)) {
+    fail('Public addons response missing required/core/optional arrays')
+  }
+
+  if (typeof addonData.total !== 'number' || addonData.total === 0) {
+    fail('Public addons response total should be a positive number')
+  }
+
   console.log('[verify] /api/v1/content/home -> ' + homeContentResponse.status)
   console.log('[verify] /api/v1/content/home?locale=de -> ' + homeContentFallbackResponse.status)
   console.log('[verify] /api/v1/auth/webauthn/login-options -> ' + passkeyOptionsResponse.status)
   console.log('[verify] /api/v1/profiles -> ' + publicProfilesResponse.status)
   console.log('[verify] /api/v1/layouts -> ' + publicLayoutsResponse.status)
   console.log('[verify] /api/v1/wowup -> ' + publicWowupResponse.status)
+  console.log('[verify] /api/v1/addons -> ' + publicAddonsResponse.status + ' (total: ' + addonData.total + ')')
 }
 
 function readCookieHeader(response) {

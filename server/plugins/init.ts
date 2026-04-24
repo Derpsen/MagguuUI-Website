@@ -14,6 +14,7 @@ import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_HOME_CONTENT, DEFAULT_SITE
 import { users, siteContent, faqs, settings } from '~/server/database/schema'
 import { DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
+import { ensureAddonsSeeded } from '~/server/utils/syncAddons'
 
 // Nitro's runNitroPlugins calls plugins without awaiting their promise.
 // That means the HTTP server starts accepting requests while an async
@@ -41,6 +42,7 @@ export default defineNitroPlugin(() => {
       `CREATE INDEX IF NOT EXISTS idx_page_views_created_at ON page_views (created_at)`,
       `CREATE INDEX IF NOT EXISTS idx_api_logs_created_at ON api_logs (created_at)`,
       `CREATE INDEX IF NOT EXISTS idx_passkeys_user_id ON passkeys (user_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_addons_category_sort ON addons (category, sort_order)`,
     ]
     for (const stmt of indexStatements) sqlite.exec(stmt)
     console.log(`[Init] Ensured ${indexStatements.length} performance indexes`)
@@ -216,6 +218,17 @@ export default defineNitroPlugin(() => {
     }
   } catch (err) {
     console.error('[Init] FAQ sync failed:', err)
+  }
+
+  try {
+    const addonResult = ensureAddonsSeeded()
+    if (addonResult.inserted > 0) {
+      console.log(`[Init] Addons seeded (inserted: ${addonResult.inserted})`)
+    } else {
+      console.log('[Init] Addons table already populated')
+    }
+  } catch (err) {
+    console.error('[Init] Addon seed failed:', err)
   }
 
   console.log('[Init] Startup complete')

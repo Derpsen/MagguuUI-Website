@@ -21,7 +21,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'features_heading', key: 'subtitle', value: 'Everything you need — in one package', type: 'text', sortOrder: 1, locale: 'en' },
 
   { page: 'home', section: 'addons', key: 'title', value: 'Supported Addons', type: 'text', sortOrder: 0, locale: 'en' },
-  { page: 'home', section: 'addons', key: 'subtitle', value: 'Profiles for 28 of the most popular WoW addons', type: 'text', sortOrder: 1, locale: 'en' },
+  { page: 'home', section: 'addons', key: 'subtitle', value: 'Profiles for 30+ of the most popular WoW addons', type: 'text', sortOrder: 1, locale: 'en' },
 ] as const
 
 export const DEFAULT_GUIDE_CONTENT = [
@@ -77,7 +77,7 @@ There is no paid tier, no premium content, and no ads.`,
     question: 'Do I need every supported addon?',
     answer: `**No — only ElvUI is required.** Everything else is optional.
 
-MagguuUI detects which of the 28 supported addons you have enabled, configures those, and silently skips the rest. You can install more addons later and run **Install All** again to configure them.`,
+MagguuUI detects which of the 30+ supported addons you have enabled, configures those, and silently skips the rest. You can install more addons later and run **Install All** again to configure them.`,
     sortOrder: 2,
   },
   {
@@ -158,7 +158,7 @@ MagguuUI requires **ElvUI 15.00 or higher** and will refuse to load profiles wit
 - Details (+ Details iLvl)
 - **Method Raid Tools (MRT)** — notes, cooldown assignments, marks, raid groups, timers
 
-**Optional integrations:** BuffReminders, MiniCC, MiniCE, ElvUI_WindTools, Plumber, GTFO, BugSack, GroupfinderFlags, Falcon (Skyriding), CursorTrail, M+ Timer, WaypointUI, KeystoneLoot, MPlusTimer, TalentTreeTweaks and more — 28 supported addons in total.
+**Optional integrations:** Platynator, BuffReminders, TargetedSpells, MiniCC, MinimalistCooldownEdge, ElvUI_WindTools, ExwindTools, HandyNotes (+ MapNotes), EasyExperienceBar, WIM, GTFO, BugSack, GroupfinderFlags, Falcon (Skyriding), CursorTrail, MPlusTimer, Plumber, WaypointUI, TalentTreeTweaks and more — 30+ supported addons in total.
 
 MagguuUI configures whichever of these are enabled — missing addons are skipped silently.`,
     sortOrder: 0,

@@ -165,6 +165,7 @@ export default defineNuxtConfig({
       },
     },
     '/api/v1/profiles': { swr: 120 },
+    '/api/v1/addons': { swr: 120 },
     '/api/v1/wowup': { swr: 120 },
     '/api/v1/layouts': { swr: 120 },
     '/api/v1/layouts/**': { swr: 120 },

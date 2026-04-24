@@ -89,9 +89,33 @@
             </div>
           </div>
           <div class="flex-1 min-w-0">
-            <div class="prose prose-sm max-w-none prose-custom"
-              :class="isDark ? 'prose-invert prose-blue' : ''"
-              v-html="renderMarkdown(latestRelease.content)" />
+            <div class="release-content relative"
+              :class="{ 'release-content--collapsed': isLongRelease(latestRelease.content) && !isReleaseExpanded(latestRelease.id) }">
+              <div class="prose prose-sm max-w-none prose-custom"
+                :class="isDark ? 'prose-invert prose-blue' : ''"
+                v-html="renderMarkdown(latestRelease.content)" />
+              <div v-if="isLongRelease(latestRelease.content) && !isReleaseExpanded(latestRelease.id)"
+                aria-hidden="true"
+                class="release-fade"
+                :class="isDark ? 'release-fade--dark' : 'release-fade--light'" />
+            </div>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+              <button v-if="isLongRelease(latestRelease.content)"
+                class="inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+                :class="isDark ? 'text-brand-300 hover:text-white' : 'text-blue-600 hover:text-blue-800'"
+                @click="toggleRelease(latestRelease.id)">
+                <UIcon :name="isReleaseExpanded(latestRelease.id) ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" class="w-3.5 h-3.5" />
+                {{ isReleaseExpanded(latestRelease.id) ? 'Show less' : 'Show more' }}
+              </button>
+              <span v-if="isLongRelease(latestRelease.content)" class="text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-300'">·</span>
+              <a :href="githubChangelogUrl" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+                :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'">
+                <UIcon name="i-simple-icons-github" class="w-3.5 h-3.5" />
+                View full changelog on GitHub
+                <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-3 h-3" />
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -150,9 +174,33 @@
                       {{ group.dateFormatted }}
                     </span>
                   </header>
-                  <div class="prose prose-sm max-w-none prose-custom"
-                    :class="isDark ? 'prose-invert prose-blue' : ''"
-                    v-html="renderMarkdown(entry.content)" />
+                  <div class="release-content relative"
+                    :class="{ 'release-content--collapsed': isLongRelease(entry.content) && !isReleaseExpanded(entry.id) }">
+                    <div class="prose prose-sm max-w-none prose-custom"
+                      :class="isDark ? 'prose-invert prose-blue' : ''"
+                      v-html="renderMarkdown(entry.content)" />
+                    <div v-if="isLongRelease(entry.content) && !isReleaseExpanded(entry.id)"
+                      aria-hidden="true"
+                      class="release-fade"
+                      :class="isDark ? 'release-fade--dark' : 'release-fade--light'" />
+                  </div>
+                  <div class="mt-4 flex flex-wrap items-center gap-3">
+                    <button v-if="isLongRelease(entry.content)"
+                      class="inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+                      :class="isDark ? 'text-brand-300 hover:text-white' : 'text-blue-600 hover:text-blue-800'"
+                      @click="toggleRelease(entry.id)">
+                      <UIcon :name="isReleaseExpanded(entry.id) ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" class="w-3.5 h-3.5" />
+                      {{ isReleaseExpanded(entry.id) ? 'Show less' : 'Show more' }}
+                    </button>
+                    <span v-if="isLongRelease(entry.content)" class="text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-300'">·</span>
+                    <a :href="githubChangelogUrl" target="_blank" rel="noopener noreferrer"
+                      class="inline-flex items-center gap-1.5 text-xs font-medium transition-colors"
+                      :class="isDark ? 'text-silver-500 hover:text-silver-300' : 'text-gray-400 hover:text-gray-700'">
+                      <UIcon name="i-simple-icons-github" class="w-3.5 h-3.5" />
+                      View on GitHub
+                      <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-3 h-3" />
+                    </a>
+                  </div>
                 </article>
               </template>
 
@@ -237,6 +285,11 @@ import { renderMarkdownToSafeHtml } from '~/utils/richText'
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
 const { observe } = useScrollReveal()
+const siteSettings = usePublicSiteSettings()
+const githubChangelogUrl = computed(() => {
+  const base = (siteSettings.value?.github_url || 'https://github.com/Derpsen/MagguuUI').replace(/\/$/, '')
+  return `${base}/blob/main/CHANGELOG.md`
+})
 await usePublicPageSeo({
   title: 'Changelog',
   description: 'All updates and changes to MagguuUI import strings, packages, and setup guidance.',
@@ -274,6 +327,23 @@ function formatMonth(date: string | Date | null): string {
 function isReleaseVersion(v: string | null | undefined): boolean {
   if (!v) return false
   return /^v?\d+\.\d+/.test(v.trim())
+}
+
+// Release notes can balloon (multiple Added/Changed/Fixed sections).
+// Collapse by default above this threshold; show a "Show more" toggle.
+const RELEASE_COLLAPSE_CHARS = 500
+const expandedReleases = ref<Set<number>>(new Set())
+function isLongRelease(content: string): boolean {
+  return (content?.length || 0) > RELEASE_COLLAPSE_CHARS
+}
+function isReleaseExpanded(id: number): boolean {
+  return expandedReleases.value.has(id)
+}
+function toggleRelease(id: number) {
+  const next = new Set(expandedReleases.value)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  expandedReleases.value = next
 }
 
 // Strip **Addon Profile:** / **WowUp String:** / similar prefixes so aggregated
@@ -441,4 +511,24 @@ function dotClasses(group: DayGroup): string {
 .sync-prose :deep(ul) { margin: 0; padding-left: 1.1em; }
 .sync-prose :deep(li) { margin-bottom: 0.15em; }
 .sync-prose :deep(p) { margin: 0; }
+
+/* Collapsible long release notes */
+.release-content--collapsed {
+  max-height: 280px;
+  overflow: hidden;
+}
+.release-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 90px;
+  pointer-events: none;
+}
+.release-fade--dark {
+  background: linear-gradient(to bottom, rgba(10, 20, 40, 0), rgba(10, 20, 40, 0.95) 85%);
+}
+.release-fade--light {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.98) 85%);
+}
 </style>

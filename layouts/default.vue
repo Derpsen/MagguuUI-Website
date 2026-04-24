@@ -419,6 +419,7 @@ const footerLinks = computed(() => [
   { label: 'Addons', to: '/addons' },
   { label: 'Changelog', to: '/changelog' },
   { label: 'FAQ', to: '/faq' },
+  { label: 'About', to: '/about' },
   { label: 'Imprint', to: '/imprint' },
   { label: 'Privacy', to: '/privacy' },
   { label: 'Contact', href: `mailto:${siteSettings.value.contact_email || 'contact@magguui.com'}` },

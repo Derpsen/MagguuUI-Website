@@ -138,7 +138,7 @@
 const isDark = useIsDark()
 const { observe } = useScrollReveal()
 
-await usePublicPageSeo({
+usePublicPageSeo({
   title: 'Privacy Policy',
   description: 'Privacy policy for MagguuUI in accordance with GDPR.',
   path: '/privacy',

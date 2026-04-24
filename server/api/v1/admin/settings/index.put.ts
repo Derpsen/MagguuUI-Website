@@ -11,8 +11,22 @@ import { settings } from '~/server/database/schema'
 import { invalidateSettingsCache } from '~/server/utils/settings'
 import { validateBody } from '~/server/utils/validation'
 
-// Flat record — keys are setting names, values are their string values.
-const settingsBodySchema = z.record(z.string().max(100), z.string().max(10_000))
+// Any setting whose key ends in `_url` must be a http(s) URL. Prevents a
+// compromised admin from smuggling a `javascript:` / `data:` URI into a
+// public outbound link (e.g. the footer GitHub button) where it'd execute
+// under the site origin.
+const URL_KEY_SUFFIX = '_url'
+const isHttpUrl = (v: string) => !v || /^https?:\/\//i.test(v)
+
+const settingsBodySchema = z
+  .record(z.string().max(100), z.string().max(10_000))
+  .superRefine((data, ctx) => {
+    for (const [k, v] of Object.entries(data)) {
+      if (k.endsWith(URL_KEY_SUFFIX) && !isHttpUrl(v)) {
+        ctx.addIssue({ code: 'custom', path: [k], message: 'Must be http(s) URL' })
+      }
+    }
+  })
 
 export default defineEventHandler(async (event) => {
   const auth = requireAuth(event)

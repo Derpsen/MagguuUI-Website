@@ -4,7 +4,8 @@
 
 <template>
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-    <!-- Admin controls -->
+    <!-- Admin controls (client-only to avoid layout shift on SSR) -->
+    <ClientOnly>
     <div v-if="isAdmin" class="flex items-center justify-end gap-2 mb-5 fade-in">
       <template v-if="editMode">
         <button
@@ -43,6 +44,7 @@
         </NuxtLink>
       </template>
     </div>
+    </ClientOnly>
 
     <Transition name="bar">
       <div
@@ -241,7 +243,7 @@ const toast = useToast()
 const { apiFetch } = useApi()
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
-await usePublicPageSeo({
+usePublicPageSeo({
   title: 'Installation Guide',
   description: 'Step-by-step installation guide for MagguuUI, from first install to alt profile sync.',
   path: '/guide',
@@ -430,6 +432,10 @@ async function saveAll() {
   background: rgba(59, 139, 255, 0.12);
   color: #93bbff;
 }
+:global(html.light) .guide-content :deep(code) {
+  background: rgba(37, 99, 235, 0.08);
+  color: #1d4ed8;
+}
 .guide-content :deep(pre) {
   margin: 0.9em 0;
   padding: 0.9rem 1rem;
@@ -437,6 +443,10 @@ async function saveAll() {
   overflow-x: auto;
   background: rgba(4, 10, 20, 0.55);
   border: 1px solid rgba(59, 139, 255, 0.1);
+}
+:global(html.light) .guide-content :deep(pre) {
+  background: rgba(241, 245, 249, 0.8);
+  border-color: rgba(37, 99, 235, 0.12);
 }
 .guide-content :deep(pre code) { padding: 0; background: transparent; }
 .guide-content :deep(blockquote) {

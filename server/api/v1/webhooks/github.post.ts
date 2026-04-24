@@ -17,6 +17,12 @@ import { parseAddonChangelog } from '~/server/utils/parseAddonChangelog'
 // GitHub webhook payloads are typically <1MB; cap well above that to reject abuse.
 const MAX_WEBHOOK_BODY_BYTES = 2 * 1024 * 1024 // 2 MB
 
+// Real ElvUI/Plater/etc. import strings top out around a few hundred KB.
+// Reject anything beyond this to prevent an addon-repo compromise (or a
+// malformed push) from filling the DB with garbage blobs that users would
+// then paste straight into WoW.
+const MAX_IMPORT_STRING_CHARS = 5 * 1024 * 1024 // 5 MB
+
 function upsertSetting(key: string, value: string) {
   const existing = db.select().from(settings).where(eq(settings.key, key)).get()
   if (existing) {
@@ -199,6 +205,7 @@ export default defineEventHandler(async (event) => {
               for (const [name, match] of [['Required', reqMatch], ['Optional', optMatch]] as const) {
                 if (match) {
                   const str = match[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+                  if (str.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
                   const existing = db.select().from(wowupStrings).where(eq(wowupStrings.name, name)).get()
                   if (existing) {
                     if (existing.string !== str) {
@@ -227,6 +234,7 @@ export default defineEventHandler(async (event) => {
                   const match = content.match(regex)
                   if (match) {
                     const str = match[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+                    if (str.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
                     const existing = db.select().from(profiles).where(and(eq(profiles.addon, 'ElvUI'), eq(profiles.profile, key))).get()
                     if (existing) {
                       if (existing.string !== str) {
@@ -246,6 +254,7 @@ export default defineEventHandler(async (event) => {
                 const match = content.match(regex)
                 if (match) {
                   const str = match[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+                  if (str.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
                   const existing = db.select().from(profiles).where(and(eq(profiles.addon, addonName), eq(profiles.profile, 'Default'))).get()
                   if (existing) {
                     if (existing.string !== str) {
@@ -283,6 +292,7 @@ export default defineEventHandler(async (event) => {
               let entryMatch
               while ((entryMatch = entryRegex.exec(content)) !== null) {
                 const importString = entryMatch[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+                if (importString.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
                 const specName = entryMatch[2].trim()
                 specs.push({ spec: specName, importString })
               }
@@ -292,6 +302,7 @@ export default defineEventHandler(async (event) => {
               let ncMatch
               while ((ncMatch = noCommentRegex.exec(content)) !== null) {
                 const str = ncMatch[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+                if (str.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
                 // Skip if already matched with a comment
                 if (!specs.find(s => s.importString === str)) {
                   specs.push({ spec: '', importString: str })

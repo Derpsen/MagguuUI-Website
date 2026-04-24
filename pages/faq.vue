@@ -96,7 +96,7 @@
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
 const { observe } = useScrollReveal()
-const siteSettings = await usePublicPageSeo({
+const siteSettings = usePublicPageSeo({
   title: 'FAQ',
   description: 'Frequently asked questions about MagguuUI - setup, addons, profiles, and troubleshooting.',
   path: '/faq',
@@ -129,8 +129,8 @@ const sections = [
   },
 ]
 
-interface FaqItem { id: number, question: string, answer: string, [k: string]: unknown }
-type FaqByCategory = Record<string, FaqItem[]>
+interface FaqEntry { id: number, question: string, answer: string, [k: string]: unknown }
+type FaqByCategory = Record<string, FaqEntry[]>
 const { data: rawData, pending } = await useFetch<{ data: FaqByCategory }>('/api/v1/faqs')
 const faqData = computed<FaqByCategory>(() => rawData.value?.data || {})
 const hasFaqs = computed(() => Object.values(faqData.value).some(arr => arr?.length > 0))

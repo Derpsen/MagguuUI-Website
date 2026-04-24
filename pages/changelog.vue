@@ -91,8 +91,7 @@
           <div class="flex-1 min-w-0">
             <div class="release-content relative"
               :class="{ 'release-content--collapsed': isLongRelease(latestRelease.content) && !isReleaseExpanded(latestRelease.id) }">
-              <div class="prose prose-sm max-w-none prose-custom"
-                :class="isDark ? 'prose-invert prose-blue' : ''"
+              <div class="prose-custom text-sm"
                 v-html="renderMarkdown(latestRelease.content)" />
               <div v-if="isLongRelease(latestRelease.content) && !isReleaseExpanded(latestRelease.id)"
                 aria-hidden="true"
@@ -176,8 +175,7 @@
                   </header>
                   <div class="release-content relative"
                     :class="{ 'release-content--collapsed': isLongRelease(entry.content) && !isReleaseExpanded(entry.id) }">
-                    <div class="prose prose-sm max-w-none prose-custom"
-                      :class="isDark ? 'prose-invert prose-blue' : ''"
+                    <div class="prose-custom text-sm"
                       v-html="renderMarkdown(entry.content)" />
                     <div v-if="isLongRelease(entry.content) && !isReleaseExpanded(entry.id)"
                       aria-hidden="true"
@@ -227,8 +225,7 @@
                     {{ group.entries.length }} {{ group.entries.length === 1 ? 'update' : 'updates' }}
                   </span>
                 </header>
-                <div class="prose prose-sm max-w-none prose-custom sync-prose"
-                  :class="isDark ? 'prose-invert prose-blue' : ''"
+                <div class="prose-custom sync-prose text-sm"
                   v-html="renderMarkdown(aggregateSyncContent(group.entries))" />
               </article>
             </div>
@@ -290,7 +287,7 @@ const githubChangelogUrl = computed(() => {
   const base = (siteSettings.value?.github_url || 'https://github.com/Derpsen/MagguuUI').replace(/\/$/, '')
   return `${base}/blob/main/CHANGELOG.md`
 })
-await usePublicPageSeo({
+usePublicPageSeo({
   title: 'Changelog',
   description: 'All updates and changes to MagguuUI import strings, packages, and setup guidance.',
   path: '/changelog',

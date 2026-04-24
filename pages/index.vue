@@ -20,10 +20,10 @@
         <div class="relative px-6 py-8 sm:px-10 sm:py-12 lg:px-12 lg:py-14">
           <div class="max-w-4xl mx-auto flex flex-col items-center text-center">
             <!-- Badge — links to changelog, shows last change -->
-            <NuxtLink to="/changelog" class="hero-badge inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium mb-10 fade-in cursor-pointer transition-all hover:scale-105"
-              :style="isDark
-                ? 'background: rgba(59, 139, 255, 0.08); border: 1px solid rgba(59, 139, 255, 0.15); color: #60a5fa;'
-                : 'background: rgba(59, 139, 255, 0.06); border: 1px solid rgba(59, 139, 255, 0.15); color: #2563EB;'">
+            <NuxtLink to="/changelog" class="hero-badge inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium mb-10 fade-in cursor-pointer transition-all hover:scale-105 border"
+              :class="isDark
+                ? 'bg-brand-400/8 border-brand-400/15 text-brand-300'
+                : 'bg-brand-400/6 border-brand-400/15 text-blue-700'">
               <span>🚀</span>
               <span>{{ latestBadgeText }}</span>
             </NuxtLink>
@@ -127,17 +127,20 @@
 
 <script setup lang="ts">
 import { sanitizeRichHtml } from '~/utils/richText'
+import { buildPublicUrl } from '~/utils/publicSite'
 
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
 const siteSettings = usePublicSiteSettings()
 const homeMetaTitle = computed(() => siteSettings.value.meta_title || 'MagguuUI - Your WoW Interface, perfected.')
 const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'High-quality import strings for ElvUI, Plater, BigWigs, Details & more. Simply copy and paste into WoW.')
-const homeOgImage = computed(() => siteSettings.value.og_image_url || 'https://ui.magguu.xyz/logo.png')
+const homeOgImage = computed(() => siteSettings.value.og_image_url || buildPublicUrl('/logo.png'))
+const homeCanonical = buildPublicUrl('/')
+const homeSiteName = computed(() => siteSettings.value.site_name || 'MagguuUI')
 
 useHead({
   link: [
-    { rel: 'canonical', href: 'https://ui.magguu.xyz/' },
+    { rel: 'canonical', href: homeCanonical },
   ],
   script: [
     {
@@ -147,7 +150,7 @@ useHead({
           '@context': 'https://schema.org',
           '@type': 'WebApplication',
           name: siteSettings.value.site_name || 'MagguuUI',
-          url: 'https://ui.magguu.xyz',
+          url: homeCanonical,
           description: homeMetaDescription.value,
           image: homeOgImage.value,
           applicationCategory: 'GameApplication',
@@ -160,22 +163,22 @@ useHead({
           author: {
             '@type': 'Organization',
             name: siteSettings.value.site_name || 'MagguuUI',
-            url: 'https://ui.magguu.xyz',
+            url: homeCanonical,
           },
         },
         {
           '@context': 'https://schema.org',
           '@type': 'WebSite',
           name: siteSettings.value.site_name || 'MagguuUI',
-          url: 'https://ui.magguu.xyz',
+          url: homeCanonical,
           description: homeMetaDescription.value,
           publisher: {
             '@type': 'Organization',
             name: siteSettings.value.site_name || 'MagguuUI',
-            url: 'https://ui.magguu.xyz',
+            url: homeCanonical,
             logo: {
               '@type': 'ImageObject',
-              url: 'https://ui.magguu.xyz/logo.png',
+              url: buildPublicUrl('/logo.png'),
             },
             ...(siteSettings.value.github_url ? { sameAs: [siteSettings.value.github_url] } : {}),
           },
@@ -190,7 +193,13 @@ useSeoMeta({
   description: () => homeMetaDescription.value,
   ogTitle: () => homeMetaTitle.value,
   ogDescription: () => homeMetaDescription.value,
+  ogSiteName: () => homeSiteName.value,
+  ogUrl: homeCanonical,
   ogImage: () => homeOgImage.value,
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  ogImageType: 'image/png',
+  twitterCard: 'summary_large_image',
   twitterTitle: () => homeMetaTitle.value,
   twitterDescription: () => homeMetaDescription.value,
   twitterImage: () => homeOgImage.value,

@@ -73,7 +73,7 @@
 <script setup lang="ts">
 const isDark = useIsDark()
 const { observe } = useScrollReveal()
-const siteSettings = await usePublicPageSeo({
+const siteSettings = usePublicPageSeo({
   title: 'Imprint',
   description: 'Legal notice and imprint for MagguuUI.',
   path: '/imprint',

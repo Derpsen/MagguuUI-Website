@@ -270,7 +270,7 @@
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
 const { apiFetch } = useApi()
-await usePublicPageSeo({
+usePublicPageSeo({
   title: 'Import Strings',
   description: 'Browse import strings, packages, and layouts for MagguuUI.',
   path: '/strings',
@@ -440,16 +440,11 @@ function handleCopyShortcut(e: KeyboardEvent) {
 
 onMounted(() => {
   isMac.value = navigator.platform.toUpperCase().includes('MAC')
-})
-
-onMounted(() => {
   window.addEventListener('keydown', handleCopyShortcut)
 })
 
 onUnmounted(() => {
-  if (import.meta.client) {
-    window.removeEventListener('keydown', handleCopyShortcut)
-  }
+  window.removeEventListener('keydown', handleCopyShortcut)
 })
 
 async function doCopy(text: string) { try { await navigator.clipboard.writeText(text); return true } catch { const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); return true } }

@@ -129,7 +129,7 @@
 <script setup lang="ts">
 const isDark = useIsDark()
 const { observe } = useScrollReveal()
-const siteSettings = await usePublicPageSeo({
+const siteSettings = usePublicPageSeo({
   title: 'About',
   description: 'Learn more about MagguuUI - the WoW UI configuration tool.',
   path: '/about',

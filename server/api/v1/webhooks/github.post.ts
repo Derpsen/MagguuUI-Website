@@ -24,6 +24,12 @@ const MAX_WEBHOOK_BODY_BYTES = 2 * 1024 * 1024 // 2 MB
 // then paste straight into WoW.
 const MAX_IMPORT_STRING_CHARS = 5 * 1024 * 1024 // 5 MB
 
+// Sanity caps on raw.githubusercontent.com responses. Real values are tiny
+// (the addon .toc is ~1KB, the changelog ~200KB), so we cap well below
+// anything that could OOM the parser if GitHub's CDN returned garbage.
+const MAX_TOC_BYTES = 256 * 1024            // 256 KB
+const MAX_CHANGELOG_BYTES = 4 * 1024 * 1024 // 4 MB
+
 function upsertSetting(key: string, value: string) {
   const existing = db.select().from(settings).where(eq(settings.key, key)).get()
   if (existing) {
@@ -154,6 +160,7 @@ export default defineEventHandler(async (event) => {
     const commits = body.commits || []
     const pusher = body.pusher?.name || 'unknown'
     const commitCount = commits.length || 0
+    const handled: string[] = []
 
     // Check if any Data/*.lua files were changed
     const dataFiles = new Set<string>()
@@ -164,6 +171,8 @@ export default defineEventHandler(async (event) => {
         }
       }
     }
+
+    let dataResult: { imported: number; errors: number } | null = null
 
     if (dataFiles.size > 0) {
       // Auto-pull: fetch changed Lua files from GitHub and import into DB
@@ -367,7 +376,8 @@ export default defineEventHandler(async (event) => {
           details: `Push by ${pusher}: ${dataFiles.size} Data/ files changed, ${imported} imported, ${errors} errors`,
         }).run()
 
-        return apiSuccess({ event: 'push', ref, commits: commitCount, autoPull: true, imported, errors })
+        dataResult = { imported, errors }
+        handled.push('autopull')
       }
     }
 
@@ -377,6 +387,7 @@ export default defineEventHandler(async (event) => {
       [...(c.added || []), ...(c.modified || [])].includes('MagguuUI.toc')
     )
 
+    let tocResult: { inserted: number; updated: number; unavailable: number; total: number } | null = null
     if (repoName === 'Derpsen/MagguuUI' && tocTouched) {
       const token = config.githubToken as string | undefined
       try {
@@ -385,13 +396,17 @@ export default defineEventHandler(async (event) => {
         if (token) fetchHeaders['Authorization'] = `Bearer ${token}`
 
         const tocContent = await $fetch<string>(rawUrl, { headers: fetchHeaders, timeout: 15000 })
-        const result = syncAddonsFromToc(tocContent)
+        if (typeof tocContent !== 'string' || tocContent.length > MAX_TOC_BYTES) {
+          throw new Error(`TOC payload size invalid (${typeof tocContent === 'string' ? tocContent.length : 'non-string'} bytes)`)
+        }
+        tocResult = syncAddonsFromToc(tocContent)
 
         db.insert(syncHistory).values({
           triggerSource: 'github-toc',
           status: 'success',
-          details: `Addons synced — inserted: ${result.inserted}, updated: ${result.updated}, removed: ${result.unavailable}`,
+          details: `Addons synced — inserted: ${tocResult.inserted}, updated: ${tocResult.updated}, removed: ${tocResult.unavailable}`,
         }).run()
+        handled.push('toc')
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
         console.error('TOC webhook error:', msg)
@@ -408,9 +423,10 @@ export default defineEventHandler(async (event) => {
       [...(c.added || []), ...(c.modified || [])].includes('CHANGELOG.md')
     )
 
+    let clResult: { inserted: number; updated: number; skipped: number } | null = null
     if (repoName === 'Derpsen/MagguuUI' && changelogTouched) {
       const token = config.githubToken as string | undefined
-      let clResult = { inserted: 0, updated: 0, skipped: 0 }
+      const stats = { inserted: 0, updated: 0, skipped: 0 }
 
       try {
         const rawUrl = `https://raw.githubusercontent.com/Derpsen/MagguuUI/main/CHANGELOG.md`
@@ -418,6 +434,9 @@ export default defineEventHandler(async (event) => {
         if (token) fetchHeaders['Authorization'] = `Bearer ${token}`
 
         const markdown = await $fetch<string>(rawUrl, { headers: fetchHeaders, timeout: 15000 })
+        if (typeof markdown !== 'string' || markdown.length > MAX_CHANGELOG_BYTES) {
+          throw new Error(`Changelog payload size invalid (${typeof markdown === 'string' ? markdown.length : 'non-string'} bytes)`)
+        }
         const entries = parseAddonChangelog(markdown)
 
         for (const entry of entries) {
@@ -428,9 +447,9 @@ export default defineEventHandler(async (event) => {
                 .set({ content: entry.content, contentEn: entry.content, updatedAt: new Date() })
                 .where(eq(changelogs.id, existing.id))
                 .run()
-              clResult.updated++
+              stats.updated++
             } else {
-              clResult.skipped++
+              stats.skipped++
             }
           } else {
             db.insert(changelogs).values({
@@ -440,17 +459,17 @@ export default defineEventHandler(async (event) => {
               isPublished: true,
               publishedAt: entry.publishedAt,
             }).run()
-            clResult.inserted++
+            stats.inserted++
           }
         }
 
+        clResult = stats
         db.insert(syncHistory).values({
           triggerSource: 'github-changelog',
           status: 'success',
-          details: JSON.stringify(clResult),
+          details: JSON.stringify(stats),
         }).run()
-
-        return apiSuccess({ ok: true, result: clResult })
+        handled.push('changelog')
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
         console.error('Changelog webhook error:', msg)
@@ -459,18 +478,26 @@ export default defineEventHandler(async (event) => {
           status: 'error',
           details: msg,
         }).run()
-        throw createError({ statusCode: 500, message: 'Changelog sync failed' })
       }
     }
 
-    // Normal push (no Data/ changes or no GitHub config)
-    db.insert(syncHistory).values({
-      triggerSource: 'webhook-push',
-      status: 'success',
-      details: `Push to ${ref} by ${pusher} (${commitCount} commit${commitCount !== 1 ? 's' : ''})`,
-    }).run()
+    if (handled.length === 0) {
+      db.insert(syncHistory).values({
+        triggerSource: 'webhook-push',
+        status: 'success',
+        details: `Push to ${ref} by ${pusher} (${commitCount} commit${commitCount !== 1 ? 's' : ''})`,
+      }).run()
+    }
 
-    return apiSuccess({ event: 'push', ref, commits: commitCount })
+    return apiSuccess({
+      event: 'push',
+      ref,
+      commits: commitCount,
+      handled,
+      autopull: dataResult,
+      toc: tocResult,
+      changelog: clResult,
+    })
   }
 
   // Handle workflow_run events (GitHub Actions completed)

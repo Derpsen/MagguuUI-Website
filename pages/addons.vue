@@ -1,11 +1,3 @@
-<!--
-  Addons Page — Required, core, and optional addons configured by MagguuUI.
-  Rendered from the `addons` table, which the GitHub webhook keeps in sync
-  with `MagguuUI.toc` (OptionalDeps + RequiredDeps). Admin can override any
-  field per-row and add manual entries (e.g. Blizzard EditMode) that aren't
-  expressed as a .toc dependency.
--->
-
 <template>
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <div class="text-center mb-12 fade-in heading-glow">

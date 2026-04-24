@@ -22,8 +22,11 @@ export function parseAddonToc(content: string): TocAddonRef[] {
   const result: TocAddonRef[] = []
   const seen = new Set<string>()
 
-  let optional: string[] = []
-  let required: string[] = []
+  // The .toc spec allows the same metadata key to appear on multiple lines —
+  // OptionalDeps are sometimes split across two `## OptionalDeps:` lines.
+  // Concatenate every match so we never silently drop deps from the second line.
+  const optional: string[] = []
+  const required: string[] = []
 
   for (const line of lines) {
     const m = META_RE.exec(line.trim())
@@ -31,9 +34,9 @@ export function parseAddonToc(content: string): TocAddonRef[] {
     const key = m[1].toLowerCase()
     const value = m[2].trim()
     if (key === 'optionaldeps') {
-      optional = splitDeps(value)
+      optional.push(...splitDeps(value))
     } else if (key === 'requireddeps') {
-      required = splitDeps(value)
+      required.push(...splitDeps(value))
     }
   }
 

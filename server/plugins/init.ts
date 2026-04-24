@@ -42,7 +42,6 @@ export default defineNitroPlugin(() => {
       `CREATE INDEX IF NOT EXISTS idx_page_views_created_at ON page_views (created_at)`,
       `CREATE INDEX IF NOT EXISTS idx_api_logs_created_at ON api_logs (created_at)`,
       `CREATE INDEX IF NOT EXISTS idx_passkeys_user_id ON passkeys (user_id)`,
-      `CREATE INDEX IF NOT EXISTS idx_addons_category_sort ON addons (category, sort_order)`,
     ]
     for (const stmt of indexStatements) sqlite.exec(stmt)
     console.log(`[Init] Ensured ${indexStatements.length} performance indexes`)

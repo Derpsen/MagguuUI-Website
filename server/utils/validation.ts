@@ -68,6 +68,11 @@ export const wowupUpdateSchema = wowupCreateSchema.partial()
 
 export const addonCategorySchema = z.enum(['required', 'core', 'optional'])
 
+// Restrict stored addon URLs to http(s). Zod's `.url()` accepts `javascript:`,
+// `data:`, etc., which would execute when rendered through Vue's `:href`.
+const httpUrlSchema = z.string().url().max(500)
+  .refine(value => /^https?:\/\//i.test(value), 'URL must start with http:// or https://')
+
 export const addonCreateSchema = z.object({
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase, digits, or hyphens'),
   tocName: z.string().max(100).optional().nullable(),
@@ -75,7 +80,7 @@ export const addonCreateSchema = z.object({
   category: addonCategorySchema,
   emoji: z.string().max(10).optional().nullable(),
   description: z.string().max(2000).optional().nullable(),
-  url: z.string().url().max(500).optional().nullable(),
+  url: httpUrlSchema.optional().nullable(),
   sortOrder: z.number().int().optional(),
   isVisible: z.boolean().optional(),
 })

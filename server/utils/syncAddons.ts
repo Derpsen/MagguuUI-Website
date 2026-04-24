@@ -18,7 +18,7 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
 import { addons } from '~/server/database/schema'
 import { ADDON_DEFAULTS, deriveSlugFromTocName, findAddonDefaultByTocName } from '~/server/database/addonMetadata'
 import { parseAddonToc, type TocAddonRef } from '~/server/utils/parseAddonToc'
@@ -32,7 +32,10 @@ export interface SyncAddonsResult {
 
 export function syncAddonsFromToc(tocContent: string): SyncAddonsResult {
   const refs = parseAddonToc(tocContent)
-  return applyAddonSync(refs)
+  // better-sqlite3 transactions are synchronous; wrap so concurrent webhook +
+  // admin-resync calls don't interleave reads/writes and leave rows in a state
+  // where one observer's fresh insert is the other's vanished-from-toc miss.
+  return sqlite.transaction(() => applyAddonSync(refs))()
 }
 
 /**
@@ -78,6 +81,9 @@ function applyAddonSync(refs: TocAddonRef[]): SyncAddonsResult {
 
   // Track which slugs the .toc covers — we mark missing ones unavailable.
   const seenSlugs = new Set<string>()
+  // Distribute fallback sortOrder per category so .toc-only addons (no
+  // ADDON_DEFAULTS entry) don't all collide on `99`.
+  const fallbackSortByCategory: Record<string, number> = { required: 90, core: 90, optional: 90 }
 
   for (const ref of refs) {
     const def = findAddonDefaultByTocName(ref.tocName)
@@ -88,6 +94,7 @@ function applyAddonSync(refs: TocAddonRef[]): SyncAddonsResult {
     const category = ref.required ? 'required' : (def?.category ?? 'optional')
 
     if (!row) {
+      const fallbackSort = def?.sortOrder ?? fallbackSortByCategory[category]++
       db.insert(addons).values({
         slug,
         tocName: ref.tocName,
@@ -96,7 +103,7 @@ function applyAddonSync(refs: TocAddonRef[]): SyncAddonsResult {
         emoji: def?.emoji ?? null,
         description: def?.description ?? null,
         url: def?.url ?? null,
-        sortOrder: def?.sortOrder ?? 99,
+        sortOrder: fallbackSort,
         isVisible: def?.isVisible ?? !ref.isLibrary,
         isAvailable: true,
         source: 'toc',
@@ -106,12 +113,21 @@ function applyAddonSync(refs: TocAddonRef[]): SyncAddonsResult {
       continue
     }
 
-    // Only refresh fields that the .toc owns. Leave content alone.
+    // Manual rows are admin-pinned: tocName/category/source are off-limits
+    // for the auto-sync, only `lastSyncedAt` is refreshed when their tocName
+    // matches a real .toc entry so they show up in the "still synced" view.
+    if (row.source === 'manual') {
+      db.update(addons)
+        .set({ lastSyncedAt: now })
+        .where(eq(addons.id, row.id))
+        .run()
+      continue
+    }
+
     const needsUpdate =
       row.tocName !== ref.tocName
       || row.category !== category
       || !row.isAvailable
-      || row.source !== (row.source === 'manual' ? 'manual' : 'toc')
 
     if (needsUpdate) {
       db.update(addons)
@@ -119,15 +135,14 @@ function applyAddonSync(refs: TocAddonRef[]): SyncAddonsResult {
           tocName: ref.tocName,
           category,
           isAvailable: true,
-          source: row.source === 'manual' ? 'manual' : 'toc',
           lastSyncedAt: now,
           updatedAt: now,
         })
         .where(eq(addons.id, row.id))
         .run()
       updated++
-    } else if (row.lastSyncedAt?.getTime() !== now.getTime()) {
-      // Touch lastSyncedAt only — no audit-noise update bump.
+    } else {
+      // Quiet touch — no `updatedAt` bump, just refresh the sync timestamp.
       db.update(addons)
         .set({ lastSyncedAt: now })
         .where(eq(addons.id, row.id))

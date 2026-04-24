@@ -30,7 +30,9 @@ export default defineEventHandler(async (event) => {
     sortOrder: data.sortOrder ?? 0,
     isVisible: data.isVisible ?? true,
     isAvailable: true,
-    source: data.tocName ? 'toc' : 'manual',
+    // Admin-created rows are always `manual`, even when a tocName is supplied —
+    // otherwise they'd be subject to the vanished-from-toc unavailable sweep.
+    source: 'manual',
   }).returning().get()
 
   setResponseStatus(event, 201)

@@ -32,7 +32,12 @@ export default defineEventHandler(async () => {
       details: `Inserted ${result.inserted}, updated ${result.updated}, removed ${result.unavailable} (toc deps: ${result.total})`,
     }).run()
 
-    logActivity({ action: 'updated', entityType: 'addon', entityName: `Resynced ${result.total} addons from .toc` })
+    logActivity({
+      action: 'updated',
+      entityType: 'addon',
+      entityName: `Resynced ${result.total} addons from .toc`,
+      details: `inserted=${result.inserted}, updated=${result.updated}, removed=${result.unavailable}`,
+    })
     return apiSuccess(result)
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)

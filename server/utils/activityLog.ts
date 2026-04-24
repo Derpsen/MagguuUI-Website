@@ -14,6 +14,7 @@ interface LogOptions {
     | 'profile'
     | 'wowup'
     | 'layout'
+    | 'addon'
     | 'changelog'
     | 'content'
     | 'faq'

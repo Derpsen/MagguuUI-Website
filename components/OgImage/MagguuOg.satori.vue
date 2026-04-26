@@ -4,7 +4,7 @@ withDefaults(defineProps<{
   description?: string
 }>(), {
   title: 'Your WoW Interface, perfected.',
-  description: 'One-click installer for ElvUI, Plater, BigWigs, Details, Method Raid Tools and 20+ more addons.',
+  description: 'One-click installer for ElvUI, Plater, BigWigs, Details, Method Raid Tools and 30+ more addons.',
 })
 </script>
 

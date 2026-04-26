@@ -35,7 +35,7 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     name: 'ElvUI',
     category: 'required',
     emoji: '🎨',
-    description: 'The complete UI replacement framework that MagguuUI is built on. Handles action bars, unit frames, chat, bags, maps, and more. Required version: 15.00 or higher.',
+    description: 'The complete UI replacement framework that MagguuUI is built on. Handles action bars, unit frames, chat, bags, maps, and more. Required version: 15.12 or higher.',
     url: 'https://tukui.org/elvui',
     sortOrder: 0,
   },

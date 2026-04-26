@@ -32,7 +32,7 @@
         </p>
         <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           MagguuUI does not replace any of those addons. It only configures the ones you have installed
-          and skips the rest. The only hard requirement is <strong :class="isDark ? 'text-white' : 'text-gray-900'">ElvUI 15.00 or higher</strong> —
+          and skips the rest. The only hard requirement is <strong :class="isDark ? 'text-white' : 'text-gray-900'">ElvUI 15.12 or higher</strong> —
           everything else is optional.
         </p>
       </div>
@@ -60,6 +60,14 @@
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
             <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Quality-of-life tools</strong> — minimap button, audio output switcher (<code>/mui audio</code>), in-game changelog viewer.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Automatic loot rolls</strong> — opt-in per category (Toys, Mounts, Recipes, Housing, Transmog) with combat-safe queue and loot-council conflict warning.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Custom ElvUI tags</strong> — drop <code>[mui:ilvl]</code> and <code>[mui:ilvl:setbonus]</code> into any unitframe text to show item level and current tier set bonus.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />

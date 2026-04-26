@@ -35,7 +35,7 @@
 
             <div class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed fade-in fade-in-delay-2"
               :class="isDark ? 'text-silver-400' : 'text-gray-500'"
-              v-html="renderHomeRichText(content?.hero?.description || 'MagguuUI is an in-game addon that installs and configures ElvUI, Plater, BigWigs, Details, Method Raid Tools and 20+ more addons for you. One click on Install All and your interface is done — no manual setup, no copy-pasting strings.')"
+              v-html="renderHomeRichText(content?.hero?.description || 'MagguuUI is an in-game addon that installs and configures ElvUI, Plater, BigWigs, Details, Method Raid Tools and 30+ more addons for you. One click on Install All and your interface is done — no manual setup, no copy-pasting strings.')"
             />
 
             <div class="flex items-center justify-center gap-4 fade-in fade-in-delay-3">
@@ -133,7 +133,7 @@ const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
 const siteSettings = usePublicSiteSettings()
 const homeMetaTitle = computed(() => siteSettings.value.meta_title || 'MagguuUI - Your WoW Interface, perfected.')
-const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'High-quality import strings for ElvUI, Plater, BigWigs, Details & more. Simply copy and paste into WoW.')
+const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'MagguuUI is an in-game addon that installs and configures ElvUI, Plater, BigWigs, Details, Method Raid Tools and 30+ more addons for you in one click. No manual setup, no copy-pasting strings.')
 const homeOgImage = computed(() => siteSettings.value.og_image_url || buildPublicUrl('/logo.png'))
 const homeCanonical = buildPublicUrl('/')
 const homeSiteName = computed(() => siteSettings.value.site_name || 'MagguuUI')

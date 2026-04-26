@@ -2,8 +2,8 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'hero', key: 'title', value: 'Your WoW Interface,', type: 'text', sortOrder: 0, locale: 'en' },
   { page: 'home', section: 'hero', key: 'title2', value: 'perfected.', type: 'text', sortOrder: 1, locale: 'en' },
   { page: 'home', section: 'hero', key: 'subtitle', value: 'A complete WoW UI, ready in minutes.', type: 'text', sortOrder: 2, locale: 'en' },
-  { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI is an in-game addon that installs and configures ElvUI, Plater, BigWigs, Details, Method Raid Tools and 20+ more addons for you. One click on Install All and your interface is done — no manual setup, no copy-pasting strings.', type: 'text', sortOrder: 3, locale: 'en' },
-  { page: 'home', section: 'hero', key: 'badge', value: 'New: MRT + ilvl tags', type: 'text', sortOrder: 4, locale: 'en' },
+  { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI is an in-game addon that installs and configures ElvUI, Plater, BigWigs, Details, Method Raid Tools and 30+ more addons for you. One click on Install All and your interface is done — no manual setup, no copy-pasting strings.', type: 'text', sortOrder: 3, locale: 'en' },
+  { page: 'home', section: 'hero', key: 'badge', value: 'New: AutoRoll + Pack system', type: 'text', sortOrder: 4, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'One-click setup', type: 'text', sortOrder: 0, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_1_text', value: 'Install MagguuUI, log in once, click **Install All**. Every supported addon — from ElvUI and Plater to MRT and BigWigs — gets its profile applied in the right order. Missing addons are skipped silently.', type: 'text', sortOrder: 1, locale: 'en' },
@@ -29,7 +29,7 @@ export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'intro', key: 'text', value: 'Getting started takes about five minutes. Install ElvUI, install MagguuUI, log in, and click Install All. Done — your UI is ready to play.', locale: 'en', type: 'text', sortOrder: 1 },
 
   { page: 'guide', section: 'steps', key: 'step_1_title', value: '1. Install ElvUI', locale: 'en', type: 'text', sortOrder: 10 },
-  { page: 'guide', section: 'steps', key: 'step_1', value: 'MagguuUI is built on top of [ElvUI](https://www.tukui.org/download.php?ui=elvui) and will not work without it.\n\n**Required version:** ElvUI 15.00 or higher.\n\nDownload ElvUI from tukui.org and drop the folders into `World of Warcraft\\_retail_\\Interface\\AddOns\\`. If you use the Tukui Client, CurseForge App, or any other addon manager, just search for ElvUI and install it.', locale: 'en', type: 'markdown', sortOrder: 11 },
+  { page: 'guide', section: 'steps', key: 'step_1', value: 'MagguuUI is built on top of [ElvUI](https://www.tukui.org/download.php?ui=elvui) and will not work without it.\n\n**Required version:** ElvUI 15.12 or higher.\n\nDownload ElvUI from tukui.org and drop the folders into `World of Warcraft\\_retail_\\Interface\\AddOns\\`. If you use the Tukui Client, CurseForge App, or any other addon manager, just search for ElvUI and install it.', locale: 'en', type: 'markdown', sortOrder: 11 },
 
   { page: 'guide', section: 'steps', key: 'step_2_title', value: '2. Install MagguuUI', locale: 'en', type: 'text', sortOrder: 20 },
   { page: 'guide', section: 'steps', key: 'step_2', value: 'Get MagguuUI from any of these sources:\n\n- **CurseForge** — search for *MagguuUI*\n- **Wago Addons** — [addons.wago.io](https://addons.wago.io/)\n- **WoWInterface** — [wowinterface.com](https://www.wowinterface.com/)\n\nAny modern addon manager (CurseForge, WowUp, Tukui Client) handles updates automatically.\n\nMagguuUI only configures supported addons — it does not download them. The other addons (Plater, BigWigs, Details, MRT, …) are optional and you install whichever ones you want separately.', locale: 'en', type: 'markdown', sortOrder: 21 },
@@ -44,7 +44,7 @@ export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'steps', key: 'step_5', value: 'Profiles are stored per account, so once your main character is set up your other characters get a much shorter flow.\n\nLog in on an alt and you will see a **Load Profiles** popup instead of the full installer. Confirm it and the existing MagguuUI profiles are applied to the alt. You can also run `/mui load` manually any time.\n\nClass-specific cooldown layouts are re-applied automatically when you change specialization.', locale: 'en', type: 'markdown', sortOrder: 51 },
 
   { page: 'guide', section: 'steps', key: 'step_6_title', value: '6. Customize and stay updated', locale: 'en', type: 'text', sortOrder: 60 },
-  { page: 'guide', section: 'steps', key: 'step_6', value: 'A few things worth knowing once everything is running:\n\n**Slash commands:**\n- `/mui` — open the installer\n- `/mui settings` — MagguuUI settings (General / Audio / Tags sub-tabs)\n- `/mui changelog` — read the latest changes in-game\n- `/muiaudio` — cycle audio output devices (also `/mui audio` with sub-commands)\n- `/cd` — cooldown layout settings\n- `/em` — Blizzard EditMode\n\n**Custom ElvUI tags** (Settings → Tags, off by default):\n- `[mui:ilvl]` — item level in any unitframe name text\n- `[mui:ilvl:setbonus]` — item level plus current tier set bonus (2P / 4P)\n\n**Minimap button** — left-click opens the installer, right-click opens the Great Vault, shift+right-click opens Settings, shift+left-click reloads the UI.\n\n**Audio switcher** — right-click the chat voice icon to cycle between configured output devices, or pick directly from **Settings → Audio**.\n\nWhen a new version is released MagguuUI shows you a **chat hint** or a **popup** (configurable). After you click *Got it* the same version will not bother you again.', locale: 'en', type: 'markdown', sortOrder: 61 },
+  { page: 'guide', section: 'steps', key: 'step_6', value: 'A few things worth knowing once everything is running:\n\n**Slash commands:**\n- `/mui` — open the installer\n- `/mui settings` — MagguuUI settings (General, Audio, AutoRoll, and Tags sub-tabs)\n- `/mui changelog` — read the latest changes in-game\n- `/mui load` — load profiles on the current character\n- `/mui minimap` — toggle the minimap button\n- `/mui version` — show the installed version\n- `/muiaudio` — cycle audio output devices (also `/mui audio` with sub-commands)\n- `/muiautoroll` — control automatic loot rolls (also `/mui autoroll`, sub-commands `on / off / toggle / status / delay N / settings`)\n- `/cd` — cooldown layout settings\n- `/em` — Blizzard EditMode\n\n**Custom ElvUI tags** (Settings → Tags, off by default):\n- `[mui:ilvl]` — item level in any unitframe name text\n- `[mui:ilvl:setbonus]` — item level plus current tier set bonus (2P / 4P)\n\n**Minimap button** — left-click opens the installer, shift+left-click opens Settings, right-click opens the Great Vault, middle-click opens the Changelog. The AddonCompartment button has its own mapping: left-click opens the installer, middle-click opens the Changelog, right-click opens Settings.\n\n**Audio switcher** — right-click the chat voice icon to cycle between configured output devices, or pick directly from **Settings → Audio**.\n\n**Automatic loot rolls** — opt-in per category (Toys / Mounts / Recipes / Housing / Transmog) under **Settings → AutoRoll**. Combat-safe queue, adjustable delay, BoE-popup auto-confirm, and a loot-council conflict warning so you do not auto-roll when raid leadership is distributing.\n\nWhen a new version is released MagguuUI shows you a **chat hint** or a **popup** (configurable). After you click *Got it* the same version will not bother you again.', locale: 'en', type: 'markdown', sortOrder: 61 },
 ] as const
 
 export const DEFAULT_FAQS = [
@@ -105,7 +105,7 @@ The addon picks up your client locale automatically — no manual switch needed.
     question: 'How do I set up MagguuUI from scratch?',
     answer: `Five steps, takes about two minutes:
 
-1. Install **ElvUI 15+** from [tukui.org](https://www.tukui.org/)
+1. Install **ElvUI 15.12+** from [tukui.org](https://www.tukui.org/)
 2. Install **MagguuUI** from CurseForge, Wago Addons, or WoWInterface
 3. Log in on your main character — the installer opens automatically
 4. Click **Install All**
@@ -141,7 +141,7 @@ You can also run \`/mui load\` manually if the popup didn't appear.`,
     question: 'Can I use MagguuUI without ElvUI?',
     answer: `**No.** ElvUI is the foundation everything else builds on.
 
-MagguuUI requires **ElvUI 15.00 or higher** and will refuse to load profiles without it. Install ElvUI first, then MagguuUI.`,
+MagguuUI requires **ElvUI 15.12 or higher** and will refuse to load profiles without it. Install ElvUI first, then MagguuUI.`,
     sortOrder: 3,
   },
 
@@ -204,6 +204,46 @@ Rule of thumb: *Install All* on your main, *Load Profiles* on alts.`,
 Using CurseForge, Tukui Client, or another manager? You can safely ignore these — they're just a convenience for WowUp users.`,
     sortOrder: 4,
   },
+  {
+    category: 'addons',
+    question: 'Can MagguuUI auto-roll on loot for me?',
+    answer: `**Yes — opt-in per category.**
+
+Open \`/mui settings\` → **AutoRoll** tab and toggle the categories you want auto-rolled:
+
+- **Toys** — Need
+- **Mounts** — Need
+- **Recipes** — Need
+- **Housing** — Need
+- **Transmog** — Greed (when you're missing the appearance)
+
+Combat-safe queue (rolls are deferred until combat ends), adjustable delay, BoE-popup auto-confirm so the *"This is BoE, are you sure?"* dialog doesn't block the roll, and a **loot-council conflict warning** that pauses auto-rolls when raid leadership is distributing manually.
+
+Slash command: \`/muiautoroll on / off / toggle / status / delay N / settings\`.`,
+    sortOrder: 5,
+  },
+  {
+    category: 'addons',
+    question: 'What is MagguuUI Data — the second addon in my list?',
+    answer: `From v12.0.22 onwards MagguuUI ships its curated profile strings in a separate **LoadOnDemand sub-addon** called *MagguuUI Data*. You will see it nested under MagguuUI in the WoW AddOns picker, marked *"Only loadable on demand"*.
+
+This is intentional. **Leave it enabled.** The main addon loads it lazily the moment you open the installer or run *Install All*. Keeping the data separate means a settings reset never wipes the bundled profiles, and the package is smaller in memory while you're not actively installing.
+
+If you disable it by accident, the installer will tell you the data package is missing and abort — re-enable it and reload.`,
+    sortOrder: 6,
+  },
+  {
+    category: 'addons',
+    question: 'What are the Dev Tools? I see them after some clicks.',
+    answer: `**The Dev Tools tab is for addon authors and pack maintainers.** Most users never need it.
+
+It's hidden by default. To unlock it: click the installer title bar **5 times** in a row, or run \`/mui dev\`. To re-lock: \`/mui dev off\`.
+
+Once unlocked, you get sub-tabs for **Info / Actions / Status / Exports / CVars**. The Exports tab is the *Pack system* — capture every supported addon's current profile as a snapshot, group snapshots into named packs, and copy the whole pack as Lua to ship a curated build.
+
+If you're a regular user and you accidentally unlocked it, just type \`/mui dev off\` and it disappears.`,
+    sortOrder: 7,
+  },
 
   // ─── Troubleshooting ──────────────────────────────
   {
@@ -211,7 +251,7 @@ Using CurseForge, Tukui Client, or another manager? You can safely ignore these 
     question: "Install All didn't do anything",
     answer: `Check these three things:
 
-1. **ElvUI enabled and version 15.00 or higher** — lower versions won't work
+1. **ElvUI enabled and version 15.12 or higher** — lower versions won't work
 2. **Not in combat** — MagguuUI waits until combat ends before applying profiles
 3. **UI reload confirmed** — required at the end of Install All
 

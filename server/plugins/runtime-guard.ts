@@ -14,8 +14,8 @@ export default defineNitroPlugin(() => {
   const config = useRuntimeConfig()
   const problems: string[] = []
 
-  if (!config.jwtSecret || config.jwtSecret === 'change-me-in-production') {
-    problems.push('NUXT_JWT_SECRET is missing or still using the insecure default value.')
+  if (!config.jwtSecret || config.jwtSecret === 'change-me-in-production' || config.jwtSecret.length < 32) {
+    problems.push('NUXT_JWT_SECRET is missing, using the insecure default, or shorter than 32 characters.')
   }
 
   if (config.githubToken && (!config.githubRepo || !/^[^/]+\/[^/]+$/.test(config.githubRepo))) {

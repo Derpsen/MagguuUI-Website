@@ -74,10 +74,17 @@ export function extractToken(event: H3Event): string | null {
  * Require valid admin JWT — throws 401 if invalid
  * Also validates session if sessionId is present in the token (backward compatible)
  */
+// JWTs we issue are well under 1 KB. Reject anything substantially larger so
+// an attacker cannot force expensive jwt.verify cycles on multi-megabyte input.
+const MAX_TOKEN_LENGTH = 4096
+
 export function requireAuth(event: H3Event): JwtPayload {
   const token = extractToken(event)
   if (!token) {
     throw createError({ statusCode: 401, message: 'Authentication required' })
+  }
+  if (token.length > MAX_TOKEN_LENGTH) {
+    throw createError({ statusCode: 401, message: 'Invalid token' })
   }
 
   let payload: JwtPayload
@@ -93,6 +100,11 @@ export function requireAuth(event: H3Event): JwtPayload {
     const session = validateSession(tokenH)
     if (!session) {
       throw createError({ statusCode: 401, message: 'Session revoked or expired' })
+    }
+    // Defense in depth: a forged or tampered DB row should not be honored under
+    // a different identity than the JWT was signed for.
+    if (session.userId !== payload.userId) {
+      throw createError({ statusCode: 401, message: 'Session/token user mismatch' })
     }
     // Attach session info to event context for downstream use
     event.context.sessionId = session.id

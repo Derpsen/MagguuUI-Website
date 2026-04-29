@@ -10,7 +10,14 @@ import { join } from 'path'
 import { sqlite } from '~/server/database'
 
 export default defineEventHandler(async (event) => {
-  // Auth already enforced by server/middleware/admin-api.ts for /api/v1/admin/*
+  // Auth already enforced by server/middleware/admin-api.ts for /api/v1/admin/*.
+  // The middleware allows GET requests for the viewer role — db-backup leaks
+  // the entire DB (password hashes, session tokens, passkey public keys) so
+  // explicitly require admin here.
+  const auth = requireAuth(event)
+  if (auth.role !== 'admin') {
+    throw createError({ statusCode: 403, message: 'Admin role required' })
+  }
 
   const ip = getClientIp(event)
   const { allowed, retryAfter } = checkRateLimit(`admin-db-backup:${ip}`, 6, 60 * 60 * 1000, 60 * 60 * 1000)

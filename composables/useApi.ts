@@ -19,10 +19,14 @@ export function useApi() {
    * Fetch with same-origin cookie auth
    */
   async function apiFetch<T>(url: string, options: ApiFetchOptions = {}): Promise<T> {
-    const response = await $fetch<{ success: boolean; data: T }>(url, {
+    const response = await $fetch<{ success: boolean; data: T; error?: { code?: string; message?: string } }>(url, {
       ...options,
       credentials: 'include',
     })
+
+    if (!response?.success) {
+      throw new Error(response?.error?.message || 'Request failed')
+    }
 
     return response.data
   }

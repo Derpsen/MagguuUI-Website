@@ -42,7 +42,7 @@ export function parseAddonChangelog(markdown: string): ChangelogEntry[] {
 
   for (const line of lines) {
     const match = HEADER_RE.exec(line)
-    if (match) {
+    if (match && match[1]) {
       flush()
       currentVersion = match[1]
       currentDate = match[2] ? new Date(match[2] + 'T00:00:00Z') : new Date()

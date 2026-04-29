@@ -10,14 +10,13 @@ import { db } from '~/server/database'
 import { settings } from '~/server/database/schema'
 
 export default defineEventHandler(async () => {
-  const config = useRuntimeConfig()
   const githubUrl = db.select().from(settings).where(eq(settings.key, 'github_url')).get()
   const repoUrl = githubUrl?.value || 'https://github.com/Derpsen/MagguuUI'
 
   // Extract owner/repo from URL
   const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/)
   if (!match) {
-    throw createError({ statusCode: 400, data: { success: false, error: { code: 'INVALID_URL', message: 'Invalid GitHub URL' } } })
+    throw apiError('INVALID_URL', 'Invalid GitHub URL', 400)
   }
 
   const [, owner, repo] = match
@@ -57,18 +56,15 @@ export default defineEventHandler(async () => {
     // Get local version for comparison
     const localVersion = db.select().from(settings).where(eq(settings.key, 'addon_version')).get()
 
-    return {
-      success: true,
-      data: {
-        latestVersion,
-        localVersion: localVersion?.value || null,
-        isUpToDate: localVersion?.value === latestVersion,
-        releaseName: response.name,
-        publishedAt: response.published_at,
-      },
-    }
+    return apiSuccess({
+      latestVersion,
+      localVersion: localVersion?.value || null,
+      isUpToDate: localVersion?.value === latestVersion,
+      releaseName: response.name,
+      publishedAt: response.published_at,
+    })
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'GitHub API error'
-    throw createError({ statusCode: 502, data: { success: false, error: { code: 'GITHUB_ERROR', message } } })
+    throw apiError('GITHUB_ERROR', message, 502)
   }
 })

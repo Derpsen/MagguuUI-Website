@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
+import type { Page } from '@playwright/test'
 
 async function expectNoConsoleErrors(page: Page, path: string) {
   const errors: string[] = []

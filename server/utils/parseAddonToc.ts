@@ -30,7 +30,7 @@ export function parseAddonToc(content: string): TocAddonRef[] {
 
   for (const line of lines) {
     const m = META_RE.exec(line.trim())
-    if (!m) continue
+    if (!m || !m[1] || m[2] === undefined) continue
     const key = m[1].toLowerCase()
     const value = m[2].trim()
     if (key === 'optionaldeps') {

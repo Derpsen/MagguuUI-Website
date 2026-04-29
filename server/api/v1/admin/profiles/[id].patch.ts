@@ -5,8 +5,15 @@
  */
 
 import { eq } from 'drizzle-orm'
+import { z } from 'zod'
 import { db } from '~/server/database'
 import { profiles } from '~/server/database/schema'
+import { validateBody } from '~/server/utils/validation'
+
+const profileToggleSchema = z.object({
+  isVisible: z.boolean().optional(),
+  sortOrder: z.number().int().optional(),
+})
 
 export default defineEventHandler(async (event) => {
   const id = Number(getRouterParam(event, 'id'))
@@ -20,11 +27,12 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
+  const data = validateBody(profileToggleSchema, body)
 
   const result = db.update(profiles)
     .set({
-      ...(body.isVisible !== undefined && { isVisible: body.isVisible }),
-      ...(body.sortOrder !== undefined && { sortOrder: body.sortOrder }),
+      ...(data.isVisible !== undefined && { isVisible: data.isVisible }),
+      ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
       updatedAt: new Date(),
     })
     .where(eq(profiles.id, id))

@@ -164,7 +164,7 @@
 
           <div class="flex justify-end gap-3 border-t border-slate-200 pt-4 dark:border-white/8">
             <UButton variant="ghost" color="neutral" @click="modalOpen = false">Cancel</UButton>
-            <UButton :loading="saving" @click="save">Save</UButton>
+            <UButton :loading="saving" :disabled="!canSubmit" @click="save">Save</UButton>
           </div>
         </div>
       </template>
@@ -290,6 +290,8 @@ const statCards = computed(() => {
     { label: 'Optional', value: optional, icon: 'i-heroicons-plus-circle', tone: 'violet' as const },
   ]
 })
+
+const canSubmit = computed(() => Boolean(form.value.slug.trim() && form.value.name.trim()))
 
 const lastSyncedText = computed(() => {
   const stamps = items.value

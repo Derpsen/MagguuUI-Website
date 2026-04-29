@@ -1,6 +1,6 @@
 export const PUBLIC_SITE_ORIGIN = 'https://ui.magguu.xyz'
 
-export const SITE_SETTINGS_DEFAULTS: Record<string, string> = {
+export const SITE_SETTINGS_DEFAULTS = {
   site_name: 'MagguuUI',
   site_description: 'World of Warcraft UI Configuration',
   curseforge_url: '',
@@ -27,7 +27,7 @@ export const SITE_SETTINGS_DEFAULTS: Record<string, string> = {
   adsense_slot_header: '',
   adsense_slot_content: '',
   adsense_slot_footer: '',
-}
+} as const
 
 export const PUBLIC_SITE_SETTING_KEYS = [
   'site_name',
@@ -52,7 +52,7 @@ export const PUBLIC_SITE_SETTING_KEYS = [
   'adsense_slot_footer',
 ] as const
 
-export const PUBLIC_SITE_SETTINGS_DEFAULTS: Record<string, string> = {
+export const PUBLIC_SITE_SETTINGS_DEFAULTS = {
   site_name: SITE_SETTINGS_DEFAULTS.site_name,
   site_description: SITE_SETTINGS_DEFAULTS.site_description,
   github_url: SITE_SETTINGS_DEFAULTS.github_url,

@@ -161,6 +161,22 @@ const adminSections: AdminNavSection[] = [
         hint: 'Keep repo connectivity, release checks and import/export workflows in one quiet utility page.',
       },
       {
+        to: '/admin/system/api-keys',
+        label: 'API Keys',
+        heading: 'API Keys',
+        icon: 'i-heroicons-key',
+        description: 'External integration tokens for the public API.',
+        hint: 'Keep integrations narrow: name every key clearly and delete unused access fast.',
+      },
+      {
+        to: '/admin/system/fields',
+        label: 'Fields',
+        heading: 'Custom Fields',
+        icon: 'i-heroicons-adjustments-horizontal',
+        description: 'Custom metadata fields for profiles, layouts and wowup strings.',
+        hint: 'Custom fields should stay predictable: a clear label, a stable key and one type.',
+      },
+      {
         to: '/admin/system/activity',
         label: 'Activity',
         heading: 'Activity',
@@ -186,9 +202,7 @@ const contextItems: AdminContextItem[] = [
 
 const dockLinks: AdminNavLink[] = [
   dashboardContext,
-  adminSections[0].links[0],
-  adminSections[1].links[0],
-  adminSections[2].links[0],
+  ...adminSections.map(section => section.links[0]).filter((link): link is AdminNavLink => Boolean(link)),
 ]
 
 const commandActions: AdminCommandItem[] = [

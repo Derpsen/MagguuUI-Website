@@ -39,11 +39,13 @@ export function usePublicPageSeo(options: PublicPageSeoOptions) {
     robots: options.robots,
   })
 
-  useHead({
+  // Function form keeps the canonical href reactive across SPA navigation —
+  // an inline object literal would freeze the value at setup time.
+  useHead(() => ({
     link: [
-      { rel: 'canonical', href: canonicalUrl },
+      { rel: 'canonical', href: canonicalUrl.value },
     ],
-  })
+  }))
 
   return siteSettings
 }

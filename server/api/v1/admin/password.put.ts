@@ -13,6 +13,18 @@ import { revokeAllUserSessions } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
   const auth = requireAuth(event)
+
+  // Rate-limit per user to stop a stolen-session brute-force of currentPassword
+  // (bcrypt cost 12 makes each guess slow but not free).
+  const rl = checkRateLimit(`pw-change:${auth.userId}`, 5, 15 * 60 * 1000, 30 * 60 * 1000)
+  if (!rl.allowed) {
+    setResponseHeader(event, 'Retry-After', String(rl.retryAfter))
+    throw createError({
+      statusCode: 429,
+      message: `Too many password-change attempts. Try again in ${Math.ceil(rl.retryAfter / 60)} minutes.`,
+    })
+  }
+
   const body = await readBody(event)
   const data = validateBody(passwordChangeSchema, body)
 
@@ -27,6 +39,8 @@ export default defineEventHandler(async (event) => {
   if (!valid) {
     throw createError({ statusCode: 401, message: 'Current password is incorrect' })
   }
+
+  resetRateLimit(`pw-change:${auth.userId}`)
 
   // Update password
   const hash = await bcrypt.hash(data.newPassword, 12)

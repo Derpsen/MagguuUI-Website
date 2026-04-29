@@ -123,7 +123,10 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
-    jwtSecret: process.env.NUXT_JWT_SECRET || 'change-me-in-production',
+    // No literal fallback — server/plugins/runtime-guard.ts refuses startup in
+    // non-development envs if NUXT_JWT_SECRET is unset, so the empty string is
+    // only ever observed in dev where developers can replace it consciously.
+    jwtSecret: process.env.NUXT_JWT_SECRET || '',
     authCookieName: process.env.NUXT_AUTH_COOKIE_NAME || 'magguuui_session',
     adminPassword: process.env.NUXT_ADMIN_PASSWORD || '',
     apiKey: process.env.NUXT_API_KEY || '',

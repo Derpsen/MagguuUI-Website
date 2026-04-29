@@ -32,6 +32,20 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  // Promote toc-sourced rows to manual when the admin edits any field the
+  // sync would otherwise overwrite (name, slug, category, tocName, emoji,
+  // description, url, sortOrder). Pure visibility/availability toggles do NOT
+  // promote — they are expected to coexist with the auto-sync.
+  const editsContent = data.slug !== undefined
+    || data.tocName !== undefined
+    || data.name !== undefined
+    || data.category !== undefined
+    || data.emoji !== undefined
+    || data.description !== undefined
+    || data.url !== undefined
+    || data.sortOrder !== undefined
+  const promoteToManual = existing.source === 'toc' && editsContent
+
   const result = db.update(addons)
     .set({
       ...(data.slug !== undefined && { slug: data.slug }),
@@ -44,6 +58,7 @@ export default defineEventHandler(async (event) => {
       ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
       ...(data.isVisible !== undefined && { isVisible: data.isVisible }),
       ...(data.isAvailable !== undefined && { isAvailable: data.isAvailable }),
+      ...(promoteToManual && { source: 'manual' as const }),
       updatedAt: new Date(),
     })
     .where(eq(addons.id, id))

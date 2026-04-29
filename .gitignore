@@ -5,9 +5,9 @@ node_modules/
 .nuxt/
 .output/
 
-# Runtime data
-data/
-uploads/
+# Runtime data (root-level only — must not match pages/admin/data/)
+/data/
+/uploads/
 
 # Environment and secrets
 .env

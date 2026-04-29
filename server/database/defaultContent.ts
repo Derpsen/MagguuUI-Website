@@ -44,7 +44,7 @@ export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'steps', key: 'step_5', value: 'Profiles are stored per account, so once your main character is set up your other characters get a much shorter flow.\n\nLog in on an alt and you will see a **Load Profiles** popup instead of the full installer. Confirm it and the existing MagguuUI profiles are applied to the alt. You can also run `/mui load` manually any time.\n\nClass-specific cooldown layouts are re-applied automatically when you change specialization.', locale: 'en', type: 'markdown', sortOrder: 51 },
 
   { page: 'guide', section: 'steps', key: 'step_6_title', value: '6. Customize and stay updated', locale: 'en', type: 'text', sortOrder: 60 },
-  { page: 'guide', section: 'steps', key: 'step_6', value: 'A few things worth knowing once everything is running:\n\n**Slash commands:**\n- `/mui` — open the installer\n- `/mui settings` — MagguuUI settings (General, Audio, AutoRoll, and Tags sub-tabs)\n- `/mui changelog` — read the latest changes in-game\n- `/mui load` — load profiles on the current character\n- `/mui minimap` — toggle the minimap button\n- `/mui version` — show the installed version\n- `/muiaudio` — cycle audio output devices (also `/mui audio` with sub-commands)\n- `/muiautoroll` — control automatic loot rolls (also `/mui autoroll`, sub-commands `on / off / toggle / status / delay N / settings`)\n- `/cd` — cooldown layout settings\n- `/em` — Blizzard EditMode\n\n**Custom ElvUI tags** (Settings → Tags, off by default):\n- `[mui:ilvl]` — item level in any unitframe name text\n- `[mui:ilvl:setbonus]` — item level plus current tier set bonus (2P / 4P)\n\n**Minimap button** — left-click opens the installer, shift+left-click opens Settings, right-click opens the Great Vault, middle-click opens the Changelog. The AddonCompartment button has its own mapping: left-click opens the installer, middle-click opens the Changelog, right-click opens Settings.\n\n**Audio switcher** — right-click the chat voice icon to cycle between configured output devices, or pick directly from **Settings → Audio**.\n\n**Automatic loot rolls** — opt-in per category (Toys / Mounts / Recipes / Housing / Transmog) under **Settings → AutoRoll**. Combat-safe queue, adjustable delay, BoE-popup auto-confirm, and a loot-council conflict warning so you do not auto-roll when raid leadership is distributing.\n\nWhen a new version is released MagguuUI shows you a **chat hint** or a **popup** (configurable). After you click *Got it* the same version will not bother you again.', locale: 'en', type: 'markdown', sortOrder: 61 },
+  { page: 'guide', section: 'steps', key: 'step_6', value: 'A few things worth knowing once everything is running:\n\n**Slash commands:**\n- `/mui` — open the installer\n- `/mui settings` — MagguuUI settings (General, Audio, AutoRoll, and Tags sub-tabs)\n- `/mui changelog` — read the latest changes in-game\n- `/mui load` — load profiles on the current character\n- `/mui minimap` — toggle the minimap button\n- `/mui version` — show the installed version\n- `/muiaudio` — cycle audio output devices (also `/mui audio` with sub-commands)\n- `/muiautoroll` — control automatic loot rolls (also `/mui autoroll`, sub-commands `on / off / toggle / status / delay N / settings`)\n- `/cd` — cooldown layout settings\n- `/em` — Blizzard EditMode\n\n**Custom ElvUI tags** (Settings → Tags, off by default):\n- `[mui:ilvl]` — item level in any unitframe name text\n- `[mui:ilvl:setbonus]` — item level plus current tier set bonus (2P / 4P)\n\n**Class-colored keybinds** — modifier letters (a / s / 1 / etc.) on the ElvUI action bars are tinted in your class color so binds read at a glance. On by default, toggle under **Settings → General**.\n\n**Minimap button** — left-click opens the installer, shift+left-click opens Settings, right-click opens the Great Vault, middle-click opens the Changelog. The AddonCompartment button has its own mapping: left-click opens the installer, middle-click opens the Changelog, right-click opens Settings. Hide the minimap button with `/mui minimap`.\n\n**Audio switcher** — three ways to cycle output devices: type `/muiaudio` (sub-commands: `config`, `on`/`off`, `list`, `pick N`), left-click the draggable on-screen button (toggle under **Settings → Audio**) or right-click the small voice icon next to your chat tabs.\n\n**Automatic loot rolls** — opt-in per category (Toys / Mounts / Recipes / Housing / Transmog) under **Settings → AutoRoll**. Combat-safe queue, adjustable delay, BoE-popup auto-confirm, and a loot-council conflict warning so you do not auto-roll when raid leadership is distributing.\n\n**Method Raid Tools** — if you have MRT installed, MagguuUI imports the full raid profile: notes, cooldown assignments, marks, raid groups, reminders and timers. Updates roundtrip through the bundled `!MUI1!` codec on every Install All / Load Profiles, so a fresh export from Dev Tools restores everything at once.\n\nWhen a new version is released MagguuUI shows you a **chat hint** or a **popup** (configurable). After you click *Got it* the same version will not bother you again.', locale: 'en', type: 'markdown', sortOrder: 61 },
 ] as const
 
 export const DEFAULT_FAQS = [
@@ -206,6 +206,28 @@ Using CurseForge, Tukui Client, or another manager? You can safely ignore these 
   },
   {
     category: 'addons',
+    question: 'Why are my action bar keybinds tinted in my class color?',
+    answer: `That's the **MagguuUI ColorModifiers** module recoloring the modifier letters (a / s / 1 / etc.) on your ElvUI action bars in your class color, so binds read at a glance.
+
+It only affects the modifier hint text, not the icons, and it follows your live ElvUI class-color setting. You can switch it off any time under \`/mui settings\` → **General** → *Class-color keybinds*.
+
+Without ElvUI loaded, the module silently does nothing — there are no bars to recolor.`,
+    sortOrder: 5,
+  },
+  {
+    category: 'addons',
+    question: 'How does the audio output switcher work?',
+    answer: `MagguuUI lets you flag a subset of your system audio outputs in **Settings → Audio** and cycle through them in three ways:
+
+- **Draggable on-screen button** — left-click cycles, right-click picks a specific device, shift-drag to move. Hide it again any time from Settings.
+- **Chat-frame voice icon** — right-click the small voice/channel icon next to the chat tabs to cycle without leaving combat focus.
+- **Slash command** — \`/muiaudio\` (or \`/mui audio\`) cycles. Sub-commands: \`config\` (open the config popup), \`on\` / \`off\` (master toggle), \`list\` (print every detected device with its index) and \`pick N\` (switch directly to the device with that index).
+
+If only one device is flagged, the cycle commands are a no-op — there is nothing to switch between.`,
+    sortOrder: 6,
+  },
+  {
+    category: 'addons',
     question: 'Can MagguuUI auto-roll on loot for me?',
     answer: `**Yes — opt-in per category.**
 
@@ -220,7 +242,7 @@ Open \`/mui settings\` → **AutoRoll** tab and toggle the categories you want a
 Combat-safe queue (rolls are deferred until combat ends), adjustable delay, BoE-popup auto-confirm so the *"This is BoE, are you sure?"* dialog doesn't block the roll, and a **loot-council conflict warning** that pauses auto-rolls when raid leadership is distributing manually.
 
 Slash command: \`/muiautoroll on / off / toggle / status / delay N / settings\`.`,
-    sortOrder: 5,
+    sortOrder: 7,
   },
   {
     category: 'addons',
@@ -230,7 +252,7 @@ Slash command: \`/muiautoroll on / off / toggle / status / delay N / settings\`.
 This is intentional. **Leave it enabled.** The main addon loads it lazily the moment you open the installer or run *Install All*. Keeping the data separate means a settings reset never wipes the bundled profiles, and the package is smaller in memory while you're not actively installing.
 
 If you disable it by accident, the installer will tell you the data package is missing and abort — re-enable it and reload.`,
-    sortOrder: 6,
+    sortOrder: 8,
   },
   {
     category: 'addons',
@@ -242,7 +264,7 @@ It's hidden by default. To unlock it: click the installer title bar **5 times** 
 Once unlocked, you get sub-tabs for **Info / Actions / Status / Exports / CVars**. The Exports tab is the *Pack system* — capture every supported addon's current profile as a snapshot, group snapshots into named packs, and copy the whole pack as Lua to ship a curated build.
 
 If you're a regular user and you accidentally unlocked it, just type \`/mui dev off\` and it disappears.`,
-    sortOrder: 7,
+    sortOrder: 9,
   },
 
   // ─── Troubleshooting ──────────────────────────────

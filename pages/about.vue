@@ -59,7 +59,15 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Quality-of-life tools</strong> — minimap button, audio output switcher (<code>/mui audio</code>), in-game changelog viewer.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Raid integration via MRT</strong> — full Method Raid Tools profile incl. notes, cooldown assignments, marks, raid groups, reminders and timers.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Class-colored keybinds</strong> — modifier letters on the ElvUI action bars are tinted in your class color so binds read at a glance. Toggle in <code>/mui settings</code>.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Quality-of-life tools</strong> — minimap button, AddonCompartment entry, draggable audio output switcher (<code>/mui audio</code>) and in-game changelog viewer.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
@@ -72,6 +80,10 @@
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
             <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Alts in seconds</strong> — after one main setup, alts get a short Load Profiles popup instead of the full installer.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">11 languages out of the box</strong> — enUS / enGB, deDE, frFR, esES, esMX, ruRU, ptBR, itIT, koKR, zhCN, zhTW. Picks up your client locale automatically.</span>
           </li>
         </ul>
       </div>

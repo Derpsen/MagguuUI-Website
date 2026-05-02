@@ -8,7 +8,7 @@
 
 import { createHmac, timingSafeEqual } from 'crypto'
 import { eq, and } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
 import { syncHistory, settings, profiles, wowupStrings, characterLayouts, changelogs } from '~/server/database/schema'
 import { createSyncChangelog } from '~/server/utils/syncChangelog'
 import { checkRateLimit, getClientIp } from '~/server/utils/rateLimit'
@@ -54,13 +54,26 @@ function verifySignature(payload: string, signature: string | null, secret: stri
 }
 
 export default defineEventHandler(async (event) => {
+  // Webhooks return sync stats (imported counts, errors). Mark them
+  // uncacheable so a future reverse proxy doesn't cache the response body.
+  setResponseHeader(event, 'Cache-Control', 'no-store')
+  setResponseHeader(event, 'X-Robots-Tag', 'noindex, nofollow, noarchive')
+
   const config = useRuntimeConfig()
   const webhookSecret = config.githubWebhookSecret || ''
   const eventType = getHeader(event, 'x-github-event') || ''
   const signature = getHeader(event, 'x-hub-signature-256') || null
 
-  // Rate limit unauthenticated hits (signature check is not enough: an attacker
-  // flooding with bad signatures still triggers a DB insert per request).
+  // Webhook secret is REQUIRED. Reject BEFORE any I/O (rate-limit DB write,
+  // raw-body buffering, JSON parse) so an unauthenticated probe can't force
+  // expensive work on the server. Returning 401 (vs 503) avoids leaking
+  // server-config state — for GitHub this is functionally identical.
+  if (!webhookSecret) {
+    throw createError({ statusCode: 401, message: 'Unauthorized' })
+  }
+
+  // Rate limit unauthenticated hits (signature check alone isn't enough: an
+  // attacker flooding with bad signatures still triggers DB inserts).
   const ip = getClientIp(event)
   const rl = checkRateLimit(`webhook:${ip}`, 60, 60 * 1000, 5 * 60 * 1000)
   if (!rl.allowed) {
@@ -84,13 +97,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 413, message: 'Webhook payload too large' })
   }
 
-  // Webhook secret is REQUIRED — refuse all calls if unset, to prevent
-  // unauthenticated writes into the DB via the auto-pull path. Check BEFORE
-  // JSON.parse so an unauthenticated attacker can't force large-payload parse
-  // cycles on the server.
-  if (!webhookSecret) {
-    throw createError({ statusCode: 503, message: 'Webhook secret not configured' })
-  }
   const bodyStr = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody)
   if (!verifySignature(bodyStr, signature, webhookSecret)) {
     db.insert(syncHistory).values({
@@ -439,29 +445,34 @@ export default defineEventHandler(async (event) => {
         }
         const entries = parseAddonChangelog(markdown)
 
-        for (const entry of entries) {
-          const existing = db.select().from(changelogs).where(eq(changelogs.version, entry.version)).get()
-          if (existing) {
-            if (existing.content !== entry.content) {
-              db.update(changelogs)
-                .set({ content: entry.content, contentEn: entry.content, updatedAt: new Date() })
-                .where(eq(changelogs.id, existing.id))
-                .run()
-              stats.updated++
+        // All-or-nothing upsert: a partial failure mid-loop would leave the
+        // changelogs table inconsistent with what was on GitHub. Idempotent
+        // on retry because we key on `version`.
+        sqlite.transaction(() => {
+          for (const entry of entries) {
+            const existing = db.select().from(changelogs).where(eq(changelogs.version, entry.version)).get()
+            if (existing) {
+              if (existing.content !== entry.content) {
+                db.update(changelogs)
+                  .set({ content: entry.content, contentEn: entry.content, updatedAt: new Date() })
+                  .where(eq(changelogs.id, existing.id))
+                  .run()
+                stats.updated++
+              } else {
+                stats.skipped++
+              }
             } else {
-              stats.skipped++
+              db.insert(changelogs).values({
+                version: entry.version,
+                content: entry.content,
+                contentEn: entry.content,
+                isPublished: true,
+                publishedAt: entry.publishedAt,
+              }).run()
+              stats.inserted++
             }
-          } else {
-            db.insert(changelogs).values({
-              version: entry.version,
-              content: entry.content,
-              contentEn: entry.content,
-              isPublished: true,
-              publishedAt: entry.publishedAt,
-            }).run()
-            stats.inserted++
           }
-        }
+        })()
 
         clResult = stats
         db.insert(syncHistory).values({

@@ -18,7 +18,13 @@ export function usePublicPageSeo(options: PublicPageSeoOptions) {
 
   const siteName = computed(() => siteSettings.value.site_name || PUBLIC_SITE_SETTINGS_DEFAULTS.site_name)
   const fullTitle = computed(() => buildPublicPageTitle(options.title, siteName.value))
-  const ogImage = computed(() => siteSettings.value.og_image_url || PUBLIC_SITE_SETTINGS_DEFAULTS.og_image_url)
+  // Only honour an explicit admin-supplied og_image_url. When unset, fall
+  // through to nuxt-og-image's auto-injected per-route Satori card instead
+  // of a static logo PNG, which renders poorly on Twitter/Facebook cards.
+  const customOgImage = computed(() => {
+    const v = siteSettings.value.og_image_url?.trim()
+    return v ? v : null
+  })
   const canonicalUrl = computed(() => buildPublicUrl(options.path))
 
   useSeoMeta({
@@ -28,13 +34,17 @@ export function usePublicPageSeo(options: PublicPageSeoOptions) {
     ogDescription: options.description,
     ogSiteName: siteName,
     ogUrl: canonicalUrl,
-    ogImage,
-    ogImageWidth: 1200,
-    ogImageHeight: 630,
-    ogImageType: 'image/png',
+    ...(customOgImage.value
+      ? {
+          ogImage: customOgImage.value,
+          ogImageWidth: 1200,
+          ogImageHeight: 630,
+          ogImageType: 'image/png',
+          twitterImage: customOgImage.value,
+        }
+      : {}),
     twitterTitle: fullTitle,
     twitterDescription: options.description,
-    twitterImage: ogImage,
     twitterCard: 'summary_large_image',
     robots: options.robots,
   })

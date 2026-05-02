@@ -9,7 +9,9 @@ import { apiKeys } from '~/server/database/schema'
 import { validateBody, apiKeyCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  // Minting API keys must remain admin-only — viewers/future roles must not
+  // be able to escalate by issuing themselves a higher-permission key.
+  const auth = requireAdmin(event)
   const body = await readBody(event)
   const data = validateBody(apiKeyCreateSchema, body)
 

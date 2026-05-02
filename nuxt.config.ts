@@ -3,7 +3,6 @@ import { PUBLIC_SITE_ORIGIN, PUBLIC_SITE_SETTINGS_DEFAULTS } from './utils/siteS
 const defaultSiteName = PUBLIC_SITE_SETTINGS_DEFAULTS.site_name
 const defaultMetaTitle = PUBLIC_SITE_SETTINGS_DEFAULTS.meta_title
 const defaultMetaDescription = PUBLIC_SITE_SETTINGS_DEFAULTS.meta_description
-const defaultOgImage = PUBLIC_SITE_SETTINGS_DEFAULTS.og_image_url
 const siteBaseUrl = `${PUBLIC_SITE_ORIGIN}/`
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -58,20 +57,19 @@ export default defineNuxtConfig({
         { property: 'og:url', content: siteBaseUrl },
         { property: 'og:title', content: defaultMetaTitle },
         { property: 'og:description', content: defaultMetaDescription },
-        { property: 'og:image', content: defaultOgImage },
-        { property: 'og:image:alt', content: `${defaultSiteName} logo` },
+        // og:image and twitter:image are injected per-route by nuxt-og-image
+        // (Satori card) or by usePublicPageSeo when the admin pins one. We
+        // intentionally do NOT set a static default here — a logo PNG renders
+        // poorly on social cards and would override the per-route Satori card.
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:title', content: defaultMetaTitle },
         { name: 'twitter:description', content: defaultMetaDescription },
-        { name: 'twitter:image', content: defaultOgImage },
       ],
-      script: [
-        {
-          async: true,
-          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3382298185404332',
-          crossorigin: 'anonymous',
-        },
-      ],
+      // AdSense script is injected on-demand by components/AdBanner.vue when
+      // ads are both enabled and configured. Loading it statically here would
+      // double-load the script on pages that already render an AdBanner, and
+      // would leak a request to Google on privacy-sensitive routes (imprint,
+      // privacy) even when the admin has disabled ads.
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' },
         { rel: 'icon', type: 'image/png', href: '/logo.png' },

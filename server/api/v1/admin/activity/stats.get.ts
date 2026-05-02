@@ -20,12 +20,9 @@ export default defineEventHandler(async () => {
     SELECT COUNT(*) as count FROM activity_log WHERE action = 'deleted' AND created_at > ${weekAgo}
   `)
 
-  return {
-    success: true,
-    data: {
-      created: created?.count || 0,
-      updated: updated?.count || 0,
-      deleted: deleted?.count || 0,
-    },
-  }
+  return apiSuccess({
+    created: created?.count || 0,
+    updated: updated?.count || 0,
+    deleted: deleted?.count || 0,
+  })
 })

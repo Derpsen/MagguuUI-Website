@@ -274,6 +274,11 @@ export async function verifyPasskeyAuthentication(credential: AuthenticationResp
   try {
     verification = await verifyAuthenticationResponse({
       response: credential,
+      // Challenges are random + 5min TTL + single-use (deleted on consume).
+      // We do not bind the challenge to the issuing client (IP/cookie) because
+      // mobile passkeys legitimately roam between networks (WLAN → cellular)
+      // mid-flow. The single-use guarantee below + the credential-counter
+      // check downstream already block stolen-challenge replay.
       expectedChallenge: (challenge: string) => {
         const row = sqlite.prepare(
           'SELECT * FROM webauthn_challenges WHERE challenge = ? AND type = ? AND expires_at > ?'

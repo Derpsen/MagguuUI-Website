@@ -10,11 +10,7 @@ import { users } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
-
-  if (auth.role !== 'admin') {
-    throw createError({ statusCode: 403, message: 'Admin access required' })
-  }
+  const auth = requireAdmin(event)
 
   const id = Number(getRouterParam(event, 'id'))
   if (!id || isNaN(id)) {

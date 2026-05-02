@@ -36,11 +36,11 @@ export default defineEventHandler(async () => {
 
   // ─── Unique Visitors (from copy_events) ───────────
   const uniqueVisitors = db.get<{ count: number }>(sql`
-    SELECT COUNT(DISTINCT ip) as count FROM copy_events WHERE ip != '0.0.0.0' AND ip IS NOT NULL
+    SELECT COUNT(DISTINCT ip) as count FROM copy_events WHERE ip IS NOT NULL AND ip != 'unknown'
   `)
   const uniqueVisitorsLast7Days = db.get<{ count: number }>(sql`
     SELECT COUNT(DISTINCT ip) as count FROM copy_events
-    WHERE created_at > ${weekAgo} AND ip != '0.0.0.0' AND ip IS NOT NULL
+    WHERE created_at > ${weekAgo} AND ip IS NOT NULL AND ip != 'unknown'
   `)
 
   // ─── Daily Charts (30 days) ───────────────────────
@@ -179,11 +179,11 @@ export default defineEventHandler(async () => {
 
   // Unique visitors from page_views (distinct IPs)
   const uniquePageVisitors = db.get<{ count: number }>(sql`
-    SELECT COUNT(DISTINCT ip) as count FROM page_views WHERE ip != '0.0.0.0' AND ip IS NOT NULL
+    SELECT COUNT(DISTINCT ip) as count FROM page_views WHERE ip IS NOT NULL AND ip != 'unknown'
   `)
   const uniquePageVisitorsLast7Days = db.get<{ count: number }>(sql`
     SELECT COUNT(DISTINCT ip) as count FROM page_views
-    WHERE created_at > ${weekAgo} AND ip != '0.0.0.0' AND ip IS NOT NULL
+    WHERE created_at > ${weekAgo} AND ip IS NOT NULL AND ip != 'unknown'
   `)
 
   // Daily page views (30 days)
@@ -246,54 +246,51 @@ export default defineEventHandler(async () => {
     ? Math.round(((thisWeekPageViews - lastWeekPageViews.count) / lastWeekPageViews.count) * 100)
     : 0
 
-  return {
-    success: true,
-    data: {
-      // Entity counts
-      profiles: profileCount?.count || 0,
-      wowupStrings: wowupCount?.count || 0,
-      layouts: layoutCount?.count || 0,
-      changelogs: changelogCount?.count || 0,
-      users: userCount?.count || 0,
-      totalCopies: copyCount?.count || 0,
-      totalApiCalls: apiLogCount?.count || 0,
-      totalActivities: activityCount?.count || 0,
-      // Copy visitors
-      uniqueVisitors: uniqueVisitors?.count || 0,
-      uniqueVisitorsLast7Days: uniqueVisitorsLast7Days?.count || 0,
-      copiesLast7Days: recentCopies?.count || 0,
-      apiCallsLast7Days: recentApiCalls?.count || 0,
-      // Charts
-      dailyCopies,
-      dailyApi,
-      topCopied,
-      recentActivity,
-      // Extended stats
-      copiesByType,
-      topEndpoints,
-      copyTrend,
-      apiTrend,
-      outdatedProfiles: outdatedProfiles?.count || 0,
-      outdatedLayouts: outdatedLayouts?.count || 0,
-      latestProfileUpdateAt: latestProfileUpdate?.updatedAt || null,
-      latestWowupUpdateAt: latestWowupUpdate?.updatedAt || null,
-      latestLayoutUpdateAt: latestLayoutUpdate?.updatedAt || null,
-      lastPublishedAt: latestPublishedChangelog?.publishedAt || null,
-      avgStringSizes,
-      hourlyCopies,
-      // Page view analytics
-      totalPageViews: totalPageViews?.count || 0,
-      pageViewsLast7Days: pageViewsLast7Days?.count || 0,
-      uniquePageVisitors: uniquePageVisitors?.count || 0,
-      uniquePageVisitorsLast7Days: uniquePageVisitorsLast7Days?.count || 0,
-      dailyPageViews,
-      topPages,
-      topReferrers,
-      deviceBreakdown,
-      browserBreakdown,
-      osBreakdown,
-      hourlyPageViews,
-      pageViewTrend,
-    },
-  }
+  return apiSuccess({
+    // Entity counts
+    profiles: profileCount?.count || 0,
+    wowupStrings: wowupCount?.count || 0,
+    layouts: layoutCount?.count || 0,
+    changelogs: changelogCount?.count || 0,
+    users: userCount?.count || 0,
+    totalCopies: copyCount?.count || 0,
+    totalApiCalls: apiLogCount?.count || 0,
+    totalActivities: activityCount?.count || 0,
+    // Copy visitors
+    uniqueVisitors: uniqueVisitors?.count || 0,
+    uniqueVisitorsLast7Days: uniqueVisitorsLast7Days?.count || 0,
+    copiesLast7Days: recentCopies?.count || 0,
+    apiCallsLast7Days: recentApiCalls?.count || 0,
+    // Charts
+    dailyCopies,
+    dailyApi,
+    topCopied,
+    recentActivity,
+    // Extended stats
+    copiesByType,
+    topEndpoints,
+    copyTrend,
+    apiTrend,
+    outdatedProfiles: outdatedProfiles?.count || 0,
+    outdatedLayouts: outdatedLayouts?.count || 0,
+    latestProfileUpdateAt: latestProfileUpdate?.updatedAt || null,
+    latestWowupUpdateAt: latestWowupUpdate?.updatedAt || null,
+    latestLayoutUpdateAt: latestLayoutUpdate?.updatedAt || null,
+    lastPublishedAt: latestPublishedChangelog?.publishedAt || null,
+    avgStringSizes,
+    hourlyCopies,
+    // Page view analytics
+    totalPageViews: totalPageViews?.count || 0,
+    pageViewsLast7Days: pageViewsLast7Days?.count || 0,
+    uniquePageVisitors: uniquePageVisitors?.count || 0,
+    uniquePageVisitorsLast7Days: uniquePageVisitorsLast7Days?.count || 0,
+    dailyPageViews,
+    topPages,
+    topReferrers,
+    deviceBreakdown,
+    browserBreakdown,
+    osBreakdown,
+    hourlyPageViews,
+    pageViewTrend,
+  })
 })

@@ -9,7 +9,10 @@ import { applyPrivateApiHeaders } from '~/server/utils/privateApiHeaders'
 
 export default defineEventHandler((event) => {
   const { pathname } = getRequestURL(event)
-  const isPrivateApi = pathname.startsWith('/api/v1/admin') || pathname.startsWith('/api/v1/auth')
+  const isPrivateApi =
+    pathname.startsWith('/api/v1/admin') ||
+    pathname.startsWith('/api/v1/auth') ||
+    pathname.startsWith('/api/v1/webhooks')
 
   if (!isPrivateApi) return
 

@@ -2,40 +2,38 @@
  * useScrollReveal — Smooth scroll-triggered fade-in animations
  *
  * Usage in template:
- *   <div v-scroll-reveal>...</div>
- *   <div v-scroll-reveal.delay-200>...</div>
+ *   <div :ref="(el) => observe(el as HTMLElement)">...</div>
  *
- * Or use the directive directly:
- *   const vScrollReveal = useScrollReveal()
+ * The observer is created eagerly on the client so template-`:ref` callbacks
+ * (which fire during render, before the parent's `onMounted`) can register
+ * targets immediately. Without eager creation, every above-the-fold target
+ * registered before mount silently fell through and never animated in.
  */
 
 export function useScrollReveal() {
-  const observer = ref<IntersectionObserver | null>(null)
-
-  onMounted(() => {
-    observer.value = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const el = entry.target as HTMLElement
-            el.classList.add('scroll-revealed')
-            observer.value?.unobserve(el)
+  const observer = import.meta.client
+    ? new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              const el = entry.target as HTMLElement
+              el.classList.add('scroll-revealed')
+              observer?.unobserve(el)
+            }
           }
-        }
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -60px 0px' }
-    )
-  })
+        },
+        { threshold: 0.1, rootMargin: '0px 0px -60px 0px' },
+      )
+    : null
 
   onUnmounted(() => {
-    observer.value?.disconnect()
+    observer?.disconnect()
   })
 
-  // Returns a ref callback to use with template refs
   function observe(el: HTMLElement | null) {
-    if (el && observer.value) {
+    if (el && observer) {
       el.classList.add('scroll-reveal')
-      observer.value.observe(el)
+      observer.observe(el)
     }
   }
 

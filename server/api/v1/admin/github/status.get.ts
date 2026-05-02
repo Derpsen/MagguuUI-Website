@@ -37,22 +37,19 @@ export default defineEventHandler(async () => {
     localVersion = lRow?.value || null
   } catch { /* ok */ }
 
-  return {
-    success: true,
-    data: {
-      configured: hasToken,
-      repo,
-      totalSyncs: totalSyncs?.count || 0,
-      latestVersion,
-      localVersion,
-      lastCheck,
-      recentSyncs: recentSyncs.map(s => ({
-        id: s.id,
-        trigger: s.triggerSource,
-        status: s.status,
-        details: s.details,
-        createdAt: s.createdAt,
-      })),
-    },
-  }
+  return apiSuccess({
+    configured: hasToken,
+    repo,
+    totalSyncs: totalSyncs?.count || 0,
+    latestVersion,
+    localVersion,
+    lastCheck,
+    recentSyncs: recentSyncs.map(s => ({
+      id: s.id,
+      trigger: s.triggerSource,
+      status: s.status,
+      details: s.details,
+      createdAt: s.createdAt,
+    })),
+  })
 })

@@ -126,6 +126,8 @@ export function cleanupRateLimits(retentionMs: number = 24 * 60 * 60 * 1000) {
  * set it freely to bypass IP-keyed rate limits. It is only honored as a last
  * resort when no other signal is available.
  */
+let warnedForwardedForFallback = false
+
 export function getClientIp(event: H3Event): string {
   const cf = getHeader(event, 'cf-connecting-ip')
   if (cf) return cf.trim()
@@ -137,7 +139,18 @@ export function getClientIp(event: H3Event): string {
   if (socket && socket !== '::1' && socket !== '127.0.0.1') return socket
 
   const forwarded = getHeader(event, 'x-forwarded-for')
-  if (forwarded) return (forwarded.split(',')[0] ?? forwarded).trim()
+  if (forwarded) {
+    if (process.env.NODE_ENV === 'production' && !warnedForwardedForFallback) {
+      // Loud one-shot warning: in prod, the deploy is meant to sit behind
+      // Cloudflare which sets cf-connecting-ip. If we ever fall back to the
+      // client-controllable x-forwarded-for, IP-keyed rate limits become
+      // forgeable. Surfacing the misconfiguration once is enough to spot it.
+      warnedForwardedForFallback = true
+      console.warn('[rateLimit] cf-connecting-ip and x-real-ip missing in production; ' +
+        'falling back to client-supplied x-forwarded-for. IP rate limits may be bypassable.')
+    }
+    return (forwarded.split(',')[0] ?? forwarded).trim()
+  }
 
   return socket || 'unknown'
 }

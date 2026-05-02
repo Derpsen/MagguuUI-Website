@@ -11,25 +11,28 @@
 
 import { randomBytes } from 'node:crypto'
 
-function buildHtmlCsp(nonce: string) {
+function buildHtmlCsp(nonce: string, isDev: boolean) {
+  // Dev relaxes script-src to 'unsafe-inline' 'unsafe-eval' because Vite HMR
+  // and Nuxt devtools inject inline scripts and dynamic-eval modules that can't
+  // be nonce-tagged. Production keeps strict nonce + strict-dynamic.
+  const scriptSrc = isDev
+    ? "'self' 'unsafe-inline' 'unsafe-eval'"
+    : `'nonce-${nonce}' 'strict-dynamic'`
+  // Dev needs `ws:` for HMR; prod doesn't.
+  const connectExtra = isDev ? ' ws: wss:' : ''
   return [
     "default-src 'self'",
     "base-uri 'self'",
     "frame-ancestors 'none'",
     "object-src 'none'",
     "form-action 'self'",
-    // Nonce + strict-dynamic: our own inline scripts carry this per-request nonce;
-    // any script they then load at runtime inherits trust. No broad `https:` so
-    // a script can't be smuggled in via a compromised third-party host — scripts
-    // must be explicitly reachable from a trusted, nonce-tagged source.
-    `script-src 'nonce-${nonce}' 'strict-dynamic'`,
+    `script-src ${scriptSrc}`,
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' data:",
     "img-src 'self' data: blob: https:",
-    // Ads: limit to DoubleClick + Google Syndication iframes. Not generic google.com.
     'frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com',
-    "connect-src 'self' https://api.iconify.design https://api.github.com https://pagead2.googlesyndication.com",
-    'upgrade-insecure-requests',
+    `connect-src 'self' https://api.iconify.design https://api.github.com https://pagead2.googlesyndication.com${connectExtra}`,
+    ...(isDev ? [] : ['upgrade-insecure-requests']),
   ].join('; ')
 }
 
@@ -40,20 +43,21 @@ function injectNonce(fragments: string[], nonce: string) {
 }
 
 export default defineNitroPlugin((nitroApp) => {
-  // In development, Nuxt's HMR/devtools rely on inline scripts and ws connections
-  // that don't carry our nonce. Only enforce nonce-based CSP in non-dev runtimes.
   const isDev = process.env.NODE_ENV === 'development'
-  if (isDev) return
 
   nitroApp.hooks.hook('render:html', (html, { event }) => {
     const nonce = randomBytes(16).toString('base64')
-    // Expose nonce for any later handlers that want to tag their own inline scripts.
     event.context.cspNonce = nonce
 
-    html.head = injectNonce(html.head, nonce)
-    html.bodyPrepend = injectNonce(html.bodyPrepend, nonce)
-    html.bodyAppend = injectNonce(html.bodyAppend, nonce)
+    if (!isDev) {
+      html.head = injectNonce(html.head, nonce)
+      html.bodyPrepend = injectNonce(html.bodyPrepend, nonce)
+      html.bodyAppend = injectNonce(html.bodyAppend, nonce)
+    }
 
-    setResponseHeader(event, 'Content-Security-Policy', buildHtmlCsp(nonce))
+    // Always set the HTML CSP so the locked-down JSON-baseline from
+    // routeRules doesn't leak onto HTML responses (which would block all
+    // styles and scripts in dev where there's no nonce injection).
+    setResponseHeader(event, 'Content-Security-Policy', buildHtmlCsp(nonce, isDev))
   })
 })

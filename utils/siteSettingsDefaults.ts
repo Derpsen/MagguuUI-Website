@@ -10,7 +10,9 @@ export const SITE_SETTINGS_DEFAULTS = {
   banner_text: '',
   meta_title: 'MagguuUI - Your WoW Interface, perfected.',
   meta_description: 'High-quality import strings for ElvUI, Plater, BigWigs, Details and more. Simply copy and paste into WoW.',
-  og_image_url: 'https://ui.magguu.xyz/logo.png',
+  // Empty by default — leaves nuxt-og-image's per-route Satori card as the
+  // canonical OG image. Admins can still pin a specific image via settings.
+  og_image_url: '',
   contact_email: 'contact@magguui.com',
   imprint_name: '',
   imprint_street: '',

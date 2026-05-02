@@ -14,6 +14,8 @@ import { profiles, wowupStrings, characterLayouts, changelogs, siteContent, sync
 import { validateBody, githubImportSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
+  // Bulk overwrite/merge of profiles, wowup strings and layouts. Only admins.
+  requireAdmin(event)
   const ip = getClientIp(event)
   const { allowed, retryAfter } = checkRateLimit(`admin-github-import:${ip}`, 5, 15 * 60 * 1000, 15 * 60 * 1000)
   if (!allowed) {
@@ -221,10 +223,7 @@ export default defineEventHandler(async (event) => {
       details: detail,
     }).run()
 
-    return {
-      success: true,
-      data: { message: 'Import successful', imported: stats },
-    }
+    return apiSuccess({ message: 'Import successful', imported: stats })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Import failed'
     db.insert(syncHistory).values({

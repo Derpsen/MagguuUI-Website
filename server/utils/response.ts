@@ -16,9 +16,10 @@ export function apiSuccess<T>(data: T, meta?: Record<string, unknown>) {
 }
 
 /**
- * Error response
+ * Error response — always throws. Returning `never` lets the compiler narrow
+ * after a bare call so `apiError(...)` and `throw apiError(...)` are both safe.
  */
-export function apiError(code: string, message: string, statusCode = 400) {
+export function apiError(code: string, message: string, statusCode = 400): never {
   throw createError({
     statusCode,
     data: {

@@ -9,7 +9,8 @@ import { users } from '~/server/database/schema'
 import { validateBody, userCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  // Creating users — including admins — is admin-only.
+  const auth = requireAdmin(event)
   const body = await readBody(event)
   const data = validateBody(userCreateSchema, body)
 
@@ -19,7 +20,9 @@ export default defineEventHandler(async (event) => {
     const result = db.insert(users).values({
       username: data.username,
       passwordHash: hash,
-      role: data.role || 'admin',
+      // Default role is 'viewer' — granting 'admin' must be explicit so a
+      // forgotten role field can't silently mint another administrator.
+      role: data.role || 'viewer',
     }).returning({ id: users.id, username: users.username, role: users.role }).get()
 
     logActivity({

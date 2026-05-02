@@ -17,8 +17,9 @@ export default defineEventHandler(async (event) => {
   const ip = getClientIp(event)
   const ua = getRequestHeader(event, 'user-agent') || ''
 
-  // Rate limit check
-  const { allowed, retryAfter } = checkRateLimit(`login:${ip}`, 10, 15 * 60 * 1000, 15 * 60 * 1000)
+  // Rate limit check — same key + same threshold as password login (5/15min)
+  // so a passkey path doesn't quietly become a softer credential-stuffing channel.
+  const { allowed, retryAfter } = checkRateLimit(`login:${ip}`, 5, 15 * 60 * 1000, 15 * 60 * 1000)
   if (!allowed) {
     setResponseHeader(event, 'Retry-After', String(retryAfter))
     throw createError({

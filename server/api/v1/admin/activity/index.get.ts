@@ -6,7 +6,7 @@
  *  - page (default 1)
  *  - limit (default 25, max 100)
  *  - action (created|updated|deleted)
- *  - type (profile|wowup|layout|changelog|content)
+ *  - type (profile|wowup|layout|addon|changelog|content|faq|user|api-key|field|setting)
  *  - dateFrom (ISO date string, e.g. "2026-01-01")
  *  - dateTo (ISO date string, e.g. "2026-02-19")
  */
@@ -25,12 +25,19 @@ export default defineEventHandler(async (event) => {
   const dateFrom = query.dateFrom as string | undefined
   const dateTo = query.dateTo as string | undefined
 
+  // Mirrors the entityType union in server/utils/activityLog.ts. Anything
+  // not listed here is silently dropped instead of returning unfiltered rows.
+  const ALLOWED_TYPES = [
+    'profile', 'wowup', 'layout', 'addon', 'changelog', 'content',
+    'faq', 'user', 'api-key', 'field', 'setting',
+  ] as const
+
   // Build where conditions
   const conditions = []
   if (actionFilter && ['created', 'updated', 'deleted'].includes(actionFilter)) {
     conditions.push(eq(activityLog.action, actionFilter))
   }
-  if (typeFilter && ['profile', 'wowup', 'layout', 'changelog', 'content'].includes(typeFilter)) {
+  if (typeFilter && (ALLOWED_TYPES as readonly string[]).includes(typeFilter)) {
     conditions.push(eq(activityLog.entityType, typeFilter))
   }
   if (dateFrom) {
@@ -56,13 +63,8 @@ export default defineEventHandler(async (event) => {
     ? baseQuery.where(where).orderBy(desc(activityLog.createdAt)).limit(limit).offset(offset).all()
     : baseQuery.orderBy(desc(activityLog.createdAt)).limit(limit).offset(offset).all()
 
-  return {
-    success: true,
-    data: {
-      items: rows,
-      total,
-      page,
-      totalPages: Math.ceil(total / limit),
-    },
-  }
+  return apiSuccess(
+    { items: rows, total, page, totalPages: Math.ceil(total / limit) },
+    { total, page, totalPages: Math.ceil(total / limit) },
+  )
 })

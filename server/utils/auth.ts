@@ -17,15 +17,24 @@ interface JwtPayload {
   sessionId?: number
 }
 
+// `__Host-` prefix is enforced by browsers as Secure + no Domain + Path=/.
+// It hardens against subdomain-cookie injection, but requires Secure=true,
+// which dev (HTTP) cannot satisfy — so we only apply the prefix in production.
+const isProd = process.env.NODE_ENV === 'production'
+const COOKIE_NAME_PROD = '__Host-magguuui_session'
+const COOKIE_NAME_DEV = 'magguuui_session'
+const LEGACY_COOKIE_NAMES = ['magguuui_session']
+
 function getAuthCookieName() {
   const config = useRuntimeConfig()
-  return config.authCookieName || 'magguuui_session'
+  if (config.authCookieName) return config.authCookieName
+  return isProd ? COOKIE_NAME_PROD : COOKIE_NAME_DEV
 }
 
 const AUTH_COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: 'strict' as const,
-  secure: process.env.NODE_ENV === 'production',
+  secure: isProd,
   path: '/',
 }
 
@@ -38,6 +47,11 @@ export function setAuthCookie(event: H3Event, token: string, maxAgeSeconds: numb
 
 export function clearAuthCookie(event: H3Event) {
   deleteCookie(event, getAuthCookieName(), AUTH_COOKIE_OPTIONS)
+  // Best-effort: also clear any legacy cookie names left from earlier deploys
+  // so a stale token can't keep authenticating after rotation.
+  for (const name of LEGACY_COOKIE_NAMES) {
+    if (name !== getAuthCookieName()) deleteCookie(event, name, AUTH_COOKIE_OPTIONS)
+  }
 }
 
 /**
@@ -66,6 +80,14 @@ export function extractToken(event: H3Event): string | null {
 
   const cookieToken = getCookie(event, getAuthCookieName())
   if (cookieToken) return cookieToken
+
+  // Accept legacy cookie names during the rollover window so existing sessions
+  // remain valid after a cookie-name change. Old cookies are cleared on logout.
+  for (const name of LEGACY_COOKIE_NAMES) {
+    if (name === getAuthCookieName()) continue
+    const legacy = getCookie(event, name)
+    if (legacy) return legacy
+  }
 
   return null
 }
@@ -112,4 +134,17 @@ export function requireAuth(event: H3Event): JwtPayload {
   }
 
   return payload
+}
+
+/**
+ * Require valid admin JWT AND `role === 'admin'`. Defence-in-depth on top of
+ * the admin-api middleware role check, so a future role expansion (or a missed
+ * write-method check) cannot quietly grant access to destructive endpoints.
+ */
+export function requireAdmin(event: H3Event): JwtPayload {
+  const auth = requireAuth(event)
+  if (auth.role !== 'admin') {
+    throw createError({ statusCode: 403, message: 'Admin role required' })
+  }
+  return auth
 }

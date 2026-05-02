@@ -71,18 +71,18 @@
           <div class="flex-1 h-px" :class="isDark ? 'bg-white/8' : 'bg-slate-200'" />
         </div>
 
-        <div class="space-y-4">
+        <form class="space-y-4" novalidate @submit.prevent="handleLogin">
           <div>
             <label for="login-username" class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-700'">Username</label>
-            <UInput id="login-username" v-model="form.username" placeholder="admin" icon="i-heroicons-user" size="lg" autofocus @keyup.enter="handleLogin" />
+            <UInput id="login-username" v-model="form.username" name="username" autocomplete="username" placeholder="admin" icon="i-heroicons-user" size="lg" autofocus @update:model-value="error = ''" />
           </div>
           <div>
             <label for="login-password" class="block text-sm font-medium mb-1.5" :class="isDark ? 'text-slate-300' : 'text-slate-700'">Password</label>
-            <UInput id="login-password" v-model="form.password" type="password" placeholder="••••••••" icon="i-heroicons-lock-closed" size="lg" @keyup.enter="handleLogin" />
+            <UInput id="login-password" v-model="form.password" type="password" name="password" autocomplete="current-password" placeholder="••••••••" icon="i-heroicons-lock-closed" size="lg" @update:model-value="error = ''" />
           </div>
-          <UAlert v-if="error" :color="isLocked ? 'warning' : 'error'" variant="subtle" :icon="isLocked ? 'i-heroicons-lock-closed' : 'i-heroicons-exclamation-circle'" :title="error" />
-          <UButton block size="lg" :loading="loading" @click="handleLogin">Sign In</UButton>
-        </div>
+          <UAlert v-if="error" :color="isLocked ? 'warning' : 'error'" variant="subtle" role="alert" aria-live="polite" :icon="isLocked ? 'i-heroicons-lock-closed' : 'i-heroicons-exclamation-circle'" :title="error" />
+          <UButton type="submit" block size="lg" :loading="loading">Sign In</UButton>
+        </form>
 
         <div class="flex items-center justify-between gap-3 mt-6 pt-5 border-t"
           :class="isDark ? 'border-white/8' : 'border-slate-200'">

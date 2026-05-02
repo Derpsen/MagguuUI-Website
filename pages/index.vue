@@ -291,13 +291,13 @@ const updateCount = computed(() => {
   return Array.isArray(entries) ? entries.length : 0
 })
 
-// Animated counter — counts up from 0 to target with easeOutCubic
+// Animated counter — counts up from 0 to target with easeOutCubic.
+// Both SSR and initial-client render show 0 so hydration text matches; the
+// animation only runs on the client after mount. Search engines pick up the
+// real numbers via the surrounding metadata, not these decorative chips.
 function useAnimatedCounter(target: Ref<number>, duration = 1200) {
   const current = ref(0)
-  if (!import.meta.client) {
-    watch(target, (val) => { current.value = val }, { immediate: true })
-    return current
-  }
+  if (!import.meta.client) return current
   let started = false
   watch(target, (val) => {
     if (val <= 0 || started) { if (val <= 0) current.value = 0; return }

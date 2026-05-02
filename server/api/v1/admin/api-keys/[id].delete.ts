@@ -7,7 +7,7 @@ import { db } from '~/server/database'
 import { apiKeys } from '~/server/database/schema'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  const auth = requireAdmin(event)
   const id = Number(getRouterParam(event, 'id'))
   if (isNaN(id)) throw createError({ statusCode: 400, message: 'Invalid ID' })
 

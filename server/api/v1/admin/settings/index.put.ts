@@ -29,7 +29,9 @@ const settingsBodySchema = z
   })
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  // Site settings can disable rate-limiting via NUXT_*_TIMEOUT-style configs
+  // and switch outbound URLs — must remain admin-only.
+  const auth = requireAdmin(event)
   const body = await readBody(event)
   const data = validateBody(settingsBodySchema, body)
 

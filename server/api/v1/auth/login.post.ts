@@ -19,15 +19,17 @@ import {
 
 export default defineEventHandler(async (event) => {
   const ip = getClientIp(event)
+  const ipKey = rateLimitIpKey(ip)
   const ua = getRequestHeader(event, 'user-agent') || ''
 
-  // Rate limit check
-  const { allowed, retryAfter } = checkRateLimit(`login:${ip}`, 5, 15 * 60 * 1000, 15 * 60 * 1000)
-  if (!allowed) {
-    setResponseHeader(event, 'Retry-After', String(retryAfter))
+  // IP rate limit: 5 attempts / 15 min, IPv6 collapsed to /64 so a single
+  // subscriber can't burn the bucket from sibling addresses.
+  const ipRl = checkRateLimit(`login:ip:${ipKey}`, 5, 15 * 60 * 1000, 15 * 60 * 1000)
+  if (!ipRl.allowed) {
+    setResponseHeader(event, 'Retry-After', String(ipRl.retryAfter))
     throw createError({
       statusCode: 429,
-      message: `Too many login attempts. Please wait ${Math.ceil(retryAfter / 60)} minutes.`,
+      message: `Too many login attempts. Please wait ${Math.ceil(ipRl.retryAfter / 60)} minutes.`,
     })
   }
 
@@ -44,6 +46,19 @@ export default defineEventHandler(async (event) => {
   }
   body.username = username
   body.password = password
+
+  // Username-keyed rate limit: 10 attempts / hour. Layered with the IP bucket so
+  // distributed credential-stuffing against a single account can't ride past
+  // the IP throttle by rotating source addresses.
+  const userKey = body.username.toLowerCase()
+  const userRl = checkRateLimit(`login:user:${userKey}`, 10, 60 * 60 * 1000, 60 * 60 * 1000)
+  if (!userRl.allowed) {
+    setResponseHeader(event, 'Retry-After', String(userRl.retryAfter))
+    throw createError({
+      statusCode: 429,
+      message: `Too many login attempts. Please wait ${Math.ceil(userRl.retryAfter / 60)} minutes.`,
+    })
+  }
 
   // Check account lockout
   const lockout = checkAccountLockout(body.username)
@@ -91,8 +106,9 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Success — reset rate limit for this IP
-  resetRateLimit(`login:${ip}`)
+  // Success — reset both rate-limit buckets for this IP and username
+  resetRateLimit(`login:ip:${ipKey}`)
+  resetRateLimit(`login:user:${userKey}`)
 
   return completeSuccessfulLogin({
     event,

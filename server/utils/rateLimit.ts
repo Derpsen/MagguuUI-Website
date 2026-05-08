@@ -154,3 +154,23 @@ export function getClientIp(event: H3Event): string {
 
   return socket || 'unknown'
 }
+
+/**
+ * Normalize an IP for rate-limit keying. IPv4 addresses are returned as-is.
+ * IPv6 addresses are reduced to their /64 prefix because most consumer ISPs
+ * delegate at least a /64 to a single subscriber — without this collapse, an
+ * attacker rotates trivially through 18 quintillion sibling addresses to
+ * bypass per-IP throttling.
+ */
+export function rateLimitIpKey(ip: string): string {
+  if (!ip || ip === 'unknown') return ip || 'unknown'
+  if (!ip.includes(':')) return ip
+  const mapped = ip.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i)
+  if (mapped) return mapped[1]
+  const [head, tail = ''] = ip.split('::')
+  const headGroups = head ? head.split(':') : []
+  const tailGroups = tail ? tail.split(':') : []
+  const missing = 8 - headGroups.length - tailGroups.length
+  const groups = [...headGroups, ...Array(Math.max(0, missing)).fill('0'), ...tailGroups]
+  return groups.slice(0, 4).join(':') + '::/64'
+}

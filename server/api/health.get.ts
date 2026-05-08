@@ -12,10 +12,12 @@ export default defineEventHandler(async () => {
     // Quick DB check
     db.run(sql`SELECT 1`)
 
+    // Version intentionally omitted: leaking app version to anonymous callers
+    // aids reconnaissance for targeted CVE selection. Authenticated admins can
+    // still see it via /api/v1/admin/system/info.
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
-      version: '3.0.0',
     }
   } catch {
     throw createError({ statusCode: 503, message: 'Database unavailable' })

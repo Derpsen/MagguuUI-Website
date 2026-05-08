@@ -154,7 +154,11 @@ export async function generatePasskeyRegistrationOptions(userId: number, usernam
     excludeCredentials,
     authenticatorSelection: {
       residentKey: 'preferred',
-      userVerification: 'preferred',
+      // Admin login surface — require user verification (PIN, biometric) so
+      // a stolen authenticator without a second factor cannot complete the
+      // ceremony. All modern platform authenticators (Touch ID, Windows
+      // Hello, hardware keys with PIN) satisfy this without UX friction.
+      userVerification: 'required',
     },
   } as GenerateRegistrationOptionsOpts)
 
@@ -244,7 +248,9 @@ export async function generatePasskeyAuthenticationOptions(event?: H3Event) {
   const options = await generateAuthenticationOptions({
     rpID: rpId,
     allowCredentials: allowCredentials.length > 0 ? allowCredentials : undefined,
-    userVerification: 'preferred',
+    // Match registration: require UV so a cloned/stolen authenticator without
+    // PIN/biometric protection cannot mount a valid response.
+    userVerification: 'required',
   } as GenerateAuthenticationOptionsOpts)
 
   // Store challenge
@@ -307,8 +313,20 @@ export async function verifyPasskeyAuthentication(credential: AuthenticationResp
     throw createError({ statusCode: 401, message: 'Passkey authentication failed' })
   }
 
-  // Update counter + lastUsed
+  // Counter-regression detection: if both old and new are non-zero and new
+  // didn't advance, the authenticator may have been cloned. simplewebauthn
+  // already guards this with userVerification: 'required', but we double-check
+  // explicitly so the event is loggable and a future library change cannot
+  // silence the signal.
   const newCounter = verification.authenticationInfo.newCounter
+  const oldCounter = passkeyRow.counter ?? 0
+  if (oldCounter > 0 && newCounter > 0 && newCounter <= oldCounter) {
+    console.error(
+      `[SECURITY] Passkey counter regression — passkey_id=${passkeyRow.id} user_id=${passkeyRow.userId} old=${oldCounter} new=${newCounter}. Possible cloned authenticator.`,
+    )
+    throw createError({ statusCode: 401, message: 'Authenticator counter regression — passkey rejected' })
+  }
+
   sqlite.prepare('UPDATE passkeys SET counter = ?, last_used = ? WHERE id = ?')
     .run(newCounter, Math.floor(Date.now() / 1000), passkeyRow.id)
 

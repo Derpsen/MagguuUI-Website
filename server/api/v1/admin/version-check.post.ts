@@ -9,7 +9,22 @@ import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { settings } from '~/server/database/schema'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  // Even though the middleware authenticates this endpoint, an admin token
+  // could be replayed at high frequency to fan-out outbound requests against
+  // api.github.com. 10 calls / 10 min is enough for legitimate UI use.
+  const ip = getClientIp(event)
+  const { allowed, retryAfter } = checkRateLimit(
+    `version-check:${rateLimitIpKey(ip)}`,
+    10,
+    10 * 60 * 1000,
+    10 * 60 * 1000,
+  )
+  if (!allowed) {
+    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    throw apiError('RATE_LIMITED', 'Too many version checks. Please wait a moment.', 429)
+  }
+
   const githubUrl = db.select().from(settings).where(eq(settings.key, 'github_url')).get()
   const repoUrl = githubUrl?.value || 'https://github.com/Derpsen/MagguuUI'
 
@@ -20,6 +35,13 @@ export default defineEventHandler(async () => {
   }
 
   const [, owner, repo] = match
+  // Constrain owner/repo to GitHub-legal characters so an admin-supplied URL
+  // can't smuggle path-traversal or alternate-target tokens (`..`, `@host`,
+  // percent-encoded slashes) into the api.github.com call.
+  const segmentRe = /^[a-zA-Z0-9._-]+$/
+  if (!segmentRe.test(owner) || !segmentRe.test(repo)) {
+    throw apiError('INVALID_URL', 'GitHub URL contains invalid characters', 400)
+  }
 
   try {
     // Fetch latest release from GitHub API

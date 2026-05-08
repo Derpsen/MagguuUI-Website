@@ -7,7 +7,13 @@
 
 import jwt from 'jsonwebtoken'
 import type { H3Event } from 'h3'
-import { hashToken, validateSession } from '~/server/utils/session'
+import {
+  hashToken,
+  validateSession,
+  revokeSession,
+  parseBrowser,
+  parseOS,
+} from '~/server/utils/session'
 import { getSessionTimeoutHours } from '~/server/utils/settings'
 
 interface JwtPayload {
@@ -68,7 +74,10 @@ export function createToken(payload: JwtPayload): string {
  */
 export function verifyToken(token: string): JwtPayload {
   const config = useRuntimeConfig()
-  return jwt.verify(token, config.jwtSecret) as JwtPayload
+  // Pin to HS256 explicitly: jsonwebtoken@9 mitigates `alg=none` and HS/RS
+  // confusion at the library level, but an explicit allowlist forecloses
+  // future regressions and library-fork drift.
+  return jwt.verify(token, config.jwtSecret, { algorithms: ['HS256'] }) as JwtPayload
 }
 
 /**
@@ -128,6 +137,25 @@ export function requireAuth(event: H3Event): JwtPayload {
     if (session.userId !== payload.userId) {
       throw createError({ statusCode: 401, message: 'Session/token user mismatch' })
     }
+
+    // Bind session to UA family (browser+OS). Stricter than comparing exact
+    // UA strings (which rotate with every minor browser update), looser than
+    // IP binding (which would break legitimate WLAN↔cellular transitions).
+    // On drift we revoke and force re-auth — a stolen cookie replayed from
+    // a different OS or browser is the signal we want to catch.
+    if (session.browser && session.os) {
+      const currentUa = getHeader(event, 'user-agent') || ''
+      const currentBrowser = parseBrowser(currentUa)
+      const currentOs = parseOS(currentUa)
+      if (session.browser !== currentBrowser || session.os !== currentOs) {
+        revokeSession(session.id)
+        throw createError({
+          statusCode: 401,
+          message: 'Session context changed — please log in again',
+        })
+      }
+    }
+
     // Attach session info to event context for downstream use
     event.context.sessionId = session.id
     event.context.session = session

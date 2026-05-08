@@ -15,11 +15,12 @@ import {
 
 export default defineEventHandler(async (event) => {
   const ip = getClientIp(event)
+  const ipKey = rateLimitIpKey(ip)
   const ua = getRequestHeader(event, 'user-agent') || ''
 
-  // Rate limit check — same key + same threshold as password login (5/15min)
-  // so a passkey path doesn't quietly become a softer credential-stuffing channel.
-  const { allowed, retryAfter } = checkRateLimit(`login:${ip}`, 5, 15 * 60 * 1000, 15 * 60 * 1000)
+  // Share the IP bucket with the password-login path so an attacker can't
+  // alternate between paths to softer-throttle credential stuffing.
+  const { allowed, retryAfter } = checkRateLimit(`login:ip:${ipKey}`, 5, 15 * 60 * 1000, 15 * 60 * 1000)
   if (!allowed) {
     setResponseHeader(event, 'Retry-After', String(retryAfter))
     throw createError({
@@ -72,8 +73,10 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Success — reset rate limit
-  resetRateLimit(`login:${ip}`)
+  // Success — reset both buckets so the next operator-initiated login isn't
+  // throttled by a previous burst.
+  resetRateLimit(`login:ip:${ipKey}`)
+  resetRateLimit(`login:user:${user.username.toLowerCase()}`)
 
   return completeSuccessfulLogin({
     event,

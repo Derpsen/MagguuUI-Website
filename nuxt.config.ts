@@ -125,7 +125,10 @@ export default defineNuxtConfig({
     // non-development envs if NUXT_JWT_SECRET is unset, so the empty string is
     // only ever observed in dev where developers can replace it consciously.
     jwtSecret: process.env.NUXT_JWT_SECRET || '',
-    authCookieName: process.env.NUXT_AUTH_COOKIE_NAME || 'magguuui_session',
+    // Empty string lets server/utils/auth.ts pick the prod-aware __Host- prefixed
+    // cookie name. A truthy fallback here would short-circuit that branch and
+    // disable the subdomain-injection hardening in production.
+    authCookieName: process.env.NUXT_AUTH_COOKIE_NAME || '',
     adminPassword: process.env.NUXT_ADMIN_PASSWORD || '',
     apiKey: process.env.NUXT_API_KEY || '',
     githubToken: process.env.NUXT_GITHUB_TOKEN || '',

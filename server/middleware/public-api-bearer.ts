@@ -34,11 +34,14 @@ export default defineEventHandler((event) => {
   const { pathname } = getRequestURL(event)
   if (!isGuarded(pathname)) return
 
-  const expected = process.env.API_BEARER_TOKEN
+  const expected = useRuntimeConfig().apiBearerToken
   if (!expected) return
 
-  // Same-origin browser request: trust it, the user already loaded the
-  // site over HTTPS from this host.
+  // Same-origin browser request: trust it. The Nuxt frontend would have to
+  // ship the token into the client bundle to send it here, so we instead
+  // accept the same-origin signal as proof. Server-side rendering does NOT
+  // hit this path — those calls are originated by the Nuxt server itself
+  // and use the Bearer flow below (see composables/useApiFetch.ts).
   const origin = getHeader(event, 'origin')
   if (origin) {
     let originHost = ''
@@ -50,7 +53,8 @@ export default defineEventHandler((event) => {
     if (originHost === getRequestHost(event)) return
   }
 
-  // Cross-origin or no Origin: require Bearer token.
+  // No Origin (server-to-server, curl, GitHub Actions runner, Nuxt SSR
+  // internal $fetch) or cross-origin: require Bearer token.
   const auth = getHeader(event, 'authorization') ?? ''
   if (auth !== `Bearer ${expected}`) {
     throw createError({ statusCode: 401, message: 'Unauthorized' })

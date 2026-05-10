@@ -131,6 +131,11 @@ export default defineNuxtConfig({
     authCookieName: process.env.NUXT_AUTH_COOKIE_NAME || '',
     adminPassword: process.env.NUXT_ADMIN_PASSWORD || '',
     apiKey: process.env.NUXT_API_KEY || '',
+    // Shared bearer token for the read-only /api/v1/profiles, /api/v1/wowup,
+    // and /api/v1/layouts/* endpoints. Set on the host as API_BEARER_TOKEN;
+    // mirrored as the WEBSITE_API_KEY repo secret on the workflow side.
+    // When unset the public-api-bearer middleware no-ops (legacy behaviour).
+    apiBearerToken: process.env.API_BEARER_TOKEN || '',
     githubToken: process.env.NUXT_GITHUB_TOKEN || '',
     githubRepo: process.env.NUXT_GITHUB_REPO || 'Derpsen/MagguuUI',
     githubWebhookSecret: process.env.NUXT_GITHUB_WEBHOOK_SECRET || '',

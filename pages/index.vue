@@ -218,10 +218,12 @@ interface LayoutItem { id: number, className?: string | null, spec?: string | nu
 type WowupKeyed = Record<string, { string: string, [k: string]: unknown }>
 interface ChangelogEntry { id: number, version: string, [k: string]: unknown }
 
+const internalApiHeaders = useInternalApiHeaders()
+
 const { data: contentData } = await useFetch<{ data: HomeContent }>('/api/v1/content/home')
-const { data: profileData } = await useFetch<{ data: ProfileGrouped }>('/api/v1/profiles')
-const { data: layoutData } = await useFetch<{ data: LayoutItem[] }>('/api/v1/layouts')
-const { data: wowupData } = await useFetch<{ data: WowupKeyed }>('/api/v1/wowup')
+const { data: profileData } = await useFetch<{ data: ProfileGrouped }>('/api/v1/profiles', { headers: internalApiHeaders })
+const { data: layoutData } = await useFetch<{ data: LayoutItem[] }>('/api/v1/layouts', { headers: internalApiHeaders })
+const { data: wowupData } = await useFetch<{ data: WowupKeyed }>('/api/v1/wowup', { headers: internalApiHeaders })
 const { data: changelogData } = await useFetch<{ data: ChangelogEntry[] }>('/api/v1/changelogs')
 const { data: latestChangeData } = await useFetch<{ data: LatestChange | null }>('/api/v1/latest-change')
 

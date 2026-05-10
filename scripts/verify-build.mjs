@@ -20,6 +20,13 @@ const endpoints = [
   { path: '/api/v1/settings', expectedStatus: 200, mustInclude: '"site_name"' },
 ]
 
+// Bearer-guarded endpoints (server/middleware/public-api-bearer.ts) need
+// the same token the production API expects when the smoke test runs
+// against an env where API_BEARER_TOKEN is set. Without the token the
+// guard middleware no-ops and unauthenticated calls succeed as before.
+const bearerToken = process.env.API_BEARER_TOKEN || ''
+const guardedFetchHeaders = bearerToken ? { Authorization: `Bearer ${bearerToken}` } : {}
+
 if (!existsSync(serverEntrypoint)) {
   throw new Error(`Smoke test requires a built server at ${serverEntrypoint}. Run "npm run build" or "npm run verify" first.`)
 }
@@ -167,7 +174,7 @@ async function verifyPublicApiFlows() {
 
   assertPrivateApiHeaders(passkeyOptionsResponse, '/api/v1/auth/webauthn/login-options')
 
-  const publicProfilesResponse = await fetch(`${baseUrl}/api/v1/profiles`)
+  const publicProfilesResponse = await fetch(`${baseUrl}/api/v1/profiles`, { headers: guardedFetchHeaders })
   const publicProfilesBody = await publicProfilesResponse.json()
 
   if (!publicProfilesResponse.ok || !publicProfilesBody?.success || typeof publicProfilesBody?.data !== 'object') {
@@ -178,7 +185,7 @@ async function verifyPublicApiFlows() {
     fail('Public profiles response did not include numeric meta.count')
   }
 
-  const publicLayoutsResponse = await fetch(`${baseUrl}/api/v1/layouts`)
+  const publicLayoutsResponse = await fetch(`${baseUrl}/api/v1/layouts`, { headers: guardedFetchHeaders })
   const publicLayoutsBody = await publicLayoutsResponse.json()
 
   if (!publicLayoutsResponse.ok || !publicLayoutsBody?.success || !Array.isArray(publicLayoutsBody?.data)) {
@@ -189,7 +196,7 @@ async function verifyPublicApiFlows() {
     fail('Public layouts response did not include numeric meta.count')
   }
 
-  const publicWowupResponse = await fetch(`${baseUrl}/api/v1/wowup`)
+  const publicWowupResponse = await fetch(`${baseUrl}/api/v1/wowup`, { headers: guardedFetchHeaders })
   const publicWowupBody = await publicWowupResponse.json()
 
   if (!publicWowupResponse.ok || !publicWowupBody?.success || typeof publicWowupBody?.data !== 'object') {

@@ -18,7 +18,6 @@ export default defineEventHandler(async () => {
   const weekAgo = now - 7 * 24 * 60 * 60
   const twoWeeksAgo = now - 14 * 24 * 60 * 60
   const monthAgo = now - 30 * 24 * 60 * 60
-  const thirtyDaysAgo = monthAgo
 
   // ─── Entity Counts ────────────────────────────────
   const profileCount = db.select({ count: count() }).from(profiles).get()
@@ -135,10 +134,10 @@ export default defineEventHandler(async () => {
 
   // ─── String Health ────────────────────────────────
   const outdatedProfiles = db.get<{ count: number }>(sql`
-    SELECT COUNT(*) as count FROM profiles WHERE updated_at < ${thirtyDaysAgo}
+    SELECT COUNT(*) as count FROM profiles WHERE updated_at < ${monthAgo}
   `)
   const outdatedLayouts = db.get<{ count: number }>(sql`
-    SELECT COUNT(*) as count FROM character_layouts WHERE updated_at < ${thirtyDaysAgo}
+    SELECT COUNT(*) as count FROM character_layouts WHERE updated_at < ${monthAgo}
   `)
   const latestProfileUpdate = db.get<{ updatedAt: number | null }>(sql`
     SELECT MAX(updated_at) as updatedAt FROM profiles

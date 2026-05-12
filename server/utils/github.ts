@@ -117,18 +117,8 @@ async function doGitHubDispatch(reasons: string[]) {
       }).run()
     } catch { /* logging is best-effort */ }
   } catch (err: unknown) {
-    const e = err as { response?: { status?: number, _data?: { message?: string } }, statusCode?: number, status?: number, data?: { message?: string }, message?: string }
-    const statusCode = e?.response?.status || e?.statusCode || e?.status
-    const githubMessage = e?.data?.message || e?.response?._data?.message || e?.message || 'unknown'
-
-    let friendly = githubMessage
-    if (statusCode === 401) {
-      friendly = 'Token invalid or expired (401) — regenerate NUXT_GITHUB_TOKEN'
-    } else if (statusCode === 403) {
-      friendly = `Token lacks permission for ${owner}/${repo} (403) — grant repo Contents:write`
-    } else if (statusCode === 404) {
-      friendly = `Repo ${owner}/${repo} not found (404) — check NUXT_GITHUB_REPO and token access`
-    }
+    const { status, message } = parseGitHubError(err)
+    const friendly = githubErrorHint(owner, repo, status, message)
 
     console.error(`[GitHub] Sync dispatch failed: ${friendly}`)
 

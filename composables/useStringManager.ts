@@ -149,8 +149,7 @@ export function useStringManager<T extends StringItem = StringItem>(config: Stri
       modalOpen.value = false
       await load()
     } catch (error: unknown) {
-      const err = error as { data?: { message?: string } }
-      formError.value = err?.data?.message || `Error saving ${config.entityName}`
+      formError.value = errorMessage(error, `Error saving ${config.entityName}`)
     } finally {
       saving.value = false
     }

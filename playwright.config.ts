@@ -21,6 +21,10 @@ export default defineConfig({
 
   webServer: {
     command: 'npm run dev',
+    env: {
+      NUXT_DEVTOOLS: 'false',
+      NUXT_OG_IMAGE_SECRET: 'playwright-dummy-og-image-secret',
+    },
     url: 'http://localhost:3000',
     reuseExistingServer: !isCI,
     timeout: 120_000,

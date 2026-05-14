@@ -1,31 +1,35 @@
 # Environment Variables
 
-All variables are prefixed `NUXT_` for Nuxt runtime config. Set them via `.env` (gitignored) in dev, or via Docker env on Unraid.
+Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` is the current exception because it is also shared with external workflow/API callers. Set values via `.env` (gitignored) in dev, or via Docker env on Unraid.
 
 ## Required (production)
 
 | Var | Purpose |
 |---|---|
-| `NUXT_JWT_SECRET` | JWT signing key. Generate 64 random chars. Default `change-me-in-production` is intentionally broken. |
+| `NUXT_JWT_SECRET` | JWT signing key. Generate 64 random chars. The runtime guard intentionally rejects missing/default values in production. |
 | `NUXT_ADMIN_PASSWORD` | First admin password. Bcrypt-hashed on first startup by `server/plugins/init.ts`. |
 
 ## Optional
 
 | Var | Default | Purpose |
 |---|---|---|
-| `NUXT_AUTH_COOKIE_NAME` | `magguuui_session` | HttpOnly session cookie name |
-| `NUXT_API_KEY` | — | External API access for GitHub Actions / webhooks |
-| `NUXT_GITHUB_TOKEN` | — | GitHub PAT for content sync (read+write on `NUXT_GITHUB_REPO`) |
-| `NUXT_GITHUB_REPO` | `Derpsen/MagguuUI` | Owner/Repo for sync |
-| `NUXT_GITHUB_WEBHOOK_SECRET` | — | HMAC secret for `/api/v1/webhooks/github` |
-| `NUXT_WEBAUTHN_RP_ID` | hostname | Passkey relying party ID. REQUIRED for prod passkeys. |
-| `NUXT_WEBAUTHN_ORIGIN` | inferred | Passkey origin. REQUIRED for prod passkeys. |
-| `NUXT_FORCE_PASSWORD_RESET` | — | Set to `true` to force admin password reset on startup |
-| `NUXT_SYNC_SEEDED_CONTENT` | — | Set to `true` to re-sync default content on startup |
-| `NODE_ENV` | `production` | Set by Dockerfile |
+| `NUXT_AUTH_COOKIE_NAME` | prod-aware default | HttpOnly session cookie name. Leave empty to use the hardened production default. |
+| `NUXT_API_KEY` | empty | External API access for GitHub Actions / webhooks |
+| `API_BEARER_TOKEN` | empty | Optional bearer token for read-only profile/WowUp/layout API endpoints |
+| `NUXT_GITHUB_TOKEN` | empty | GitHub PAT for content sync with read+write access to `NUXT_GITHUB_REPO` |
+| `NUXT_GITHUB_REPO` | `Derpsen/MagguuUI` | Owner/repo for sync |
+| `NUXT_GITHUB_WEBHOOK_SECRET` | empty | HMAC secret for `/api/v1/webhooks/github` |
+| `NUXT_WEBAUTHN_RP_ID` | request hostname | Passkey relying party ID. Required for production passkeys. |
+| `NUXT_WEBAUTHN_ORIGIN` | inferred | Passkey origin. Required for production passkeys. |
+| `NUXT_FORCE_PASSWORD_RESET` | empty | Set to `true` once to force admin password reset on startup |
+| `NUXT_SYNC_SEEDED_CONTENT` | empty | Set to `true` to re-sync default content on startup |
+| `NUXT_OG_IMAGE_SECRET` | empty | Signing secret for dynamic `nuxt-og-image` generation URLs |
+| `NODE_ENV` | `production` in Docker | Runtime mode |
 
 ## Notes
 
-- Passkeys fail silently if `RP_ID` / `ORIGIN` are unset in production — always configure them before enabling WebAuthn.
-- `JWT_SECRET` changes invalidate all existing sessions. Users must re-login.
-- Admin password can also be changed via admin UI after first login.
+- Passkeys require matching `NUXT_WEBAUTHN_RP_ID` and `NUXT_WEBAUTHN_ORIGIN` in production.
+- Changing `NUXT_JWT_SECRET` invalidates all existing sessions. Users must log in again.
+- The admin password can also be changed via the admin UI after first login.
+- Keep `NUXT_API_KEY` and `API_BEARER_TOKEN` distinct if both are used: the first protects automation endpoints, the second protects selected read-only public API endpoints for external callers.
+- Set `NUXT_OG_IMAGE_SECRET` in production if dynamic OG image generation stays enabled. Generate it outside the repo with `npx nuxt-og-image generate-secret` and store it only as a host/container secret.

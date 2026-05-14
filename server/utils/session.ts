@@ -8,7 +8,7 @@
 import { createHash } from 'crypto'
 import { db, sqlite } from '~/server/database'
 import { sessions, loginAttempts, users } from '~/server/database/schema'
-import { eq, and, desc, sql } from 'drizzle-orm'
+import { eq, and, desc } from 'drizzle-orm'
 import { getMaxLoginAttempts, getLockoutDurationMinutes } from '~/server/utils/settings'
 
 // ─── User-Agent Parsers (shared with page-view.post.ts) ──

@@ -207,7 +207,7 @@ export async function verifyPasskeyRegistration(
     throw createError({ statusCode: 400, message: 'Passkey verification failed' })
   }
 
-  const { credential: cred, credentialDeviceType, aaguid } = verification.registrationInfo
+  const { credential: cred, aaguid } = verification.registrationInfo
 
   // Store passkey in database
   const passkey = db.insert(passkeys).values({

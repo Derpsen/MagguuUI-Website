@@ -70,7 +70,11 @@ export function useStringManager<T extends StringItem = StringItem>(config: Stri
   }
 
   function toggleSelect(id: number) {
-    selected.has(id) ? selected.delete(id) : selected.add(id)
+    if (selected.has(id)) {
+      selected.delete(id)
+    } else {
+      selected.add(id)
+    }
   }
 
   function toggleSelectAll(filteredItems: T[]) {

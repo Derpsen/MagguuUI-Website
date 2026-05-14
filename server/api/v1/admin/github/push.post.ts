@@ -8,13 +8,13 @@
 import { db } from '~/server/database'
 import { syncHistory } from '~/server/database/schema'
 import { validateBody, githubPushSchema } from '~/server/utils/validation'
-import { parseGitHubError, githubErrorHint } from '~/server/utils/github'
+import { parseGitHubError, githubErrorHint, parseGitHubRepo } from '~/server/utils/github'
 
 export default defineEventHandler(async (event) => {
   const ip = getClientIp(event)
   const { allowed, retryAfter } = checkRateLimit(`admin-gh-push:${ip}`, 10, 10 * 60 * 1000, 10 * 60 * 1000)
   if (!allowed) {
-    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    setResponseHeader(event, 'Retry-After', retryAfter)
     throw createError({ statusCode: 429, message: `Too many GitHub sync requests. Wait ${Math.ceil(retryAfter / 60)} minutes.` })
   }
 
@@ -23,21 +23,24 @@ export default defineEventHandler(async (event) => {
   const reason = data.reason || 'manual-push'
   const config = useRuntimeConfig()
 
-  if (!config.githubToken || !config.githubRepo) {
+  const token = config.githubToken || ''
+  const repoRef = parseGitHubRepo(config.githubRepo || '')
+
+  if (!token || !repoRef) {
     throw createError({
       statusCode: 400,
       message: 'GitHub Token or Repo not configured. Set NUXT_GITHUB_TOKEN and NUXT_GITHUB_REPO.',
     })
   }
 
-  const [owner, repo] = config.githubRepo.split('/')
+  const { owner, repo } = repoRef
 
   try {
     await $fetch(`https://api.github.com/repos/${owner}/${repo}/dispatches`, {
       method: 'POST',
       headers: {
         Accept: 'application/vnd.github.v3+json',
-        Authorization: `Bearer ${config.githubToken}`,
+        Authorization: `Bearer ${token}`,
       },
       body: {
         event_type: 'profile-sync',

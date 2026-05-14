@@ -398,84 +398,8 @@ interface Stats {
   topCopied?: TopCopiedItem[]
 }
 
-type DashboardModuleId =
-  | 'release-focus'
-  | 'control-center'
-  | 'watchlist'
-  | 'release-lane'
-  | 'recent-activity'
-  | 'top-demand'
-  | 'traffic-snapshot'
-
-const DASHBOARD_LAYOUT_STORAGE_KEY = 'admin-dashboard-layout-v2'
-const defaultDashboardOrder: DashboardModuleId[] = [
-  'release-focus',
-  'control-center',
-  'watchlist',
-  'release-lane',
-  'recent-activity',
-  'top-demand',
-  'traffic-snapshot',
-]
-
-const dashboardModuleMeta: Record<DashboardModuleId, {
-  id: DashboardModuleId
-  title: string
-  description: string
-  icon: string
-  layoutClass?: string
-}> = {
-  'release-focus': {
-    id: 'release-focus',
-    title: 'Release focus',
-    description: 'The current release lane without the extra dashboard noise.',
-    icon: 'i-heroicons-bolt',
-    layoutClass: 'admin-dashboard-module--feature',
-  },
-  'control-center': {
-    id: 'control-center',
-    title: 'Control center',
-    description: 'Quick actions, refresh pulse and the things that matter next.',
-    icon: 'i-heroicons-command-line',
-  },
-  watchlist: {
-    id: 'watchlist',
-    title: 'Watchlist',
-    description: 'Compact signal stack for release, freshness, recent updates and cadence.',
-    icon: 'i-heroicons-shield-check',
-  },
-  'release-lane': {
-    id: 'release-lane',
-    title: 'Release lane',
-    description: 'A calmer timeline for publish, profile and layout movement.',
-    icon: 'i-heroicons-rocket-launch',
-  },
-  'recent-activity': {
-    id: 'recent-activity',
-    title: 'Recent activity',
-    description: 'Latest changes across content and data.',
-    icon: 'i-heroicons-clock',
-  },
-  'top-demand': {
-    id: 'top-demand',
-    title: 'Top demand',
-    description: 'The strings people currently pull the most.',
-    icon: 'i-heroicons-fire',
-  },
-  'traffic-snapshot': {
-    id: 'traffic-snapshot',
-    title: 'Traffic snapshot',
-    description: 'Views, visitors and copy momentum for the last seven days.',
-    icon: 'i-heroicons-chart-bar',
-    layoutClass: 'admin-dashboard-module--panorama',
-  },
-}
-
 const stats = ref<Stats | null>(null)
 const refreshing = ref(false)
-const moduleOrder = ref<DashboardModuleId[]>([...defaultDashboardOrder])
-const draggedModuleId = ref<DashboardModuleId | null>(null)
-const dragTargetId = ref<DashboardModuleId | null>(null)
 
 const REFRESH_INTERVAL = 60
 const nextRefresh = ref(REFRESH_INTERVAL)
@@ -485,11 +409,6 @@ const versionData = ref<{ latestVersion: string; localVersion: string | null; is
 
 const latestActivity = computed(() => stats.value?.recentActivity?.[0] ?? null)
 const totalStaleStrings = computed(() => (stats.value?.outdatedProfiles || 0) + (stats.value?.outdatedLayouts || 0))
-const lastActivityText = computed(() => latestActivity.value ? `Latest change ${timeAgo(latestActivity.value.createdAt)}` : '')
-const versionStatusChip = computed(() => {
-  if (!versionData.value) return 'unknown'
-  return versionData.value.isUpToDate ? 'current' : `v${versionData.value.latestVersion}`
-})
 
 const overviewCards = computed(() => {
   const data = stats.value
@@ -548,39 +467,6 @@ const overviewCards = computed(() => {
       to: '/admin/system/activity',
       hint: notifItems.value.length ? 'Open notices need attention' : 'No active admin alerts',
       trend: null,
-    },
-  ]
-})
-
-const releaseFocusCards = computed(() => {
-  const data = stats.value
-  if (!data) return []
-
-  const latestPublishTitle = data.lastPublishedAt ? timeAgo(data.lastPublishedAt) : `${data.changelogs} updates`
-  const latestPublishDescription = data.lastPublishedAt
-    ? 'Latest published changelog entry'
-    : 'No published update recorded yet.'
-
-  return [
-    {
-      eyebrow: 'Inventory',
-      title: `${data.profiles + data.wowupStrings + data.layouts}`,
-      description: `${data.profiles} profiles · ${data.wowupStrings} WowUp · ${data.layouts} layouts`,
-    },
-    {
-      eyebrow: 'Latest publish',
-      title: latestPublishTitle,
-      description: latestPublishDescription,
-    },
-    {
-      eyebrow: 'Profiles',
-      title: data.latestProfileUpdateAt ? timeAgo(data.latestProfileUpdateAt) : 'No data',
-      description: `${data.profiles} addon profiles tracked in the current inventory`,
-    },
-    {
-      eyebrow: 'WowUp',
-      title: data.latestWowupUpdateAt ? timeAgo(data.latestWowupUpdateAt) : 'No data',
-      description: `${data.wowupStrings} package strings ready for distribution`,
     },
   ]
 })
@@ -714,173 +600,6 @@ const statusSignals = computed(() => [
   },
 ])
 
-const controlCenterCards = computed(() => {
-  const data = stats.value
-  return [
-    {
-      label: 'Sync state',
-      value: versionData.value
-        ? (versionData.value.isUpToDate ? 'Ready' : 'Review')
-        : 'Unknown',
-      hint: versionData.value
-        ? (versionData.value.isUpToDate
-            ? 'Local release matches GitHub'
-            : `GitHub is ahead on v${versionData.value.latestVersion}`)
-        : 'Release status unavailable right now',
-    },
-    {
-      label: 'Next pulse',
-      value: `${nextRefresh.value}s`,
-      hint: `${notifItems.value.length || 0} alerts waiting · auto refresh running`,
-    },
-    {
-      label: 'Audience',
-      value: data?.uniquePageVisitorsLast7Days || 0,
-      hint: `${data?.pageViewsLast7Days || 0} views in the last seven days`,
-    },
-  ]
-})
-
-const controlCenterLinks = computed(() => {
-  const data = stats.value
-
-  return [
-    {
-      label: 'Publish update',
-      meta: data?.lastPublishedAt
-        ? `Last published ${timeAgo(data.lastPublishedAt)}`
-        : 'No changelog entry has been published yet',
-      to: '/admin/content/changelog',
-      icon: 'i-heroicons-document-text',
-      tone: 'admin-tone-brand',
-    },
-    {
-      label: 'Check GitHub sync',
-      meta: versionData.value?.isUpToDate
-        ? 'Repository and local release are aligned'
-        : 'Version check suggests a sync review',
-      to: '/admin/system/github',
-      icon: 'i-simple-icons-github',
-      tone: versionData.value?.isUpToDate ? 'admin-tone-success' : 'admin-tone-warning',
-    },
-    {
-      label: 'Review traffic',
-      meta: `${data?.apiCallsLast7Days || 0} API calls and ${data?.copiesLast7Days || 0} copies this week`,
-      to: '/admin/system/stats',
-      icon: 'i-heroicons-chart-bar',
-      tone: 'admin-tone-violet',
-    },
-  ]
-})
-
-const releaseLaneItems = computed(() => {
-  const data = stats.value
-
-  return [
-    {
-      label: 'Last publish',
-      value: data?.lastPublishedAt ? timeAgo(data.lastPublishedAt) : 'Not published',
-      caption: data?.lastPublishedAt ? absoluteDate(data.lastPublishedAt) : 'Changelog pending',
-      description: data?.lastPublishedAt
-        ? 'Public update text is already live and ready for users.'
-        : 'Your next changelog entry still needs a publish moment.',
-      badge: data?.lastPublishedAt ? 'Published' : 'Pending',
-      tone: data?.lastPublishedAt ? 'admin-pill--success' : 'admin-pill--warning',
-    },
-    {
-      label: 'Profiles',
-      value: data?.latestProfileUpdateAt ? timeAgo(data.latestProfileUpdateAt) : 'No data',
-      caption: data?.latestProfileUpdateAt ? absoluteDate(data.latestProfileUpdateAt) : 'No profile sync yet',
-      description: `${data?.profiles || 0} addon profiles tracked in the current inventory.`,
-      badge: data?.outdatedProfiles ? `${data.outdatedProfiles} stale` : 'Fresh',
-      tone: data?.outdatedProfiles ? 'admin-pill--warning' : 'admin-pill--success',
-    },
-    {
-      label: 'Layouts',
-      value: data?.latestLayoutUpdateAt ? timeAgo(data.latestLayoutUpdateAt) : 'No data',
-      caption: data?.latestLayoutUpdateAt ? absoluteDate(data.latestLayoutUpdateAt) : 'No layout sync yet',
-      description: `${data?.layouts || 0} class and spec layouts are available for distribution.`,
-      badge: data?.outdatedLayouts ? `${data.outdatedLayouts} stale` : 'Fresh',
-      tone: data?.outdatedLayouts ? 'admin-pill--warning' : 'admin-pill--success',
-    },
-    {
-      label: 'WowUp',
-      value: data?.latestWowupUpdateAt ? timeAgo(data.latestWowupUpdateAt) : 'No data',
-      caption: data?.latestWowupUpdateAt ? absoluteDate(data.latestWowupUpdateAt) : 'No WowUp sync yet',
-      description: `${data?.wowupStrings || 0} package strings are ready for the updater flow.`,
-      badge: (data?.wowupStrings || 0) > 0 ? 'Ready' : 'Empty',
-      tone: (data?.wowupStrings || 0) > 0 ? 'admin-pill--success' : 'admin-pill--warning',
-    },
-  ]
-})
-
-const orderedModules = computed(() =>
-  normalizeDashboardOrder(moduleOrder.value).map(id => dashboardModuleMeta[id]),
-)
-
-function normalizeDashboardOrder(order: DashboardModuleId[]) {
-  const seen = new Set<DashboardModuleId>()
-  const normalized = order.filter((id): id is DashboardModuleId => {
-    if (!(id in dashboardModuleMeta) || seen.has(id)) return false
-    seen.add(id)
-    return true
-  })
-
-  for (const id of defaultDashboardOrder) {
-    if (!seen.has(id)) normalized.push(id)
-  }
-
-  return normalized
-}
-
-function persistDashboardLayout() {
-  if (!import.meta.client) return
-  window.localStorage.setItem(DASHBOARD_LAYOUT_STORAGE_KEY, JSON.stringify(moduleOrder.value))
-}
-
-function resetDashboardLayout() {
-  moduleOrder.value = [...defaultDashboardOrder]
-  persistDashboardLayout()
-}
-
-function handleModuleDragStart(id: DashboardModuleId) {
-  draggedModuleId.value = id
-  dragTargetId.value = id
-}
-
-function handleModuleDragOver(id: DashboardModuleId) {
-  if (!draggedModuleId.value || draggedModuleId.value === id) return
-  dragTargetId.value = id
-}
-
-function handleModuleDrop(id: DashboardModuleId) {
-  const dragged = draggedModuleId.value
-  if (!dragged || dragged === id) {
-    handleModuleDragEnd()
-    return
-  }
-
-  const next = [...moduleOrder.value]
-  const fromIndex = next.indexOf(dragged)
-  const toIndex = next.indexOf(id)
-
-  if (fromIndex === -1 || toIndex === -1) {
-    handleModuleDragEnd()
-    return
-  }
-
-  next.splice(fromIndex, 1)
-  next.splice(toIndex, 0, dragged)
-  moduleOrder.value = normalizeDashboardOrder(next)
-  persistDashboardLayout()
-  handleModuleDragEnd()
-}
-
-function handleModuleDragEnd() {
-  draggedModuleId.value = null
-  dragTargetId.value = null
-}
-
 async function loadStats() {
   refreshing.value = true
   try {
@@ -923,17 +642,6 @@ function formatTrend(value?: number | null) {
 const typeLabel = entityTypeLabel
 
 onMounted(async () => {
-  if (import.meta.client) {
-    const stored = window.localStorage.getItem(DASHBOARD_LAYOUT_STORAGE_KEY)
-    if (stored) {
-      try {
-        moduleOrder.value = normalizeDashboardOrder(JSON.parse(stored) as DashboardModuleId[])
-      } catch {
-        moduleOrder.value = [...defaultDashboardOrder]
-      }
-    }
-  }
-
   await loadStats()
   await loadStoredVersion()
   notifRefresh(true)

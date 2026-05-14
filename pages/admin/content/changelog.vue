@@ -263,7 +263,11 @@ const somePageSelected = computed(() => paginatedItems.value.some(i => selectedI
 
 function toggleSelect(id: number) {
   const s = new Set(selectedIds.value)
-  s.has(id) ? s.delete(id) : s.add(id)
+  if (s.has(id)) {
+    s.delete(id)
+  } else {
+    s.add(id)
+  }
   selectedIds.value = s
 }
 

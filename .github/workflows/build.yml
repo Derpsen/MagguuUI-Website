@@ -13,7 +13,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    env:
+      NUXT_OG_IMAGE_SECRET: ci-dummy-og-image-secret
 
     steps:
       - uses: actions/checkout@v6
@@ -25,6 +27,15 @@ jobs:
 
       - run: npm ci
 
+      - name: Production dependency audit
+        run: npm run audit:prod
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Build
         run: npm run build
         env:
@@ -32,6 +43,12 @@ jobs:
           NUXT_ADMIN_PASSWORD: ci-dummy
 
       - run: npm run verify:smoke
+
+      - name: Install Playwright browser
+        run: npm run test:install
+
+      - name: Playwright smoke tests
+        run: npm test
 
       - uses: actions/upload-artifact@v7
         with:

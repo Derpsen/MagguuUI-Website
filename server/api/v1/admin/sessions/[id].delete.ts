@@ -7,7 +7,7 @@
 import { revokeSession, hashToken } from '~/server/utils/session'
 import { db } from '~/server/database'
 import { sessions } from '~/server/database/schema'
-import { eq, and } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const auth = requireAuth(event)

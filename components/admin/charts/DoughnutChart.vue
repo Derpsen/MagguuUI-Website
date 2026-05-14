@@ -28,6 +28,7 @@ const props = withDefaults(defineProps<{
   height: '220px',
   emptyText: 'No data available',
   centerLabel: '',
+  colors: () => [],
 })
 
 const isDark = useIsDark()

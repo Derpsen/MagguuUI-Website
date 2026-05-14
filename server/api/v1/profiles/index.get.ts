@@ -36,8 +36,8 @@ export default defineEventHandler(async (event) => {
   }>> = {}
 
   for (const row of rows) {
-    if (!grouped[row.addon]) grouped[row.addon] = []
-    grouped[row.addon].push({
+    const addon = grouped[row.addon] ?? (grouped[row.addon] = [])
+    addon.push({
       id: row.id,
       profile: row.profile,
       string: row.string,

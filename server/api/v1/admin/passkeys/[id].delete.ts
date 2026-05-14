@@ -5,7 +5,7 @@
  * or password access to avoid locking themselves out.
  */
 
-import { deletePasskey, getUserPasskeyCount } from '~/server/utils/webauthn'
+import { deletePasskey } from '~/server/utils/webauthn'
 
 export default defineEventHandler(async (event) => {
   const auth = requireAuth(event)

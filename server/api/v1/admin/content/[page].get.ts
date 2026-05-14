@@ -20,9 +20,9 @@ export default defineEventHandler(async (event) => {
   const result: Record<string, Record<string, Record<string, string>>> = createContentLocaleBuckets(() => ({}))
   for (const e of entries) {
     const locale = e.locale || DEFAULT_CONTENT_LOCALE
-    if (!result[locale]) result[locale] = {}
-    if (!result[locale][e.section]) result[locale][e.section] = {}
-    result[locale][e.section][e.key] = e.value
+    const localeBucket = result[locale] ?? (result[locale] = {})
+    const sectionBucket = localeBucket[e.section] ?? (localeBucket[e.section] = {})
+    sectionBucket[e.key] = e.value
   }
 
   return apiSuccess(result)

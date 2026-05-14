@@ -20,8 +20,8 @@ export default defineEventHandler(async () => {
   // Group by category
   const grouped: Record<string, typeof rows> = {}
   for (const row of rows) {
-    if (!grouped[row.category]) grouped[row.category] = []
-    grouped[row.category].push({
+    const category = grouped[row.category] ?? (grouped[row.category] = [])
+    category.push({
       ...row,
       answer: sanitizeRichHtml(row.answer),
     })

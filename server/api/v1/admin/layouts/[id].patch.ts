@@ -4,8 +4,15 @@
  */
 
 import { eq } from 'drizzle-orm'
+import { z } from 'zod'
 import { db } from '~/server/database'
 import { characterLayouts } from '~/server/database/schema'
+import { validateBody } from '~/server/utils/validation'
+
+const layoutToggleSchema = z.object({
+  isVisible: z.boolean().optional(),
+  sortOrder: z.number().int().optional(),
+})
 
 export default defineEventHandler(async (event) => {
   const id = Number(getRouterParam(event, 'id'))
@@ -19,11 +26,12 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
+  const data = validateBody(layoutToggleSchema, body)
 
   const result = db.update(characterLayouts)
     .set({
-      ...(body.isVisible !== undefined && { isVisible: body.isVisible }),
-      ...(body.sortOrder !== undefined && { sortOrder: body.sortOrder }),
+      ...(data.isVisible !== undefined && { isVisible: data.isVisible }),
+      ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
       updatedAt: new Date(),
     })
     .where(eq(characterLayouts.id, id))

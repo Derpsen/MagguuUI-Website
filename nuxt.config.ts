@@ -4,12 +4,28 @@ const defaultSiteName = PUBLIC_SITE_SETTINGS_DEFAULTS.site_name
 const defaultMetaTitle = PUBLIC_SITE_SETTINGS_DEFAULTS.meta_title
 const defaultMetaDescription = PUBLIC_SITE_SETTINGS_DEFAULTS.meta_description
 const siteBaseUrl = `${PUBLIC_SITE_ORIGIN}/`
+const ogImageDefaults = {
+  component: 'MagguuOg',
+  width: 1200,
+  height: 630,
+  cacheMaxAgeSeconds: 60 * 60 * 24 * 7,
+}
+const ogImageConfig = {
+  defaults: ogImageDefaults,
+  fonts: [
+    'Plus+Jakarta+Sans:700',
+    'Plus+Jakarta+Sans:500',
+    'JetBrains+Mono:500',
+  ],
+}
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   buildDir: '.nuxt',
-  devtools: { enabled: process.env.NODE_ENV !== 'production' },
+  devtools: {
+    enabled: process.env.NODE_ENV !== 'production' && process.env.NUXT_DEVTOOLS !== 'false',
+  },
   sourcemap: {
     server: process.env.NODE_ENV !== 'production',
     client: process.env.NODE_ENV !== 'production',
@@ -17,6 +33,7 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxt/ui',
+    '@nuxt/eslint',
     'nuxt-og-image',
     // @nuxt/icon, @nuxtjs/color-mode, @nuxt/fonts are auto-registered by @nuxt/ui v4
   ],
@@ -26,19 +43,7 @@ export default defineNuxtConfig({
     name: defaultSiteName,
   },
 
-  ogImage: {
-    defaults: {
-      component: 'MagguuOg',
-      width: 1200,
-      height: 630,
-      cacheMaxAgeSeconds: 60 * 60 * 24 * 7,
-    },
-    fonts: [
-      'Plus+Jakarta+Sans:700',
-      'Plus+Jakarta+Sans:500',
-      'JetBrains+Mono:500',
-    ],
-  },
+  ogImage: ogImageConfig,
 
   app: {
     head: {

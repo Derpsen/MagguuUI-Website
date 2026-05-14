@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   const ip = getClientIp(event)
   const { allowed, retryAfter } = checkRateLimit(`admin-github-import:${ip}`, 5, 15 * 60 * 1000, 15 * 60 * 1000)
   if (!allowed) {
-    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    setResponseHeader(event, 'Retry-After', retryAfter)
     throw createError({
       statusCode: 429,
       message: `Too many imports. Please wait ${Math.ceil(retryAfter / 60)} minutes.`,
@@ -30,16 +30,16 @@ export default defineEventHandler(async (event) => {
   const validated = validateBody(githubImportSchema, body)
 
   interface ProfileImport { addon?: string, profile?: string, string?: string, description?: string | null, customFields?: string | null, sortOrder?: number, isVisible?: boolean }
-  interface WowupImport { name?: string, string?: string, category?: string | null, description?: string | null, sortOrder?: number, isVisible?: boolean }
-  interface LayoutImport { name?: string, className?: string | null, spec?: string | null, importString?: string, description?: string | null, sortOrder?: number, isVisible?: boolean }
+  interface WowupImport { name?: string, string?: string, category?: string | null, description?: string | null, customFields?: string | null, sortOrder?: number, isVisible?: boolean }
+  interface LayoutImport { name?: string, className?: string | null, spec?: string | null, importString?: string, screenshot?: string | null, customFields?: string | null, description?: string | null, sortOrder?: number, isVisible?: boolean }
   interface ChangelogImport { version?: string, content?: string, contentEn?: string | null, isPublished?: boolean, publishedAt?: string | null }
   interface ContentImport { page?: string, section?: string, key?: string, value?: string, locale?: string, type?: string }
   interface ImportPayload {
     profiles?: ProfileImport[]
     wowupStrings?: WowupImport[]
-    layouts?: LayoutImport[]
+    characterLayouts?: LayoutImport[]
     changelogs?: ChangelogImport[]
-    content?: ContentImport[]
+    siteContent?: ContentImport[]
   }
   let data: ImportPayload
   try {

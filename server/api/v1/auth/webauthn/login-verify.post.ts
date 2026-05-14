@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
   // alternate between paths to softer-throttle credential stuffing.
   const { allowed, retryAfter } = checkRateLimit(`login:ip:${ipKey}`, 5, 15 * 60 * 1000, 15 * 60 * 1000)
   if (!allowed) {
-    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    setResponseHeader(event, 'Retry-After', retryAfter)
     throw createError({
       statusCode: 429,
       message: `Too many login attempts. Please wait ${Math.ceil(retryAfter / 60)} minutes.`,

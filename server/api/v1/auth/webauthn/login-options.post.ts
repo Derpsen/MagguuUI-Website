@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   // more.
   const { allowed, retryAfter } = checkRateLimit(`webauthn-options:${ipKey}`, 30, 10 * 60 * 1000, 10 * 60 * 1000)
   if (!allowed) {
-    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    setResponseHeader(event, 'Retry-After', retryAfter)
     throw createError({
       statusCode: 429,
       message: 'Too many requests. Please wait a moment.',

@@ -1,0 +1,48 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    groups:
+      nuxt-stack:
+        patterns:
+          - nuxt
+          - "@nuxt/*"
+          - nitropack
+          - h3
+      tiptap:
+        patterns:
+          - "@tiptap/*"
+      test-tooling:
+        patterns:
+          - "@playwright/*"
+          - playwright
+          - typescript
+          - tsx
+    ignore:
+      - dependency-name: h3
+        versions:
+          - "2.x"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:15"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:30"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 3

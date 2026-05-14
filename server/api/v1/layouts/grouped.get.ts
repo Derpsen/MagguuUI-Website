@@ -39,8 +39,8 @@ export default defineEventHandler(async () => {
 
   for (const row of rows) {
     const className = row.className || 'Unknown'
-    if (!grouped[className]) grouped[className] = []
-    grouped[className].push({
+    const classLayouts = grouped[className] ?? (grouped[className] = [])
+    classLayouts.push({
       id: row.id,
       spec: row.spec,
       importString: row.importString,

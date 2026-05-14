@@ -421,17 +421,9 @@ async function loadQuickStats() {
   }
 }
 
-// timeAgo, actionIcon, entityTypeLabel, activityTone
+// timeAgo, actionIcon and entityTypeLabel
 // are auto-imported from utils/adminHelpers.ts
 const typeLabel = entityTypeLabel
-const actionTone = activityTone
-
-function actionBadgeColor(action: string) {
-  if (action === "created") return "success"
-  if (action === "updated") return "info"
-  if (action === "deleted") return "error"
-  return "neutral"
-}
 
 function dotColor(action: string) {
   if (action === "created") return "bg-emerald-500"

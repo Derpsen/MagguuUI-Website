@@ -35,6 +35,22 @@
         />
       </div>
 
+      <div class="admin-segmented" role="tablist" aria-label="Settings sections">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          type="button"
+          class="admin-segmented__button"
+          :class="activeTab === tab.id ? 'admin-segmented__button--active' : ''"
+          role="tab"
+          :aria-selected="activeTab === tab.id"
+          @click="switchTab(tab.id)"
+        >
+          <UIcon :name="tab.icon" class="h-4 w-4" />
+          {{ tab.label }}
+        </button>
+      </div>
+
       <div>
 
       <!-- General Tab -->
@@ -350,6 +366,7 @@ definePageMeta({ layout: "admin" })
 
 const toast = useToast()
 const { apiFetch } = useApi()
+const router = useRouter()
 
 const loading = ref(true)
 const saving = ref(false)
@@ -371,7 +388,6 @@ type TabId = 'general' | 'seo' | 'security' | 'ads' | 'data'
 const route = useRoute()
 const validTabs: TabId[] = ['general', 'seo', 'security', 'ads', 'data']
 const activeTab = ref<TabId>(validTabs.includes(route.query.tab as TabId) ? route.query.tab as TabId : 'general')
-const isDark = useIsDark()
 
 watch(() => route.query.tab, (tab) => {
   if (validTabs.includes(tab as TabId)) activeTab.value = tab as TabId
@@ -383,6 +399,11 @@ const tabs: Array<{ id: TabId; label: string; icon: string }> = [
   { id: 'ads', label: 'Ads', icon: 'i-heroicons-megaphone' },
   { id: 'data', label: 'Data & Backup', icon: 'i-heroicons-circle-stack' },
 ]
+
+function switchTab(tab: TabId) {
+  activeTab.value = tab
+  router.replace({ query: { ...route.query, tab } })
+}
 
 const statusCards = computed(() => [
   { label: "Version", value: sysInfo.value?.app?.version || "-", icon: "i-heroicons-server-stack", tone: "brand" as const, hint: "Current app version" },

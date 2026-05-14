@@ -14,7 +14,7 @@ interface SyncResult {
   status: string
 }
 
-export function createSyncChangelog(results: SyncResult[], source: 'pull' | 'webhook') {
+export function createSyncChangelog(results: SyncResult[], _source: 'pull' | 'webhook') {
   const created = results.filter(r => r.status === 'created')
   const updated = results.filter(r => r.status === 'updated')
   const changed = [...created, ...updated]
@@ -34,7 +34,7 @@ export function createSyncChangelog(results: SyncResult[], source: 'pull' | 'web
       wowupChanges.push(r.addon.replace('WowUp/', ''))
     } else {
       // Clean up addon name: "ElvUI/profile" → "ElvUI"
-      const name = r.addon.includes('/') ? r.addon.split('/')[0] : r.addon
+      const name = r.addon.includes('/') ? (r.addon.split('/')[0] || r.addon) : r.addon
       if (!addonChanges.includes(name)) {
         addonChanges.push(name)
       }
@@ -58,7 +58,7 @@ export function createSyncChangelog(results: SyncResult[], source: 'pull' | 'web
 
   // ── Get today's date as version label ──────────
   const now = new Date()
-  const dateStr = now.toISOString().split('T')[0]
+  const dateStr = now.toISOString().slice(0, 10)
   const version = `Sync ${dateStr}`
 
   // ── Insert changelog entry ─────────────────────

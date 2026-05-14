@@ -90,6 +90,8 @@ npm run dev
 Production build:
 
 ```bash
+npm run lint
+npm run typecheck
 npm run build
 npm run preview
 ```
@@ -120,12 +122,16 @@ Important values include:
 - `NUXT_AUTH_COOKIE_NAME`
 - `NUXT_ADMIN_PASSWORD`
 - `NUXT_API_KEY`
+- `API_BEARER_TOKEN`
 - `NUXT_GITHUB_TOKEN`
 - `NUXT_GITHUB_REPO`
 - `NUXT_GITHUB_WEBHOOK_SECRET`
 - `NUXT_SYNC_SEEDED_CONTENT`
 - `NUXT_WEBAUTHN_RP_ID`
 - `NUXT_WEBAUTHN_ORIGIN`
+- `NUXT_OG_IMAGE_SECRET`
+
+Generate `NUXT_OG_IMAGE_SECRET` outside the repo with `npx nuxt-og-image generate-secret` when dynamic OG images are enabled in production.
 
 Do not commit `.env`, runtime database files, or uploads.
 
@@ -207,7 +213,10 @@ Implemented already:
 - upload hardening via file-signature and size validation
 - SWR caching for public read APIs
 - committed lockfile plus Docker-aware `npm ci` fallback
+- Nuxt ESLint via `npm run lint`
+- explicit TypeScript check via `npm run typecheck`
 - local production smoke test via `npm run verify`
+- Dependabot and CodeQL workflows for ongoing dependency/security review
 
 Still worth improving further:
 

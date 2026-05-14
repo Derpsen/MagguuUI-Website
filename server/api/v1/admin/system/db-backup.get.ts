@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
   const ip = getClientIp(event)
   const { allowed, retryAfter } = checkRateLimit(`admin-db-backup:${ip}`, 6, 60 * 60 * 1000, 60 * 60 * 1000)
   if (!allowed) {
-    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    setResponseHeader(event, 'Retry-After', retryAfter)
     throw createError({
       statusCode: 429,
       message: `Too many backup downloads. Please wait ${Math.ceil(retryAfter / 60)} minutes.`,
@@ -52,7 +52,7 @@ export default defineEventHandler(async (event) => {
   // Set response headers for file download
   setResponseHeader(event, 'Content-Type', 'application/x-sqlite3')
   setResponseHeader(event, 'Content-Disposition', `attachment; filename="${filename}"`)
-  setResponseHeader(event, 'Content-Length', String(dbBuffer.length))
+  setResponseHeader(event, 'Content-Length', dbBuffer.length)
 
   return dbBuffer
 })

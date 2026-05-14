@@ -5,7 +5,7 @@
  * page views, referrers, devices, browsers, OS, top pages, hourly activity.
  */
 
-import { count, sql, desc, eq, inArray } from 'drizzle-orm'
+import { count, sql, desc, inArray } from 'drizzle-orm'
 import { db } from '~/server/database'
 import {
   profiles, wowupStrings, characterLayouts, changelogs,

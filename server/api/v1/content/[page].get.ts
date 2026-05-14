@@ -38,8 +38,8 @@ export default defineEventHandler(async (event) => {
   // constructor, …). This endpoint is public so the guard is cheap insurance.
   const grouped: Record<string, Record<string, string>> = Object.create(null)
   for (const row of merged) {
-    if (!grouped[row.section]) grouped[row.section] = Object.create(null)
-    grouped[row.section][row.key] = row.value
+    const section = grouped[row.section] ?? (grouped[row.section] = Object.create(null))
+    section[row.key] = row.value
   }
 
   return apiSuccess(grouped)

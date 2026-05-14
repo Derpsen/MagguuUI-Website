@@ -94,7 +94,8 @@ function applyAddonSync(refs: TocAddonRef[]): SyncAddonsResult {
     const category = ref.required ? 'required' : (def?.category ?? 'optional')
 
     if (!row) {
-      const fallbackSort = def?.sortOrder ?? fallbackSortByCategory[category]++
+      const fallbackSort = def?.sortOrder ?? fallbackSortByCategory[category] ?? 90
+      fallbackSortByCategory[category] = fallbackSort + 1
       db.insert(addons).values({
         slug,
         tocName: ref.tocName,

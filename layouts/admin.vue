@@ -334,9 +334,6 @@ const pageHeading = computed(() => currentContext.value.heading || currentContex
 const adminShellStyle = computed(() => ({
   '--admin-sidebar-width': collapsed.value ? '3.75rem' : '14rem',
 }))
-const activeSection = computed(() =>
-  sections.find(section => section.links.some(link => isRouteActive(link.to)))?.title ?? sections[0]?.title ?? '',
-)
 const openSections = reactive(
   Object.fromEntries(sections.map(section => [section.title, true])) as Record<string, boolean>,
 )
@@ -356,12 +353,6 @@ async function toggleFullscreen() {
     }
   } catch {
     // Fullscreen may be denied by browser policy
-  }
-}
-
-function setOpenSection(title: string) {
-  for (const section of sections) {
-    openSections[section.title] = section.title === title
   }
 }
 

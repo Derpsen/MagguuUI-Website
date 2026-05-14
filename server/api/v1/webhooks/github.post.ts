@@ -14,6 +14,7 @@ import { createSyncChangelog } from '~/server/utils/syncChangelog'
 import { checkRateLimit, getClientIp } from '~/server/utils/rateLimit'
 import { parseAddonChangelog } from '~/server/utils/parseAddonChangelog'
 import { syncAddonsFromToc } from '~/server/utils/syncAddons'
+import { parseGitHubRepo } from '~/server/utils/github'
 
 // GitHub webhook payloads are typically <1MB; cap well above that to reject abuse.
 const MAX_WEBHOOK_BODY_BYTES = 2 * 1024 * 1024 // 2 MB
@@ -77,7 +78,7 @@ export default defineEventHandler(async (event) => {
   const ip = getClientIp(event)
   const rl = checkRateLimit(`webhook:${ip}`, 60, 60 * 1000, 5 * 60 * 1000)
   if (!rl.allowed) {
-    setResponseHeader(event, 'Retry-After', String(rl.retryAfter))
+    setResponseHeader(event, 'Retry-After', rl.retryAfter)
     throw createError({ statusCode: 429, message: 'Too many webhook requests' })
   }
 
@@ -89,16 +90,13 @@ export default defineEventHandler(async (event) => {
   }
 
   // Read raw body for signature verification
-  const rawBody = await readRawBody(event) || ''
-  const bodyByteLength = typeof rawBody === 'string'
-    ? Buffer.byteLength(rawBody)
-    : Buffer.isBuffer(rawBody) ? rawBody.length : 0
+  const rawBody = await readRawBody(event, 'utf8') || ''
+  const bodyByteLength = Buffer.byteLength(rawBody)
   if (bodyByteLength > MAX_WEBHOOK_BODY_BYTES) {
     throw createError({ statusCode: 413, message: 'Webhook payload too large' })
   }
 
-  const bodyStr = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody)
-  if (!verifySignature(bodyStr, signature, webhookSecret)) {
+  if (!verifySignature(rawBody, signature, webhookSecret)) {
     db.insert(syncHistory).values({
       triggerSource: `webhook-${eventType}`,
       status: 'error',
@@ -115,11 +113,11 @@ export default defineEventHandler(async (event) => {
     repository?: { full_name?: string }
     commits?: Array<{ added?: string[], modified?: string[], removed?: string[], message?: string, id?: string }>
     pusher?: { name?: string }
-    workflow_run?: { name?: string, conclusion?: string, html_url?: string, head_branch?: string }
+    workflow_run?: { name?: string, status?: string, conclusion?: string, html_url?: string, head_branch?: string }
   }
   let body: WebhookBody
   try {
-    body = (typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody) as WebhookBody
+    body = JSON.parse(rawBody) as WebhookBody
   } catch {
     throw createError({ statusCode: 400, message: 'Invalid JSON payload' })
   }
@@ -184,7 +182,12 @@ export default defineEventHandler(async (event) => {
       // Auto-pull: fetch changed Lua files from GitHub and import into DB
       const config = useRuntimeConfig()
       if (config.githubToken && config.githubRepo) {
-        const [owner, repo] = config.githubRepo.split('/')
+        const token = config.githubToken || ''
+        const repoRef = parseGitHubRepo(config.githubRepo || '')
+        if (!token || !repoRef) {
+          throw createError({ statusCode: 400, message: 'GitHub Token or Repo not configured.' })
+        }
+        const { owner, repo } = repoRef
         let imported = 0
         let errors = 0
         const syncResults: { file: string; addon: string; status: string }[] = []
@@ -197,7 +200,7 @@ export default defineEventHandler(async (event) => {
               {
                 headers: {
                   Accept: 'application/vnd.github.v3+json',
-                  Authorization: `Bearer ${config.githubToken}`,
+                  Authorization: `Bearer ${token}`,
                   'User-Agent': 'MagguuUI-WebAdmin',
                 },
                 timeout: 15000,
@@ -220,7 +223,9 @@ export default defineEventHandler(async (event) => {
               const optMatch = content.match(/D\.WowUpOptional\s*=\s*"((?:[^"\\]|\\.)*)"/)
               for (const [name, match] of [['Required', reqMatch], ['Optional', optMatch]] as const) {
                 if (match) {
-                  const str = match[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+                  const raw = match[1]
+                  if (raw === undefined) continue
+                  const str = raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
                   if (str.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
                   const existing = db.select().from(wowupStrings).where(eq(wowupStrings.name, name)).get()
                   if (existing) {
@@ -249,7 +254,9 @@ export default defineEventHandler(async (event) => {
                   const regex = new RegExp(`${key}\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"`)
                   const match = content.match(regex)
                   if (match) {
-                    const str = match[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+                    const raw = match[1]
+                    if (raw === undefined) continue
+                    const str = raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
                     if (str.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
                     const existing = db.select().from(profiles).where(and(eq(profiles.addon, 'ElvUI'), eq(profiles.profile, key))).get()
                     if (existing) {
@@ -269,7 +276,9 @@ export default defineEventHandler(async (event) => {
                 const regex = new RegExp(`D\\.${varName}\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"`)
                 const match = content.match(regex)
                 if (match) {
-                  const str = match[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+                  const raw = match[1]
+                  if (raw === undefined) continue
+                  const str = raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
                   if (str.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
                   const existing = db.select().from(profiles).where(and(eq(profiles.addon, addonName), eq(profiles.profile, 'Default'))).get()
                   if (existing) {
@@ -307,9 +316,12 @@ export default defineEventHandler(async (event) => {
               const specs: Array<{ spec: string; importString: string }> = []
               let entryMatch
               while ((entryMatch = entryRegex.exec(content)) !== null) {
-                const importString = entryMatch[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+                const rawImport = entryMatch[1]
+                const rawSpec = entryMatch[2]
+                if (rawImport === undefined || rawSpec === undefined) continue
+                const importString = rawImport.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
                 if (importString.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
-                const specName = entryMatch[2].trim()
+                const specName = rawSpec.trim()
                 specs.push({ spec: specName, importString })
               }
 
@@ -317,7 +329,9 @@ export default defineEventHandler(async (event) => {
               const noCommentRegex = /^\s*"((?:[^"\\]|\\.)+)"\s*,\s*$/gm
               let ncMatch
               while ((ncMatch = noCommentRegex.exec(content)) !== null) {
-                const str = ncMatch[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+                const raw = ncMatch[1]
+                if (raw === undefined) continue
+                const str = raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
                 if (str.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
                 // Skip if already matched with a comment
                 if (!specs.find(s => s.importString === str)) {
@@ -327,7 +341,9 @@ export default defineEventHandler(async (event) => {
 
               // Upsert each spec into character_layouts
               for (let i = 0; i < specs.length; i++) {
-                const { spec, importString } = specs[i]
+                const item = specs[i]
+                if (!item) continue
+                const { spec, importString } = item
                 if (!importString) continue
 
                 const layoutName = spec ? `${className} - ${spec}` : `${className} #${i + 1}`

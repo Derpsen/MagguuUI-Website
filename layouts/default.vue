@@ -53,6 +53,7 @@
                 :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.08] border border-white/10 bg-white/[0.03]' : 'text-gray-600 hover:text-gray-900 hover:bg-white border border-blue-100 bg-white/90 shadow-sm'"
                 :title="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
                 :aria-label="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
+                data-color-mode-toggle
                 @click="setTheme(isDark ? 'light' : 'dark')"
               >
                 <UIcon v-if="isDark" name="i-heroicons-sun" class="w-5 h-5" />

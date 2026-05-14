@@ -11,6 +11,7 @@ import { eq, and } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { profiles, wowupStrings, characterLayouts, settings, syncHistory } from '~/server/database/schema'
 import { createSyncChangelog } from '~/server/utils/syncChangelog'
+import { parseGitHubRepo } from '~/server/utils/github'
 
 // ─── Addon Mapping (must match sync-profiles.py) ────────────
 
@@ -63,8 +64,9 @@ const CLASS_MAP: Record<string, string> = {
 function parseSimpleLua(content: string, varName: string): string | null {
   const regex = new RegExp(`D\\.${varName}\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"`)
   const match = content.match(regex)
-  if (match) {
-    return match[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+  const raw = match?.[1]
+  if (raw !== undefined) {
+    return raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
   }
   return null
 }
@@ -74,8 +76,9 @@ function parseTableLua(content: string, varName: string, keys: string[]): Record
   for (const key of keys) {
     const regex = new RegExp(`${key}\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"`)
     const match = content.match(regex)
-    if (match) {
-      result[key] = match[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+    const raw = match?.[1]
+    if (raw !== undefined) {
+      result[key] = raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
     }
   }
   return result
@@ -85,8 +88,8 @@ function parseWowUpLua(content: string): { required: string | null; optional: st
   const reqMatch = content.match(/D\.WowUpRequired\s*=\s*"((?:[^"\\]|\\.)*)"/)
   const optMatch = content.match(/D\.WowUpOptional\s*=\s*"((?:[^"\\]|\\.)*)"/)
   return {
-    required: reqMatch ? reqMatch[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\') : null,
-    optional: optMatch ? optMatch[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\') : null,
+    required: reqMatch?.[1] !== undefined ? reqMatch[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\') : null,
+    optional: optMatch?.[1] !== undefined ? optMatch[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\') : null,
   }
 }
 
@@ -95,17 +98,22 @@ function parseClassLua(content: string): Array<{ spec: string; importString: str
 
   // Match entries with spec comment: "importString", -- SpecName
   const entryRegex = /"((?:[^"\\]|\\.)*)"\s*,\s*--\s*(.+)/g
-  let match
+  let match: RegExpExecArray | null
   while ((match = entryRegex.exec(content)) !== null) {
-    const importString = match[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-    const specName = match[2].trim()
+    const rawImport = match[1]
+    const rawSpec = match[2]
+    if (rawImport === undefined || rawSpec === undefined) continue
+    const importString = rawImport.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+    const specName = rawSpec.trim()
     specs.push({ spec: specName, importString })
   }
 
   // Also catch entries without spec comment: "importString",
   const noCommentRegex = /^\s*"((?:[^"\\]|\\.)+)"\s*,\s*$/gm
   while ((match = noCommentRegex.exec(content)) !== null) {
-    const str = match[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+    const raw = match[1]
+    if (raw === undefined) continue
+    const str = raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
     if (!specs.find(s => s.importString === str)) {
       specs.push({ spec: '', importString: str })
     }
@@ -233,17 +241,20 @@ export default defineEventHandler(async (event) => {
   const ip = getClientIp(event)
   const { allowed, retryAfter } = checkRateLimit(`admin-gh-pull:${ip}`, 5, 10 * 60 * 1000, 10 * 60 * 1000)
   if (!allowed) {
-    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    setResponseHeader(event, 'Retry-After', retryAfter)
     throw createError({ statusCode: 429, message: `Too many GitHub pull requests. Wait ${Math.ceil(retryAfter / 60)} minutes.` })
   }
 
   const config = useRuntimeConfig()
 
-  if (!config.githubToken || !config.githubRepo) {
+  const token = config.githubToken || ''
+  const repoRef = parseGitHubRepo(config.githubRepo || '')
+
+  if (!token || !repoRef) {
     throw createError({ statusCode: 400, message: 'GitHub Token or Repo not configured.' })
   }
 
-  const [owner, repo] = config.githubRepo.split('/')
+  const { owner, repo } = repoRef
   const results: { file: string; addon: string; status: string }[] = []
   let errors = 0
 
@@ -251,7 +262,7 @@ export default defineEventHandler(async (event) => {
     // ── 1. Pull Addon Profiles ─────────────────────────
     for (const addonConfig of ADDON_MAP) {
       try {
-        const content = await fetchFileFromGitHub(owner, repo, addonConfig.file, config.githubToken)
+        const content = await fetchFileFromGitHub(owner, repo, addonConfig.file, token)
 
         if (!content) {
           results.push({ file: addonConfig.file, addon: addonConfig.addon, status: 'not found' })
@@ -284,7 +295,7 @@ export default defineEventHandler(async (event) => {
 
     // ── 2. Pull WowUp Strings ──────────────────────────
     try {
-      const wowupContent = await fetchFileFromGitHub(owner, repo, 'Data/AddOns/WowUp.lua', config.githubToken)
+      const wowupContent = await fetchFileFromGitHub(owner, repo, 'Data/AddOns/WowUp.lua', token)
 
       if (wowupContent) {
         const { required, optional } = parseWowUpLua(wowupContent)
@@ -309,7 +320,7 @@ export default defineEventHandler(async (event) => {
     // ── 3. Pull Class Layouts ──────────────────────────
     for (const [filename, className] of Object.entries(CLASS_MAP)) {
       try {
-        const content = await fetchFileFromGitHub(owner, repo, `Data/Classes/${filename}`, config.githubToken)
+        const content = await fetchFileFromGitHub(owner, repo, `Data/Classes/${filename}`, token)
 
         if (!content) {
           results.push({ file: `Data/Classes/${filename}`, addon: className, status: 'not found' })
@@ -324,7 +335,9 @@ export default defineEventHandler(async (event) => {
 
         let classStatus = 'unchanged'
         for (let i = 0; i < specs.length; i++) {
-          const { spec, importString } = specs[i]
+          const item = specs[i]
+          if (!item) continue
+          const { spec, importString } = item
           if (!importString) continue
 
           const specLabel = spec || `Spec ${i + 1}`
@@ -347,7 +360,7 @@ export default defineEventHandler(async (event) => {
         {
           headers: {
             Accept: 'application/vnd.github+json',
-            Authorization: `Bearer ${config.githubToken}`,
+            Authorization: `Bearer ${token}`,
             'User-Agent': 'MagguuUI-WebAdmin',
           },
           timeout: 10000,

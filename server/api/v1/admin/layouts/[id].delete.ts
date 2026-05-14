@@ -5,7 +5,7 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { characterLayouts } from '~/server/database/schema'
-import { join, resolve } from 'path'
+import { resolve } from 'path'
 import { unlinkSync } from 'fs'
 
 export default defineEventHandler(async (event) => {

@@ -16,6 +16,8 @@ import { DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
 import { ensureAddonsSeeded } from '~/server/utils/syncAddons'
 
+type SeedContentEntry = typeof DEFAULT_SITE_CONTENT[number]
+
 // Nitro's runNitroPlugins calls plugins without awaiting their promise.
 // That means the HTTP server starts accepting requests while an async
 // plugin is still in an `await`. On Linux CI, bcrypt.hash(password, 12)
@@ -114,7 +116,7 @@ export default defineNitroPlugin(() => {
     }
 
     if (shouldSyncSeededContent) {
-      const syncSection = (page: 'home' | 'guide', entries: readonly typeof DEFAULT_GUIDE_CONTENT[number][]) => {
+      const syncSection = (page: 'home' | 'guide', entries: readonly SeedContentEntry[]) => {
         const existing = db.select().from(siteContent)
           .where(and(eq(siteContent.page, page), eq(siteContent.locale, DEFAULT_CONTENT_LOCALE)))
           .all()

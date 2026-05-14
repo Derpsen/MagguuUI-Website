@@ -65,7 +65,7 @@ function createAutoChangelog(opts: LogOptions) {
   const line = `- **${type}:** ${opts.entityName} ${action}`
 
   const now = new Date()
-  const todayStr = now.toISOString().split('T')[0]
+  const todayStr = now.toISOString().slice(0, 10)
 
   // Find the latest auto-changelog entry
   const latest = db.select().from(changelogs)
@@ -76,7 +76,7 @@ function createAutoChangelog(opts: LogOptions) {
 
   // Check if the latest auto-entry is from TODAY
   const latestDateStr = latest?.createdAt
-    ? new Date((latest.createdAt as number) * 1000).toISOString().split('T')[0]
+    ? timestampToDate(latest.createdAt).toISOString().slice(0, 10)
     : null
 
   if (latest && latestDateStr === todayStr) {
@@ -97,4 +97,10 @@ function createAutoChangelog(opts: LogOptions) {
       publishedAt: now,
     }).run()
   }
+}
+
+function timestampToDate(value: Date | number | string): Date {
+  if (value instanceof Date) return value
+  if (typeof value === 'number') return new Date(value * 1000)
+  return new Date(value)
 }

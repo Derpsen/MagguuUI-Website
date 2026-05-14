@@ -41,7 +41,7 @@ export default defineEventHandler((event) => {
       .get()
 
     if (latest?.publishedAt) {
-      const lastmod = new Date((latest.publishedAt as number) * 1000).toISOString().split('T')[0]
+      const lastmod = timestampToDate(latest.publishedAt).toISOString().slice(0, 10)
       const homeEntry = staticPages.find(p => p.loc === '/')
       if (homeEntry) homeEntry.lastmod = lastmod
       const changelogEntry = staticPages.find(p => p.loc === '/changelog')
@@ -69,3 +69,9 @@ ${urls}
   setResponseHeader(event, 'Cache-Control', 'public, max-age=3600, s-maxage=3600')
   return xml
 })
+
+function timestampToDate(value: Date | number | string): Date {
+  if (value instanceof Date) return value
+  if (typeof value === 'number') return new Date(value * 1000)
+  return new Date(value)
+}

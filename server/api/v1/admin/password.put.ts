@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   // (bcrypt cost 12 makes each guess slow but not free).
   const rl = checkRateLimit(`pw-change:${auth.userId}`, 5, 15 * 60 * 1000, 30 * 60 * 1000)
   if (!rl.allowed) {
-    setResponseHeader(event, 'Retry-After', String(rl.retryAfter))
+    setResponseHeader(event, 'Retry-After', rl.retryAfter)
     throw createError({
       statusCode: 429,
       message: `Too many password-change attempts. Try again in ${Math.ceil(rl.retryAfter / 60)} minutes.`,

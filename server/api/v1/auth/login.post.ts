@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
   // subscriber can't burn the bucket from sibling addresses.
   const ipRl = checkRateLimit(`login:ip:${ipKey}`, 5, 15 * 60 * 1000, 15 * 60 * 1000)
   if (!ipRl.allowed) {
-    setResponseHeader(event, 'Retry-After', String(ipRl.retryAfter))
+    setResponseHeader(event, 'Retry-After', ipRl.retryAfter)
     throw createError({
       statusCode: 429,
       message: `Too many login attempts. Please wait ${Math.ceil(ipRl.retryAfter / 60)} minutes.`,
@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
   const userKey = body.username.toLowerCase()
   const userRl = checkRateLimit(`login:user:${userKey}`, 10, 60 * 60 * 1000, 60 * 60 * 1000)
   if (!userRl.allowed) {
-    setResponseHeader(event, 'Retry-After', String(userRl.retryAfter))
+    setResponseHeader(event, 'Retry-After', userRl.retryAfter)
     throw createError({
       statusCode: 429,
       message: `Too many login attempts. Please wait ${Math.ceil(userRl.retryAfter / 60)} minutes.`,

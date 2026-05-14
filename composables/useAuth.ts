@@ -27,9 +27,9 @@ interface LoginResponse {
 interface SessionResponse {
   success: boolean
   data: {
-    id: number
+    id: number | null
     user: AuthUser
-  }
+  } | null
 }
 
 export function useAuth() {
@@ -67,7 +67,7 @@ export function useAuth() {
     restoring.value = true
 
     try {
-      const response = await $fetch<SessionResponse>('/api/v1/admin/sessions/current', {
+      const response = await $fetch<SessionResponse>('/api/v1/auth/session', {
         credentials: 'include',
       })
 

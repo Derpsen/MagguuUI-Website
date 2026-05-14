@@ -37,6 +37,12 @@ export function githubErrorHint(owner: string, repo: string, status: number | un
   return fallback
 }
 
+export function parseGitHubRepo(value: string): { owner: string; repo: string } | null {
+  const [owner, repo, extra] = value.split('/')
+  if (!owner || !repo || extra) return null
+  return { owner, repo }
+}
+
 // Module-level state (persists across requests in the same process)
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 let pendingReasons: string[] = []
@@ -77,12 +83,15 @@ export async function triggerGitHubSync(reason: string = 'admin-update') {
 async function doGitHubDispatch(reasons: string[]) {
   const config = useRuntimeConfig()
 
-  if (!config.githubToken || !config.githubRepo) {
+  const token = config.githubToken || ''
+  const repoRef = parseGitHubRepo(config.githubRepo || '')
+
+  if (!token || !repoRef) {
     console.warn('[GitHub] Token or repo not configured, skipping sync')
     return
   }
 
-  const [owner, repo] = config.githubRepo.split('/')
+  const { owner, repo } = repoRef
   const combinedReason = reasons.length === 1
     ? reasons[0]
     : `batch: ${reasons.length} changes`
@@ -92,7 +101,7 @@ async function doGitHubDispatch(reasons: string[]) {
       method: 'POST',
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        'Authorization': `Bearer ${config.githubToken}`,
+        'Authorization': `Bearer ${token}`,
       },
       body: {
         event_type: 'profile-sync',

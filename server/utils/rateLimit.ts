@@ -166,7 +166,7 @@ export function rateLimitIpKey(ip: string): string {
   if (!ip || ip === 'unknown') return ip || 'unknown'
   if (!ip.includes(':')) return ip
   const mapped = ip.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i)
-  if (mapped) return mapped[1]
+  if (mapped?.[1]) return mapped[1]
   const [head, tail = ''] = ip.split('::')
   const headGroups = head ? head.split(':') : []
   const tailGroups = tail ? tail.split(':') : []

@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     10 * 60 * 1000,
   )
   if (!allowed) {
-    setResponseHeader(event, 'Retry-After', String(retryAfter))
+    setResponseHeader(event, 'Retry-After', retryAfter)
     throw apiError('RATE_LIMITED', 'Too many version checks. Please wait a moment.', 429)
   }
 
@@ -34,7 +34,11 @@ export default defineEventHandler(async (event) => {
     throw apiError('INVALID_URL', 'Invalid GitHub URL', 400)
   }
 
-  const [, owner, repo] = match
+  const owner = match[1]
+  const repo = match[2]
+  if (!owner || !repo) {
+    throw apiError('INVALID_URL', 'Invalid GitHub URL', 400)
+  }
   // Constrain owner/repo to GitHub-legal characters so an admin-supplied URL
   // can't smuggle path-traversal or alternate-target tokens (`..`, `@host`,
   // percent-encoded slashes) into the api.github.com call.

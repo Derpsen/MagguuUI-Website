@@ -1,3 +1,5 @@
+import type { H3Event } from 'h3'
+
 export const PRIVATE_API_HEADER_VALUES = {
   cacheControl: 'private, no-store, no-cache, must-revalidate',
   pragma: 'no-cache',
@@ -38,8 +40,6 @@ export function applyPrivateApiHeadersToRecord(
   headers['X-Robots-Tag'] = PRIVATE_API_HEADER_VALUES.xRobotsTag
   headers.Vary = mergeVary(existingVary ?? headers.Vary, PRIVATE_API_VARY_HEADERS)
 }
-
-import type { H3Event } from 'h3'
 
 export function applyPrivateApiHeaders(event: H3Event) {
   setResponseHeader(event, 'Cache-Control', PRIVATE_API_HEADER_VALUES.cacheControl)

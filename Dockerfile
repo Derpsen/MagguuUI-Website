@@ -17,12 +17,14 @@ ENV NODE_ENV=production \
     NPM_CONFIG_AUDIT=false \
     CI=1
 
-# Install dependencies (cached separately from source for faster rebuilds).
+# Install all dependencies for the build stage (cached separately from source
+# for faster rebuilds). Runtime only receives Nitro's standalone .output, so
+# dev-only tooling like @nuxt/eslint never lands in the final image.
 # BuildKit cache mount keeps the npm cache across builds without bloating
 # any image layer.
 COPY package*.json .npmrc ./
 RUN --mount=type=cache,target=/root/.npm \
-    if [ -f package-lock.json ]; then npm ci; else npm install; fi
+    if [ -f package-lock.json ]; then npm ci --include=dev; else npm install --include=dev; fi
 
 # Copy source and build — Nuxt's nitro output is fully standalone in .output/
 COPY . .

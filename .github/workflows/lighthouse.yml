@@ -1,0 +1,51 @@
+name: Lighthouse
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NUXT_OG_IMAGE_SECRET: ci-dummy-og-image-secret
+      NUXT_JWT_SECRET: ci-dummy-secret-must-be-32-chars-long-XXXXXXXXXX
+      NUXT_ADMIN_PASSWORD: ci-dummy
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Start preview server
+        run: |
+          nohup npm run preview > preview.log 2>&1 &
+          npx --yes wait-on http://localhost:3000 -t 90000
+
+      - name: Run Lighthouse
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            http://localhost:3000/
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          runs: 1
+
+      - name: Stop preview server
+        if: always()
+        run: pkill -f "nuxt preview" || true

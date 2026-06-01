@@ -30,7 +30,7 @@
     "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@iconify-json/heroicons": "^1.2.0",
     "@iconify-json/simple-icons": "^1.2.0",
-    "@nuxt/ui": "^4.5.0",
+    "@nuxt/ui": "^4.8.1",
     "@resvg/resvg-js": "^2.6.2",
     "@simplewebauthn/browser": "^13.2.0",
     "@simplewebauthn/server": "^13.2.0",

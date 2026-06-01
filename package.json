@@ -43,7 +43,7 @@
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.6.0",
     "drizzle-orm": "^0.45.0",
-    "echarts": "^6.0.0",
+    "echarts": "^6.1.0",
     "h3": "^1.13.0",
     "jsonwebtoken": "^9.0.3",
     "marked": "^18.0.0",

@@ -49,7 +49,7 @@
     "marked": "^18.0.0",
     "nitropack": "^2.13.4",
     "nuxt": "^4.4.7",
-    "nuxt-og-image": "^6.5.1",
+    "nuxt-og-image": "^6.5.2",
     "sanitize-html": "^2.17.2",
     "satori": "^0.26.0",
     "tailwindcss": "^4.3.0",

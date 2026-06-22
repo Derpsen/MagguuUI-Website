@@ -18,7 +18,7 @@ jobs:
       NUXT_OG_IMAGE_SECRET: ci-dummy-og-image-secret
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v6
         with:

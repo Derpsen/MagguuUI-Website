@@ -21,7 +21,7 @@ jobs:
       NUXT_JWT_SECRET: ci-dummy-secret-must-be-32-chars-long-XXXXXXXXXX
       NUXT_ADMIN_PASSWORD: ci-dummy
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v6
         with:

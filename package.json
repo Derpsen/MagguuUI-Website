@@ -36,7 +36,7 @@
     "@simplewebauthn/server": "^13.2.0",
     "@tiptap/extension-link": "^3.24.0",
     "@tiptap/extension-placeholder": "^3.24.0",
-    "@tiptap/extension-text-align": "^3.24.0",
+    "@tiptap/extension-text-align": "^3.27.1",
     "@tiptap/extension-underline": "^3.24.0",
     "@tiptap/starter-kit": "^3.24.0",
     "@tiptap/vue-3": "^3.24.0",

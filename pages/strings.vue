@@ -184,7 +184,7 @@
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Package</label>
             <select v-model="selectedWowupName" class="select-styled w-full px-4 py-3.5 rounded-xl text-base cursor-pointer" :class="isDark ? 'text-white' : 'text-gray-900'">
-              <option v-for="w in wowupList" :key="w.name" :value="w.name">{{ w.name }}</option>
+              <option v-for="w in wowupList" :key="w.name" :value="w.name">{{ wowupLabel(w.name) }}</option>
             </select>
           </div>
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
@@ -327,6 +327,9 @@ const wowupList = computed<FlatWowup[]>(() => {
   if (!keyed || typeof keyed !== 'object') return []
   return Object.entries(keyed).map(([name, data]) => ({ name, ...data }))
 })
+function wowupLabel(name: string): string {
+  return name === 'Required' ? 'Starter' : name
+}
 const layoutList = computed<PublicLayout[]>(() => {
   const data = layoutData.value?.data
   return Array.isArray(data) ? data : []

@@ -193,8 +193,12 @@ The app bootstraps key defaults on startup, including:
 - admin user creation
 - initial FAQ seed
 - initial installation guide seed
+- the current MagguuUI release notes when the public changelog is missing
 
 Repository-driven FAQ/guide re-sync is now opt-in via `NUXT_SYNC_SEEDED_CONTENT=true`.
+Known outdated default claims, such as the former ElvUI requirement, are repaired by exact marker without replacing unrelated admin-edited content.
+
+GitHub sync follows the addon's current two-folder layout. Profile and class data are pulled from `MagguuUI_Data/`, while `MagguuUI.toc` and `CHANGELOG.md` stay at the repository root. Published releases refresh the public changelog as a fallback when a push event was missed.
 
 ## Security Notes
 

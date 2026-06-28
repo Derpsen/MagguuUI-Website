@@ -22,20 +22,20 @@
         </span>
         <div class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           <p>
-            <strong :class="isDark ? 'text-white' : 'text-gray-900'">Only ElvUI is required.</strong>
-            Every other addon is optional &mdash; MagguuUI detects what you have installed, configures the addons it finds, and silently skips the rest.
+            <strong :class="isDark ? 'text-white' : 'text-gray-900'">No other addon is required.</strong>
+            Even ElvUI is optional &mdash; MagguuUI detects what you have installed, configures the addons it finds, and automatically skips the rest.
           </p>
           <p class="mt-2">
             You can install addons one by one, or use the
             <NuxtLink to="/strings?tab=wowup" class="text-brand-400 hover:underline">WowUp import strings</NuxtLink>
-            to bulk-install the full Required or Optional set in one go.
+            to bulk-install the Starter or Optional set in one go.
           </p>
         </div>
       </div>
     </div>
 
     <!-- Required Section -->
-    <section class="mb-12 fade-in fade-in-delay-2">
+    <section v-if="requiredAddons.length" class="mb-12 fade-in fade-in-delay-2">
       <div class="flex items-center gap-2 mb-5">
         <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg"
           :class="isDark ? 'bg-red-500/12 text-red-400' : 'bg-red-50 text-red-600'">
@@ -171,7 +171,7 @@ const isDark = useIsDark()
 
 usePublicPageSeo({
   title: 'Addons',
-  description: 'All required and optional addons that MagguuUI configures — ElvUI, Plater, BigWigs, Details, and more.',
+  description: 'All optional addons that MagguuUI can configure — ElvUI, Platynator, Plater, BigWigs, Details, and more.',
   path: '/addons',
 })
 

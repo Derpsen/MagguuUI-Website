@@ -3,7 +3,7 @@ export const PUBLIC_SITE_ORIGIN = 'https://ui.magguu.xyz'
 export const SITE_SETTINGS_DEFAULTS = {
   site_name: 'MagguuUI',
   site_description: 'World of Warcraft UI Configuration',
-  curseforge_url: '',
+  curseforge_url: 'https://www.curseforge.com/wow/addons/magguuui',
   github_url: 'https://github.com/Derpsen/MagguuUI',
   discord_url: '',
   maintenance_mode: 'false',

@@ -8,11 +8,11 @@
 
 import { createHmac, timingSafeEqual } from 'crypto'
 import { eq, and } from 'drizzle-orm'
-import { db, sqlite } from '~/server/database'
-import { syncHistory, settings, profiles, wowupStrings, characterLayouts, changelogs } from '~/server/database/schema'
+import { db } from '~/server/database'
+import { syncHistory, settings, profiles, wowupStrings, characterLayouts } from '~/server/database/schema'
 import { createSyncChangelog } from '~/server/utils/syncChangelog'
 import { checkRateLimit, getClientIp } from '~/server/utils/rateLimit'
-import { parseAddonChangelog } from '~/server/utils/parseAddonChangelog'
+import { syncAddonChangelog } from '~/server/utils/syncAddonChangelog'
 import { syncAddonsFromToc } from '~/server/utils/syncAddons'
 import { parseGitHubRepo } from '~/server/utils/github'
 
@@ -133,7 +133,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Handle release events
-  if (eventType === 'release' && body.action === 'published') {
+  if (eventType === 'release' && (body.action === 'published' || body.action === 'released')) {
     const release = body.release
     if (!release) {
       throw createError({ statusCode: 400, message: 'Missing release data' })
@@ -145,20 +145,44 @@ export default defineEventHandler(async (event) => {
     upsertSetting('github_latest_version', version)
     upsertSetting('github_last_check', new Date().toISOString())
 
+    let changelog: { inserted: number; updated: number; skipped: number } | null = null
+    const repoName = body.repository?.full_name || ''
+    const tag = release.tag_name || ''
+    if (repoName === 'Derpsen/MagguuUI' && /^[0-9A-Za-z._-]+$/.test(tag)) {
+      try {
+        const fetchHeaders: Record<string, string> = { 'User-Agent': 'MagguuUI-WebAdmin' }
+        if (config.githubToken) fetchHeaders.Authorization = `Bearer ${config.githubToken}`
+        const rawUrl = `https://raw.githubusercontent.com/Derpsen/MagguuUI/${encodeURIComponent(tag)}/CHANGELOG.md`
+        const markdown = await $fetch<string>(rawUrl, { headers: fetchHeaders, timeout: 15000 })
+        if (typeof markdown !== 'string' || markdown.length > MAX_CHANGELOG_BYTES) {
+          throw new Error(`Changelog payload size invalid (${typeof markdown === 'string' ? markdown.length : 'non-string'} bytes)`)
+        }
+        changelog = syncAddonChangelog(markdown)
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err)
+        db.insert(syncHistory).values({
+          triggerSource: 'webhook-release-changelog',
+          status: 'error',
+          details: message,
+        }).run()
+      }
+    }
+
     db.insert(syncHistory).values({
       triggerSource: 'webhook-release',
       status: 'success',
-      details: `Release ${release.tag_name}: ${release.name || 'Unnamed'}`,
+      details: `Release ${release.tag_name}: ${release.name || 'Unnamed'}${changelog ? `; changelog ${JSON.stringify(changelog)}` : ''}`,
     }).run()
 
     return apiSuccess({
       event: 'release',
       version,
       name: release.name,
+      changelog,
     })
   }
 
-  // Handle push events — auto-pull Data/*.lua changes into DB
+  // Handle push events — auto-pull MagguuUI_Data/*.lua changes into DB
   if (eventType === 'push') {
     const ref = body.ref || ''
     const commits = body.commits || []
@@ -166,11 +190,11 @@ export default defineEventHandler(async (event) => {
     const commitCount = commits.length || 0
     const handled: string[] = []
 
-    // Check if any Data/*.lua files were changed
+    // Check if any profile-data files were changed
     const dataFiles = new Set<string>()
     for (const commit of commits) {
       for (const file of [...(commit.added || []), ...(commit.modified || [])]) {
-        if (typeof file === 'string' && file.startsWith('Data/') && file.endsWith('.lua')) {
+        if (typeof file === 'string' && file.startsWith('MagguuUI_Data/') && file.endsWith('.lua')) {
           dataFiles.add(file)
         }
       }
@@ -211,14 +235,14 @@ export default defineEventHandler(async (event) => {
             const content = Buffer.from(fileResp.content, 'base64').toString('utf-8')
 
             // Parse and import based on file path
-            // Data/AddOns/*.lua → Addon profiles + WowUp
-            // Data/Classes/*.lua → Class layouts
+            // MagguuUI_Data/AddOns/*.lua → Addon profiles + WowUp
+            // MagguuUI_Data/Classes/*.lua → Class layouts
 
-            if (filePath.startsWith('Data/AddOns/')) {
-              const filename = filePath.replace('Data/AddOns/', '')
+            if (filePath.startsWith('MagguuUI_Data/AddOns/')) {
+              const filename = filePath.replace('MagguuUI_Data/AddOns/', '')
 
               if (filename === 'WowUp.lua') {
-              // Parse WowUp Required/Optional strings
+              // Parse the stored starter/optional WowUp strings
               const reqMatch = content.match(/D\.WowUpRequired\s*=\s*"((?:[^"\\]|\\.)*)"/)
               const optMatch = content.match(/D\.WowUpOptional\s*=\s*"((?:[^"\\]|\\.)*)"/)
               for (const [name, match] of [['Required', reqMatch], ['Optional', optMatch]] as const) {
@@ -242,7 +266,7 @@ export default defineEventHandler(async (event) => {
             } else {
               // Addon profile Lua files — detect simple vs table style
               const ADDON_SIMPLE: Record<string, string> = {
-                'Plater.lua': 'plater', 'BigWigs.lua': 'bigwigs', 'Details.lua': 'details',
+                'Plater.lua': 'plater', 'Platynator.lua': 'platynator', 'BigWigs.lua': 'bigwigs', 'Details.lua': 'details',
                 'BetterCooldownManager.lua': 'bettercooldownmanager', 'Ayije_CDM.lua': 'ayije_cdm', 'Blizzard_EditMode.lua': 'blizzardeditmode',
                 'WindTools.lua': 'windtools',
               }
@@ -294,10 +318,10 @@ export default defineEventHandler(async (event) => {
               }
             }
 
-            } else if (filePath.startsWith('Data/Classes/')) {
+            } else if (filePath.startsWith('MagguuUI_Data/Classes/')) {
               // ── Class Layout Lua files ──
               // Format: D.classname = { "string1", -- Spec1   "string2", -- Spec2 }
-              const filename = filePath.replace('Data/Classes/', '')
+              const filename = filePath.replace('MagguuUI_Data/Classes/', '')
               if (filename === '!load.xml') continue
 
               // Map filename to class display name
@@ -380,10 +404,10 @@ export default defineEventHandler(async (event) => {
 
           // Track result for changelog
           if (imported > importedBefore) {
-            const addonLabel = filePath.startsWith('Data/Classes/')
-              ? filePath.replace('Data/Classes/', '').replace('.lua', '')
-              : filePath.startsWith('Data/AddOns/')
-                ? filePath.replace('Data/AddOns/', '').replace('.lua', '')
+            const addonLabel = filePath.startsWith('MagguuUI_Data/Classes/')
+              ? filePath.replace('MagguuUI_Data/Classes/', '').replace('.lua', '')
+              : filePath.startsWith('MagguuUI_Data/AddOns/')
+                ? filePath.replace('MagguuUI_Data/AddOns/', '').replace('.lua', '')
                 : filePath
             syncResults.push({ file: filePath, addon: addonLabel, status: 'updated' })
           }
@@ -395,7 +419,7 @@ export default defineEventHandler(async (event) => {
         db.insert(syncHistory).values({
           triggerSource: 'webhook-push-autopull',
           status: errors > 0 ? 'error' : 'success',
-          details: `Push by ${pusher}: ${dataFiles.size} Data/ files changed, ${imported} imported, ${errors} errors`,
+          details: `Push by ${pusher}: ${dataFiles.size} MagguuUI_Data files changed, ${imported} imported, ${errors} errors`,
         }).run()
 
         dataResult = { imported, errors }
@@ -448,8 +472,6 @@ export default defineEventHandler(async (event) => {
     let clResult: { inserted: number; updated: number; skipped: number } | null = null
     if (repoName === 'Derpsen/MagguuUI' && changelogTouched) {
       const token = config.githubToken as string | undefined
-      const stats = { inserted: 0, updated: 0, skipped: 0 }
-
       try {
         const rawUrl = `https://raw.githubusercontent.com/Derpsen/MagguuUI/main/CHANGELOG.md`
         const fetchHeaders: Record<string, string> = { 'User-Agent': 'MagguuUI-WebAdmin' }
@@ -459,42 +481,11 @@ export default defineEventHandler(async (event) => {
         if (typeof markdown !== 'string' || markdown.length > MAX_CHANGELOG_BYTES) {
           throw new Error(`Changelog payload size invalid (${typeof markdown === 'string' ? markdown.length : 'non-string'} bytes)`)
         }
-        const entries = parseAddonChangelog(markdown)
-
-        // All-or-nothing upsert: a partial failure mid-loop would leave the
-        // changelogs table inconsistent with what was on GitHub. Idempotent
-        // on retry because we key on `version`.
-        sqlite.transaction(() => {
-          for (const entry of entries) {
-            const existing = db.select().from(changelogs).where(eq(changelogs.version, entry.version)).get()
-            if (existing) {
-              if (existing.content !== entry.content) {
-                db.update(changelogs)
-                  .set({ content: entry.content, contentEn: entry.content, updatedAt: new Date() })
-                  .where(eq(changelogs.id, existing.id))
-                  .run()
-                stats.updated++
-              } else {
-                stats.skipped++
-              }
-            } else {
-              db.insert(changelogs).values({
-                version: entry.version,
-                content: entry.content,
-                contentEn: entry.content,
-                isPublished: true,
-                publishedAt: entry.publishedAt,
-              }).run()
-              stats.inserted++
-            }
-          }
-        })()
-
-        clResult = stats
+        clResult = syncAddonChangelog(markdown)
         db.insert(syncHistory).values({
           triggerSource: 'github-changelog',
           status: 'success',
-          details: JSON.stringify(stats),
+          details: JSON.stringify(clResult),
         }).run()
         handled.push('changelog')
       } catch (err: unknown) {

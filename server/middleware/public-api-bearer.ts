@@ -44,7 +44,7 @@ export default defineEventHandler((event) => {
   // and use the Bearer flow below (see composables/useApiFetch.ts).
   const origin = getHeader(event, 'origin')
   if (origin) {
-    let originHost = ''
+    let originHost: string
     try {
       originHost = new URL(origin).host
     } catch {

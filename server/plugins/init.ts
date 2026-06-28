@@ -11,12 +11,38 @@ import bcrypt from 'bcrypt'
 import { and, eq, count } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
 import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_HOME_CONTENT, DEFAULT_SITE_CONTENT } from '~/server/database/defaultContent'
-import { users, siteContent, faqs, settings } from '~/server/database/schema'
+import { CURRENT_ADDON_CHANGELOG } from '~/server/database/defaultAddonChangelog'
+import { users, siteContent, faqs, settings, changelogs, addons } from '~/server/database/schema'
 import { DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
 import { ensureAddonsSeeded } from '~/server/utils/syncAddons'
+import { findAddonDefaultByTocName } from '~/server/database/addonMetadata'
 
 type SeedContentEntry = typeof DEFAULT_SITE_CONTENT[number]
+
+const LEGACY_CONTENT_MARKERS = [
+  { page: 'home', section: 'hero', key: 'description', marker: 'MagguuUI is an in-game addon that installs and configures ElvUI' },
+  { page: 'home', section: 'hero', key: 'badge', marker: 'New: AutoRoll + Pack system' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Every supported addon — from ElvUI and Plater' },
+  { page: 'home', section: 'features', key: 'feature_3_title', marker: 'Class layouts + custom tags' },
+  { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Cooldown layouts are pre-built for every class' },
+  { page: 'guide', section: 'intro', key: 'text', marker: 'Install ElvUI, install MagguuUI' },
+  { page: 'guide', section: 'steps', key: 'step_1_title', marker: '1. Install ElvUI' },
+  { page: 'guide', section: 'steps', key: 'step_1', marker: 'will not work without it' },
+  { page: 'guide', section: 'steps', key: 'step_2_title', marker: '2. Install MagguuUI' },
+  { page: 'guide', section: 'steps', key: 'step_2', marker: 'Get MagguuUI from any of these sources:' },
+  { page: 'guide', section: 'steps', key: 'step_6', marker: 'shift+left-click opens Settings' },
+] as const
+
+const LEGACY_FAQ_MARKERS = [
+  { category: 'general', sortOrder: 2, marker: 'only ElvUI is required' },
+  { category: 'installation', sortOrder: 0, marker: 'Install **ElvUI 15.12+**' },
+  { category: 'installation', sortOrder: 3, marker: '**No.** ElvUI is the foundation' },
+  { category: 'addons', sortOrder: 0, marker: 'BigWigs (or Northern Sky Raid Tools)' },
+  { category: 'addons', sortOrder: 4, marker: 'WowUp Required / Optional' },
+  { category: 'troubleshooting', sortOrder: 0, marker: 'ElvUI enabled and version 15.12' },
+  { category: 'troubleshooting', sortOrder: 3, marker: 'Your ElvUI version' },
+] as const
 
 // Nitro's runNitroPlugins calls plugins without awaiting their promise.
 // That means the HTTP server starts accepting requests while an async
@@ -114,6 +140,52 @@ export default defineNitroPlugin(() => {
     if (insertedSettings > 0) {
       console.log(`[Init] Added ${insertedSettings} missing default site settings`)
     }
+    const curseForgeSetting = existingSettings.find(setting => setting.key === 'curseforge_url')
+    if (curseForgeSetting && !curseForgeSetting.value.trim()) {
+      db.update(settings)
+        .set({ value: SITE_SETTINGS_DEFAULTS.curseforge_url, updatedAt: new Date() })
+        .where(eq(settings.id, curseForgeSetting.id))
+        .run()
+      console.log('[Init] Added the default MagguuUI CurseForge link')
+    }
+
+    // Repair only known outdated seed text. Admin-authored content that does
+    // not contain one of these obsolete claims remains untouched even when
+    // full NUXT_SYNC_SEEDED_CONTENT syncing is disabled.
+    let repairedContent = 0
+    for (const legacy of LEGACY_CONTENT_MARKERS) {
+      const replacement = DEFAULT_SITE_CONTENT.find(entry =>
+        entry.page === legacy.page
+        && entry.section === legacy.section
+        && entry.key === legacy.key
+        && entry.locale === DEFAULT_CONTENT_LOCALE,
+      )
+      if (!replacement) continue
+
+      const row = db.select().from(siteContent)
+        .where(and(
+          eq(siteContent.page, legacy.page),
+          eq(siteContent.section, legacy.section),
+          eq(siteContent.key, legacy.key),
+          eq(siteContent.locale, DEFAULT_CONTENT_LOCALE),
+        ))
+        .get()
+      if (!row || !row.value.includes(legacy.marker)) continue
+
+      db.update(siteContent)
+        .set({
+          value: replacement.value,
+          type: replacement.type,
+          sortOrder: replacement.sortOrder,
+          updatedAt: new Date(),
+        })
+        .where(eq(siteContent.id, row.id))
+        .run()
+      repairedContent++
+    }
+    if (repairedContent > 0) {
+      console.log(`[Init] Repaired ${repairedContent} outdated default content entries`)
+    }
 
     if (shouldSyncSeededContent) {
       const syncSection = (page: 'home' | 'guide', entries: readonly SeedContentEntry[]) => {
@@ -208,6 +280,29 @@ export default defineNitroPlugin(() => {
       }
     }
 
+    if (!shouldSyncSeededContent) {
+      for (const legacy of LEGACY_FAQ_MARKERS) {
+        const key = `${legacy.category}:${legacy.sortOrder}`
+        const existing = faqByKey.get(key)
+        const replacement = DEFAULT_FAQS.find(faq =>
+          faq.category === legacy.category && faq.sortOrder === legacy.sortOrder,
+        )
+        if (!existing || !replacement) continue
+        if (!existing.question.includes(legacy.marker) && !existing.answer.includes(legacy.marker)) continue
+
+        db.update(faqs)
+          .set({
+            question: replacement.question,
+            answer: replacement.answer,
+            isVisible: true,
+            updatedAt: new Date(),
+          })
+          .where(eq(faqs.id, existing.id))
+          .run()
+        updated++
+      }
+    }
+
     if (existingFaqs.length === 0) {
       console.log(`[Init] ${DEFAULT_FAQS.length} default FAQ entries seeded`)
     } else if (inserted > 0 || updated > 0) {
@@ -222,9 +317,43 @@ export default defineNitroPlugin(() => {
   }
 
   try {
+    const currentRelease = db.select().from(changelogs)
+      .where(eq(changelogs.version, CURRENT_ADDON_CHANGELOG.version))
+      .get()
+    if (!currentRelease) {
+      db.insert(changelogs).values({
+        version: CURRENT_ADDON_CHANGELOG.version,
+        content: CURRENT_ADDON_CHANGELOG.content,
+        contentEn: CURRENT_ADDON_CHANGELOG.content,
+        isPublished: true,
+        publishedAt: CURRENT_ADDON_CHANGELOG.publishedAt,
+      }).run()
+      console.log(`[Init] Added current addon changelog ${CURRENT_ADDON_CHANGELOG.version}`)
+    }
+  } catch (err) {
+    console.error('[Init] Current addon changelog seed failed:', err)
+  }
+
+  try {
     const addonResult = ensureAddonsSeeded()
-    if (addonResult.inserted > 0) {
-      console.log(`[Init] Addons seeded (inserted: ${addonResult.inserted})`)
+    const legacyElvUI = db.select().from(addons).where(eq(addons.slug, 'elvui')).get()
+    const elvUIDefault = findAddonDefaultByTocName('ElvUI')
+    if (legacyElvUI && elvUIDefault && (
+      legacyElvUI.category === 'required'
+      || legacyElvUI.description?.includes('Required version: 15.12')
+    )) {
+      db.update(addons)
+        .set({
+          category: 'core',
+          description: elvUIDefault.description,
+          updatedAt: new Date(),
+        })
+        .where(eq(addons.id, legacyElvUI.id))
+        .run()
+      console.log('[Init] Updated ElvUI optional status in the addon catalogue')
+    }
+    if (addonResult.inserted > 0 || addonResult.updated > 0) {
+      console.log(`[Init] Addons seeded (inserted: ${addonResult.inserted}, completed metadata: ${addonResult.updated})`)
     } else {
       console.log('[Init] Addons table already populated')
     }

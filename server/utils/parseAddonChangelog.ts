@@ -14,7 +14,7 @@ export interface ChangelogEntry {
   publishedAt: Date
 }
 
-const HEADER_RE = /^## (v\d+\.\d+(?:\.\d+)*)\s*(?:\((\d{4}-\d{2}-\d{2})\))?/
+const HEADER_RE = /^## (v\d+\.\d+(?:\.\d+)*(?:-[0-9A-Za-z.-]+)?)\s*(?:\((\d{4}-\d{2}-\d{2})\))?/
 
 export function parseAddonChangelog(markdown: string): ChangelogEntry[] {
   const lines = markdown.split('\n')

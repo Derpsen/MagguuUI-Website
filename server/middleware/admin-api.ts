@@ -17,7 +17,7 @@ function enforceSameOrigin(event: Parameters<Parameters<typeof defineEventHandle
   // Origin headers are rejected here.
   if (!origin) return
 
-  let originHost = ''
+  let originHost: string
   try {
     originHost = new URL(origin).host
   } catch {

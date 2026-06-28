@@ -4,7 +4,7 @@ Public website, admin panel, and REST API for WoW UI import strings (ElvUI, Plat
 
 ## Stack
 
-Nuxt 4.4, Vue 3.5, TypeScript 6, Nuxt UI 4.7, Tailwind CSS 4.3 (CSS-first), Drizzle 0.45, SQLite via `better-sqlite3` 12, Node 24, and `nuxt-og-image` 6 with Satori.
+Nuxt 4.4, Vue 3.5, TypeScript 6, Nuxt UI 4.9, Tailwind CSS 4.3 (CSS-first), Drizzle 0.45, SQLite via `better-sqlite3` 12, Node 24, and `nuxt-og-image` 6 with Satori.
 
 Auth uses JWT, HttpOnly cookies, session tracking, and WebAuthn/passkeys. Validation uses Zod. Linting uses Nuxt ESLint Flat Config without a separate Prettier setup; use `npm run lint`, `npm run typecheck`, build, smoke, and Playwright tests as the project checks.
 
@@ -69,9 +69,10 @@ npm run db:seed        # seed default data
 
 **Private API headers**: admin/auth error responses need private no-store headers via `server/plugins/security-headers.ts`. The smoke verifier checks this behavior.
 
-**Addon sync**: `server/api/v1/webhooks/github.post.ts` handles GitHub webhook sync for `CHANGELOG.md`, `MagguuUI.toc`, and Data/*.lua files. Keep these handlers independent so one touched file type does not block another.
+**Addon sync**: `server/api/v1/webhooks/github.post.ts` handles GitHub webhook sync for `CHANGELOG.md`, `MagguuUI.toc`, and `MagguuUI_Data/*.lua` files. Release events also refresh the public changelog from the tagged source. Keep these handlers independent so one touched file type does not block another.
 
 **Seeded content**: `NUXT_SYNC_SEEDED_CONTENT=true` makes startup upsert home, guide, and FAQ content from `server/database/defaultContent.ts`. Without it, seed data is only created for empty DBs.
+Known inaccurate legacy seed claims may be repaired by exact marker during startup; arbitrary admin-authored content remains untouched.
 
 **Color mode**: default follows the OS via `colorMode.preference: 'system'`. Do not hardcode `dark` as the preference.
 

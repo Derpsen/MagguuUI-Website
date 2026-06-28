@@ -28,19 +28,18 @@ export interface AddonDefault {
 const CF = 'https://www.curseforge.com/wow/addons'
 
 export const ADDON_DEFAULTS: AddonDefault[] = [
-  // ─── Required ────────────────────────────────────
+  // ─── Core (all still optional) ───────────────────
   {
     slug: 'elvui',
     tocName: 'ElvUI',
     name: 'ElvUI',
-    category: 'required',
+    category: 'core',
     emoji: '🎨',
-    description: 'The complete UI replacement framework that MagguuUI is built on. Handles action bars, unit frames, chat, bags, maps, and more. Required version: 15.12 or higher.',
+    description: 'Optional complete UI replacement. Install version 15.12 or newer only for the ElvUI profile and MagguuUI ElvUI tags.',
     url: 'https://tukui.org/elvui',
     sortOrder: 0,
   },
 
-  // ─── Core ────────────────────────────────────────
   {
     slug: 'plater',
     tocName: 'Plater',
@@ -117,7 +116,7 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     name: 'Platynator',
     category: 'optional',
     emoji: '🛡️',
-    description: 'Additional nameplate tweaks and color coding for Plater.',
+    description: 'Standalone nameplate replacement and an alternative to Plater, with native profile import support.',
     url: `${CF}/platynator`,
     sortOrder: 0,
   },
@@ -372,6 +371,36 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     description: 'Enhancements for the talent tree UI with better search and import tools.',
     url: `${CF}/talent-tree-tweaks`,
     sortOrder: 25,
+  },
+  {
+    slug: 'exboss',
+    tocName: 'EXBoss',
+    name: 'EXBoss',
+    category: 'optional',
+    emoji: '👑',
+    description: 'Boss timeline and encounter alerts that can be used as an alternative to BigWigs.',
+    url: `${CF}/exboss`,
+    sortOrder: 26,
+  },
+  {
+    slug: 'exboss-data',
+    tocName: 'EXBossData',
+    name: 'EXBoss Data',
+    category: 'optional',
+    emoji: '🗃️',
+    description: 'Data package used by EXBoss.',
+    sortOrder: 27,
+    isVisible: false,
+  },
+  {
+    slug: 'blizzi-interrupts',
+    tocName: 'BliZzi_Interrupts',
+    name: 'BliZzi Interrupts',
+    category: 'optional',
+    emoji: '🛑',
+    description: 'Party interrupt and cooldown tracker with a MagguuUI profile.',
+    url: `${CF}/blizzi-party-tools-interrupt-tracker`,
+    sortOrder: 28,
   },
 ]
 

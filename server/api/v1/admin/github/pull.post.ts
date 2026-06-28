@@ -1,7 +1,7 @@
 /**
  * POST /api/v1/admin/github/pull
  *
- * Fetches Data/AddOns/*.lua and Data/Classes/*.lua files from the GitHub repo
+ * Fetches MagguuUI_Data/AddOns/*.lua and MagguuUI_Data/Classes/*.lua files from the GitHub repo
  * and imports profile strings back into the website database.
  *
  * Flow: GitHub Repo → Lua files → Parse → Upsert DB
@@ -11,7 +11,10 @@ import { eq, and } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { profiles, wowupStrings, characterLayouts, settings, syncHistory } from '~/server/database/schema'
 import { createSyncChangelog } from '~/server/utils/syncChangelog'
+import { syncAddonChangelog, type AddonChangelogSyncStats } from '~/server/utils/syncAddonChangelog'
 import { parseGitHubRepo } from '~/server/utils/github'
+
+const MAX_CHANGELOG_BYTES = 4 * 1024 * 1024
 
 // ─── Addon Mapping (must match sync-profiles.py) ────────────
 
@@ -30,15 +33,18 @@ interface TableAddon {
 }
 type AddonConfig = SimpleAddon | TableAddon
 
+const DATA_ROOT = 'MagguuUI_Data'
+
 const ADDON_MAP: AddonConfig[] = [
-  { addon: 'ElvUI', file: 'Data/AddOns/ElvUI.lua', style: 'table', varName: 'elvui', keys: ['profile', 'private', 'global', 'aurafilters'] },
-  { addon: 'Plater', file: 'Data/AddOns/Plater.lua', style: 'simple', varName: 'plater' },
-  { addon: 'BigWigs', file: 'Data/AddOns/BigWigs.lua', style: 'simple', varName: 'bigwigs' },
-  { addon: 'Details', file: 'Data/AddOns/Details.lua', style: 'simple', varName: 'details' },
-  { addon: 'BetterCooldownManager', file: 'Data/AddOns/BetterCooldownManager.lua', style: 'simple', varName: 'bettercooldownmanager' },
-  { addon: 'Ayije_CDM', file: 'Data/AddOns/Ayije_CDM.lua', style: 'simple', varName: 'ayije_cdm' },
-  { addon: 'Blizzard_EditMode', file: 'Data/AddOns/Blizzard_EditMode.lua', style: 'simple', varName: 'blizzardeditmode' },
-  { addon: 'WindTools', file: 'Data/AddOns/WindTools.lua', style: 'simple', varName: 'windtools' },
+  { addon: 'ElvUI', file: `${DATA_ROOT}/AddOns/ElvUI.lua`, style: 'table', varName: 'elvui', keys: ['profile', 'private', 'global', 'aurafilters'] },
+  { addon: 'Plater', file: `${DATA_ROOT}/AddOns/Plater.lua`, style: 'simple', varName: 'plater' },
+  { addon: 'Platynator', file: `${DATA_ROOT}/AddOns/Platynator.lua`, style: 'simple', varName: 'platynator' },
+  { addon: 'BigWigs', file: `${DATA_ROOT}/AddOns/BigWigs.lua`, style: 'simple', varName: 'bigwigs' },
+  { addon: 'Details', file: `${DATA_ROOT}/AddOns/Details.lua`, style: 'simple', varName: 'details' },
+  { addon: 'BetterCooldownManager', file: `${DATA_ROOT}/AddOns/BetterCooldownManager.lua`, style: 'simple', varName: 'bettercooldownmanager' },
+  { addon: 'Ayije_CDM', file: `${DATA_ROOT}/AddOns/Ayije_CDM.lua`, style: 'simple', varName: 'ayije_cdm' },
+  { addon: 'Blizzard_EditMode', file: `${DATA_ROOT}/AddOns/Blizzard_EditMode.lua`, style: 'simple', varName: 'blizzardeditmode' },
+  { addon: 'WindTools', file: `${DATA_ROOT}/AddOns/WindTools.lua`, style: 'simple', varName: 'windtools' },
 ]
 
 // ─── Class Mapping ───────────────────────────────────────────
@@ -61,35 +67,33 @@ const CLASS_MAP: Record<string, string> = {
 
 // ─── Lua Parsers ─────────────────────────────────────────────
 
-function parseSimpleLua(content: string, varName: string): string | null {
-  const regex = new RegExp(`D\\.${varName}\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"`)
-  const match = content.match(regex)
-  const raw = match?.[1]
-  if (raw !== undefined) {
-    return raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+function parseLuaString(content: string, assignment: string): string | null {
+  const quoted = content.match(new RegExp(`${assignment}\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"`))
+  if (quoted?.[1] !== undefined) {
+    return quoted[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
   }
-  return null
+
+  const longBracket = content.match(new RegExp(`${assignment}\\s*=\\s*\\[(=*)\\[([\\s\\S]*?)\\]\\1\\]`))
+  return longBracket?.[2] ?? null
+}
+
+function parseSimpleLua(content: string, varName: string): string | null {
+  return parseLuaString(content, `D\\.${varName}`)
 }
 
 function parseTableLua(content: string, varName: string, keys: string[]): Record<string, string> {
   const result: Record<string, string> = {}
   for (const key of keys) {
-    const regex = new RegExp(`${key}\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"`)
-    const match = content.match(regex)
-    const raw = match?.[1]
-    if (raw !== undefined) {
-      result[key] = raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-    }
+    const value = parseLuaString(content, key)
+    if (value !== null) result[key] = value
   }
   return result
 }
 
 function parseWowUpLua(content: string): { required: string | null; optional: string | null } {
-  const reqMatch = content.match(/D\.WowUpRequired\s*=\s*"((?:[^"\\]|\\.)*)"/)
-  const optMatch = content.match(/D\.WowUpOptional\s*=\s*"((?:[^"\\]|\\.)*)"/)
   return {
-    required: reqMatch?.[1] !== undefined ? reqMatch[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\') : null,
-    optional: optMatch?.[1] !== undefined ? optMatch[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\') : null,
+    required: parseLuaString(content, 'D\\.WowUpRequired'),
+    optional: parseLuaString(content, 'D\\.WowUpOptional'),
   }
 }
 
@@ -257,6 +261,7 @@ export default defineEventHandler(async (event) => {
   const { owner, repo } = repoRef
   const results: { file: string; addon: string; status: string }[] = []
   let errors = 0
+  let addonChangelog: AddonChangelogSyncStats | null = null
 
   try {
     // ── 1. Pull Addon Profiles ─────────────────────────
@@ -295,41 +300,43 @@ export default defineEventHandler(async (event) => {
 
     // ── 2. Pull WowUp Strings ──────────────────────────
     try {
-      const wowupContent = await fetchFileFromGitHub(owner, repo, 'Data/AddOns/WowUp.lua', token)
+      const wowupPath = `${DATA_ROOT}/AddOns/WowUp.lua`
+      const wowupContent = await fetchFileFromGitHub(owner, repo, wowupPath, token)
 
       if (wowupContent) {
         const { required, optional } = parseWowUpLua(wowupContent)
 
         if (required && required.length > 0) {
           const status = upsertWowUp('Required', required)
-          results.push({ file: 'Data/AddOns/WowUp.lua', addon: 'WowUp/Required', status })
+          results.push({ file: wowupPath, addon: 'WowUp/Required', status })
         }
         if (optional && optional.length > 0) {
           const status = upsertWowUp('Optional', optional)
-          results.push({ file: 'Data/AddOns/WowUp.lua', addon: 'WowUp/Optional', status })
+          results.push({ file: wowupPath, addon: 'WowUp/Optional', status })
         }
       } else {
-        results.push({ file: 'Data/AddOns/WowUp.lua', addon: 'WowUp', status: 'not found' })
+        results.push({ file: wowupPath, addon: 'WowUp', status: 'not found' })
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'unknown'
-      results.push({ file: 'Data/AddOns/WowUp.lua', addon: 'WowUp', status: `error: ${msg}` })
+      results.push({ file: `${DATA_ROOT}/AddOns/WowUp.lua`, addon: 'WowUp', status: `error: ${msg}` })
       errors++
     }
 
     // ── 3. Pull Class Layouts ──────────────────────────
     for (const [filename, className] of Object.entries(CLASS_MAP)) {
       try {
-        const content = await fetchFileFromGitHub(owner, repo, `Data/Classes/${filename}`, token)
+        const classPath = `${DATA_ROOT}/Classes/${filename}`
+        const content = await fetchFileFromGitHub(owner, repo, classPath, token)
 
         if (!content) {
-          results.push({ file: `Data/Classes/${filename}`, addon: className, status: 'not found' })
+          results.push({ file: classPath, addon: className, status: 'not found' })
           continue
         }
 
         const specs = parseClassLua(content)
         if (specs.length === 0) {
-          results.push({ file: `Data/Classes/${filename}`, addon: className, status: 'empty' })
+          results.push({ file: classPath, addon: className, status: 'empty' })
           continue
         }
 
@@ -345,10 +352,10 @@ export default defineEventHandler(async (event) => {
           if (status !== 'unchanged') classStatus = status
         }
 
-        results.push({ file: `Data/Classes/${filename}`, addon: `${className} (${specs.length} specs)`, status: classStatus })
+        results.push({ file: classPath, addon: `${className} (${specs.length} specs)`, status: classStatus })
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'unknown'
-        results.push({ file: `Data/Classes/${filename}`, addon: className, status: `error: ${msg}` })
+        results.push({ file: `${DATA_ROOT}/Classes/${filename}`, addon: className, status: `error: ${msg}` })
         errors++
       }
     }
@@ -369,6 +376,23 @@ export default defineEventHandler(async (event) => {
       const version = (release.tag_name || '').replace(/^v/, '')
       upsertSetting('github_latest_version', version)
       upsertSetting('github_last_check', new Date().toISOString())
+
+      if (/^[0-9A-Za-z._-]+$/.test(release.tag_name)) {
+        const markdown = await $fetch<string>(
+          `https://raw.githubusercontent.com/${owner}/${repo}/${encodeURIComponent(release.tag_name)}/CHANGELOG.md`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'User-Agent': 'MagguuUI-WebAdmin',
+            },
+            timeout: 15000,
+          },
+        )
+        if (typeof markdown !== 'string' || markdown.length > MAX_CHANGELOG_BYTES) {
+          throw new Error(`Changelog payload size invalid (${typeof markdown === 'string' ? markdown.length : 'non-string'} bytes)`)
+        }
+        addonChangelog = syncAddonChangelog(markdown)
+      }
     } catch {
       // Release info is optional
     }
@@ -391,6 +415,7 @@ export default defineEventHandler(async (event) => {
       message: `Pull complete: ${created} created, ${updated} updated, ${unchanged} unchanged`,
       results,
       summary: { created, updated, unchanged, errors },
+      changelog: addonChangelog,
     })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'

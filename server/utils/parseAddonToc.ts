@@ -3,7 +3,7 @@
  *
  * Format (from WoW addon toc):
  *   ## OptionalDeps: Foo, Bar, !Baz, ...
- *   ## RequiredDeps: ElvUI
+ *   ## RequiredDeps: SomeFramework
  *
  * Lines starting with `## ` carry metadata. Dep tokens are comma-separated.
  * Names with a leading `!` are libraries that load before others (e.g. !BugGrabber).

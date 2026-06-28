@@ -2,7 +2,7 @@
  * GET /api/v1/layouts/grouped
  *
  * Returns all visible character layouts, grouped by class_name.
- * Used by sync-profiles.py to generate Data/Classes/*.lua files.
+ * Used by sync-profiles.py to generate MagguuUI_Data/Classes/*.lua files.
  *
  * Response format:
  * {

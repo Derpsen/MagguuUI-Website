@@ -47,9 +47,29 @@ export function ensureAddonsSeeded(): SyncAddonsResult {
   const bySlug = new Map(existing.map(row => [row.slug, row]))
   const now = new Date()
   let inserted = 0
+  let updated = 0
 
   for (const def of ADDON_DEFAULTS) {
-    if (bySlug.has(def.slug)) continue
+    const row = bySlug.get(def.slug)
+    if (row) {
+      const wasFallback = !row.description && !row.url && !row.emoji
+      const patch = {
+        ...(row.name === row.tocName && row.name !== def.name ? { name: def.name } : {}),
+        ...(!row.emoji && def.emoji ? { emoji: def.emoji } : {}),
+        ...(!row.description && def.description ? { description: def.description } : {}),
+        ...(!row.url && def.url ? { url: def.url } : {}),
+        ...(row.sortOrder >= 90 ? { sortOrder: def.sortOrder } : {}),
+        ...(wasFallback && def.isVisible === false ? { isVisible: false } : {}),
+      }
+      if (Object.keys(patch).length > 0) {
+        db.update(addons)
+          .set({ ...patch, updatedAt: now })
+          .where(eq(addons.id, row.id))
+          .run()
+        updated++
+      }
+      continue
+    }
     db.insert(addons).values({
       slug: def.slug,
       tocName: def.tocName ?? null,
@@ -67,7 +87,7 @@ export function ensureAddonsSeeded(): SyncAddonsResult {
     inserted++
   }
 
-  return { inserted, updated: 0, unavailable: 0, total: ADDON_DEFAULTS.length }
+  return { inserted, updated, unavailable: 0, total: ADDON_DEFAULTS.length }
 }
 
 function applyAddonSync(refs: TocAddonRef[]): SyncAddonsResult {

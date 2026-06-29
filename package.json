@@ -50,7 +50,7 @@
     "nitropack": "^2.13.4",
     "nuxt": "^4.4.8",
     "nuxt-og-image": "^6.5.2",
-    "sanitize-html": "^2.17.2",
+    "sanitize-html": "^2.17.5",
     "satori": "^0.26.0",
     "tailwindcss": "^4.3.0",
     "vue-echarts": "^8.0.1",

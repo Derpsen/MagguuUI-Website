@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.16.0",
-    "@playwright/test": "^1.52.0",
+    "@playwright/test": "^1.61.1",
     "@types/bcrypt": "^6.0.0",
     "@types/better-sqlite3": "^7.6.12",
     "@types/jsonwebtoken": "^9.0.10",

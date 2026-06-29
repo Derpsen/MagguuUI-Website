@@ -35,7 +35,7 @@
 
             <div class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed fade-in fade-in-delay-2"
               :class="isDark ? 'text-silver-400' : 'text-gray-500'"
-              v-html="renderHomeRichText(content?.hero?.description || 'MagguuUI is an in-game addon that installs and configures ElvUI, Plater, BigWigs, Details, Method Raid Tools and 30+ more addons for you. One click on Install All and your interface is done — no manual setup, no copy-pasting strings.')"
+              v-html="renderHomeRichText(content?.hero?.description || 'MagguuUI is a standalone installer for WoW Retail. It only needs the two included addon folders; every external integration, including ElvUI, is optional. Click **Install All** once and MagguuUI configures the addons you actually use.')"
             />
 
             <div class="flex items-center justify-center gap-4 fade-in fade-in-delay-3">
@@ -66,7 +66,7 @@
             :class="isDark ? 'border-white/8' : 'border-blue-100'">
             <div ref="addonsHeading" class="text-center mb-8 scroll-reveal">
               <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.addons?.title || 'Supported Addons' }}</span></h2>
-              <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'Profiles for the most popular WoW addons' }}</p>
+              <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'Every external integration is optional — choose only the addons you want' }}</p>
             </div>
             <div v-if="addonNames.length" ref="addonPills" class="scroll-reveal scroll-reveal-delay-1">
               <div class="flex flex-wrap justify-center gap-3 py-1">
@@ -104,7 +104,7 @@
     <section aria-label="Features" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
       <div ref="featuresHeading" class="text-center mb-16 scroll-reveal">
         <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.features_heading?.title || 'Why MagguuUI?' }}</span></h2>
-        <p :class="isDark ? 'text-silver-500' : 'text-gray-500'" class="text-lg">{{ content?.features_heading?.subtitle || 'Everything you need — in one package' }}</p>
+        <p :class="isDark ? 'text-silver-500' : 'text-gray-500'" class="text-lg">{{ content?.features_heading?.subtitle || 'A complete setup without forced external dependencies' }}</p>
       </div>
       <div class="grid md:grid-cols-3 gap-6">
         <div v-for="(feat, idx) in features" :key="idx"
@@ -133,7 +133,7 @@ const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
 const siteSettings = usePublicSiteSettings()
 const homeMetaTitle = computed(() => siteSettings.value.meta_title || 'MagguuUI - Your WoW Interface, perfected.')
-const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'MagguuUI is an in-game addon that installs and configures ElvUI, Plater, BigWigs, Details, Method Raid Tools and 30+ more addons for you in one click. No manual setup, no copy-pasting strings.')
+const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'Standalone WoW Retail setup with no required external addons. Install MagguuUI, choose the integrations you want, and apply their profiles with one click.')
 const homeOgImage = computed(() => siteSettings.value.og_image_url || buildPublicUrl('/logo.png'))
 const homeCanonical = buildPublicUrl('/')
 const homeSiteName = computed(() => siteSettings.value.site_name || 'MagguuUI')
@@ -252,7 +252,7 @@ const features = computed(() => [
   {
     emoji: '⚡',
     title: content.value?.features?.feature_1_title || 'One-click setup',
-    text: content.value?.features?.feature_1_text || 'Install MagguuUI, log in once, click **Install All**. Every supported addon — from ElvUI and Plater to MRT and BigWigs — gets its profile applied in the right order. Missing addons are skipped silently.',
+    text: content.value?.features?.feature_1_text || 'Install the included **MagguuUI** and **MagguuUI_Data** folders, log in once, and click **Install All**. Built-in layouts and enabled integrations are handled in order; missing addons are skipped automatically.',
   },
   {
     emoji: '🔄',
@@ -261,8 +261,8 @@ const features = computed(() => [
   },
   {
     emoji: '🎯',
-    title: content.value?.features?.feature_3_title || 'Class layouts + custom tags',
-    text: content.value?.features?.feature_3_text || 'Cooldown layouts are pre-built for every class and specialization and re-applied automatically on spec change. Native ElvUI tags `[mui:ilvl]` and `[mui:ilvl:setbonus]` drop item level and current tier set bonus directly into any unitframe name text.',
+    title: content.value?.features?.feature_3_title || 'Useful extras built in',
+    text: content.value?.features?.feature_3_text || 'Use class layouts, adjustable item-level colors, AutoRoll, audio switching, and a compact Mythic+ keystone list with teleport buttons and group-join banners.',
   },
 ])
 

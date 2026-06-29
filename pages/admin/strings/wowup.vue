@@ -4,7 +4,7 @@
       icon="i-heroicons-arrow-down-tray"
       eyebrow="Data"
       title="WowUp Strings"
-      description="Keep package strings ordered, visible and ready for one-click addon installation."
+      description="Keep optional starter packages ordered, visible and ready for one-click installation in WowUp."
     >
       <template #badge>
         <UBadge v-if="!loading && isFiltering" color="warning" variant="subtle">{{ filtered.length }} results</UBadge>
@@ -92,7 +92,7 @@
 
     <!-- Empty state -->
     <AdminPanel v-else title="WowUp inventory" description="No package strings have been created yet." icon="i-heroicons-arrow-down-tray">
-      <AdminEmptyState icon="i-heroicons-arrow-down-tray" title="No WowUp strings yet" description="Add the first package string so visitors can install the required addon bundle with one action.">
+      <AdminEmptyState icon="i-heroicons-arrow-down-tray" title="No WowUp strings yet" description="Add the first optional package so visitors have a convenient starting point in WowUp.">
         <template #actions>
           <UButton icon="i-heroicons-plus" @click="openCreate">Create first string</UButton>
         </template>
@@ -103,7 +103,7 @@
     <AdminCrudModal :open="modalOpen" :title="editingItem ? 'Edit String' : 'New WowUp String'" :saving="saving" :error="formError" @update:open="modalOpen = $event" @save="save()">
       <div>
         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Name *</label>
-        <UInput v-model="form.name" placeholder="e.g. Required Addons" :disabled="saving" />
+        <UInput v-model="form.name" placeholder="e.g. Starter Addons" :disabled="saving" />
       </div>
       <div>
         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Import String *</label>

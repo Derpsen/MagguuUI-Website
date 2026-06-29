@@ -98,7 +98,7 @@ const { isLoggedIn } = useAuth()
 const { observe } = useScrollReveal()
 const siteSettings = usePublicPageSeo({
   title: 'FAQ',
-  description: 'Frequently asked questions about MagguuUI - setup, addons, profiles, and troubleshooting.',
+  description: 'MagguuUI answers for installation, the two included folders, optional addon integrations, profiles, and troubleshooting.',
   path: '/faq',
 })
 

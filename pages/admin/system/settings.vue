@@ -139,7 +139,7 @@
 
             <div class="admin-field">
               <label class="admin-field__label">Meta description</label>
-              <UTextarea v-model="form.meta_description" :disabled="saving" :rows="3" placeholder="High-quality import strings..." />
+              <UTextarea v-model="form.meta_description" :disabled="saving" :rows="3" placeholder="Standalone WoW Retail setup with optional addon integrations..." />
               <p class="admin-field__hint" :class="counterClass(form.meta_description?.length || 0, 160)">
                 {{ form.meta_description?.length || 0 }}/160
               </p>

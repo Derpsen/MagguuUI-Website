@@ -81,7 +81,7 @@
             </div>
             <div class="admin-field">
               <label for="home-addons-subtitle" class="admin-field__label">Subtitle</label>
-              <UInput id="home-addons-subtitle" v-model="form.addons.subtitle" :disabled="saving" placeholder="Profiles for the most popular WoW addons" />
+              <UInput id="home-addons-subtitle" v-model="form.addons.subtitle" :disabled="saving" placeholder="Every external integration is optional" />
             </div>
           </div>
           <div class="admin-subpanel space-y-3">
@@ -92,7 +92,7 @@
             </div>
             <div class="admin-field">
               <label for="home-features-subtitle" class="admin-field__label">Subtitle</label>
-              <UInput id="home-features-subtitle" v-model="form.features_heading.subtitle" :disabled="saving" placeholder="Everything you need in one package" />
+              <UInput id="home-features-subtitle" v-model="form.features_heading.subtitle" :disabled="saving" placeholder="A complete setup without forced dependencies" />
             </div>
           </div>
         </div>
@@ -165,7 +165,7 @@
               {{ form.addons.title || "Supported Addons" }}
             </h3>
             <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              {{ form.addons.subtitle || "Profiles for the most popular WoW addons" }}
+              {{ form.addons.subtitle || "Every external integration is optional — choose only the addons you want" }}
             </p>
             <div class="mt-4 flex flex-wrap gap-2">
               <span
@@ -184,7 +184,7 @@
               {{ form.features_heading.title || "Why MagguuUI?" }}
             </h3>
             <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              {{ form.features_heading.subtitle || "Everything you need in one package" }}
+              {{ form.features_heading.subtitle || "A complete setup without forced external dependencies" }}
             </p>
           </div>
         </div>
@@ -221,33 +221,33 @@ const loading = ref(true)
 const saving = ref(false)
 const tab = ref<"edit" | "preview">("edit")
 
-const previewAddons = ["ElvUI", "Plater", "BigWigs", "Details"]
+const previewAddons = ["ElvUI", "Plater / Platynator", "BigWigs / EXBoss", "Details"]
 const featureIndices = [1, 2, 3] as const
 
 const form = reactive({
   hero: {
     title: "Your WoW Interface,",
     title2: "perfected.",
-    description: "High-quality import strings for cooldowns, addon profiles, and more. Simply copy and paste into WoW.",
+    description: "MagguuUI is a standalone installer for WoW Retail. It only needs the two included addon folders; every external integration, including ElvUI, is optional.",
   } as Record<string, string>,
   addons: {
     title: "Supported Addons",
-    subtitle: "Profiles for the most popular WoW addons",
+    subtitle: "Every external integration is optional — choose only the addons you want",
   } as Record<string, string>,
   features_heading: {
     title: "Why MagguuUI?",
-    subtitle: "Everything you need in one package",
+    subtitle: "A complete setup without forced external dependencies",
   } as Record<string, string>,
   features: {
     feature_1_emoji: "A",
-    feature_1_title: "Pre-configured Profiles",
-    feature_1_text: "Pre-configured profiles for ElvUI, Plater, BigWigs, Details, and more.",
+    feature_1_title: "One-click setup",
+    feature_1_text: "Install MagguuUI and MagguuUI_Data, click Install All, and missing integrations are skipped automatically.",
     feature_2_emoji: "B",
-    feature_2_title: "Class Layouts",
-    feature_2_text: "Optimized cooldown layouts for every class and specialization.",
+    feature_2_title: "Always up to date",
+    feature_2_text: "Profiles are tuned for the current WoW patch, with clear in-game update notices and a changelog.",
     feature_3_emoji: "C",
-    feature_3_title: "Always Up-to-Date",
-    feature_3_text: "Regular updates with the latest changes and improvements for every addon.",
+    feature_3_title: "Useful extras built in",
+    feature_3_text: "Class layouts, adjustable item-level colors, AutoRoll, audio switching and a compact Keystone List are included.",
   } as Record<string, string>,
 })
 

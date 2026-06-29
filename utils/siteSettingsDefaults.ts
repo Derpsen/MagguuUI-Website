@@ -2,14 +2,14 @@ export const PUBLIC_SITE_ORIGIN = 'https://ui.magguu.xyz'
 
 export const SITE_SETTINGS_DEFAULTS = {
   site_name: 'MagguuUI',
-  site_description: 'World of Warcraft UI Configuration',
+  site_description: 'Standalone World of Warcraft Retail UI installer',
   curseforge_url: 'https://www.curseforge.com/wow/addons/magguuui',
   github_url: 'https://github.com/Derpsen/MagguuUI',
   discord_url: '',
   maintenance_mode: 'false',
   banner_text: '',
   meta_title: 'MagguuUI - Your WoW Interface, perfected.',
-  meta_description: 'High-quality import strings for ElvUI, Plater, BigWigs, Details and more. Simply copy and paste into WoW.',
+  meta_description: 'Standalone WoW Retail setup with no required external addons. Install MagguuUI, choose the integrations you want, and apply their profiles with one click.',
   // Empty by default — leaves nuxt-og-image's per-route Satori card as the
   // canonical OG image. Admins can still pin a specific image via settings.
   og_image_url: '',

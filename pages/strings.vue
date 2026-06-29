@@ -180,6 +180,11 @@
 
       <!-- ═══ WowUp ═══ -->
       <div v-if="activeTab === 'wowup'" role="tabpanel" id="tabpanel-wowup" aria-labelledby="tab-wowup" tabindex="0">
+        <div class="mb-5 rounded-xl border px-4 py-3 text-sm leading-relaxed"
+          :class="isDark ? 'border-brand-400/15 bg-brand-400/5 text-silver-400' : 'border-blue-100 bg-blue-50 text-gray-600'">
+          These packages are optional recommendations for WowUp. MagguuUI does not require any external addon,
+          and some listed addons are alternatives to each other. Choose the package you want, then review the list in WowUp before installing.
+        </div>
         <div v-if="wowupList.length" class="space-y-5">
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Package</label>
@@ -272,7 +277,7 @@ const { isLoggedIn } = useAuth()
 const { apiFetch } = useApi()
 usePublicPageSeo({
   title: 'Import Strings',
-  description: 'Browse import strings, packages, and layouts for MagguuUI.',
+  description: 'Browse optional addon profiles, class layouts, and WowUp starter packages shipped with MagguuUI.',
   path: '/strings',
 })
 
@@ -290,7 +295,7 @@ const tabSubtitle = computed(() => {
   switch (activeTab.value) {
     case 'layouts': return 'Choose your class and specialization to copy the import string.'
     case 'profiles': return 'Choose your addon and profile to copy the import string.'
-    case 'wowup': return 'Choose a package to copy the WowUp import string.'
+    case 'wowup': return 'Optional starter packages for WowUp — review the addons before installing.'
     default: return 'Choose your category and class to copy the import string.'
   }
 })
@@ -328,7 +333,9 @@ const wowupList = computed<FlatWowup[]>(() => {
   return Object.entries(keyed).map(([name, data]) => ({ name, ...data }))
 })
 function wowupLabel(name: string): string {
-  return name === 'Required' ? 'Starter' : name
+  if (name === 'Required') return 'Starter Addons'
+  if (name === 'Optional') return 'Optional Addons'
+  return name
 }
 const layoutList = computed<PublicLayout[]>(() => {
   const data = layoutData.value?.data
@@ -338,7 +345,7 @@ const layoutList = computed<PublicLayout[]>(() => {
 const tabs = computed(() => [
   { label: 'Cooldown Layouts', value: 'layouts', count: layoutList.value.length },
   { label: 'Addon Profiles', value: 'profiles', count: profileList.value.length },
-  { label: 'WowUp Import String', value: 'wowup', count: wowupList.value.length },
+  { label: 'WowUp Packages', value: 'wowup', count: wowupList.value.length },
 ])
 
 const layoutClasses = computed(() => [...new Set(layoutList.value.map(l => l.className).filter((c): c is string => Boolean(c)))].sort())

@@ -210,9 +210,9 @@
               <span>Import strings</span>
               <UIcon name="i-heroicons-arrow-up-right" class="w-3.5 h-3.5 ml-auto opacity-50" />
             </NuxtLink>
-            <NuxtLink to="/strings?addon=WowUp" class="guide-help-link" :class="isDark ? 'guide-help-link--dark' : 'guide-help-link--light'">
+            <NuxtLink to="/strings?tab=wowup" class="guide-help-link" :class="isDark ? 'guide-help-link--dark' : 'guide-help-link--light'">
               <UIcon name="i-heroicons-archive-box-arrow-down" class="w-4 h-4 flex-shrink-0" />
-              <span>WowUp package</span>
+              <span>WowUp packages</span>
               <UIcon name="i-heroicons-arrow-up-right" class="w-3.5 h-3.5 ml-auto opacity-50" />
             </NuxtLink>
             <NuxtLink to="/faq" class="guide-help-link" :class="isDark ? 'guide-help-link--dark' : 'guide-help-link--light'">
@@ -245,7 +245,7 @@ const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
 usePublicPageSeo({
   title: 'Installation Guide',
-  description: 'Step-by-step installation guide for MagguuUI, from first install to alt profile sync.',
+  description: 'Install both included MagguuUI folders, choose any optional integrations, and complete the standalone setup step by step.',
   path: '/guide',
 })
 const isAdmin = computed(() => {

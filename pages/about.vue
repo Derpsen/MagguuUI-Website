@@ -25,15 +25,16 @@
           <span class="text-gradient-subtle">What is MagguuUI?</span>
         </h2>
         <p class="text-sm leading-relaxed mb-3" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-          MagguuUI is an in-game World of Warcraft addon that sets up your entire user interface for you.
-          Once installed, it configures ElvUI, Plater, BigWigs, Details and more with hand-tuned profiles
-          so you have a complete, ready-to-play UI in a few clicks — no editing config files, no copy-pasting
-          import strings, no spending an evening tweaking unitframes.
+          MagguuUI is a standalone in-game installer and UI toolkit for World of Warcraft Retail.
+          It can apply Blizzard layouts and hand-tuned profiles for the supported addons you choose,
+          giving you a ready-to-play setup in a few clicks — without editing files or pasting import strings by hand.
         </p>
         <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-          MagguuUI does not replace any of those addons. It only configures the ones you have installed
-          and skips the rest. The only hard requirement is <strong :class="isDark ? 'text-white' : 'text-gray-900'">ElvUI 15.12 or higher</strong> —
-          everything else is optional.
+          The only required pieces are the two included addon folders:
+          <strong :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI</strong> and
+          <strong :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI_Data</strong>.
+          No external addon is required. ElvUI, Plater, Platynator, BigWigs and every other integration are optional;
+          MagguuUI configures the ones you have installed and safely skips the rest.
         </p>
       </div>
 
@@ -47,11 +48,11 @@
         <ul class="space-y-2.5 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">One-click Install All</strong> — applies a curated profile to every supported addon you have installed.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">One-click Install All</strong> — applies the included layouts and profiles for the supported addons you actually have installed.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Class &amp; spec layouts</strong> — pre-built cooldown layouts for every class and spec, re-applied automatically when you respec.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Class &amp; spec layouts</strong> — built-in Blizzard Edit Mode layouts and optional cooldown layouts for every class and specialization.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
@@ -59,15 +60,15 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Raid integration via MRT</strong> — full Method Raid Tools profile incl. notes, cooldown assignments, marks, raid groups, reminders and timers.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Keystone List</strong> — a compact Mythic+ overview with dungeon teleports, a configurable group-join banner and useful key details.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Class-colored keybinds</strong> — modifier letters on the ElvUI action bars are tinted in your class color so binds read at a glance. Toggle in <code>/mui settings</code>.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Optional ElvUI tools</strong> — import the MagguuUI profile, color action-bar keybinds by class and use the custom item-level tags when ElvUI 15.12+ is installed.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Quality-of-life tools</strong> — minimap button, AddonCompartment entry, draggable audio output switcher (<code>/mui audio</code>) and in-game changelog viewer.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Quality-of-life tools</strong> — quick Great Vault access, minimap and AddonCompartment controls, a draggable audio output switcher and an in-game changelog.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
@@ -75,7 +76,7 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Custom ElvUI tags</strong> — drop <code>[mui:ilvl]</code> and <code>[mui:ilvl:setbonus]</code> into any unitframe text to show item level and current tier set bonus.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Custom gear tags</strong> — optional ElvUI tags show item level and tier bonus, with adjustable color thresholds in <em>Settings → Tags → Gear</em>.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
@@ -138,9 +139,9 @@
     <div class="text-center mt-12 pt-6 border-t fade-in"
       :class="isDark ? 'border-brand-400/10' : 'border-gray-200'">
       <p class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Ready to get started? Check out the
-        <NuxtLink to="/strings" class="text-brand-400 hover:underline">Import Strings</NuxtLink>
-        or read the <NuxtLink to="/guide" class="text-brand-400 hover:underline">Installation Guide</NuxtLink>.
+        Ready to get started? Read the
+        <NuxtLink to="/guide" class="text-brand-400 hover:underline">Installation Guide</NuxtLink>
+        or browse the optional <NuxtLink to="/strings" class="text-brand-400 hover:underline">Import Strings</NuxtLink>.
       </p>
     </div>
   </div>
@@ -151,7 +152,7 @@ const isDark = useIsDark()
 const { observe } = useScrollReveal()
 const siteSettings = usePublicPageSeo({
   title: 'About',
-  description: 'Learn more about MagguuUI - the WoW UI configuration tool.',
+  description: 'Learn about MagguuUI, the standalone WoW Retail installer with optional addon integrations and built-in UI tools.',
   path: '/about',
 })
 

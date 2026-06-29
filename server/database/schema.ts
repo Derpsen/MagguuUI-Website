@@ -37,7 +37,7 @@ export const profiles = sqliteTable('profiles', {
 }))
 
 // ─── WowUp Import Strings ─────────────────────────
-// Required + Optional addon package strings
+// Starter (legacy storage key: Required) + Optional addon package strings
 
 export const wowupStrings = sqliteTable('wowup_strings', {
   id: integer('id').primaryKey({ autoIncrement: true }),

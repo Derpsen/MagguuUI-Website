@@ -4,7 +4,7 @@ withDefaults(defineProps<{
   description?: string
 }>(), {
   title: 'Your WoW Interface, perfected.',
-  description: 'Standalone one-click installer for ElvUI, Platynator, Plater, BigWigs, Details and 30+ more addons.',
+  description: 'Standalone WoW Retail setup. No external addon is required — choose only the integrations you want.',
 })
 </script>
 

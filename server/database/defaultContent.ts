@@ -2,11 +2,11 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'hero', key: 'title', value: 'Your WoW Interface,', type: 'text', sortOrder: 0, locale: 'en' },
   { page: 'home', section: 'hero', key: 'title2', value: 'perfected.', type: 'text', sortOrder: 1, locale: 'en' },
   { page: 'home', section: 'hero', key: 'subtitle', value: 'A complete WoW UI, ready in minutes.', type: 'text', sortOrder: 2, locale: 'en' },
-  { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI is a standalone in-game installer that configures ElvUI, Platynator, Plater, BigWigs, Details, Method Raid Tools and 30+ more addons for you. Click Install All once and every addon you actually use is set up — missing integrations are skipped automatically.', type: 'text', sortOrder: 3, locale: 'en' },
+  { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI is a standalone installer for WoW Retail. It only needs the two included addon folders; every external integration, including ElvUI, is optional. Click **Install All** once and MagguuUI configures the addons you actually use.', type: 'text', sortOrder: 3, locale: 'en' },
   { page: 'home', section: 'hero', key: 'badge', value: 'Ready for WoW 12.0.7', type: 'text', sortOrder: 4, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'One-click setup', type: 'text', sortOrder: 0, locale: 'en' },
-  { page: 'home', section: 'features', key: 'feature_1_text', value: 'Install MagguuUI, log in once, click **Install All**. Every supported addon you have enabled gets its profile applied in the right order. Missing addons are skipped automatically, and ElvUI is optional.', type: 'text', sortOrder: 1, locale: 'en' },
+  { page: 'home', section: 'features', key: 'feature_1_text', value: 'Install the included **MagguuUI** and **MagguuUI_Data** folders, log in once, and click **Install All**. Built-in layouts and enabled integrations are handled in order; missing addons are skipped automatically.', type: 'text', sortOrder: 1, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_2_title', value: 'Always up to date', type: 'text', sortOrder: 3, locale: 'en' },
@@ -18,33 +18,33 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'features', key: 'feature_3_icon', value: 'i-heroicons-cube-transparent', type: 'text', sortOrder: 8, locale: 'en' },
 
   { page: 'home', section: 'features_heading', key: 'title', value: 'Why MagguuUI?', type: 'text', sortOrder: 0, locale: 'en' },
-  { page: 'home', section: 'features_heading', key: 'subtitle', value: 'Everything you need — in one package', type: 'text', sortOrder: 1, locale: 'en' },
+  { page: 'home', section: 'features_heading', key: 'subtitle', value: 'A complete setup without forced external dependencies', type: 'text', sortOrder: 1, locale: 'en' },
 
   { page: 'home', section: 'addons', key: 'title', value: 'Supported Addons', type: 'text', sortOrder: 0, locale: 'en' },
-  { page: 'home', section: 'addons', key: 'subtitle', value: 'Profiles for 30+ of the most popular WoW addons', type: 'text', sortOrder: 1, locale: 'en' },
+  { page: 'home', section: 'addons', key: 'subtitle', value: 'Every external integration is optional — choose only the addons you want', type: 'text', sortOrder: 1, locale: 'en' },
 ] as const
 
 export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'intro', key: 'title', value: 'Installation Guide', locale: 'en', type: 'text', sortOrder: 0 },
-  { page: 'guide', section: 'intro', key: 'text', value: 'Getting started takes about five minutes. Install MagguuUI, add whichever supported addons you want, log in, and click Install All. Done — your UI is ready to play.', locale: 'en', type: 'text', sortOrder: 1 },
+  { page: 'guide', section: 'intro', key: 'text', value: 'Install the two included MagguuUI folders, add any optional integrations you want, then click Install All. No external addon is required.', locale: 'en', type: 'text', sortOrder: 1 },
 
   { page: 'guide', section: 'steps', key: 'step_1_title', value: '1. Install MagguuUI', locale: 'en', type: 'text', sortOrder: 10 },
   { page: 'guide', section: 'steps', key: 'step_1', value: 'Get MagguuUI from **CurseForge**, **Wago Addons**, **WoWInterface**, or the latest [GitHub release](https://github.com/Derpsen/MagguuUI/releases/latest).\n\nAddon managers install both included folders automatically. For a manual GitHub install, extract the ZIP and copy both `MagguuUI` and `MagguuUI_Data` into `World of Warcraft\\_retail_\\Interface\\AddOns\\`. Keep the data addon enabled — the installer loads it only when needed.', locale: 'en', type: 'markdown', sortOrder: 11 },
 
   { page: 'guide', section: 'steps', key: 'step_2_title', value: '2. Add the addons you want', locale: 'en', type: 'text', sortOrder: 20 },
-  { page: 'guide', section: 'steps', key: 'step_2', value: 'MagguuUI runs on its own. Install only the supported addons you actually want it to configure — for example Platynator or Plater, BigWigs or EXBoss, Details, MRT, and your preferred cooldown addon. Anything missing is skipped automatically.\n\n**ElvUI is optional.** Install ElvUI 15.12 or newer only if you want the ElvUI profile or MagguuUI\'s ElvUI-specific tags. MagguuUI itself and its installer still load without ElvUI.', locale: 'en', type: 'markdown', sortOrder: 21 },
+  { page: 'guide', section: 'steps', key: 'step_2', value: '**No external addon is required.** Pick only the integrations that match your UI:\n\n- **Nameplates:** Plater or Platynator\n- **Encounter timers:** BigWigs or EXBoss\n- **Cooldown layout:** BetterCooldownManager or Ayije CDM\n- **Optional extras:** Details, MRT, BliZzi Interrupts, HandyNotes, Plumber and more\n\n**ElvUI is optional too.** Install ElvUI 15.12 or newer only for the MagguuUI ElvUI profile, class-colored ElvUI keybinds, or `[mui:*]` tags. The WowUp **Starter** package is a convenient recommendation, not a requirement.', locale: 'en', type: 'markdown', sortOrder: 21 },
 
   { page: 'guide', section: 'steps', key: 'step_3_title', value: '3. Log in and open the installer', locale: 'en', type: 'text', sortOrder: 30 },
   { page: 'guide', section: 'steps', key: 'step_3', value: 'Pick the character you want to set up first (usually your main) and log in.\n\nThe **MagguuUI Installer** opens automatically the first time you launch the game with the addon installed. If you closed it, you can re-open it any time:\n\n- Type `/mui` or `/mui install` in chat\n- Click the **MagguuUI minimap button** (left-click)\n- Open Blizzard *Game Menu → Options → AddOns → MagguuUI* and hit **Open Installer**', locale: 'en', type: 'markdown', sortOrder: 31 },
 
   { page: 'guide', section: 'steps', key: 'step_4_title', value: '4. Click Install All', locale: 'en', type: 'text', sortOrder: 40 },
-  { page: 'guide', section: 'steps', key: 'step_4', value: 'On the **Setup** tab, click **Install All**. MagguuUI applies the correct profile to every supported addon you have installed, in the right order. Optional addons that are missing are skipped automatically — you do not need them all.\n\nA **toast notification** confirms when Install All finishes. If the flow hits a conflict chooser (e.g. Plater vs Platynator, BCM vs Ayije_CDM) the installer reloads the UI and resumes automatically on next login — no progress lost.\n\nWhen the installer is done it asks for a **UI reload**. Confirm it, and your new UI is live.\n\n*Prefer to pick and choose?* Use the **Expert** tab instead — there you can filter by category (Core / Cooldowns / Nameplates / Layouts / Optional) and install profiles individually.', locale: 'en', type: 'markdown', sortOrder: 41 },
+  { page: 'guide', section: 'steps', key: 'step_4', value: 'On the **Setup** tab, click **Install All**. MagguuUI loads its bundled data, applies Blizzard and class layouts, and configures every supported addon you currently have enabled. Missing integrations are skipped, so a fresh installation does not get stuck waiting for them.\n\nIf two alternatives are enabled together — such as Plater and Platynator, BigWigs and EXBoss, or BCM and Ayije CDM — choose which one to keep. After any required reload, setup resumes automatically on the next login.\n\nA completion message appears when everything is finished. Confirm the final **UI reload** to activate the profiles.\n\n*Prefer to pick and choose?* Use the **Expert** tab to filter by category and install individual profiles.', locale: 'en', type: 'markdown', sortOrder: 41 },
 
   { page: 'guide', section: 'steps', key: 'step_5_title', value: '5. Set up your alts', locale: 'en', type: 'text', sortOrder: 50 },
   { page: 'guide', section: 'steps', key: 'step_5', value: 'Profiles are stored per account, so once your main character is set up your other characters get a much shorter flow.\n\nLog in on an alt and you will see a **Load Profiles** popup instead of the full installer. Confirm it and the existing MagguuUI profiles are applied to the alt. You can also run `/mui load` manually any time.\n\nClass-specific cooldown layouts are re-applied automatically when you change specialization.', locale: 'en', type: 'markdown', sortOrder: 51 },
 
   { page: 'guide', section: 'steps', key: 'step_6_title', value: '6. Customize and stay updated', locale: 'en', type: 'text', sortOrder: 60 },
-  { page: 'guide', section: 'steps', key: 'step_6', value: 'A few things worth knowing once everything is running:\n\n**Slash commands:**\n- `/mui` — open the installer\n- `/mui settings` — open MagguuUI settings\n- `/mui changelog` — read the latest changes in-game\n- `/mui load` — load profiles on the current character\n- `/mui minimap` — toggle the minimap button\n- `/mui version` — show the installed version\n- `/muiaudio` — cycle configured audio outputs\n- `/muiautoroll` — control automatic loot rolls\n- `/muikeys` or `/muikeystones` — toggle and position the Keystone List\n- `/cd` — cooldown layout settings\n- `/em` — Blizzard EditMode\n\n**Keystone List** — an optional compact Mythic+ list with party keys, click-to-teleport, a cast bar inside the dungeon icon and a scalable group-join banner. Row direction, icon borders, visibility and banner position are configurable and remembered.\n\n**Custom ElvUI tags** — `[mui:ilvl]` shows item level and `[mui:ilvl:setbonus]` also shows the current tier bonus. You can choose exactly when green, blue, purple and orange item-level colors begin. These tags only need ElvUI; the rest of MagguuUI does not.\n\n**Minimap button** — left-click opens the installer, shift+left-click reloads the UI, right-click opens the Great Vault, shift+right-click opens Settings, and middle-click opens the Changelog. Hide the button with `/mui minimap`.\n\n**Audio and AutoRoll** — choose your preferred audio outputs and opt into automatic rolls per category. Both features stay off until you configure them.\n\nWhen a new version is released MagguuUI shows a chat hint or popup, depending on your setting. After you dismiss a version, that same version will not notify you again.', locale: 'en', type: 'markdown', sortOrder: 61 },
+  { page: 'guide', section: 'steps', key: 'step_6', value: 'A few things worth knowing once everything is running:\n\n**Slash commands:**\n- `/mui` — open the installer\n- `/mui settings` — open MagguuUI settings\n- `/mui changelog` — read the latest changes in-game\n- `/mui load` — load profiles on the current character\n- `/mui minimap` — toggle the minimap button\n- `/mui version` — show the installed version\n- `/muiaudio` — cycle configured audio outputs\n- `/muiautoroll` — control automatic loot rolls\n- `/muikeys` or `/muikeystones` — toggle and position the Keystone List\n- `/cd` — cooldown layout settings\n- `/em` — Blizzard EditMode\n\n**Keystone List** — an optional compact Mythic+ list with party keys, click-to-teleport, shift-click sharing, a teleport cast bar inside the dungeon icon, and a scalable group-join banner. Configure layout, visibility, text, icon borders, scale, and saved position under **Settings → Keys**.\n\n**Custom ElvUI tags** — `[mui:ilvl]` shows item level and `[mui:ilvl:setbonus]` also shows the current tier bonus. Under **Settings → Tags → Gear**, choose when green, blue, purple, and orange item-level colors begin. These tags need ElvUI; the rest of MagguuUI does not.\n\n**Minimap button** — left-click opens the installer, shift+left-click reloads the UI, right-click opens the Great Vault, shift+right-click opens Settings, and middle-click opens the Changelog. Hide the button with `/mui minimap`.\n\n**Audio and AutoRoll** — choose preferred audio outputs and opt into automatic rolls per category from Settings.\n\nWhen a new version is released MagguuUI shows a chat hint or popup, depending on your setting. After you dismiss a version, that same version will not notify you again.', locale: 'en', type: 'markdown', sortOrder: 61 },
 ] as const
 
 export const DEFAULT_FAQS = [
@@ -52,11 +52,11 @@ export const DEFAULT_FAQS = [
   {
     category: 'general',
     question: 'What is MagguuUI?',
-    answer: `MagguuUI is a **World of Warcraft UI pack** that configures your entire interface in one click.
+    answer: `MagguuUI is a **standalone World of Warcraft Retail installer and UI toolkit**.
 
-Instead of spending hours tweaking ElvUI, Plater, BigWigs, Details, Method Raid Tools and the rest, you install MagguuUI, hit **Install All**, and a curated profile is applied to each supported addon.
+Install its two included addon folders, click **Install All**, and MagguuUI applies built-in layouts plus curated profiles for whichever supported addons you have enabled. Missing integrations are skipped automatically.
 
-The result: a clean, ready-to-play UI in a few minutes.`,
+No external addon is required — not even ElvUI.`,
     sortOrder: 0,
   },
   {
@@ -65,19 +65,22 @@ The result: a clean, ready-to-play UI in a few minutes.`,
     answer: `**Yes — free and open source** under the GPL v3.0 license.
 
 You can download it from:
-- [CurseForge](https://www.curseforge.com/wow/addons)
-- [Wago Addons](https://addons.wago.io/)
-- [WoWInterface](https://www.wowinterface.com/)
+- [CurseForge](https://www.curseforge.com/wow/addons/magguuui)
+- [Wago Addons](https://addons.wago.io/addons/5NR84pK3)
+- [WoWInterface](https://www.wowinterface.com/downloads/info27061)
 
 There is no paid tier, no premium content, and no ads.`,
     sortOrder: 1,
   },
   {
     category: 'general',
-    question: 'Do I need every supported addon?',
-    answer: `**No. Every integration is optional, including ElvUI.**
+    question: 'Which addons do I actually need?',
+    answer: `You only need the two folders included with every MagguuUI download:
 
-MagguuUI detects which of the 30+ supported addons you have enabled, configures those, and automatically skips the rest. Install ElvUI only if you want the ElvUI profile or ElvUI-specific tags. You can add more addons later and run **Install All** again to configure them.`,
+- **MagguuUI** — the addon and installer
+- **MagguuUI_Data** — the bundled profile data, loaded only during setup
+
+**No external addon is required.** ElvUI, Plater, Platynator, BigWigs, EXBoss, Details, MRT, cooldown addons, and every other integration are optional. Install only what you want MagguuUI to configure.`,
     sortOrder: 2,
   },
   {
@@ -103,13 +106,12 @@ The addon picks up your client locale automatically — no manual switch needed.
   {
     category: 'installation',
     question: 'How do I set up MagguuUI from scratch?',
-    answer: `Five steps, takes about two minutes:
+    answer: `Four quick steps:
 
-1. Install **MagguuUI** from CurseForge, Wago Addons, or WoWInterface
-2. Install whichever supported addons you want MagguuUI to configure
-3. Log in on your main character — the installer opens automatically
-4. Click **Install All**
-5. Confirm the UI reload when prompted
+1. Install **MagguuUI** from CurseForge, Wago Addons, WoWInterface, or GitHub
+2. For a manual ZIP install, copy both **MagguuUI** and **MagguuUI_Data** into \`Interface/AddOns\`
+3. Optionally install whichever supported addons you want configured
+4. Log in, click **Install All**, and confirm the final reload
 
 That's it. You're done.`,
     sortOrder: 0,
@@ -149,18 +151,17 @@ ElvUI 15.12 or newer is only needed if you want MagguuUI to import its ElvUI pro
   {
     category: 'addons',
     question: 'Which addons does Install All configure?',
-    answer: `**Main integrations** (configured whenever installed):
-- ElvUI (optional)
-- BetterCooldownManager (or Ayije_CDM)
-- Blizzard EditMode
-- Plater (or Platynator)
-- BigWigs (or EXBoss)
-- Details (+ Details iLvl)
-- **Method Raid Tools (MRT)** — notes, cooldown assignments, marks, raid groups, timers
+    answer: `Install All always handles MagguuUI's built-in **Blizzard EditMode** and **class layouts**. For external addons, common choices are:
 
-**More supported integrations:** BuffReminders, TargetedSpells, MiniCC, MinimalistCooldownEdge, ElvUI_WindTools, ExwindTools, Northern Sky Raid Tools, HandyNotes (+ MapNotes), Easy Experience Bar, WIM, GTFO, BugSack, GroupfinderFlags, Falcon, CursorTrail, M+ Timer, Plumber, WaypointUI, Talent Tree Tweaks, BliZzi Interrupts and more — 30+ supported addons in total.
+- **Nameplates:** Plater or Platynator
+- **Encounter timers:** BigWigs or EXBoss
+- **Cooldown layout:** BetterCooldownManager or Ayije CDM
+- **Combat data:** Details and optional Details iLvl Display
+- **Group tools:** Method Raid Tools, Northern Sky Raid Tools, or BliZzi Interrupts
 
-MagguuUI configures whichever of these are enabled — missing addons are skipped automatically.`,
+MagguuUI also supports ElvUI, BuffReminders, TargetedSpells, MiniCC, ExwindTools, HandyNotes, WIM, GTFO, BugSack, Groupfinder Flags, Falcon, CursorTrail, M+ Timer, Plumber, Waypoint UI, Talent Tree Tweaks, and more.
+
+These are **choices, not requirements**. Missing addons are skipped automatically.`,
     sortOrder: 0,
   },
   {
@@ -183,7 +184,7 @@ You can re-apply layouts manually from the installer at any time, or run \`/cd\`
 
 They use **LibOpenRaid** for instant group reads and fall back to a throttled Inspect queue for anyone else.
 
-Master toggle sits in **Settings → Tags** (off by default — enable it once, then use the tags anywhere in ElvUI's unitframe tag strings).`,
+The master switch and adjustable color thresholds are under **Settings → Tags → Gear**. Enable the tags once, then use them anywhere in ElvUI's unitframe tag strings.`,
     sortOrder: 2,
   },
   {
@@ -201,7 +202,7 @@ Rule of thumb: *Install All* on your main, *Load Profiles* on alts.`,
     question: 'What are the WowUp Starter / Optional strings?',
     answer: `[WowUp](https://wowup.io/) is a popular WoW addon manager. The **Starter** and **Optional** lists on this site are import strings you can paste into WowUp to install a useful starter set or browse the wider list of supported integrations.
 
-They are recommendations, not requirements. Using CurseForge, Tukui Client, or another manager? You can safely ignore them.`,
+The **Starter Addons** package is a convenient baseline; **Optional Addons** is the wider collection. Both are recommendations, not requirements, and some alternatives overlap. If you use CurseForge or another manager, install only the addons you want.`,
     sortOrder: 4,
   },
   {
@@ -273,7 +274,7 @@ If you're a regular user and you accidentally unlocked it, just type \`/mui dev 
 
 It supports click-to-teleport, a small teleport cast bar inside the dungeon icon, shift-click chat posting, mirrored rows, per-context visibility and a scalable Group Finder join banner. The banner uses dungeon icons, colors player names and remembers where you moved it.
 
-Open it with \`/muikeys\` or \`/muikeystones\`, then use the Keystone List section in MagguuUI settings to choose exactly which parts you want.`,
+Open it with \`/muikeys\` or \`/muikeystones\`, then use **Settings → Keys** to choose exactly which parts you want.`,
     sortOrder: 10,
   },
   {
@@ -291,12 +292,12 @@ The thresholds affect MagguuUI's \`[mui:ilvl]\` and \`[mui:ilvl:setbonus]\` ElvU
     question: "Install All didn't do anything",
     answer: `Check these four things:
 
-1. **MagguuUI Data is enabled** — the installer needs the bundled LoadOnDemand data addon
-2. **At least one supported addon is enabled** — missing integrations are skipped by design
-3. **Not in combat** — MagguuUI waits until combat ends before applying profiles
-4. **UI reload confirmed** — required after profiles finish installing
+1. **MagguuUI_Data is installed and enabled** — manual ZIP installs must include both folders
+2. **You are out of combat** — protected setup actions wait until combat ends
+3. **A conflict dialog is not waiting** — choose between overlapping alternatives if prompted
+4. **The final reload completed** — profiles become active after the requested reload
 
-If those look fine, run \`/mui install\` to re-open the installer and try again. The progress screen now continues past missing addons instead of waiting on them. You can also \`/reload\` manually if the final prompt did not appear.`,
+Missing external addons do **not** block a fresh setup; they are skipped automatically. Run \`/mui install\` to reopen the installer, or \`/reload\` once if the final prompt did not appear.`,
     sortOrder: 0,
   },
   {

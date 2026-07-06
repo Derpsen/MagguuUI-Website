@@ -52,7 +52,7 @@
     "nuxt-og-image": "^6.5.2",
     "sanitize-html": "^2.17.5",
     "satori": "^0.26.0",
-    "tailwindcss": "^4.3.0",
+    "tailwindcss": "^4.3.2",
     "vue-echarts": "^8.0.1",
     "zod": "^4.3.0"
   },

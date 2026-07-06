@@ -29,7 +29,7 @@
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@iconify-json/heroicons": "^1.2.0",
-    "@iconify-json/simple-icons": "^1.2.87",
+    "@iconify-json/simple-icons": "^1.2.89",
     "@nuxt/ui": "^4.9.0",
     "@resvg/resvg-js": "^2.6.2",
     "@simplewebauthn/browser": "^13.2.0",

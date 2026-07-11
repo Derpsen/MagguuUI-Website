@@ -4,8 +4,9 @@
  */
 
 import { eq, count } from 'drizzle-orm'
-import { db } from '~/server/database'
-import { users } from '~/server/database/schema'
+import { db, sqlite } from '~/server/database'
+import { passkeys, sessions, users } from '~/server/database/schema'
+import { revokeAllUserSessions } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
   const auth = requireAdmin(event)
@@ -27,7 +28,14 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  db.delete(users).where(eq(users.id, id)).run()
+  sqlite.transaction(() => {
+    // Bootstrap-created databases predate the Drizzle foreign-key declarations,
+    // so do not rely on ON DELETE CASCADE to invalidate authentication state.
+    revokeAllUserSessions(id)
+    db.delete(passkeys).where(eq(passkeys.userId, id)).run()
+    db.delete(sessions).where(eq(sessions.userId, id)).run()
+    db.delete(users).where(eq(users.id, id)).run()
+  })()
 
   logActivity({
     action: 'deleted',

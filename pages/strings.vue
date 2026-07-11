@@ -309,11 +309,9 @@ interface PublicWowup { id: number, string: string, description?: string | null,
 type ProfileGroupedPublic = Record<string, PublicProfile[]>
 type WowupKeyedPublic = Record<string, PublicWowup>
 
-const internalApiHeaders = useInternalApiHeaders()
-
-const { data: profileData, refresh: refreshProfiles } = await useFetch<{ data: ProfileGroupedPublic }>('/api/v1/profiles', { headers: internalApiHeaders })
-const { data: wowupData, refresh: refreshWowup } = await useFetch<{ data: WowupKeyedPublic }>('/api/v1/wowup', { headers: internalApiHeaders })
-const { data: layoutData, refresh: refreshLayouts } = await useFetch<{ data: PublicLayout[] }>('/api/v1/layouts', { headers: internalApiHeaders })
+const { data: profileData, refresh: refreshProfiles } = await useFetch<{ data: ProfileGroupedPublic }>('/api/v1/profiles')
+const { data: wowupData, refresh: refreshWowup } = await useFetch<{ data: WowupKeyedPublic }>('/api/v1/wowup')
+const { data: layoutData, refresh: refreshLayouts } = await useFetch<{ data: PublicLayout[] }>('/api/v1/layouts')
 
 type FlatProfile = PublicProfile & { addon: string }
 

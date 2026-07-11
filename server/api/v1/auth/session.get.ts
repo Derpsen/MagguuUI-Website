@@ -6,10 +6,7 @@
  * do not emit noisy 401 console errors during normal anonymous visits.
  */
 
-import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
-import { users } from '~/server/database/schema'
-import { clearAuthCookie, extractToken, verifyToken } from '~/server/utils/auth'
+import { clearAuthCookie, extractToken, getCurrentAuthUser, verifyToken } from '~/server/utils/auth'
 import { hashToken, parseBrowser, parseOS, revokeSession, validateSession } from '~/server/utils/session'
 
 export default defineEventHandler((event) => {
@@ -39,14 +36,7 @@ export default defineEventHandler((event) => {
       sessionId = session.id
     }
 
-    const user = db.select({
-      id: users.id,
-      username: users.username,
-      role: users.role,
-    })
-      .from(users)
-      .where(eq(users.id, payload.userId))
-      .get()
+    const user = getCurrentAuthUser(payload.userId)
 
     if (!user) {
       clearAuthCookie(event)

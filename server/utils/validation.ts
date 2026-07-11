@@ -212,7 +212,12 @@ export const passkeyRenameSchema = z.object({
 // ─── GitHub Push ──────────────────────────────────
 
 export const githubPushSchema = z.object({
-  reason: z.string().max(200).optional(),
+  reason: z.string()
+    .trim()
+    .min(1)
+    .max(160)
+    .regex(/^[A-Za-z0-9][A-Za-z0-9 .,:_/@#()+-]*$/, 'Reason contains unsupported characters')
+    .optional(),
 })
 
 // ─── GitHub Import ────────────────────────────────

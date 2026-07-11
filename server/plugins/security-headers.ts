@@ -11,7 +11,9 @@ import { applyPrivateApiHeaders, applyPrivateApiHeadersToRecord } from '~/server
  */
 
 function isPrivateApiPath(path: string) {
-  return path.startsWith('/api/v1/admin') || path.startsWith('/api/v1/auth')
+  return path.startsWith('/api/v1/admin')
+    || path.startsWith('/api/v1/auth')
+    || path.startsWith('/api/v1/sync')
 }
 
 export default defineNitroPlugin((nitroApp) => {

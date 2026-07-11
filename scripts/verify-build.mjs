@@ -20,12 +20,9 @@ const endpoints = [
   { path: '/api/v1/settings', expectedStatus: 200, mustInclude: '"site_name"' },
 ]
 
-// Bearer-guarded endpoints (server/middleware/public-api-bearer.ts) need
-// the same token the production API expects when the smoke test runs
-// against an env where API_BEARER_TOKEN is set. Without the token the
-// guard middleware no-ops and unauthenticated calls succeed as before.
+// The browser-facing projections remain public. API_BEARER_TOKEN protects
+// only the canonical server-to-server /api/v1/sync/* contract.
 const bearerToken = process.env.API_BEARER_TOKEN || ''
-const guardedFetchHeaders = bearerToken ? { Authorization: `Bearer ${bearerToken}` } : {}
 
 if (!existsSync(serverEntrypoint)) {
   throw new Error(`Smoke test requires a built server at ${serverEntrypoint}. Run "npm run build" or "npm run verify" first.`)
@@ -174,7 +171,7 @@ async function verifyPublicApiFlows() {
 
   assertPrivateApiHeaders(passkeyOptionsResponse, '/api/v1/auth/webauthn/login-options')
 
-  const publicProfilesResponse = await fetch(`${baseUrl}/api/v1/profiles`, { headers: guardedFetchHeaders })
+  const publicProfilesResponse = await fetch(`${baseUrl}/api/v1/profiles`)
   const publicProfilesBody = await publicProfilesResponse.json()
 
   if (!publicProfilesResponse.ok || !publicProfilesBody?.success || typeof publicProfilesBody?.data !== 'object') {
@@ -185,7 +182,7 @@ async function verifyPublicApiFlows() {
     fail('Public profiles response did not include numeric meta.count')
   }
 
-  const publicLayoutsResponse = await fetch(`${baseUrl}/api/v1/layouts`, { headers: guardedFetchHeaders })
+  const publicLayoutsResponse = await fetch(`${baseUrl}/api/v1/layouts`)
   const publicLayoutsBody = await publicLayoutsResponse.json()
 
   if (!publicLayoutsResponse.ok || !publicLayoutsBody?.success || !Array.isArray(publicLayoutsBody?.data)) {
@@ -196,7 +193,7 @@ async function verifyPublicApiFlows() {
     fail('Public layouts response did not include numeric meta.count')
   }
 
-  const publicWowupResponse = await fetch(`${baseUrl}/api/v1/wowup`, { headers: guardedFetchHeaders })
+  const publicWowupResponse = await fetch(`${baseUrl}/api/v1/wowup`)
   const publicWowupBody = await publicWowupResponse.json()
 
   if (!publicWowupResponse.ok || !publicWowupBody?.success || typeof publicWowupBody?.data !== 'object') {
@@ -233,6 +230,37 @@ async function verifyPublicApiFlows() {
   console.log('[verify] /api/v1/layouts -> ' + publicLayoutsResponse.status)
   console.log('[verify] /api/v1/wowup -> ' + publicWowupResponse.status)
   console.log('[verify] /api/v1/addons -> ' + publicAddonsResponse.status + ' (total: ' + addonData.total + ')')
+}
+
+async function verifySyncApiFlow() {
+  const unauthorized = await fetch(`${baseUrl}/api/v1/sync/profiles`)
+  const expectedUnauthorizedStatus = bearerToken ? 401 : 503
+  if (unauthorized.status !== expectedUnauthorizedStatus) {
+    fail(`Expected unauthenticated sync API to return ${expectedUnauthorizedStatus}, got ${unauthorized.status}`)
+  }
+  assertPrivateApiHeaders(unauthorized, '/api/v1/sync/profiles')
+
+  if (!bearerToken) {
+    console.log('[verify] /api/v1/sync/profiles -> 503 (API_BEARER_TOKEN unset)')
+    return
+  }
+
+  const headers = { Authorization: `Bearer ${bearerToken}` }
+  const endpoints = [
+    { path: '/api/v1/sync/snapshot', shape: 'object' },
+    { path: '/api/v1/sync/profiles', shape: 'object' },
+    { path: '/api/v1/sync/wowup', shape: 'object' },
+    { path: '/api/v1/sync/layouts/grouped', shape: 'object' },
+  ]
+  for (const endpoint of endpoints) {
+    const response = await fetch(`${baseUrl}${endpoint.path}`, { headers })
+    const body = await response.json()
+    if (!response.ok || !body?.success || typeof body?.data !== endpoint.shape) {
+      fail(`Expected authenticated ${endpoint.path} lookup to succeed, got ${response.status}`)
+    }
+    assertPrivateApiHeaders(response, endpoint.path)
+    console.log(`[verify] ${endpoint.path} -> ${response.status}`)
+  }
 }
 
 function readCookieHeader(response) {
@@ -568,6 +596,58 @@ async function verifyAdminAuthFlow() {
 
   assertPrivateApiHeaders(usersResponse, '/api/v1/admin/users')
 
+  // Fresh bootstrap databases historically lacked physical foreign keys even
+  // though the Drizzle schema declares cascades. Verify deletion invalidates a
+  // real cookie and does not leave an orphaned authenticated session behind.
+  const disposableUsername = `smoke-viewer-${Date.now()}`
+  const disposablePassword = 'SmokeDelete1-password'
+  const createDisposableResponse = await fetch(`${baseUrl}/api/v1/admin/users`, {
+    method: 'POST',
+    headers: {
+      cookie: authCookie,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      username: disposableUsername,
+      password: disposablePassword,
+      role: 'viewer',
+    }),
+  })
+  const createDisposableBody = await createDisposableResponse.json()
+  const disposableUserId = createDisposableBody?.data?.id
+  if (!createDisposableResponse.ok || !createDisposableBody?.success || !Number.isInteger(disposableUserId)) {
+    fail(`Expected disposable user creation to succeed, got ${createDisposableResponse.status}`)
+  }
+
+  const disposableLoginResponse = await fetch(`${baseUrl}/api/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ username: disposableUsername, password: disposablePassword }),
+  })
+  const disposableLoginBody = await disposableLoginResponse.json()
+  const disposableCookie = readCookieHeader(disposableLoginResponse)
+  if (!disposableLoginResponse.ok || !disposableLoginBody?.success || !disposableCookie) {
+    fail(`Expected disposable user login to succeed, got ${disposableLoginResponse.status}`)
+  }
+
+  const deleteDisposableResponse = await fetch(`${baseUrl}/api/v1/admin/users/${disposableUserId}`, {
+    method: 'DELETE',
+    headers: { cookie: authCookie },
+  })
+  const deleteDisposableBody = await deleteDisposableResponse.json()
+  if (!deleteDisposableResponse.ok || !deleteDisposableBody?.success) {
+    fail(`Expected disposable user deletion to succeed, got ${deleteDisposableResponse.status}`)
+  }
+
+  const deletedUserSessionResponse = await fetch(`${baseUrl}/api/v1/admin/sessions/current`, {
+    headers: { cookie: disposableCookie },
+  })
+  if (deletedUserSessionResponse.status !== 401) {
+    fail(`Expected deleted-user session to return 401, got ${deletedUserSessionResponse.status}`)
+  }
+
+  assertPrivateApiHeaders(deletedUserSessionResponse, 'deleted-user /api/v1/admin/sessions/current')
+
   const activityStatsResponse = await fetch(`${baseUrl}/api/v1/admin/activity/stats`, {
     headers: {
       cookie: authCookie,
@@ -714,6 +794,7 @@ async function verifyAdminAuthFlow() {
   console.log('[verify] /api/v1/admin/layouts -> ' + adminLayoutsResponse.status)
   console.log('[verify] /api/v1/admin/wowup -> ' + adminWowupResponse.status)
   console.log('[verify] /api/v1/admin/users -> ' + usersResponse.status)
+  console.log('[verify] deleted-user session -> ' + deletedUserSessionResponse.status)
   console.log('[verify] /api/v1/admin/activity/stats -> ' + activityStatsResponse.status)
   console.log('[verify] /api/v1/admin/activity -> ' + activityResponse.status)
   console.log('[verify] second /api/v1/auth/login -> ' + secondLoginResponse.status)
@@ -759,6 +840,7 @@ try {
   await waitForServer()
   await verifyEndpoints()
   await verifyPublicApiFlows()
+  await verifySyncApiFlow()
   await verifyAdminAuthFlow()
   console.log('[verify] Smoke test passed')
 } catch (error) {

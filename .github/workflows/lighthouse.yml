@@ -21,9 +21,13 @@ jobs:
       NUXT_JWT_SECRET: ci-dummy-secret-must-be-32-chars-long-XXXXXXXXXX
       NUXT_ADMIN_PASSWORD: ci-dummy
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout repository
+        # actions/checkout@v7.0.0
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
 
-      - uses: actions/setup-node@v6
+      - name: Set up Node.js
+        # actions/setup-node@v6.4.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: 24
           cache: npm
@@ -35,10 +39,18 @@ jobs:
       - name: Start preview server
         run: |
           nohup npm run preview > preview.log 2>&1 &
-          npx --yes wait-on http://localhost:3000 -t 90000
+          for attempt in {1..90}; do
+            if curl --fail --silent http://localhost:3000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat preview.log
+          exit 1
 
       - name: Run Lighthouse
-        uses: treosh/lighthouse-ci-action@v12
+        # treosh/lighthouse-ci-action@12.6.2
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18
         with:
           urls: |
             http://localhost:3000/

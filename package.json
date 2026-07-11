@@ -21,6 +21,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx server/database/seed.ts",
+    "test:unit": "node --import tsx --test tests/unit/addonProfileLua.test.ts tests/unit/githubWebhookContract.test.ts",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:install": "playwright install chromium"

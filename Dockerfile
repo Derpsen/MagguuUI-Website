@@ -46,7 +46,9 @@ ENV NODE_ENV=production \
 # triggers a clean Nitro shutdown (flushes SQLite WAL, closes sessions).
 RUN apt-get update \
   && apt-get install -y --no-install-recommends dumb-init ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/* \
+  && rm -rf /usr/local/lib/node_modules/npm \
+  && rm -f /usr/local/bin/npm /usr/local/bin/npx
 
 LABEL org.opencontainers.image.title="MagguuUI Website" \
       org.opencontainers.image.description="Nuxt website, admin panel, and API for MagguuUI" \

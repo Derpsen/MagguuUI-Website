@@ -14,8 +14,7 @@ Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` 
 | Var | Default | Purpose |
 |---|---|---|
 | `NUXT_AUTH_COOKIE_NAME` | prod-aware default | HttpOnly session cookie name. Leave empty to use the hardened production default. |
-| `NUXT_API_KEY` | empty | External API access for GitHub Actions / webhooks |
-| `API_BEARER_TOKEN` | empty | Optional bearer token for read-only profile/WowUp/layout API endpoints |
+| `API_BEARER_TOKEN` | empty | Shared bearer token for the private `/api/v1/sync/*` workflow API. Without it those routes return `503`; browser-facing read APIs remain public. |
 | `NUXT_GITHUB_TOKEN` | empty | GitHub PAT for content sync with read+write access to `NUXT_GITHUB_REPO` |
 | `NUXT_GITHUB_REPO` | `Derpsen/MagguuUI` | Owner/repo for sync |
 | `NUXT_GITHUB_WEBHOOK_SECRET` | empty | HMAC secret for `/api/v1/webhooks/github` |
@@ -31,5 +30,5 @@ Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` 
 - Passkeys require matching `NUXT_WEBAUTHN_RP_ID` and `NUXT_WEBAUTHN_ORIGIN` in production.
 - Changing `NUXT_JWT_SECRET` invalidates all existing sessions. Users must log in again.
 - The admin password can also be changed via the admin UI after first login.
-- Keep `NUXT_API_KEY` and `API_BEARER_TOKEN` distinct if both are used: the first protects automation endpoints, the second protects selected read-only public API endpoints for external callers.
+- Mirror `API_BEARER_TOKEN` as the AddOn repository secret `WEBSITE_API_KEY`. The workflow consumes the coherent `/api/v1/sync/snapshot` contract; its component projections live under the same `/api/v1/sync/*` namespace. The token must never be exposed to browser code.
 - Set `NUXT_OG_IMAGE_SECRET` in production if dynamic OG image generation stays enabled. Generate it outside the repo with `npx nuxt-og-image generate-secret` and store it only as a host/container secret.

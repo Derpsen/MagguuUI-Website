@@ -1,206 +1,48 @@
 /**
  * POST /api/v1/admin/github/pull
  *
- * Fetches MagguuUI_Data/AddOns/*.lua and MagguuUI_Data/Classes/*.lua files from the GitHub repo
- * and imports profile strings back into the website database.
- *
- * Flow: GitHub Repo → Lua files → Parse → Upsert DB
+ * Imports one coherent snapshot of MagguuUI_Data from the configured addon
+ * repository. The branch head is resolved once; every Lua file is fetched at
+ * that immutable commit so a concurrent push cannot produce a mixed DB state.
  */
 
-import { eq, and } from 'drizzle-orm'
-import { db } from '~/server/database'
-import { profiles, wowupStrings, characterLayouts, settings, syncHistory } from '~/server/database/schema'
+import { eq } from 'drizzle-orm'
+import { db, sqlite } from '~/server/database'
+import { settings, syncHistory } from '~/server/database/schema'
+import {
+  ADDON_DATA_ROOT,
+  MAX_ADDON_LUA_SOURCE_BYTES,
+  assertCompleteAddonLuaSnapshot,
+  parseSafeAddonLuaPath,
+} from '~/server/utils/addonProfileLua'
+import {
+  syncAddonProfileFile,
+  syncWowUpFile,
+  validateAddonProfileFile,
+} from '~/server/utils/addonProfileSync'
+import {
+  CLASS_DATA_ROOT,
+  CLASS_FILE_TO_NAME,
+  MAX_CLASS_LUA_SOURCE_BYTES,
+  syncClassLayoutFile,
+  validateClassLayoutFile,
+} from '~/server/utils/classLayoutSync'
 import { createSyncChangelog } from '~/server/utils/syncChangelog'
 import { syncAddonChangelog, type AddonChangelogSyncStats } from '~/server/utils/syncAddonChangelog'
-import { parseGitHubRepo } from '~/server/utils/github'
+import {
+  fetchGitHubTextFile,
+  getGitHubBranchHeadSha,
+  listGitHubDirectoryFiles,
+  parseGitHubRepo,
+} from '~/server/utils/github'
 
+const MAIN_BRANCH = 'main'
 const MAX_CHANGELOG_BYTES = 4 * 1024 * 1024
 
-// ─── Addon Mapping (must match sync-profiles.py) ────────────
-
-interface SimpleAddon {
-  addon: string
+interface SyncResult {
   file: string
-  style: 'simple'
-  varName: string
-}
-interface TableAddon {
   addon: string
-  file: string
-  style: 'table'
-  varName: string
-  keys: string[]
-}
-type AddonConfig = SimpleAddon | TableAddon
-
-const DATA_ROOT = 'MagguuUI_Data'
-
-const ADDON_MAP: AddonConfig[] = [
-  { addon: 'ElvUI', file: `${DATA_ROOT}/AddOns/ElvUI.lua`, style: 'table', varName: 'elvui', keys: ['profile', 'private', 'global', 'aurafilters'] },
-  { addon: 'Plater', file: `${DATA_ROOT}/AddOns/Plater.lua`, style: 'simple', varName: 'plater' },
-  { addon: 'Platynator', file: `${DATA_ROOT}/AddOns/Platynator.lua`, style: 'simple', varName: 'platynator' },
-  { addon: 'BigWigs', file: `${DATA_ROOT}/AddOns/BigWigs.lua`, style: 'simple', varName: 'bigwigs' },
-  { addon: 'Details', file: `${DATA_ROOT}/AddOns/Details.lua`, style: 'simple', varName: 'details' },
-  { addon: 'BetterCooldownManager', file: `${DATA_ROOT}/AddOns/BetterCooldownManager.lua`, style: 'simple', varName: 'bettercooldownmanager' },
-  { addon: 'Ayije_CDM', file: `${DATA_ROOT}/AddOns/Ayije_CDM.lua`, style: 'simple', varName: 'ayije_cdm' },
-  { addon: 'Blizzard_EditMode', file: `${DATA_ROOT}/AddOns/Blizzard_EditMode.lua`, style: 'simple', varName: 'blizzardeditmode' },
-  { addon: 'WindTools', file: `${DATA_ROOT}/AddOns/WindTools.lua`, style: 'simple', varName: 'windtools' },
-]
-
-// ─── Class Mapping ───────────────────────────────────────────
-
-const CLASS_MAP: Record<string, string> = {
-  'DeathKnight.lua': 'Death Knight',
-  'DemonHunter.lua': 'Demon Hunter',
-  'Druid.lua': 'Druid',
-  'Evoker.lua': 'Evoker',
-  'Hunter.lua': 'Hunter',
-  'Mage.lua': 'Mage',
-  'Monk.lua': 'Monk',
-  'Paladin.lua': 'Paladin',
-  'Priest.lua': 'Priest',
-  'Rogue.lua': 'Rogue',
-  'Shaman.lua': 'Shaman',
-  'Warlock.lua': 'Warlock',
-  'Warrior.lua': 'Warrior',
-}
-
-// ─── Lua Parsers ─────────────────────────────────────────────
-
-function parseLuaString(content: string, assignment: string): string | null {
-  const quoted = content.match(new RegExp(`${assignment}\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"`))
-  if (quoted?.[1] !== undefined) {
-    return quoted[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-  }
-
-  const longBracket = content.match(new RegExp(`${assignment}\\s*=\\s*\\[(=*)\\[([\\s\\S]*?)\\]\\1\\]`))
-  return longBracket?.[2] ?? null
-}
-
-function parseSimpleLua(content: string, varName: string): string | null {
-  return parseLuaString(content, `D\\.${varName}`)
-}
-
-function parseTableLua(content: string, varName: string, keys: string[]): Record<string, string> {
-  const result: Record<string, string> = {}
-  for (const key of keys) {
-    const value = parseLuaString(content, key)
-    if (value !== null) result[key] = value
-  }
-  return result
-}
-
-function parseWowUpLua(content: string): { required: string | null; optional: string | null } {
-  return {
-    required: parseLuaString(content, 'D\\.WowUpRequired'),
-    optional: parseLuaString(content, 'D\\.WowUpOptional'),
-  }
-}
-
-function parseClassLua(content: string): Array<{ spec: string; importString: string }> {
-  const specs: Array<{ spec: string; importString: string }> = []
-
-  // Match entries with spec comment: "importString", -- SpecName
-  const entryRegex = /"((?:[^"\\]|\\.)*)"\s*,\s*--\s*(.+)/g
-  let match: RegExpExecArray | null
-  while ((match = entryRegex.exec(content)) !== null) {
-    const rawImport = match[1]
-    const rawSpec = match[2]
-    if (rawImport === undefined || rawSpec === undefined) continue
-    const importString = rawImport.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-    const specName = rawSpec.trim()
-    specs.push({ spec: specName, importString })
-  }
-
-  // Also catch entries without spec comment: "importString",
-  const noCommentRegex = /^\s*"((?:[^"\\]|\\.)+)"\s*,\s*$/gm
-  while ((match = noCommentRegex.exec(content)) !== null) {
-    const raw = match[1]
-    if (raw === undefined) continue
-    const str = raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-    if (!specs.find(s => s.importString === str)) {
-      specs.push({ spec: '', importString: str })
-    }
-  }
-
-  return specs
-}
-
-// ─── DB Upsert ───────────────────────────────────────────────
-
-function upsertProfile(addon: string, profile: string, string: string): 'created' | 'updated' | 'unchanged' {
-  const existing = db.select().from(profiles)
-    .where(and(eq(profiles.addon, addon), eq(profiles.profile, profile)))
-    .get()
-
-  if (existing) {
-    if (existing.string === string) return 'unchanged'
-    db.update(profiles)
-      .set({ string, updatedAt: new Date() })
-      .where(eq(profiles.id, existing.id))
-      .run()
-    return 'updated'
-  }
-
-  db.insert(profiles).values({
-    addon, profile, string,
-    description: `${addon} - ${profile}`,
-    sortOrder: 0,
-    isVisible: true,
-  }).run()
-  return 'created'
-}
-
-function upsertWowUp(name: string, string: string): 'created' | 'updated' | 'unchanged' {
-  const existing = db.select().from(wowupStrings)
-    .where(eq(wowupStrings.name, name))
-    .get()
-
-  if (existing) {
-    if (existing.string === string) return 'unchanged'
-    db.update(wowupStrings)
-      .set({ string, updatedAt: new Date() })
-      .where(eq(wowupStrings.id, existing.id))
-      .run()
-    return 'updated'
-  }
-
-  db.insert(wowupStrings).values({
-    name, string,
-    description: `WowUp ${name}`,
-    sortOrder: name === 'Required' ? 0 : 1,
-    isVisible: true,
-  }).run()
-  return 'created'
-}
-
-function upsertClassLayout(className: string, spec: string, importString: string, sortOrder: number): 'created' | 'updated' | 'unchanged' {
-  const existing = db.select().from(characterLayouts)
-    .where(and(
-      eq(characterLayouts.className, className),
-      eq(characterLayouts.spec, spec)
-    )).get()
-
-  const layoutName = spec ? `${className} - ${spec}` : `${className} #${sortOrder + 1}`
-
-  if (existing) {
-    if (existing.importString === importString) return 'unchanged'
-    db.update(characterLayouts)
-      .set({ importString, name: layoutName, updatedAt: new Date() })
-      .where(eq(characterLayouts.id, existing.id))
-      .run()
-    return 'updated'
-  }
-
-  db.insert(characterLayouts).values({
-    name: layoutName,
-    className,
-    spec,
-    importString,
-    sortOrder,
-    isVisible: true,
-  }).run()
-  return 'created'
+  status: string
 }
 
 function upsertSetting(key: string, value: string) {
@@ -212,34 +54,21 @@ function upsertSetting(key: string, value: string) {
   }
 }
 
-// ─── GitHub File Fetcher ─────────────────────────────────────
-
-async function fetchFileFromGitHub(owner: string, repo: string, path: string, token: string): Promise<string | null> {
-  try {
-    const response = await $fetch<{ content: string; encoding: string }>(
-      `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-      {
-        headers: {
-          Accept: 'application/vnd.github.v3+json',
-          Authorization: `Bearer ${token}`,
-          'User-Agent': 'MagguuUI-WebAdmin',
-        },
-        timeout: 15000,
-      }
-    )
-
-    if (response.encoding === 'base64' && response.content) {
-      return Buffer.from(response.content, 'base64').toString('utf-8')
-    }
-    return null
-  } catch (err: unknown) {
-    const status = (err as { response?: { status?: number } })?.response?.status
-    if (status === 404) return null
-    throw err
+function appendAddonResults(results: SyncResult[], file: string, sync: ReturnType<typeof syncAddonProfileFile>) {
+  for (const change of sync.changes) {
+    results.push({
+      file,
+      addon: `${change.addon}/${change.profile}`,
+      status: change.status,
+    })
   }
 }
 
-// ─── Handler ─────────────────────────────────────────────────
+function appendWowUpResults(results: SyncResult[], file: string, sync: ReturnType<typeof syncWowUpFile>) {
+  for (const change of sync.changes) {
+    results.push({ file, addon: `WowUp/${change.name}`, status: change.status })
+  }
+}
 
 export default defineEventHandler(async (event) => {
   const ip = getClientIp(event)
@@ -250,181 +79,136 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig()
-
   const token = config.githubToken || ''
   const repoRef = parseGitHubRepo(config.githubRepo || '')
-
   if (!token || !repoRef) {
     throw createError({ statusCode: 400, message: 'GitHub Token or Repo not configured.' })
   }
 
   const { owner, repo } = repoRef
-  const results: { file: string; addon: string; status: string }[] = []
-  let errors = 0
+  const results: SyncResult[] = []
   let addonChangelog: AddonChangelogSyncStats | null = null
 
   try {
-    // ── 1. Pull Addon Profiles ─────────────────────────
-    for (const addonConfig of ADDON_MAP) {
-      try {
-        const content = await fetchFileFromGitHub(owner, repo, addonConfig.file, token)
-
-        if (!content) {
-          results.push({ file: addonConfig.file, addon: addonConfig.addon, status: 'not found' })
-          continue
-        }
-
-        if (addonConfig.style === 'simple') {
-          const string = parseSimpleLua(content, addonConfig.varName)
-          if (string && string.length > 0) {
-            const status = upsertProfile(addonConfig.addon, 'Default', string)
-            results.push({ file: addonConfig.file, addon: addonConfig.addon, status })
-          } else {
-            results.push({ file: addonConfig.file, addon: addonConfig.addon, status: 'empty' })
-          }
-        } else if (addonConfig.style === 'table') {
-          const parsed = parseTableLua(content, addonConfig.varName, (addonConfig as TableAddon).keys)
-          for (const [key, value] of Object.entries(parsed)) {
-            if (value && value.length > 0) {
-              const status = upsertProfile(addonConfig.addon, key, value)
-              results.push({ file: addonConfig.file, addon: `${addonConfig.addon}/${key}`, status })
-            }
-          }
-        }
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'unknown'
-        results.push({ file: addonConfig.file, addon: addonConfig.addon, status: `error: ${msg}` })
-        errors++
+    const snapshotSha = await getGitHubBranchHeadSha({ owner, repo, branch: MAIN_BRANCH, token })
+    const addonFiles = await listGitHubDirectoryFiles({
+      owner,
+      repo,
+      path: ADDON_DATA_ROOT,
+      ref: snapshotSha,
+      token,
+    })
+    const luaFiles = addonFiles.filter(file => file.name.endsWith('.lua')).sort((a, b) => a.path.localeCompare(b.path))
+    assertCompleteAddonLuaSnapshot(luaFiles.map(file => file.name))
+    const addonSources: Array<{ path: string, content: string, isWowUp: boolean }> = []
+    for (const file of luaFiles) {
+      const descriptor = parseSafeAddonLuaPath(file.path)
+      if (file.size > MAX_ADDON_LUA_SOURCE_BYTES) {
+        throw new Error(`${file.path} exceeds the ${MAX_ADDON_LUA_SOURCE_BYTES}-byte safety limit`)
       }
+      const content = await fetchGitHubTextFile({
+        owner,
+        repo,
+        path: file.path,
+        ref: snapshotSha,
+        token,
+        maxBytes: MAX_ADDON_LUA_SOURCE_BYTES,
+      })
+      validateAddonProfileFile(file.path, content)
+      addonSources.push({ path: file.path, content, isWowUp: descriptor.isWowUp })
     }
 
-    // ── 2. Pull WowUp Strings ──────────────────────────
-    try {
-      const wowupPath = `${DATA_ROOT}/AddOns/WowUp.lua`
-      const wowupContent = await fetchFileFromGitHub(owner, repo, wowupPath, token)
-
-      if (wowupContent) {
-        const { required, optional } = parseWowUpLua(wowupContent)
-
-        if (required && required.length > 0) {
-          const status = upsertWowUp('Required', required)
-          results.push({ file: wowupPath, addon: 'WowUp/Required', status })
-        }
-        if (optional && optional.length > 0) {
-          const status = upsertWowUp('Optional', optional)
-          results.push({ file: wowupPath, addon: 'WowUp/Optional', status })
-        }
-      } else {
-        results.push({ file: wowupPath, addon: 'WowUp', status: 'not found' })
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'unknown'
-      results.push({ file: `${DATA_ROOT}/AddOns/WowUp.lua`, addon: 'WowUp', status: `error: ${msg}` })
-      errors++
+    const classSources: Array<{ path: string, content: string, className: string }> = []
+    for (const [fileName, className] of Object.entries(CLASS_FILE_TO_NAME)) {
+      const classPath = `${CLASS_DATA_ROOT}/${fileName}`
+      const content = await fetchGitHubTextFile({
+        owner,
+        repo,
+        path: classPath,
+        ref: snapshotSha,
+        token,
+        maxBytes: MAX_CLASS_LUA_SOURCE_BYTES,
+      })
+      validateClassLayoutFile(classPath, content)
+      classSources.push({ path: classPath, content, className })
     }
 
-    // ── 3. Pull Class Layouts ──────────────────────────
-    for (const [filename, className] of Object.entries(CLASS_MAP)) {
-      try {
-        const classPath = `${DATA_ROOT}/Classes/${filename}`
-        const content = await fetchFileFromGitHub(owner, repo, classPath, token)
-
-        if (!content) {
-          results.push({ file: classPath, addon: className, status: 'not found' })
-          continue
+    // Every remote read and parser completed before the first mutation. The
+    // outer transaction also rolls back earlier files if a DB write fails.
+    sqlite.transaction(() => {
+      for (const source of addonSources) {
+        if (source.isWowUp) {
+          appendWowUpResults(results, source.path, syncWowUpFile(source.path, source.content))
+        } else {
+          appendAddonResults(results, source.path, syncAddonProfileFile(source.path, source.content))
         }
-
-        const specs = parseClassLua(content)
-        if (specs.length === 0) {
-          results.push({ file: classPath, addon: className, status: 'empty' })
-          continue
-        }
-
-        let classStatus = 'unchanged'
-        for (let i = 0; i < specs.length; i++) {
-          const item = specs[i]
-          if (!item) continue
-          const { spec, importString } = item
-          if (!importString) continue
-
-          const specLabel = spec || `Spec ${i + 1}`
-          const status = upsertClassLayout(className, specLabel, importString, i)
-          if (status !== 'unchanged') classStatus = status
-        }
-
-        results.push({ file: classPath, addon: `${className} (${specs.length} specs)`, status: classStatus })
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'unknown'
-        results.push({ file: `${DATA_ROOT}/Classes/${filename}`, addon: className, status: `error: ${msg}` })
-        errors++
       }
-    }
+      for (const source of classSources) {
+        const sync = syncClassLayoutFile(source.path, source.content)
+        const status = sync.changes.some(change => change.status === 'created')
+          ? 'created'
+          : sync.changes.some(change => change.status === 'updated') ? 'updated' : 'unchanged'
+        results.push({ file: source.path, addon: `${source.className} (${sync.changes.length} specs)`, status })
+      }
+    })()
 
-    // ── 4. Update version info ─────────────────────────
     try {
       const release = await $fetch<{ tag_name: string }>(
-        `https://api.github.com/repos/${owner}/${repo}/releases/latest`,
+        `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases/latest`,
         {
           headers: {
             Accept: 'application/vnd.github+json',
             Authorization: `Bearer ${token}`,
             'User-Agent': 'MagguuUI-WebAdmin',
+            'X-GitHub-Api-Version': '2022-11-28',
           },
           timeout: 10000,
-        }
+        },
       )
       const version = (release.tag_name || '').replace(/^v/, '')
       upsertSetting('github_latest_version', version)
       upsertSetting('github_last_check', new Date().toISOString())
 
       if (/^[0-9A-Za-z._-]+$/.test(release.tag_name)) {
-        const markdown = await $fetch<string>(
-          `https://raw.githubusercontent.com/${owner}/${repo}/${encodeURIComponent(release.tag_name)}/CHANGELOG.md`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'User-Agent': 'MagguuUI-WebAdmin',
-            },
-            timeout: 15000,
-          },
-        )
-        if (typeof markdown !== 'string' || markdown.length > MAX_CHANGELOG_BYTES) {
-          throw new Error(`Changelog payload size invalid (${typeof markdown === 'string' ? markdown.length : 'non-string'} bytes)`)
-        }
+        const markdown = await fetchGitHubTextFile({
+          owner,
+          repo,
+          path: 'CHANGELOG.md',
+          ref: release.tag_name,
+          token,
+          maxBytes: MAX_CHANGELOG_BYTES,
+        })
         addonChangelog = syncAddonChangelog(markdown)
       }
     } catch {
-      // Release info is optional
+      // Release metadata is independent from profile data and remains optional.
     }
 
-    // ── Summary ────────────────────────────────────────
-    const created = results.filter(r => r.status === 'created').length
-    const updated = results.filter(r => r.status === 'updated').length
-    const unchanged = results.filter(r => r.status === 'unchanged').length
-
-    // Auto-generate public changelog entry
+    const created = results.filter(result => result.status === 'created').length
+    const updated = results.filter(result => result.status === 'updated').length
+    const unchanged = results.filter(result => result.status === 'unchanged').length
     createSyncChangelog(results, 'pull')
 
     db.insert(syncHistory).values({
       triggerSource: 'manual-pull',
-      status: errors > 0 ? 'error' : 'success',
-      details: `Pull: ${created} created, ${updated} updated, ${unchanged} unchanged, ${errors} errors`,
+      status: 'success',
+      details: `Pull ${snapshotSha.slice(0, 12)}: ${created} created, ${updated} updated, ${unchanged} unchanged, 0 errors`,
     }).run()
 
     return apiSuccess({
       message: `Pull complete: ${created} created, ${updated} updated, ${unchanged} unchanged`,
+      snapshotSha,
       results,
-      summary: { created, updated, unchanged, errors },
+      summary: { created, updated, unchanged, errors: 0 },
       changelog: addonChangelog,
     })
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error'
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error'
     db.insert(syncHistory).values({
       triggerSource: 'manual-pull',
       status: 'error',
       details: message,
     }).run()
-
     throw createError({ statusCode: 502, message: `GitHub API error: ${message}` })
   }
 })

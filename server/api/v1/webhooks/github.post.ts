@@ -1,35 +1,84 @@
 /**
- * POST /api/v1/webhooks/github
- *
- * Receives GitHub webhook events (release, push).
- * Validates webhook signature if NUXT_GITHUB_WEBHOOK_SECRET is set.
- * Public endpoint — no JWT auth required.
+ * Signed GitHub webhook integration for the configured AddOn repository.
+ * Push imports are bound to refs/heads/main and every file is fetched from
+ * the immutable `after` commit so concurrent pushes cannot mix snapshots.
  */
 
-import { createHmac, timingSafeEqual } from 'crypto'
-import { eq, and } from 'drizzle-orm'
-import { db } from '~/server/database'
-import { syncHistory, settings, profiles, wowupStrings, characterLayouts } from '~/server/database/schema'
-import { createSyncChangelog } from '~/server/utils/syncChangelog'
+import { eq } from 'drizzle-orm'
+import { db, sqlite } from '~/server/database'
+import { settings, syncHistory } from '~/server/database/schema'
+import {
+  ADDON_DATA_ROOT,
+  MAX_ADDON_LUA_SOURCE_BYTES,
+  assertCompleteAddonLuaSnapshot,
+  parseSafeAddonLuaPath,
+} from '~/server/utils/addonProfileLua'
+import {
+  syncAddonProfileFile,
+  syncWowUpFile,
+  validateAddonProfileFile,
+} from '~/server/utils/addonProfileSync'
+import {
+  CLASS_DATA_ROOT,
+  CLASS_FILE_TO_NAME,
+  MAX_CLASS_LUA_SOURCE_BYTES,
+  parseSafeClassLuaPath,
+  syncClassLayoutFile,
+  validateClassLayoutFile,
+} from '~/server/utils/classLayoutSync'
+import {
+  fetchGitHubTextFile,
+  githubRepoMatches,
+  isGitHubCommitSha,
+  listGitHubDirectoryFiles,
+  parseGitHubRepo,
+} from '~/server/utils/github'
 import { checkRateLimit, getClientIp } from '~/server/utils/rateLimit'
+import {
+  classifyCanonicalPushChanges,
+  verifyGitHubWebhookSignature,
+} from '~/server/utils/githubWebhookContract'
 import { syncAddonChangelog } from '~/server/utils/syncAddonChangelog'
 import { syncAddonsFromToc } from '~/server/utils/syncAddons'
-import { parseGitHubRepo } from '~/server/utils/github'
+import { createSyncChangelog } from '~/server/utils/syncChangelog'
 
-// GitHub webhook payloads are typically <1MB; cap well above that to reject abuse.
-const MAX_WEBHOOK_BODY_BYTES = 2 * 1024 * 1024 // 2 MB
+const MAIN_REF = 'refs/heads/main'
+const MAX_WEBHOOK_BODY_BYTES = 2 * 1024 * 1024
+const MAX_TOC_BYTES = 256 * 1024
+const MAX_CHANGELOG_BYTES = 4 * 1024 * 1024
+const MAX_CHANGED_PATHS = 4096
 
-// Real ElvUI/Plater/etc. import strings top out around a few hundred KB.
-// Reject anything beyond this to prevent an addon-repo compromise (or a
-// malformed push) from filling the DB with garbage blobs that users would
-// then paste straight into WoW.
-const MAX_IMPORT_STRING_CHARS = 5 * 1024 * 1024 // 5 MB
+interface SyncResult {
+  file: string
+  addon: string
+  status: 'created' | 'updated' | 'unchanged' | `error: ${string}`
+}
 
-// Sanity caps on raw.githubusercontent.com responses. Real values are tiny
-// (the addon .toc is ~1KB, the changelog ~200KB), so we cap well below
-// anything that could OOM the parser if GitHub's CDN returned garbage.
-const MAX_TOC_BYTES = 256 * 1024            // 256 KB
-const MAX_CHANGELOG_BYTES = 4 * 1024 * 1024 // 4 MB
+interface PushCommit {
+  added?: unknown
+  modified?: unknown
+  removed?: unknown
+}
+
+interface WebhookBody {
+  zen?: string
+  action?: string
+  after?: string
+  forced?: boolean
+  ref?: string
+  repository?: { full_name?: string }
+  release?: {
+    tag_name?: string
+    name?: string
+  }
+  commits?: PushCommit[]
+  pusher?: { name?: string }
+  workflow_run?: {
+    name?: string
+    status?: string
+    conclusion?: string
+  }
+}
 
 function upsertSetting(key: string, value: string) {
   const existing = db.select().from(settings).where(eq(settings.key, key)).get()
@@ -40,81 +89,181 @@ function upsertSetting(key: string, value: string) {
   }
 }
 
-function verifySignature(payload: string, signature: string | null, secret: string): boolean {
-  const expected = 'sha256=' + createHmac('sha256', secret).update(payload).digest('hex')
-  // Always compute expected hash to prevent timing attacks on missing signatures
-  if (!signature) return false
-  // Length check first — timingSafeEqual throws on mismatched lengths which
-  // leaks a slightly different timing signature than a real byte compare.
-  if (Buffer.byteLength(signature) !== Buffer.byteLength(expected)) return false
-  try {
-    return timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
-  } catch {
-    return false
+function collectChangedPaths(commits: PushCommit[]) {
+  const paths = new Set<string>()
+  for (const commit of commits) {
+    for (const field of [commit.added, commit.modified, commit.removed]) {
+      if (!Array.isArray(field)) continue
+      for (const value of field) {
+        if (typeof value !== 'string') continue
+        paths.add(value)
+        if (paths.size > MAX_CHANGED_PATHS) {
+          throw createError({ statusCode: 413, message: 'Push contains too many changed paths' })
+        }
+      }
+    }
+  }
+  return paths
+}
+
+function countResults(results: SyncResult[]) {
+  const created = results.filter(result => result.status === 'created').length
+  const updated = results.filter(result => result.status === 'updated').length
+  const unchanged = results.filter(result => result.status === 'unchanged').length
+  const errors = results.filter(result => result.status.startsWith('error:')).length
+  return { created, updated, unchanged, errors, imported: created + updated }
+}
+
+function appendAddonResults(results: SyncResult[], file: string, sync: ReturnType<typeof syncAddonProfileFile>) {
+  for (const change of sync.changes) {
+    results.push({
+      file,
+      addon: `${change.addon}/${change.profile}`,
+      status: change.status,
+    })
   }
 }
 
+function appendWowUpResults(results: SyncResult[], file: string, sync: ReturnType<typeof syncWowUpFile>) {
+  for (const change of sync.changes) {
+    results.push({ file, addon: `WowUp/${change.name}`, status: change.status })
+  }
+}
+
+async function syncAddonSnapshot(options: {
+  owner: string
+  repo: string
+  ref: string
+  token?: string
+}) {
+  const results: SyncResult[] = []
+  try {
+    const files = await listGitHubDirectoryFiles({
+      ...options,
+      path: ADDON_DATA_ROOT,
+      maxEntries: 128,
+    })
+    const luaFiles = files
+      .filter(file => file.name.endsWith('.lua'))
+      .sort((a, b) => a.path.localeCompare(b.path))
+    assertCompleteAddonLuaSnapshot(luaFiles.map(file => file.name))
+
+    const sources: Array<{ path: string, source: string, isWowUp: boolean }> = []
+    for (const file of luaFiles) {
+      const descriptor = parseSafeAddonLuaPath(file.path)
+      if (file.size > MAX_ADDON_LUA_SOURCE_BYTES) {
+        throw new Error(`${file.path} exceeds the ${MAX_ADDON_LUA_SOURCE_BYTES}-byte safety limit`)
+      }
+      const source = await fetchGitHubTextFile({
+        ...options,
+        path: file.path,
+        maxBytes: MAX_ADDON_LUA_SOURCE_BYTES,
+      })
+      validateAddonProfileFile(file.path, source)
+      sources.push({ path: file.path, source, isWowUp: descriptor.isWowUp })
+    }
+
+    const applied = sqlite.transaction(() => {
+      const transactionResults: SyncResult[] = []
+      for (const item of sources) {
+        if (item.isWowUp) {
+          appendWowUpResults(transactionResults, item.path, syncWowUpFile(item.path, item.source))
+        } else {
+          appendAddonResults(transactionResults, item.path, syncAddonProfileFile(item.path, item.source))
+        }
+      }
+      return transactionResults
+    })()
+    results.push(...applied)
+  } catch (error: unknown) {
+    results.push({
+      file: ADDON_DATA_ROOT,
+      addon: 'AddOn profiles',
+      status: `error: ${error instanceof Error ? error.message : 'unknown'}`,
+    })
+  }
+  return results
+}
+
+async function syncClassSnapshot(options: {
+  owner: string
+  repo: string
+  ref: string
+  token?: string
+}) {
+  const results: SyncResult[] = []
+  try {
+    const sources: Array<{ path: string, source: string, className: string }> = []
+    for (const [fileName, className] of Object.entries(CLASS_FILE_TO_NAME)) {
+      const path = `${CLASS_DATA_ROOT}/${fileName}`
+      parseSafeClassLuaPath(path)
+      const source = await fetchGitHubTextFile({
+        ...options,
+        path,
+        maxBytes: MAX_CLASS_LUA_SOURCE_BYTES,
+      })
+      validateClassLayoutFile(path, source)
+      sources.push({ path, source, className })
+    }
+
+    const applied = sqlite.transaction(() => {
+      const transactionResults: SyncResult[] = []
+      for (const item of sources) {
+        const sync = syncClassLayoutFile(item.path, item.source)
+        const status = sync.changes.some(change => change.status === 'created')
+          ? 'created'
+          : sync.changes.some(change => change.status === 'updated') ? 'updated' : 'unchanged'
+        transactionResults.push({ file: item.path, addon: `${item.className} (${sync.changes.length} specs)`, status })
+      }
+      return transactionResults
+    })()
+    results.push(...applied)
+  } catch (error: unknown) {
+    results.push({
+      file: CLASS_DATA_ROOT,
+      addon: 'Class layouts',
+      status: `error: ${error instanceof Error ? error.message : 'unknown'}`,
+    })
+  }
+  return results
+}
+
 export default defineEventHandler(async (event) => {
-  // Webhooks return sync stats (imported counts, errors). Mark them
-  // uncacheable so a future reverse proxy doesn't cache the response body.
-  setResponseHeader(event, 'Cache-Control', 'no-store')
+  setResponseHeader(event, 'Cache-Control', 'private, no-store, no-cache, must-revalidate')
+  setResponseHeader(event, 'Pragma', 'no-cache')
   setResponseHeader(event, 'X-Robots-Tag', 'noindex, nofollow, noarchive')
 
   const config = useRuntimeConfig()
   const webhookSecret = config.githubWebhookSecret || ''
   const eventType = getHeader(event, 'x-github-event') || ''
   const signature = getHeader(event, 'x-hub-signature-256') || null
+  if (!webhookSecret) throw createError({ statusCode: 401, message: 'Unauthorized' })
 
-  // Webhook secret is REQUIRED. Reject BEFORE any I/O (rate-limit DB write,
-  // raw-body buffering, JSON parse) so an unauthenticated probe can't force
-  // expensive work on the server. Returning 401 (vs 503) avoids leaking
-  // server-config state — for GitHub this is functionally identical.
-  if (!webhookSecret) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
-
-  // Rate limit unauthenticated hits (signature check alone isn't enough: an
-  // attacker flooding with bad signatures still triggers DB inserts).
   const ip = getClientIp(event)
-  const rl = checkRateLimit(`webhook:${ip}`, 60, 60 * 1000, 5 * 60 * 1000)
-  if (!rl.allowed) {
-    setResponseHeader(event, 'Retry-After', rl.retryAfter)
+  const rateLimit = checkRateLimit(`webhook:${ip}`, 60, 60 * 1000, 5 * 60 * 1000)
+  if (!rateLimit.allowed) {
+    setResponseHeader(event, 'Retry-After', rateLimit.retryAfter)
     throw createError({ statusCode: 429, message: 'Too many webhook requests' })
   }
 
-  // Reject oversized bodies early (Content-Length hint; raw-body read is still
-  // capped below in case the header is missing or lying).
   const contentLength = Number(getHeader(event, 'content-length') || 0)
   if (contentLength && contentLength > MAX_WEBHOOK_BODY_BYTES) {
     throw createError({ statusCode: 413, message: 'Webhook payload too large' })
   }
 
-  // Read raw body for signature verification
   const rawBody = await readRawBody(event, 'utf8') || ''
-  const bodyByteLength = Buffer.byteLength(rawBody)
-  if (bodyByteLength > MAX_WEBHOOK_BODY_BYTES) {
+  if (Buffer.byteLength(rawBody) > MAX_WEBHOOK_BODY_BYTES) {
     throw createError({ statusCode: 413, message: 'Webhook payload too large' })
   }
-
-  if (!verifySignature(rawBody, signature, webhookSecret)) {
+  if (!verifyGitHubWebhookSignature(rawBody, signature, webhookSecret)) {
     db.insert(syncHistory).values({
-      triggerSource: `webhook-${eventType}`,
+      triggerSource: `webhook-${eventType || 'unknown'}`,
       status: 'error',
       details: 'Invalid webhook signature',
     }).run()
     throw createError({ statusCode: 401, message: 'Invalid signature' })
   }
 
-  interface WebhookBody {
-    zen?: string
-    action?: string
-    release?: { tag_name?: string, body?: string, name?: string, published_at?: string, html_url?: string }
-    ref?: string
-    repository?: { full_name?: string }
-    commits?: Array<{ added?: string[], modified?: string[], removed?: string[], message?: string, id?: string }>
-    pusher?: { name?: string }
-    workflow_run?: { name?: string, status?: string, conclusion?: string, html_url?: string, head_branch?: string }
-  }
   let body: WebhookBody
   try {
     body = JSON.parse(rawBody) as WebhookBody
@@ -122,423 +271,201 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid JSON payload' })
   }
 
-  // Handle ping event (GitHub sends this when webhook is first configured)
+  const repoRef = parseGitHubRepo(config.githubRepo || '')
+  if (!repoRef) throw createError({ statusCode: 503, message: 'GitHub repository is not configured' })
+  const configuredRepo = `${repoRef.owner}/${repoRef.repo}`
+  if (!githubRepoMatches(configuredRepo, body.repository?.full_name)) {
+    throw createError({ statusCode: 403, message: 'Webhook repository does not match configured repository' })
+  }
+
   if (eventType === 'ping') {
     db.insert(syncHistory).values({
       triggerSource: 'webhook-ping',
       status: 'success',
       details: `Webhook connected: ${body.zen || 'OK'}`,
     }).run()
-    return apiSuccess({ message: 'pong' })
+    return apiSuccess({ message: 'pong', repository: configuredRepo })
   }
 
-  // Handle release events
+  const token = config.githubToken || undefined
+  const github = { owner: repoRef.owner, repo: repoRef.repo, token }
+
   if (eventType === 'release' && (body.action === 'published' || body.action === 'released')) {
     const release = body.release
-    if (!release) {
-      throw createError({ statusCode: 400, message: 'Missing release data' })
+    const tag = release?.tag_name || ''
+    if (!release || !/^[0-9A-Za-z][0-9A-Za-z._/-]{0,127}$/.test(tag) || tag.includes('..') || tag.includes('//')) {
+      throw createError({ statusCode: 400, message: 'Missing or unsafe release tag' })
     }
 
-    const version = (release.tag_name || '').replace(/^v/, '')
-
-    // Update stored version info
+    const version = tag.replace(/^v/, '')
     upsertSetting('github_latest_version', version)
     upsertSetting('github_last_check', new Date().toISOString())
 
-    let changelog: { inserted: number; updated: number; skipped: number } | null = null
-    const repoName = body.repository?.full_name || ''
-    const tag = release.tag_name || ''
-    if (repoName === 'Derpsen/MagguuUI' && /^[0-9A-Za-z._-]+$/.test(tag)) {
-      try {
-        const fetchHeaders: Record<string, string> = { 'User-Agent': 'MagguuUI-WebAdmin' }
-        if (config.githubToken) fetchHeaders.Authorization = `Bearer ${config.githubToken}`
-        const rawUrl = `https://raw.githubusercontent.com/Derpsen/MagguuUI/${encodeURIComponent(tag)}/CHANGELOG.md`
-        const markdown = await $fetch<string>(rawUrl, { headers: fetchHeaders, timeout: 15000 })
-        if (typeof markdown !== 'string' || markdown.length > MAX_CHANGELOG_BYTES) {
-          throw new Error(`Changelog payload size invalid (${typeof markdown === 'string' ? markdown.length : 'non-string'} bytes)`)
-        }
-        changelog = syncAddonChangelog(markdown)
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err)
-        db.insert(syncHistory).values({
-          triggerSource: 'webhook-release-changelog',
-          status: 'error',
-          details: message,
-        }).run()
-      }
+    let changelog: ReturnType<typeof syncAddonChangelog> | null = null
+    try {
+      const markdown = await fetchGitHubTextFile({
+        ...github,
+        path: 'CHANGELOG.md',
+        ref: tag,
+        maxBytes: MAX_CHANGELOG_BYTES,
+      })
+      changelog = syncAddonChangelog(markdown)
+    } catch (error: unknown) {
+      db.insert(syncHistory).values({
+        triggerSource: 'webhook-release-changelog',
+        status: 'error',
+        details: error instanceof Error ? error.message : String(error),
+      }).run()
     }
 
     db.insert(syncHistory).values({
       triggerSource: 'webhook-release',
       status: 'success',
-      details: `Release ${release.tag_name}: ${release.name || 'Unnamed'}${changelog ? `; changelog ${JSON.stringify(changelog)}` : ''}`,
+      details: `Release ${tag}: ${release.name || 'Unnamed'}${changelog ? `; changelog ${JSON.stringify(changelog)}` : ''}`,
     }).run()
-
-    return apiSuccess({
-      event: 'release',
-      version,
-      name: release.name,
-      changelog,
-    })
+    return apiSuccess({ event: 'release', version, name: release.name, changelog })
   }
 
-  // Handle push events — auto-pull MagguuUI_Data/*.lua changes into DB
   if (eventType === 'push') {
     const ref = body.ref || ''
-    const commits = body.commits || []
     const pusher = body.pusher?.name || 'unknown'
-    const commitCount = commits.length || 0
+    const commits = Array.isArray(body.commits) ? body.commits : []
+    if (ref !== MAIN_REF) {
+      db.insert(syncHistory).values({
+        triggerSource: 'webhook-push',
+        status: 'info',
+        details: `Ignored push to ${ref || '(missing ref)'} by ${pusher}`,
+      }).run()
+      return apiSuccess({ event: 'push', ref, handled: [], ignored: 'non-main branch' })
+    }
+
+    const snapshotSha = body.after || ''
+    if (!isGitHubCommitSha(snapshotSha) || /^0+$/.test(snapshotSha)) {
+      throw createError({ statusCode: 400, message: 'Push payload has an invalid after SHA' })
+    }
+
+    const changedPaths = collectChangedPaths(commits)
+    // GitHub may omit the per-commit list for force pushes or very unusual
+    // ref updates. Conservatively refresh every canonical input in that case.
+    const {
+      addonsTouched,
+      classesTouched,
+      tocTouched,
+      changelogTouched,
+    } = classifyCanonicalPushChanges(changedPaths, {
+      forced: body.forced === true,
+      commitCount: commits.length,
+    })
     const handled: string[] = []
+    const syncResults: SyncResult[] = []
 
-    // Check if any profile-data files were changed
-    const dataFiles = new Set<string>()
-    for (const commit of commits) {
-      for (const file of [...(commit.added || []), ...(commit.modified || [])]) {
-        if (typeof file === 'string' && file.startsWith('MagguuUI_Data/') && file.endsWith('.lua')) {
-          dataFiles.add(file)
-        }
-      }
+    if (addonsTouched) {
+      syncResults.push(...await syncAddonSnapshot({ ...github, ref: snapshotSha }))
+      handled.push('addon-profiles')
+    }
+    if (classesTouched) {
+      syncResults.push(...await syncClassSnapshot({ ...github, ref: snapshotSha }))
+      handled.push('class-layouts')
     }
 
-    let dataResult: { imported: number; errors: number } | null = null
-
-    if (dataFiles.size > 0) {
-      // Auto-pull: fetch changed Lua files from GitHub and import into DB
-      const config = useRuntimeConfig()
-      if (config.githubToken && config.githubRepo) {
-        const token = config.githubToken || ''
-        const repoRef = parseGitHubRepo(config.githubRepo || '')
-        if (!token || !repoRef) {
-          throw createError({ statusCode: 400, message: 'GitHub Token or Repo not configured.' })
-        }
-        const { owner, repo } = repoRef
-        let imported = 0
-        let errors = 0
-        const syncResults: { file: string; addon: string; status: string }[] = []
-
-        for (const filePath of dataFiles) {
-          const importedBefore = imported
-          try {
-            const fileResp = await $fetch<{ content: string; encoding: string }>(
-              `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
-              {
-                headers: {
-                  Accept: 'application/vnd.github.v3+json',
-                  Authorization: `Bearer ${token}`,
-                  'User-Agent': 'MagguuUI-WebAdmin',
-                },
-                timeout: 15000,
-              }
-            )
-
-            if (fileResp.encoding !== 'base64' || !fileResp.content) continue
-            const content = Buffer.from(fileResp.content, 'base64').toString('utf-8')
-
-            // Parse and import based on file path
-            // MagguuUI_Data/AddOns/*.lua → Addon profiles + WowUp
-            // MagguuUI_Data/Classes/*.lua → Class layouts
-
-            if (filePath.startsWith('MagguuUI_Data/AddOns/')) {
-              const filename = filePath.replace('MagguuUI_Data/AddOns/', '')
-
-              if (filename === 'WowUp.lua') {
-              // Parse the stored starter/optional WowUp strings
-              const reqMatch = content.match(/D\.WowUpRequired\s*=\s*"((?:[^"\\]|\\.)*)"/)
-              const optMatch = content.match(/D\.WowUpOptional\s*=\s*"((?:[^"\\]|\\.)*)"/)
-              for (const [name, match] of [['Required', reqMatch], ['Optional', optMatch]] as const) {
-                if (match) {
-                  const raw = match[1]
-                  if (raw === undefined) continue
-                  const str = raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-                  if (str.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
-                  const existing = db.select().from(wowupStrings).where(eq(wowupStrings.name, name)).get()
-                  if (existing) {
-                    if (existing.string !== str) {
-                      db.update(wowupStrings).set({ string: str, updatedAt: new Date() }).where(eq(wowupStrings.id, existing.id)).run()
-                      imported++
-                    }
-                  } else {
-                    db.insert(wowupStrings).values({ name, string: str, description: `WowUp ${name}`, sortOrder: name === 'Required' ? 0 : 1, isVisible: true }).run()
-                    imported++
-                  }
-                }
-              }
-            } else {
-              // Addon profile Lua files — detect simple vs table style
-              const ADDON_SIMPLE: Record<string, string> = {
-                'Plater.lua': 'plater', 'Platynator.lua': 'platynator', 'BigWigs.lua': 'bigwigs', 'Details.lua': 'details',
-                'BetterCooldownManager.lua': 'bettercooldownmanager', 'Ayije_CDM.lua': 'ayije_cdm', 'Blizzard_EditMode.lua': 'blizzardeditmode',
-                'WindTools.lua': 'windtools',
-              }
-              const addonName = filename.replace('.lua', '')
-
-              if (filename === 'ElvUI.lua') {
-                // Table style: parse profile, private, global, aurafilters
-                for (const key of ['profile', 'private', 'global', 'aurafilters']) {
-                  const regex = new RegExp(`${key}\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"`)
-                  const match = content.match(regex)
-                  if (match) {
-                    const raw = match[1]
-                    if (raw === undefined) continue
-                    const str = raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-                    if (str.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
-                    const existing = db.select().from(profiles).where(and(eq(profiles.addon, 'ElvUI'), eq(profiles.profile, key))).get()
-                    if (existing) {
-                      if (existing.string !== str) {
-                        db.update(profiles).set({ string: str, updatedAt: new Date() }).where(eq(profiles.id, existing.id)).run()
-                        imported++
-                      }
-                    } else {
-                      db.insert(profiles).values({ addon: 'ElvUI', profile: key, string: str, description: `ElvUI - ${key}`, sortOrder: 0, isVisible: true }).run()
-                      imported++
-                    }
-                  }
-                }
-              } else if (ADDON_SIMPLE[filename]) {
-                // Simple style: D.varname = "..."
-                const varName = ADDON_SIMPLE[filename]
-                const regex = new RegExp(`D\\.${varName}\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"`)
-                const match = content.match(regex)
-                if (match) {
-                  const raw = match[1]
-                  if (raw === undefined) continue
-                  const str = raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-                  if (str.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
-                  const existing = db.select().from(profiles).where(and(eq(profiles.addon, addonName), eq(profiles.profile, 'Default'))).get()
-                  if (existing) {
-                    if (existing.string !== str) {
-                      db.update(profiles).set({ string: str, updatedAt: new Date() }).where(eq(profiles.id, existing.id)).run()
-                      imported++
-                    }
-                  } else {
-                    db.insert(profiles).values({ addon: addonName, profile: 'Default', string: str, description: `${addonName} profile`, sortOrder: 0, isVisible: true }).run()
-                    imported++
-                  }
-                }
-              }
-            }
-
-            } else if (filePath.startsWith('MagguuUI_Data/Classes/')) {
-              // ── Class Layout Lua files ──
-              // Format: D.classname = { "string1", -- Spec1   "string2", -- Spec2 }
-              const filename = filePath.replace('MagguuUI_Data/Classes/', '')
-              if (filename === '!load.xml') continue
-
-              // Map filename to class display name
-              const CLASS_NAMES: Record<string, string> = {
-                'DeathKnight.lua': 'Death Knight', 'DemonHunter.lua': 'Demon Hunter',
-                'Druid.lua': 'Druid', 'Evoker.lua': 'Evoker', 'Hunter.lua': 'Hunter',
-                'Mage.lua': 'Mage', 'Monk.lua': 'Monk', 'Paladin.lua': 'Paladin',
-                'Priest.lua': 'Priest', 'Rogue.lua': 'Rogue', 'Shaman.lua': 'Shaman',
-                'Warlock.lua': 'Warlock', 'Warrior.lua': 'Warrior',
-              }
-              const className = CLASS_NAMES[filename]
-              if (!className) continue
-
-              // Parse all entries: "importString", -- SpecName
-              const entryRegex = /"((?:[^"\\]|\\.)*)"\s*,\s*--\s*(.+)/g
-              const specs: Array<{ spec: string; importString: string }> = []
-              let entryMatch
-              while ((entryMatch = entryRegex.exec(content)) !== null) {
-                const rawImport = entryMatch[1]
-                const rawSpec = entryMatch[2]
-                if (rawImport === undefined || rawSpec === undefined) continue
-                const importString = rawImport.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-                if (importString.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
-                const specName = rawSpec.trim()
-                specs.push({ spec: specName, importString })
-              }
-
-              // Also catch entries without spec comment: "importString",
-              const noCommentRegex = /^\s*"((?:[^"\\]|\\.)+)"\s*,\s*$/gm
-              let ncMatch
-              while ((ncMatch = noCommentRegex.exec(content)) !== null) {
-                const raw = ncMatch[1]
-                if (raw === undefined) continue
-                const str = raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-                if (str.length > MAX_IMPORT_STRING_CHARS) { errors++; continue }
-                // Skip if already matched with a comment
-                if (!specs.find(s => s.importString === str)) {
-                  specs.push({ spec: '', importString: str })
-                }
-              }
-
-              // Upsert each spec into character_layouts
-              for (let i = 0; i < specs.length; i++) {
-                const item = specs[i]
-                if (!item) continue
-                const { spec, importString } = item
-                if (!importString) continue
-
-                const layoutName = spec ? `${className} - ${spec}` : `${className} #${i + 1}`
-                const existing = db.select().from(characterLayouts)
-                  .where(and(
-                    eq(characterLayouts.className, className),
-                    eq(characterLayouts.spec, spec || `Spec ${i + 1}`)
-                  )).get()
-
-                if (existing) {
-                  if (existing.importString !== importString) {
-                    db.update(characterLayouts)
-                      .set({ importString, name: layoutName, updatedAt: new Date() })
-                      .where(eq(characterLayouts.id, existing.id)).run()
-                    imported++
-                  }
-                } else {
-                  db.insert(characterLayouts).values({
-                    name: layoutName,
-                    className,
-                    spec: spec || `Spec ${i + 1}`,
-                    importString,
-                    sortOrder: i,
-                    isVisible: true,
-                  }).run()
-                  imported++
-                }
-              }
-            }
-          } catch (err: unknown) {
-            errors++
-            console.error(`Webhook auto-pull error for ${filePath}:`, err instanceof Error ? err.message : String(err))
-          }
-
-          // Track result for changelog
-          if (imported > importedBefore) {
-            const addonLabel = filePath.startsWith('MagguuUI_Data/Classes/')
-              ? filePath.replace('MagguuUI_Data/Classes/', '').replace('.lua', '')
-              : filePath.startsWith('MagguuUI_Data/AddOns/')
-                ? filePath.replace('MagguuUI_Data/AddOns/', '').replace('.lua', '')
-                : filePath
-            syncResults.push({ file: filePath, addon: addonLabel, status: 'updated' })
-          }
-        }
-
-        // Auto-generate public changelog entry
-        createSyncChangelog(syncResults, 'webhook')
-
-        db.insert(syncHistory).values({
-          triggerSource: 'webhook-push-autopull',
-          status: errors > 0 ? 'error' : 'success',
-          details: `Push by ${pusher}: ${dataFiles.size} MagguuUI_Data files changed, ${imported} imported, ${errors} errors`,
-        }).run()
-
-        dataResult = { imported, errors }
-        handled.push('autopull')
-      }
+    let dataResult: ReturnType<typeof countResults> & { snapshotSha: string } | null = null
+    if (addonsTouched || classesTouched) {
+      createSyncChangelog(syncResults, 'webhook')
+      dataResult = { snapshotSha, ...countResults(syncResults) }
+      db.insert(syncHistory).values({
+        triggerSource: 'webhook-push-autopull',
+        status: dataResult.errors ? 'error' : 'success',
+        details: `Push ${snapshotSha.slice(0, 12)} by ${pusher}: ${dataResult.created} created, ${dataResult.updated} updated, ${dataResult.unchanged} unchanged, ${dataResult.errors} errors`,
+      }).run()
     }
 
-    // Addon-list sync — fires when MagguuUI.toc is touched in the addon repo
-    const repoName = body.repository?.full_name || ''
-    const tocTouched = commits.some(c =>
-      [...(c.added || []), ...(c.modified || [])].includes('MagguuUI.toc')
-    )
-
-    let tocResult: { inserted: number; updated: number; unavailable: number; total: number } | null = null
-    if (repoName === 'Derpsen/MagguuUI' && tocTouched) {
-      const token = config.githubToken as string | undefined
+    let tocResult: ReturnType<typeof syncAddonsFromToc> | null = null
+    if (tocTouched) {
       try {
-        const rawUrl = `https://raw.githubusercontent.com/Derpsen/MagguuUI/main/MagguuUI.toc`
-        const fetchHeaders: Record<string, string> = { 'User-Agent': 'MagguuUI-WebAdmin' }
-        if (token) fetchHeaders['Authorization'] = `Bearer ${token}`
-
-        const tocContent = await $fetch<string>(rawUrl, { headers: fetchHeaders, timeout: 15000 })
-        if (typeof tocContent !== 'string' || tocContent.length > MAX_TOC_BYTES) {
-          throw new Error(`TOC payload size invalid (${typeof tocContent === 'string' ? tocContent.length : 'non-string'} bytes)`)
-        }
-        tocResult = syncAddonsFromToc(tocContent)
-
+        const toc = await fetchGitHubTextFile({
+          ...github,
+          path: 'MagguuUI.toc',
+          ref: snapshotSha,
+          maxBytes: MAX_TOC_BYTES,
+        })
+        tocResult = syncAddonsFromToc(toc)
         db.insert(syncHistory).values({
           triggerSource: 'github-toc',
           status: 'success',
-          details: `Addons synced — inserted: ${tocResult.inserted}, updated: ${tocResult.updated}, removed: ${tocResult.unavailable}`,
+          details: `Snapshot ${snapshotSha.slice(0, 12)}: ${JSON.stringify(tocResult)}`,
         }).run()
         handled.push('toc')
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err)
-        console.error('TOC webhook error:', msg)
+      } catch (error: unknown) {
         db.insert(syncHistory).values({
           triggerSource: 'github-toc',
           status: 'error',
-          details: msg,
+          details: error instanceof Error ? error.message : String(error),
         }).run()
       }
     }
 
-    // Changelog sync — fires when CHANGELOG.md is touched in the addon repo
-    const changelogTouched = commits.some(c =>
-      [...(c.added || []), ...(c.modified || [])].includes('CHANGELOG.md')
-    )
-
-    let clResult: { inserted: number; updated: number; skipped: number } | null = null
-    if (repoName === 'Derpsen/MagguuUI' && changelogTouched) {
-      const token = config.githubToken as string | undefined
+    let changelogResult: ReturnType<typeof syncAddonChangelog> | null = null
+    if (changelogTouched) {
       try {
-        const rawUrl = `https://raw.githubusercontent.com/Derpsen/MagguuUI/main/CHANGELOG.md`
-        const fetchHeaders: Record<string, string> = { 'User-Agent': 'MagguuUI-WebAdmin' }
-        if (token) fetchHeaders['Authorization'] = `Bearer ${token}`
-
-        const markdown = await $fetch<string>(rawUrl, { headers: fetchHeaders, timeout: 15000 })
-        if (typeof markdown !== 'string' || markdown.length > MAX_CHANGELOG_BYTES) {
-          throw new Error(`Changelog payload size invalid (${typeof markdown === 'string' ? markdown.length : 'non-string'} bytes)`)
-        }
-        clResult = syncAddonChangelog(markdown)
+        const markdown = await fetchGitHubTextFile({
+          ...github,
+          path: 'CHANGELOG.md',
+          ref: snapshotSha,
+          maxBytes: MAX_CHANGELOG_BYTES,
+        })
+        changelogResult = syncAddonChangelog(markdown)
         db.insert(syncHistory).values({
           triggerSource: 'github-changelog',
           status: 'success',
-          details: JSON.stringify(clResult),
+          details: `Snapshot ${snapshotSha.slice(0, 12)}: ${JSON.stringify(changelogResult)}`,
         }).run()
         handled.push('changelog')
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err)
-        console.error('Changelog webhook error:', msg)
+      } catch (error: unknown) {
         db.insert(syncHistory).values({
           triggerSource: 'github-changelog',
           status: 'error',
-          details: msg,
+          details: error instanceof Error ? error.message : String(error),
         }).run()
       }
     }
 
-    if (handled.length === 0) {
+    if (!addonsTouched && !classesTouched && !tocTouched && !changelogTouched) {
       db.insert(syncHistory).values({
         triggerSource: 'webhook-push',
         status: 'success',
-        details: `Push to ${ref} by ${pusher} (${commitCount} commit${commitCount !== 1 ? 's' : ''})`,
+        details: `Push ${snapshotSha.slice(0, 12)} to main by ${pusher} (${commits.length} commit${commits.length === 1 ? '' : 's'})`,
       }).run()
     }
 
     return apiSuccess({
       event: 'push',
       ref,
-      commits: commitCount,
+      snapshotSha,
+      commits: commits.length,
       handled,
-      autopull: dataResult,
+      data: dataResult,
+      results: syncResults,
       toc: tocResult,
-      changelog: clResult,
+      changelog: changelogResult,
     })
   }
 
-  // Handle workflow_run events (GitHub Actions completed)
   if (eventType === 'workflow_run') {
     const run = body.workflow_run
     const status = run?.conclusion || run?.status || 'unknown'
     const name = run?.name || 'Unknown workflow'
-
     db.insert(syncHistory).values({
       triggerSource: 'webhook-workflow',
       status: status === 'success' ? 'success' : 'error',
       details: `${name}: ${status}`,
     }).run()
-
     return apiSuccess({ event: 'workflow_run', name, status })
   }
 
-  // Unhandled event type — log and accept
   db.insert(syncHistory).values({
     triggerSource: `webhook-${eventType || 'unknown'}`,
     status: 'info',
     details: `Unhandled event type: ${eventType}`,
   }).run()
-
   return apiSuccess({ event: eventType, handled: false })
 })

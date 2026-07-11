@@ -7,6 +7,9 @@
 
 import jwt from 'jsonwebtoken'
 import type { H3Event } from 'h3'
+import { eq } from 'drizzle-orm'
+import { db } from '~/server/database'
+import { users } from '~/server/database/schema'
 import {
   hashToken,
   validateSession,
@@ -21,6 +24,32 @@ interface JwtPayload {
   username: string
   role: string
   sessionId?: number
+}
+
+export interface CurrentAuthUser {
+  id: number
+  username: string
+  role: string
+}
+
+/**
+ * Resolve authorization from current database state, not only from JWT claims.
+ * Deleted or locked users are rejected and role changes take effect without
+ * waiting for an existing token to expire.
+ */
+export function getCurrentAuthUser(userId: number): CurrentAuthUser | null {
+  const user = db.select({
+    id: users.id,
+    username: users.username,
+    role: users.role,
+    isLocked: users.isLocked,
+  })
+    .from(users)
+    .where(eq(users.id, userId))
+    .get()
+
+  if (!user || user.isLocked) return null
+  return { id: user.id, username: user.username, role: user.role }
 }
 
 // `__Host-` prefix is enforced by browsers as Secure + no Domain + Path=/.
@@ -123,6 +152,16 @@ export function requireAuth(event: H3Event): JwtPayload {
     payload = verifyToken(token)
   } catch {
     throw createError({ statusCode: 401, message: 'Invalid or expired token' })
+  }
+
+  const currentUser = getCurrentAuthUser(payload.userId)
+  if (!currentUser) {
+    throw createError({ statusCode: 401, message: 'Account no longer active' })
+  }
+  payload = {
+    ...payload,
+    username: currentUser.username,
+    role: currentUser.role,
   }
 
   // Session validation (only for tokens that include sessionId — backward compatible)

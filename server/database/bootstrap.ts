@@ -183,7 +183,8 @@ export const DATABASE_BOOTSTRAP_SQL = `
     last_active INTEGER NOT NULL DEFAULT (unixepoch()),
     expires_at INTEGER NOT NULL,
     is_revoked INTEGER NOT NULL DEFAULT 0,
-    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
   CREATE INDEX IF NOT EXISTS idx_sessions_token_hash ON sessions(token_hash);
   CREATE INDEX IF NOT EXISTS idx_sessions_user_revoked ON sessions(user_id, is_revoked);
@@ -214,7 +215,8 @@ export const DATABASE_BOOTSTRAP_SQL = `
     transports TEXT,
     aaguid TEXT,
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-    last_used INTEGER
+    last_used INTEGER,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
   CREATE TABLE IF NOT EXISTS webauthn_challenges (

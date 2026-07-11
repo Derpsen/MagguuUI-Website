@@ -58,6 +58,10 @@
 - CI now runs production dependency audit, lint, typecheck, production build/smoke, installs Chromium, and runs Playwright public smoke tests.
 - Dependabot now covers npm, GitHub Actions, and Docker; CodeQL now scans JavaScript/TypeScript on push, PR, and weekly schedule.
 - `NUXT_OG_IMAGE_SECRET` is documented for production, and CI/Playwright use dummy non-secret values to avoid unsigned dynamic OG-image warnings in test logs.
+- Public profile/WowUp/layout projections remain unauthenticated and visibility-filtered; repository automation uses the token-only `/api/v1/sync/*` namespace.
+- `/api/v1/sync/snapshot` returns profiles, WowUp, and class layouts from one SQLite transaction with a revision hash, including hidden synchronization state.
+- Manual GitHub pulls and signed `main`-push webhooks fetch complete, size-bounded Lua snapshots at one immutable commit SHA and apply validated profile/class writes transactionally.
+- Auth authorization resolves the current user and role from SQLite on every request, so deletion, lock, or demotion invalidates existing JWT claims immediately.
 
 ## Visible Risks
 
@@ -72,10 +76,10 @@
 
 ## Latest Verification
 
-- On 2026-05-14 the repo was audited and modernized with controlled patch/minor dependency updates, TypeScript cleanup, public hydration fixes, docs/rules updates, ESLint, Dependabot, CodeQL, and CI validation improvements.
-- `npm run lint`, `npm run typecheck`, `npm run build`, `npm run verify:smoke`, `npm run verify`, `npm test`, and `npm run audit:prod` succeeded.
-- Full `npm audit` still reports the known dev-only `drizzle-kit -> @esbuild-kit/* -> esbuild <=0.24.2` moderate advisory; npm's suggested fix is forceful/breaking and was intentionally not applied.
-- `npm outdated` now only reports `h3` 2.0.1-rc.22 as latest; the project remains on stable `h3` 1.15.11 intentionally.
+- On 2026-07-11 the cross-repository sync, webhook, auth, CI supply-chain, dependency, and smoke-test paths were audited and hardened together with MagguuUI and MagguuBot.
+- Parser/HMAC unit tests passed 12/12; authenticated production verification covered the coherent snapshot API and deleted-user session invalidation; Playwright passed 10/10 public/browser tests.
+- `npm run lint` (0 errors), `npm run typecheck`, `npm run verify`, full `npm audit`, and production `npm audit` succeeded; both audits report 0 vulnerabilities.
+- Compatible patch/minor dependencies are current. `npm outdated` only offers the intentionally deferred H3 2 release candidate and TypeScript 7 major upgrade.
 - Build still emits non-fatal Tailwind/Vite sourcemap warnings, chunk-size warnings, Node DEP0155 dependency warnings, and Satori CSS-variable warnings from global admin CSS being seen by `nuxt-og-image`.
 - On 2026-03-29 the repo was reviewed across frontend, backend, security, Docker, and modernization potential.
 - Local environment now has Node `v24.14.1` and npm `11.11.0`.

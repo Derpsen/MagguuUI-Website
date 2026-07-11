@@ -28,6 +28,9 @@ updates:
       - dependency-name: h3
         versions:
           - "2.x"
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /

@@ -10,14 +10,10 @@
 
 <script setup lang="ts">
 import VChart from 'vue-echarts'
-
-interface DataPoint {
-  label: string
-  value: number
-}
+import { createChartTheme, type ChartDataPoint } from '~/utils/chartTheme'
 
 const props = withDefaults(defineProps<{
-  data: DataPoint[]
+  data: ChartDataPoint[]
   height?: string
   color?: string
   emptyText?: string
@@ -34,15 +30,14 @@ const isDark = useIsDark()
 const computedHeight = computed(() => props.height || `${Math.max(120, props.data.length * 36)}px`)
 
 const chartOption = computed(() => {
-  const textColor = isDark.value ? 'rgba(148, 163, 184, 0.8)' : 'rgba(100, 116, 139, 0.8)'
-  const gridLineColor = isDark.value ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'
+  const theme = createChartTheme(isDark.value, 0.8)
   const reversed = [...props.data].reverse()
 
   return {
     grid: { top: 4, right: 40, bottom: 4, left: 120 },
     xAxis: {
       type: 'value' as const,
-      splitLine: { lineStyle: { color: gridLineColor } },
+      splitLine: { lineStyle: { color: theme.gridLineColor } },
       axisLabel: { show: false },
     },
     yAxis: {
@@ -51,7 +46,7 @@ const chartOption = computed(() => {
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: {
-        color: textColor,
+        color: theme.textColor,
         fontSize: 11,
         width: 110,
         overflow: 'truncate' as const,
@@ -59,9 +54,7 @@ const chartOption = computed(() => {
     },
     tooltip: {
       trigger: 'axis' as const,
-      backgroundColor: isDark.value ? '#1e293b' : '#ffffff',
-      borderColor: isDark.value ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-      textStyle: { color: isDark.value ? '#e2e8f0' : '#1e293b', fontSize: 12 },
+      ...theme.tooltip,
     },
     series: [{
       type: 'bar' as const,
@@ -74,7 +67,7 @@ const chartOption = computed(() => {
       label: {
         show: true,
         position: 'right' as const,
-        color: textColor,
+        color: theme.textColor,
         fontSize: 11,
         formatter: (params: { value: number }) => params.value.toLocaleString(),
       },

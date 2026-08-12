@@ -33,9 +33,9 @@
               <span class="text-gradient">{{ content?.hero?.title2 || 'perfected.' }}</span>
             </h1>
 
-            <div class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed fade-in fade-in-delay-2"
+            <SafeHtml class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed fade-in fade-in-delay-2"
               :class="isDark ? 'text-silver-400' : 'text-gray-500'"
-              v-html="renderHomeRichText(content?.hero?.description || 'MagguuUI is a standalone installer for WoW Retail. It only needs the two included addon folders; every external integration, including ElvUI, is optional. Click **Install All** once and MagguuUI configures the addons you actually use.')"
+              :html="content?.hero?.description || 'MagguuUI is a standalone installer for WoW Retail. It only needs the two included addon folders; every external integration, including ElvUI, is optional. Click **Install All** once and MagguuUI configures the addons you actually use.'"
             />
 
             <div class="flex items-center justify-center gap-4 fade-in fade-in-delay-3">
@@ -114,10 +114,10 @@
             <span class="text-2xl">{{ feat.emoji }}</span>
           </div>
           <h3 class="text-lg font-semibold text-gradient-subtle mb-3">{{ feat.title }}</h3>
-          <div
+          <SafeHtml
             class="home-feature-copy text-sm leading-relaxed"
             :class="isDark ? 'text-silver-500' : 'text-gray-500'"
-            v-html="renderHomeRichText(feat.text)"
+            :html="feat.text"
           />
         </div>
       </div>
@@ -126,7 +126,6 @@
 </template>
 
 <script setup lang="ts">
-import { sanitizeRichHtml } from '~/utils/richText'
 import { buildPublicUrl } from '~/utils/publicSite'
 
 const { isLoggedIn } = useAuth()
@@ -323,10 +322,6 @@ const stats = computed(() => [
   { value: animatedCategories.value, label: 'Categories' },
   { value: animatedUpdates.value, label: 'Updates' },
 ])
-
-function renderHomeRichText(text: string): string {
-  return sanitizeRichHtml(text)
-}
 
 // ─── Scroll Indicator ─────────────────────
 const scrollIndicatorOpacity = ref(1)

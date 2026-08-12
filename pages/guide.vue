@@ -143,10 +143,10 @@
               </h3>
 
               <template v-if="!editMode">
-                <div
+                <SafeHtml
                   class="guide-content text-[15px] leading-relaxed"
                   :class="isDark ? 'text-silver-300' : 'text-gray-600'"
-                  v-html="renderGuideContent(step.editableContent)"
+                  :html="renderGuideContent(step.editableContent)"
                 />
               </template>
 

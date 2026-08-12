@@ -152,9 +152,9 @@
             <br>
             <span class="text-slate-500 dark:text-slate-400">{{ form.hero.title2 || "perfected." }}</span>
           </h2>
-          <div
+          <SafeHtml
             class="prose prose-sm mx-auto mt-4 max-w-2xl dark:prose-invert"
-            v-html="renderPreviewHtml(form.hero.description, '<em>No subtitle set</em>')"
+            :html="form.hero.description || '<em>No subtitle set</em>'"
           />
         </div>
 
@@ -197,9 +197,9 @@
             <h3 class="mt-4 text-base font-semibold text-slate-950 dark:text-white">
               {{ featureTitle(index) || `Feature ${index}` }}
             </h3>
-            <div
+            <SafeHtml
               class="prose prose-sm mt-3 max-w-none text-left dark:prose-invert"
-              v-html="renderPreviewHtml(featureText(index), '<em>No description</em>')"
+              :html="featureText(index) || '<em>No description</em>'"
             />
           </div>
         </div>
@@ -209,7 +209,6 @@
 </template>
 
 <script setup lang="ts">
-import { sanitizeRichHtml } from '~/utils/richText'
 
 definePageMeta({ layout: "admin" })
 
@@ -285,10 +284,6 @@ function featureTitle(index: typeof featureIndices[number]) {
 
 function featureText(index: typeof featureIndices[number]) {
   return form.features[`feature_${index}_text`]
-}
-
-function renderPreviewHtml(value: string, fallback: string) {
-  return sanitizeRichHtml(value || fallback)
 }
 
 async function load() {

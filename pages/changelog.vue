@@ -91,8 +91,7 @@
           <div class="flex-1 min-w-0">
             <div class="release-content relative"
               :class="{ 'release-content--collapsed': isLongRelease(latestRelease.content) && !isReleaseExpanded(latestRelease.id) }">
-              <div class="prose-custom text-sm"
-                v-html="renderMarkdown(latestRelease.content)" />
+              <SafeHtml class="prose-custom text-sm" :html="renderMarkdown(latestRelease.content)" />
               <div v-if="isLongRelease(latestRelease.content) && !isReleaseExpanded(latestRelease.id)"
                 aria-hidden="true"
                 class="release-fade"
@@ -175,8 +174,7 @@
                   </header>
                   <div class="release-content relative"
                     :class="{ 'release-content--collapsed': isLongRelease(entry.content) && !isReleaseExpanded(entry.id) }">
-                    <div class="prose-custom text-sm"
-                      v-html="renderMarkdown(entry.content)" />
+                    <SafeHtml class="prose-custom text-sm" :html="renderMarkdown(entry.content)" />
                     <div v-if="isLongRelease(entry.content) && !isReleaseExpanded(entry.id)"
                       aria-hidden="true"
                       class="release-fade"
@@ -225,8 +223,10 @@
                     {{ group.entries.length }} {{ group.entries.length === 1 ? 'update' : 'updates' }}
                   </span>
                 </header>
-                <div class="prose-custom sync-prose text-sm"
-                  v-html="renderMarkdown(aggregateSyncContent(group.entries))" />
+                <SafeHtml
+                  class="prose-custom sync-prose text-sm"
+                  :html="renderMarkdown(aggregateSyncContent(group.entries))"
+                />
               </article>
             </div>
           </div>

@@ -2,14 +2,14 @@ export const PUBLIC_SITE_ORIGIN = 'https://ui.magguu.xyz'
 
 export const SITE_SETTINGS_DEFAULTS = {
   site_name: 'MagguuUI',
-  site_description: 'Standalone World of Warcraft Retail UI installer',
+  site_description: 'Native 4K overhaul and curated profiles for EllesmereUI',
   curseforge_url: 'https://www.curseforge.com/wow/addons/magguuui',
   github_url: 'https://github.com/Derpsen/MagguuUI',
   discord_url: '',
   maintenance_mode: 'false',
   banner_text: '',
   meta_title: 'MagguuUI - Your WoW Interface, perfected.',
-  meta_description: 'Standalone WoW Retail setup with no required external addons. Install MagguuUI, choose the integrations you want, and apply their profiles with one click.',
+  meta_description: 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and MagguuUI, open /mui, and run the 4K setup. BigWigs and Northern Sky Raid Tools stay optional.',
   // Empty by default — leaves nuxt-og-image's per-route Satori card as the
   // canonical OG image. Admins can still pin a specific image via settings.
   og_image_url: '',

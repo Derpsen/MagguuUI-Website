@@ -16,54 +16,94 @@ import { users, siteContent, faqs, settings, changelogs, addons } from '~/server
 import { DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
 import { ensureAddonsSeeded } from '~/server/utils/syncAddons'
-import { findAddonDefaultByTocName } from '~/server/database/addonMetadata'
+import { RETIRED_ADDON_SLUGS } from '~/server/database/addonMetadata'
 
 type SeedContentEntry = typeof DEFAULT_SITE_CONTENT[number]
 
 const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'hero', key: 'description', marker: 'MagguuUI is an in-game addon that installs and configures ElvUI' },
   { page: 'home', section: 'hero', key: 'description', marker: 'MagguuUI is a standalone in-game installer that configures ElvUI' },
+  { page: 'home', section: 'hero', key: 'description', marker: 'MagguuUI is a standalone installer for WoW Retail' },
   { page: 'home', section: 'hero', key: 'badge', marker: 'New: AutoRoll + Pack system' },
   { page: 'home', section: 'hero', key: 'badge', marker: 'New: MRT + ilvl tags' },
+  { page: 'home', section: 'hero', key: 'badge', marker: 'Ready for WoW 12.0.7' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Every supported addon — from ElvUI and Plater' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Every supported addon you have enabled gets its profile applied' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'MagguuUI** and **MagguuUI_Data' },
+  { page: 'home', section: 'features', key: 'feature_1_title', marker: 'One-click setup' },
+  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'the in-game changelog shows you exactly what changed' },
   { page: 'home', section: 'features', key: 'feature_3_title', marker: 'Class layouts + custom tags' },
+  { page: 'home', section: 'features', key: 'feature_3_title', marker: 'Useful extras built in' },
   { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Cooldown layouts are pre-built for every class' },
+  { page: 'home', section: 'features', key: 'feature_3_text', marker: 'AutoRoll, audio switching' },
   { page: 'home', section: 'features_heading', key: 'subtitle', marker: 'Everything you need — in one package' },
+  { page: 'home', section: 'features_heading', key: 'subtitle', marker: 'A complete setup without forced external dependencies' },
   { page: 'home', section: 'addons', key: 'subtitle', marker: 'Profiles for 30+ of the most popular WoW addons' },
   { page: 'home', section: 'addons', key: 'subtitle', marker: 'of the most popular WoW addons' },
+  { page: 'home', section: 'addons', key: 'subtitle', marker: 'Every external integration is optional' },
   { page: 'guide', section: 'intro', key: 'text', marker: 'Install ElvUI, install MagguuUI' },
   { page: 'guide', section: 'intro', key: 'text', marker: 'Getting started takes about five minutes' },
+  { page: 'guide', section: 'intro', key: 'text', marker: 'Install the two included MagguuUI folders' },
   { page: 'guide', section: 'steps', key: 'step_1_title', marker: '1. Install ElvUI' },
+  { page: 'guide', section: 'steps', key: 'step_1_title', marker: '1. Install MagguuUI' },
   { page: 'guide', section: 'steps', key: 'step_1', marker: 'will not work without it' },
+  { page: 'guide', section: 'steps', key: 'step_1', marker: 'MagguuUI` and `MagguuUI_Data' },
   { page: 'guide', section: 'steps', key: 'step_2_title', marker: '2. Install MagguuUI' },
+  { page: 'guide', section: 'steps', key: 'step_2_title', marker: '2. Add the addons you want' },
   { page: 'guide', section: 'steps', key: 'step_2', marker: 'Get MagguuUI from any of these sources:' },
   { page: 'guide', section: 'steps', key: 'step_2', marker: 'MagguuUI runs on its own. Install only the supported addons' },
+  { page: 'guide', section: 'steps', key: 'step_2', marker: 'ElvUI is optional too' },
+  { page: 'guide', section: 'steps', key: 'step_3_title', marker: '3. Log in and open the installer' },
+  { page: 'guide', section: 'steps', key: 'step_3', marker: 'MagguuUI Installer' },
+  { page: 'guide', section: 'steps', key: 'step_4_title', marker: '4. Click Install All' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'MagguuUI applies the correct profile to every supported addon' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'click **Install All**' },
+  { page: 'guide', section: 'steps', key: 'step_5', marker: 'Load Profiles** popup' },
   { page: 'guide', section: 'steps', key: 'step_6', marker: 'shift+left-click opens Settings' },
   { page: 'guide', section: 'steps', key: 'step_6', marker: 'Row direction, icon borders, visibility and banner position are configurable' },
-  { page: 'guide', section: 'steps', key: 'step_6', marker: '**Custom ElvUI tags** (Settings → Tags, off by default)' },
+  { page: 'guide', section: 'steps', key: 'step_6', marker: '**Custom ElvUI tags**' },
 ] as const
 
 const LEGACY_FAQ_MARKERS = [
   { category: 'general', sortOrder: 0, marker: 'Instead of spending hours tweaking ElvUI' },
+  { category: 'general', sortOrder: 0, marker: 'standalone World of Warcraft Retail installer' },
   { category: 'general', sortOrder: 1, marker: 'https://www.curseforge.com/wow/addons)' },
   { category: 'general', sortOrder: 2, marker: 'only ElvUI is required' },
   { category: 'general', sortOrder: 2, marker: 'Do I need every supported addon?' },
+  { category: 'general', sortOrder: 2, marker: 'two folders included with every MagguuUI download' },
+  { category: 'general', sortOrder: 4, marker: '11 localizations' },
   { category: 'installation', sortOrder: 0, marker: 'Install **ElvUI 15.12+**' },
   { category: 'installation', sortOrder: 0, marker: 'Five steps, takes about two minutes' },
+  { category: 'installation', sortOrder: 0, marker: 'click **Install All**' },
+  { category: 'installation', sortOrder: 1, marker: '/mui install' },
+  { category: 'installation', sortOrder: 2, marker: 'Load Profiles** popup' },
   { category: 'installation', sortOrder: 3, marker: '**No.** ElvUI is the foundation' },
+  { category: 'installation', sortOrder: 3, marker: 'without ElvUI' },
   { category: 'addons', sortOrder: 0, marker: 'BigWigs (or Northern Sky Raid Tools)' },
   { category: 'addons', sortOrder: 0, marker: '**Main integrations**' },
+  { category: 'addons', sortOrder: 0, marker: 'Plater or Platynator' },
   { category: 'addons', sortOrder: 2, marker: 'Master toggle sits in **Settings → Tags**' },
+  { category: 'addons', sortOrder: 2, marker: '[mui:ilvl]' },
+  { category: 'addons', sortOrder: 3, marker: 'Install All** — full first-time setup' },
   { category: 'addons', sortOrder: 4, marker: 'WowUp Required / Optional' },
   { category: 'addons', sortOrder: 4, marker: 'They are recommendations, not requirements.' },
+  { category: 'addons', sortOrder: 4, marker: 'WowUp](https://wowup.io/)' },
   { category: 'addons', sortOrder: 5, marker: 'Can MagguuUI auto-roll on loot for me?' },
+  { category: 'addons', sortOrder: 5, marker: 'ColorModifiers' },
   { category: 'addons', sortOrder: 6, marker: 'What is MagguuUI Data' },
+  { category: 'addons', sortOrder: 6, marker: 'audio output switcher' },
   { category: 'addons', sortOrder: 7, marker: 'What are the Dev Tools?' },
+  { category: 'addons', sortOrder: 7, marker: 'AutoRoll' },
+  { category: 'addons', sortOrder: 8, marker: 'MagguuUI Data' },
+  { category: 'addons', sortOrder: 9, marker: 'Dev Tools tab' },
   { category: 'addons', sortOrder: 10, marker: 'Keystone List section in MagguuUI settings' },
+  { category: 'addons', sortOrder: 10, marker: 'Keystone List' },
+  { category: 'addons', sortOrder: 11, marker: '[mui:ilvl]' },
   { category: 'troubleshooting', sortOrder: 0, marker: 'ElvUI enabled and version 15.12' },
   { category: 'troubleshooting', sortOrder: 0, marker: 'At least one supported addon is enabled' },
+  { category: 'troubleshooting', sortOrder: 0, marker: 'MagguuUI_Data is installed and enabled' },
+  { category: 'troubleshooting', sortOrder: 1, marker: 'Update Hint Mode' },
+  { category: 'troubleshooting', sortOrder: 2, marker: 'Hard Reset' },
   { category: 'troubleshooting', sortOrder: 3, marker: 'Your ElvUI version' },
 ] as const
 
@@ -178,8 +218,18 @@ export default defineNitroPlugin(() => {
         replacement: SITE_SETTINGS_DEFAULTS.site_description,
       },
       {
+        key: 'site_description',
+        value: 'Standalone World of Warcraft Retail UI installer',
+        replacement: SITE_SETTINGS_DEFAULTS.site_description,
+      },
+      {
         key: 'meta_description',
         value: 'High-quality import strings for ElvUI, Plater, BigWigs, Details and more. Simply copy and paste into WoW.',
+        replacement: SITE_SETTINGS_DEFAULTS.meta_description,
+      },
+      {
+        key: 'meta_description',
+        value: 'Standalone WoW Retail setup with no required external addons. Install MagguuUI, choose the integrations you want, and apply their profiles with one click.',
         replacement: SITE_SETTINGS_DEFAULTS.meta_description,
       },
     ] as const
@@ -387,21 +437,19 @@ export default defineNitroPlugin(() => {
 
   try {
     const addonResult = ensureAddonsSeeded()
-    const legacyElvUI = db.select().from(addons).where(eq(addons.slug, 'elvui')).get()
-    const elvUIDefault = findAddonDefaultByTocName('ElvUI')
-    if (legacyElvUI && elvUIDefault && (
-      legacyElvUI.category === 'required'
-      || legacyElvUI.description?.includes('Required version: 15.12')
-    )) {
+    const retired = db.select().from(addons).all()
+      .filter(row => (RETIRED_ADDON_SLUGS as readonly string[]).includes(row.slug)
+        && (row.isAvailable || row.isVisible))
+    let retiredCount = 0
+    for (const row of retired) {
       db.update(addons)
-        .set({
-          category: 'core',
-          description: elvUIDefault.description,
-          updatedAt: new Date(),
-        })
-        .where(eq(addons.id, legacyElvUI.id))
+        .set({ isAvailable: false, isVisible: false, updatedAt: new Date() })
+        .where(eq(addons.id, row.id))
         .run()
-      console.log('[Init] Updated ElvUI optional status in the addon catalogue')
+      retiredCount++
+    }
+    if (retiredCount > 0) {
+      console.log(`[Init] Hid ${retiredCount} retired addon catalogue entries`)
     }
     if (addonResult.inserted > 0 || addonResult.updated > 0) {
       console.log(`[Init] Addons seeded (inserted: ${addonResult.inserted}, completed metadata: ${addonResult.updated})`)

@@ -245,7 +245,7 @@ const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
 usePublicPageSeo({
   title: 'Installation Guide',
-  description: 'Install both included MagguuUI folders, choose any optional integrations, and complete the standalone setup step by step.',
+  description: 'Install EllesmereUI and the MagguuUI folder, open /mui, and run the 4K setup. BigWigs and Northern Sky Raid Tools are optional.',
   path: '/guide',
 })
 const isAdmin = computed(() => {

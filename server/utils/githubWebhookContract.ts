@@ -1,7 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { ADDON_DATA_ROOT } from '~/server/utils/addonProfileLua'
-
-const CLASS_DATA_ROOT = 'MagguuUI_Data/Classes'
+import { CLASS_DATA_ROOT } from '~/server/utils/classLayoutSync'
 
 export function verifyGitHubWebhookSignature(
   payload: string,

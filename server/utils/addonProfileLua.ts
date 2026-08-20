@@ -1,58 +1,31 @@
 /**
- * Pure parser/contract for profile payloads stored in
- * MagguuUI_Data/AddOns/*.lua.
+ * Pure parser/contract for profile payloads stored in Data/AddOns/*.lua.
  *
  * This module deliberately has no database, Nitro, or GitHub dependencies so
  * both webhook and manual sync paths use exactly the same parsing rules and the
  * contract can be covered with focused unit tests.
  */
 
-export const ADDON_DATA_ROOT = 'MagguuUI_Data/AddOns'
+export const ADDON_REPO_DATA_ROOT = 'Data'
+export const ADDON_DATA_ROOT = `${ADDON_REPO_DATA_ROOT}/AddOns`
 export const MAX_IMPORT_STRING_BYTES = 5 * 1024 * 1024
 export const MAX_ADDON_LUA_SOURCE_BYTES = MAX_IMPORT_STRING_BYTES * 4 + 1024 * 1024
 export const ELVUI_PACKED_PREFIX = '!MUIEUI!'
-export const ELVUI_PACKED_SEPARATOR = '|-|'
 export const REQUIRED_ADDON_LUA_FILES = [
-  'Ayije_CDM.lua',
-  'BetterCooldownManager.lua',
   'BigWigs.lua',
-  'BliZzi_Interrupts.lua',
-  'Blizzard_EditMode.lua',
-  'BuffReminders.lua',
-  'BugSack.lua',
-  'CVars.lua',
-  'CursorTrail.lua',
-  'Details.lua',
-  'Details_iLvlDisplay.lua',
-  'EXBoss.lua',
-  'EasyExperienceBar.lua',
-  'ElvUI.lua',
-  'ExwindTools.lua',
-  'Falcon.lua',
-  'GTFO.lua',
-  'GroupfinderFlags.lua',
-  'HandyNotes.lua',
-  'HandyNotes_MapNotes.lua',
-  'MPlusTimer.lua',
-  'MRT.lua',
-  'MiniCC.lua',
-  'MiniCE.lua',
+  'EllesmereUI.lua',
   'NorthernSkyRaidTools.lua',
-  'Plater.lua',
-  'Platynator.lua',
-  'Plumber.lua',
-  'TalentTreeTweaks.lua',
-  'TargetedSpells.lua',
-  'WIM.lua',
-  'WaypointUI.lua',
-  'WindTools.lua',
-  'WowUp.lua',
 ] as const
+export const OPTIONAL_ADDON_LUA_FILES = ['WowUp.lua'] as const
 
-const SAFE_ADDON_PATH_RE = /^MagguuUI_Data\/AddOns\/([A-Za-z][A-Za-z0-9_]*)\.lua$/
+const SAFE_ADDON_PATH_RE = /^Data\/AddOns\/([A-Za-z][A-Za-z0-9_]*)\.lua$/
 const LUA_IDENTIFIER_RE = /[A-Za-z0-9_]/
-const LEGACY_ELVUI_KEYS = ['profile', 'private', 'global', 'aurafilters'] as const
-const ELVUI_UI_SCALE_PROFILE = 'uiscale'
+const UI_SCALE_PROFILE = 'uiscale'
+const TABLE_PROFILE_NAMES: Readonly<Record<string, readonly string[]>> = {
+  ellesmereui: ['Default'],
+  bigwigs: ['Default', 'Boss Options'],
+  northernskyraidtools: ['Default', 'Alerts'],
+}
 
 export type AddonProfileLuaErrorCode =
   | 'UNSAFE_PATH'
@@ -89,7 +62,7 @@ export interface ParsedAddonProfileEntry {
 }
 
 export interface ParsedAddonProfileFile extends SafeAddonLuaPath {
-  format: 'single' | 'packed-elvui' | 'legacy-elvui'
+  format: 'single' | 'table'
   entries: ParsedAddonProfileEntry[]
 }
 
@@ -137,7 +110,7 @@ export function assertCompleteAddonLuaSnapshot(fileNames: Iterable<string>) {
       `Addon data snapshot is missing: ${missing.join(', ')}`,
     )
   }
-  const supported = new Set<string>(REQUIRED_ADDON_LUA_FILES)
+  const supported = new Set<string>([...REQUIRED_ADDON_LUA_FILES, ...OPTIONAL_ADDON_LUA_FILES])
   const unexpected = [...available].filter(fileName => !supported.has(fileName)).sort()
   if (unexpected.length) {
     throw new AddonProfileLuaError(
@@ -168,63 +141,37 @@ export function parseAddonProfileLua(path: string, source: string): ParsedAddonP
   assertSourceSize(source)
 
   const assignments = scanTopLevelDAssignments(source)
-
-  if (descriptor.addon.toLowerCase() === 'elvui') {
-    const elvuiAssignments = assignments.filter(item => item.variable.toLowerCase() === 'elvui')
-    if (elvuiAssignments.length !== 1) {
-      throw malformed(`Expected exactly one D.elvui assignment in ${descriptor.fileName}`)
-    }
-
-    const assignment = elvuiAssignments[0]!
-    if (assignment.kind === 'string' && assignment.value !== undefined) {
-      if (!assignment.value.startsWith(ELVUI_PACKED_PREFIX)) {
-        throw malformed(`D.elvui in ${descriptor.fileName} must use the ${ELVUI_PACKED_PREFIX} packed contract`)
-      }
-      return { ...descriptor, format: 'packed-elvui', entries: parsePackedElvUi(assignment.value, descriptor.fileName) }
-    }
-
-    if (assignment.kind === 'table' && assignment.tableBody !== undefined) {
-      const legacy = parseLegacyElvUiTable(assignment.tableBody)
-      const entries: ParsedAddonProfileEntry[] = LEGACY_ELVUI_KEYS.map((key) => {
-        const value = legacy.get(key)
-        if (value === undefined) {
-          throw malformed(`Legacy D.elvui table in ${descriptor.fileName} is missing ${key}`)
-        }
-        validateImportValue(value, `${descriptor.fileName}:${key}`)
-        return { profile: key, string: value, variable: 'elvui', isVisible: true }
-      })
-      const uiScale = legacy.get(ELVUI_UI_SCALE_PROFILE)
-      if (uiScale !== undefined) {
-        entries.push(uiScaleEntry(validateElvUiScale(uiScale, `${descriptor.fileName}:uiscale`)))
-      }
-      return { ...descriptor, format: 'legacy-elvui', entries }
-    }
-
-    throw malformed(`D.elvui in ${descriptor.fileName} must be a quoted string, long bracket, or legacy table`)
-  }
-
-  const strings = assignments.filter(
-    (item): item is ParsedLuaAssignment & { kind: 'string', value: string } =>
-      item.kind === 'string' && item.value !== undefined,
-  )
-
-  if (strings.length === 0) {
-    throw malformed(`No D.<key> profile string found in ${descriptor.fileName}`)
-  }
-  if (strings.length > 1) {
+  if (assignments.length !== 1) {
     throw new AddonProfileLuaError(
       'AMBIGUOUS_PROFILE',
-      `${descriptor.fileName} contains multiple D.<key> strings; use a dedicated parser contract`,
+      assignments.length === 0
+        ? `No D.<key> assignment found in ${descriptor.fileName}`
+        : `${descriptor.fileName} contains multiple D.<key> assignments; use a dedicated parser contract`,
     )
   }
 
-  const assignment = strings[0]!
-  validateImportValue(assignment.value, `${descriptor.fileName}:D.${assignment.variable}`)
-  return {
-    ...descriptor,
-    format: 'single',
-    entries: [{ profile: 'Default', string: assignment.value, variable: assignment.variable }],
+  const assignment = assignments[0]!
+  if (assignment.kind === 'string' && assignment.value !== undefined) {
+    if (descriptor.addon.toLowerCase() === 'ellesmereui') {
+      throw malformed(`${descriptor.fileName} must use a profile table that includes a UI scale`)
+    }
+    validateImportValue(assignment.value, `${descriptor.fileName}:D.${assignment.variable}`)
+    return {
+      ...descriptor,
+      format: 'single',
+      entries: [{ profile: 'Default', string: assignment.value, variable: assignment.variable }],
+    }
   }
+
+  if (assignment.kind === 'table' && assignment.tableBody !== undefined) {
+    return {
+      ...descriptor,
+      format: 'table',
+      entries: parseProfileTable(assignment, descriptor),
+    }
+  }
+
+  throw malformed(`D.${assignment.variable} in ${descriptor.fileName} must be a quoted string, long bracket, or array table`)
 }
 
 export function parseWowUpLua(path: string, source: string): ParsedWowUpFile {
@@ -262,31 +209,89 @@ function validateImportValue(value: string, label: string) {
   assertImportStringSize(value, label)
 }
 
-function parsePackedElvUi(value: string, fileName: string): ParsedAddonProfileEntry[] {
-  const parts = value.slice(ELVUI_PACKED_PREFIX.length).split(ELVUI_PACKED_SEPARATOR)
-  if (parts.length !== LEGACY_ELVUI_KEYS.length + 1) {
-    throw malformed(`${fileName}:D.elvui must contain four profile components and one UI scale`)
+function parseProfileTable(
+  assignment: ParsedLuaAssignment & { tableBody?: string },
+  descriptor: SafeAddonLuaPath,
+): ParsedAddonProfileEntry[] {
+  const tableBody = assignment.tableBody
+  if (tableBody === undefined) {
+    throw malformed(`D.${assignment.variable} in ${descriptor.fileName} is missing a table body`)
   }
 
-  const entries: ParsedAddonProfileEntry[] = LEGACY_ELVUI_KEYS.map((profile, index) => {
-    const component = parts[index] || ''
-    validateImportValue(component, `${fileName}:${profile}`)
-    return { profile, string: component, variable: 'elvui', isVisible: true }
+  const parsed = parseArrayTable(tableBody)
+  if (parsed.strings.length === 0) {
+    throw malformed(`D.${assignment.variable} in ${descriptor.fileName} contains no profile strings`)
+  }
+
+  const names = TABLE_PROFILE_NAMES[descriptor.addon.toLowerCase()]
+  const entries: ParsedAddonProfileEntry[] = parsed.strings.map((value, index) => {
+    const profile = names?.[index] ?? (index === 0 ? 'Default' : `String ${index + 1}`)
+    validateImportValue(value, `${descriptor.fileName}:${profile}`)
+    return { profile, string: value, variable: assignment.variable, isVisible: true }
   })
-  entries.push(uiScaleEntry(validateElvUiScale(parts[4] || '', `${fileName}:uiscale`)))
+
+  if (descriptor.addon.toLowerCase() === 'ellesmereui') {
+    if (!parsed.number) {
+      throw malformed(`${descriptor.fileName} must include a UI scale after the Ellesmere profile string`)
+    }
+    entries.push({
+      profile: UI_SCALE_PROFILE,
+      string: validateUiScale(parsed.number, `${descriptor.fileName}:uiscale`),
+      variable: assignment.variable,
+      isVisible: false,
+    })
+  } else if (parsed.number) {
+    throw malformed(`${descriptor.fileName} does not accept a numeric table entry`)
+  }
+
   return entries
 }
 
-function uiScaleEntry(value: string): ParsedAddonProfileEntry {
-  return {
-    profile: ELVUI_UI_SCALE_PROFILE,
-    string: value,
-    variable: 'elvui',
-    isVisible: false,
+function parseArrayTable(body: string): { strings: string[], number?: string } {
+  const strings: string[] = []
+  let number: string | undefined
+  let index = 0
+
+  while (index < body.length) {
+    const triviaEnd = skipTrivia(body, index)
+    if (triviaEnd !== index) {
+      index = triviaEnd
+      continue
+    }
+
+    const char = body[index]
+    if (char === ',') {
+      index++
+      continue
+    }
+    if (char === '"' || char === "'") {
+      const parsed = readQuotedString(body, index)
+      strings.push(parsed.value)
+      index = parsed.end
+      continue
+    }
+    if (matchLongBracketOpen(body, index)) {
+      const parsed = readLongBracketString(body, index)
+      strings.push(parsed.value)
+      index = parsed.end
+      continue
+    }
+
+    const numberMatch = /^(?:\d+(?:\.\d+)?|\.\d+)(?![A-Za-z0-9_.])/.exec(body.slice(index))
+    if (numberMatch) {
+      if (number !== undefined) throw malformed('Addon profile table contains more than one numeric value')
+      number = numberMatch[0]
+      index += numberMatch[0].length
+      continue
+    }
+
+    throw malformed('Addon profile table contains an unsupported value')
   }
+
+  return { strings, number }
 }
 
-function validateElvUiScale(value: string, label: string) {
+function validateUiScale(value: string, label: string) {
   if (!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(value)) {
     throw malformed(`${label} is not a decimal number`)
   }
@@ -381,75 +386,6 @@ function scanTopLevelDAssignments(source: string): ParsedLuaAssignment[] {
   }
 
   return assignments
-}
-
-function parseLegacyElvUiTable(source: string) {
-  const supportedKeys = [...LEGACY_ELVUI_KEYS, ELVUI_UI_SCALE_PROFILE] as const
-  type SupportedKey = (typeof supportedKeys)[number]
-  const values = new Map<SupportedKey, string>()
-  let index = 0
-  let nestedDepth = 0
-
-  while (index < source.length) {
-    const triviaEnd = skipTrivia(source, index)
-    if (triviaEnd !== index) {
-      index = triviaEnd
-      continue
-    }
-
-    const char = source[index]
-    if (char === '"' || char === "'") {
-      index = readQuotedString(source, index).end
-      continue
-    }
-    if (matchLongBracketOpen(source, index)) {
-      index = readLongBracketString(source, index).end
-      continue
-    }
-    if (char === '{') {
-      nestedDepth++
-      index++
-      continue
-    }
-    if (char === '}') {
-      nestedDepth = Math.max(0, nestedDepth - 1)
-      index++
-      continue
-    }
-
-    if (nestedDepth === 0 && /[A-Za-z_]/.test(char || '')) {
-      let cursor = index + 1
-      while (cursor < source.length && isIdentifierChar(source[cursor])) cursor++
-      const key = source.slice(index, cursor) as SupportedKey
-      cursor = skipTrivia(source, cursor)
-      if ((supportedKeys as readonly string[]).includes(key) && source[cursor] === '=') {
-        cursor = skipTrivia(source, cursor + 1)
-        let parsed: ParsedLuaString | null = null
-        if (source[cursor] === '"' || source[cursor] === "'") {
-          parsed = readQuotedString(source, cursor)
-        } else if (matchLongBracketOpen(source, cursor)) {
-          parsed = readLongBracketString(source, cursor)
-        } else if (key === ELVUI_UI_SCALE_PROFILE) {
-          const numberMatch = /^(?:\d+(?:\.\d+)?|\.\d+)(?![A-Za-z0-9_.])/.exec(source.slice(cursor))
-          if (numberMatch) {
-            parsed = { value: numberMatch[0], end: cursor + numberMatch[0].length }
-          }
-        }
-        if (parsed) {
-          if (values.has(key)) throw malformed(`Duplicate legacy ElvUI key: ${key}`)
-          values.set(key, parsed.value)
-          index = parsed.end
-          continue
-        }
-      }
-      index = cursor
-      continue
-    }
-
-    index++
-  }
-
-  return values
 }
 
 function readQuotedString(source: string, start: number): ParsedLuaString {

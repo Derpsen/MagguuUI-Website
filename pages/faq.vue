@@ -98,7 +98,7 @@ const { isLoggedIn } = useAuth()
 const { observe } = useScrollReveal()
 const siteSettings = usePublicPageSeo({
   title: 'FAQ',
-  description: 'MagguuUI answers for installation, the two included folders, optional addon integrations, profiles, and troubleshooting.',
+  description: 'MagguuUI answers for EllesmereUI setup, the 4K install, optional BigWigs and Northern Sky profiles, and troubleshooting.',
   path: '/faq',
 })
 

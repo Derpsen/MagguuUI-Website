@@ -1,7 +1,7 @@
 {
   "name": "MagguuUI — WoW UI Profiles & Import Strings",
   "short_name": "MagguuUI",
-  "description": "High-quality import strings for ElvUI, Plater, BigWigs, Details & more.",
+  "description": "Native 4K overhaul for EllesmereUI — profiles, class layouts, and optional raid tools.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a1628",

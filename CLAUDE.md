@@ -1,6 +1,6 @@
 # MagguuUI-Website
 
-Public website, admin panel, and REST API for WoW UI import strings (ElvUI, Plater, BigWigs, Details, etc.). Live site: `https://ui.magguu.xyz`.
+Public website, admin panel, and REST API for MagguuUI import strings (EllesmereUI, BigWigs, Northern Sky Raid Tools, class layouts). Live site: `https://ui.magguu.xyz`.
 
 ## Stack
 
@@ -69,7 +69,7 @@ npm run db:seed        # seed default data
 
 **Private API headers**: admin/auth error responses need private no-store headers via `server/plugins/security-headers.ts`. The smoke verifier checks this behavior.
 
-**Addon sync**: `server/api/v1/webhooks/github.post.ts` accepts signed events only from the configured repository, imports `main` pushes from the immutable `after` SHA, and handles `CHANGELOG.md`, `MagguuUI.toc`, and `MagguuUI_Data/*.lua` independently. Manual pulls likewise resolve `main` once and fetch the complete AddOn directory at that SHA. Repository automation reads hidden canonical state through one transactional, token-only `/api/v1/sync/snapshot`; component projections remain under `/api/v1/sync/*`, while public projections stay unauthenticated.
+**Addon sync**: `server/api/v1/webhooks/github.post.ts` accepts signed events only from the configured repository, imports `main` pushes from the immutable `after` SHA, and handles `CHANGELOG.md`, `MagguuUI.toc`, and `Data/*.lua` independently. Manual pulls likewise resolve `main` once and fetch the complete Data directory at that SHA. Repository automation reads hidden canonical state through one transactional, token-only `/api/v1/sync/snapshot`; component projections remain under `/api/v1/sync/*`, while public projections stay unauthenticated.
 
 **Seeded content**: `NUXT_SYNC_SEEDED_CONTENT=true` makes startup upsert home, guide, and FAQ content from `server/database/defaultContent.ts`. Without it, seed data is only created for empty DBs.
 Known inaccurate legacy seed claims may be repaired by exact marker during startup; arbitrary admin-authored content remains untouched.

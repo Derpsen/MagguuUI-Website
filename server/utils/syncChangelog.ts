@@ -33,7 +33,7 @@ export function createSyncChangelog(results: SyncResult[], _source: 'pull' | 'we
     } else if (r.addon.startsWith('WowUp')) {
       wowupChanges.push(r.addon.replace('WowUp/', ''))
     } else {
-      // Clean up addon name: "ElvUI/profile" → "ElvUI"
+      // Clean up addon name: "EllesmereUI/Default" → "EllesmereUI"
       const name = r.addon.includes('/') ? (r.addon.split('/')[0] || r.addon) : r.addon
       if (!addonChanges.includes(name)) {
         addonChanges.push(name)

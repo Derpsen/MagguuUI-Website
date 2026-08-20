@@ -20,7 +20,7 @@
 import { eq } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
 import { addons } from '~/server/database/schema'
-import { ADDON_DEFAULTS, deriveSlugFromTocName, findAddonDefaultByTocName } from '~/server/database/addonMetadata'
+import { ADDON_DEFAULTS, RETIRED_ADDON_SLUGS, deriveSlugFromTocName, findAddonDefaultByTocName } from '~/server/database/addonMetadata'
 import { parseAddonToc, type TocAddonRef } from '~/server/utils/parseAddonToc'
 
 export interface SyncAddonsResult {
@@ -48,22 +48,34 @@ export function ensureAddonsSeeded(): SyncAddonsResult {
   const now = new Date()
   let inserted = 0
   let updated = 0
+  let unavailable = 0
 
   for (const def of ADDON_DEFAULTS) {
     const row = bySlug.get(def.slug)
     if (row) {
-      const wasFallback = !row.description && !row.url && !row.emoji
-      const patch = {
-        ...(row.name === row.tocName && row.name !== def.name ? { name: def.name } : {}),
-        ...(!row.emoji && def.emoji ? { emoji: def.emoji } : {}),
-        ...(!row.description && def.description ? { description: def.description } : {}),
-        ...(!row.url && def.url ? { url: def.url } : {}),
-        ...(row.sortOrder >= 90 ? { sortOrder: def.sortOrder } : {}),
-        ...(wasFallback && def.isVisible === false ? { isVisible: false } : {}),
+      const next = {
+        name: def.name,
+        category: def.category,
+        emoji: def.emoji ?? null,
+        description: def.description ?? null,
+        url: def.url ?? null,
+        tocName: def.tocName ?? null,
+        sortOrder: def.sortOrder,
+        isVisible: def.isVisible ?? true,
+        isAvailable: true,
       }
-      if (Object.keys(patch).length > 0) {
+      const changed = row.name !== next.name
+        || row.category !== next.category
+        || row.emoji !== next.emoji
+        || row.description !== next.description
+        || row.url !== next.url
+        || row.tocName !== next.tocName
+        || row.sortOrder !== next.sortOrder
+        || row.isVisible !== next.isVisible
+        || row.isAvailable !== next.isAvailable
+      if (changed) {
         db.update(addons)
-          .set({ ...patch, updatedAt: now })
+          .set({ ...next, updatedAt: now })
           .where(eq(addons.id, row.id))
           .run()
         updated++
@@ -87,7 +99,17 @@ export function ensureAddonsSeeded(): SyncAddonsResult {
     inserted++
   }
 
-  return { inserted, updated, unavailable: 0, total: ADDON_DEFAULTS.length }
+  for (const row of existing) {
+    if (!(RETIRED_ADDON_SLUGS as readonly string[]).includes(row.slug)) continue
+    if (!row.isAvailable && !row.isVisible) continue
+    db.update(addons)
+      .set({ isAvailable: false, isVisible: false, updatedAt: now })
+      .where(eq(addons.id, row.id))
+      .run()
+    unavailable++
+  }
+
+  return { inserted, updated, unavailable, total: ADDON_DEFAULTS.length }
 }
 
 function applyAddonSync(refs: TocAddonRef[]): SyncAddonsResult {

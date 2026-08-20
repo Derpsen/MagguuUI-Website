@@ -26,7 +26,7 @@ export interface AddonProfileSyncChange {
 
 export interface AddonProfileFileSyncResult {
   addon: string
-  format: 'single' | 'packed-elvui' | 'legacy-elvui'
+  format: 'single' | 'table'
   changes: AddonProfileSyncChange[]
   removedPackedDefault: boolean
 }

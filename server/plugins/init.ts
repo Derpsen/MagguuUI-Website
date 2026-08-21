@@ -91,6 +91,7 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 4, marker: 'WowUp Required / Optional' },
   { category: 'addons', sortOrder: 4, marker: 'They are recommendations, not requirements.' },
   { category: 'addons', sortOrder: 4, marker: 'WowUp](https://wowup.io/)' },
+  { category: 'addons', sortOrder: 4, marker: 'MagguuUI no longer ships a WowUp package file' },
   { category: 'addons', sortOrder: 5, marker: 'Can MagguuUI auto-roll on loot for me?' },
   { category: 'addons', sortOrder: 5, marker: 'ColorModifiers' },
   { category: 'addons', sortOrder: 6, marker: 'What is MagguuUI Data' },

@@ -190,9 +190,14 @@ A standalone **4K scale** action reapplies UI scale \`0.58\` without re-importin
   {
     category: 'addons',
     question: 'Are the WowUp strings still required?',
-    answer: `No. MagguuUI no longer ships a WowUp package file.
+    answer: `No. MagguuUI only needs EllesmereUI plus the MagguuUI folder.
 
-The Strings page may still list admin-managed WowUp import strings as a convenience. They are **not** part of the addon download.`,
+The Strings page has two [WowUp](https://wowup.io/) packages as a convenience:
+
+- **Starter Addons** — EllesmereUI, MagguuUI, BigWigs, LittleWigs, and Northern Sky Raid Tools
+- **Optional Addons** — extras such as BugSack, MDT, Raider.IO, WIM, GTFO, and EXBoss
+
+They are recommendations, not requirements.`,
     sortOrder: 4,
   },
   {

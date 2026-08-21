@@ -268,7 +268,7 @@ const features = computed(() => [
   {
     emoji: '⚡',
     title: content.value?.features?.feature_1_title || 'Native Ellesmere setup',
-    text: content.value?.features?.feature_1_text || 'MagguuUI lives in EllesmereUI as one sidebar row with Setup, Skinning, and QoL. Full 4K install, individual profiles, presets, and Edit Mode copy sit on Setup.',
+    text: content.value?.features?.feature_1_text || 'One sidebar row with Setup, Skinning, QoL, and Profile. Setup runs the 4K install and Magguu-Look. Profile imports Magguu strings. Werkzeuge exports your live profiles.',
   },
   {
     emoji: '🔄',

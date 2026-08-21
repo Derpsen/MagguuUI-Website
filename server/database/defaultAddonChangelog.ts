@@ -1,16 +1,38 @@
 export const CURRENT_ADDON_CHANGELOG = {
   version: 'v12.0.25',
-  publishedAt: new Date('2026-08-20T00:00:00Z'),
-  content: `### Native EllesmereUI overhaul
+  publishedAt: new Date('2026-08-21T00:00:00Z'),
+  content: `Ready for WoW 12.0. MagguuUI lives inside EllesmereUI. Type \`/mui\` to open it.
 
-- Replaced the standalone MagguuUI installer and options UI with a native EllesmereUI module.
-- Ships one AddOns folder with nested EUI, Data, and Media. Delete leftover top-level MagguuUI_Data / MagguuUI_EUI / MagguuUI_Media copies if an older install left them beside MagguuUI.
-- MagguuUI is one sidebar row (Optionen) with three tabs: Setup, Skinning, and QoL.
-- Setup is install-only: full 4K install, individual profiles, presets, Edit Mode copy, and a standalone 4K scale action.
-- Skinning holds split coloring for unit and party/raid frames plus class-colored keybind modifiers.
-- QoL: death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, and per-spec proc-overlay hiding.
-- Export and Discord boost tools stay off the normal sidebar. Open them with \`/mui tools\`, or unlock Werkzeuge by clicking the MagguuUI group header ten times.
-- Class layouts import as \`Magguu - <Class> <Spec>\` from the current retail Cooldown Viewer data.
-- BigWigs gets a native MagguuUI bar style. Method Raid Tools setup is replaced by Northern Sky Raid Tools.
-- Blizzard Edit Mode uses a copy/paste import so addon code never writes protected layout state.`,
+### What's new
+
+- Four tabs: **Setup**, **Skinning**, **QoL**, and **Profile**
+- **Magguu-Look** applies Magguu's fonts, class-colored accent, Giant options panel, and 4K scale in one click
+- Import Magguu profiles on the **Profile** tab, grouped as required (EllesmereUI, class layouts) and optional (BigWigs, Northern Sky)
+- Export your current profiles under **Werkzeuge** (\`/mui tools\`, or click the MagguuUI header ten times)
+
+### Setup
+
+- Full 4K install for EllesmereUI, BigWigs, Northern Sky Raid Tools, and class cooldown layouts
+- UI scale 0.58 for 4K, without re-importing profiles
+- On a new character, MagguuUI asks whether to load those profiles onto the alt
+
+### Profiles
+
+- EllesmereUI profile \`MagguuUI\` at scale 0.58
+- BigWigs profile with the MagguuUI bar style and Magguu callout sounds
+- Northern Sky Raid Tools profile and alerts
+- Cooldown Viewer layouts named \`Magguu - Class Spec\`
+- WowUp starter pack: EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky. A second optional pack covers extras such as BugSack, MDT, Raider.IO, WIM, GTFO, and EXBoss
+
+### Skinning and quality of life
+
+- Split colors for unit-frame names and party/raid names
+- Class-colored keybind modifiers
+- Death-release protection, co-tank frame, stealth and stance reminders, spell-alert opacity, hide proc overlays
+
+### Install notes
+
+- One folder only: \`MagguuUI\` (EUI, Data, and Media live inside it)
+- Delete leftover \`MagguuUI_Data\`, \`MagguuUI_EUI\`, or \`MagguuUI_Media\` folders from older installs
+- EllesmereUI 7.9.5 or newer is required. BigWigs, LittleWigs, and Northern Sky are optional`,
 } as const

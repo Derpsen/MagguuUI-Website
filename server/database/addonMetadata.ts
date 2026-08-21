@@ -56,6 +56,15 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     sortOrder: 1,
   },
   {
+    slug: 'littlewigs',
+    name: 'LittleWigs',
+    category: 'optional',
+    emoji: '⏱️',
+    description: 'Dungeon timers for BigWigs. Included in the WowUp starter pack; MagguuUI does not ship a separate LittleWigs profile.',
+    url: `${CF}/little-wigs`,
+    sortOrder: 1,
+  },
+  {
     slug: 'northern-sky-raid-tools',
     name: 'Northern Sky Raid Tools',
     category: 'optional',

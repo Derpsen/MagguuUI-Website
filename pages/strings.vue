@@ -185,8 +185,8 @@
       <div v-if="activeTab === 'wowup'" role="tabpanel" id="tabpanel-wowup" aria-labelledby="tab-wowup" tabindex="0">
         <div class="mb-5 rounded-xl border px-4 py-3 text-sm leading-relaxed"
           :class="isDark ? 'border-brand-400/15 bg-brand-400/5 text-silver-400' : 'border-blue-100 bg-blue-50 text-gray-600'">
-          WowUp packages are optional extras. MagguuUI itself needs EllesmereUI plus the MagguuUI folder.
-          Review the list in WowUp before installing.
+          Starter Addons is the MagguuUI pack. Optional Addons are extras.
+          MagguuUI itself only needs EllesmereUI plus the MagguuUI folder.
         </div>
         <div v-if="wowupList.length" class="space-y-5">
           <div>
@@ -298,7 +298,7 @@ const tabSubtitle = computed(() => {
   switch (activeTab.value) {
     case 'layouts': return 'Copy the Cooldown Viewer layout for your class.'
     case 'profiles': return 'Copy EllesmereUI, BigWigs, or Northern Sky profile strings.'
-    case 'wowup': return 'Optional WowUp extras — EllesmereUI is still required.'
+    case 'wowup': return 'Starter pack plus optional extras — EllesmereUI is still required.'
     default: return 'Choose your category and class to copy the import string.'
   }
 })

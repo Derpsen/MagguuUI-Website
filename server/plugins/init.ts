@@ -32,6 +32,8 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Every supported addon — from ElvUI and Plater' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Every supported addon you have enabled gets its profile applied' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'MagguuUI** and **MagguuUI_Data' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Setup, Skinning, and QoL' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'individual profiles, presets' },
   { page: 'home', section: 'features', key: 'feature_1_title', marker: 'One-click setup' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'the in-game changelog shows you exactly what changed' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'import as **Magguu - Class Spec**' },
@@ -61,6 +63,7 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_4_title', marker: '4. Click Install All' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'MagguuUI applies the correct profile to every supported addon' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'click **Install All**' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'copy the Edit Mode layout' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'Load Profiles** popup' },
   { page: 'guide', section: 'steps', key: 'step_6', marker: 'shift+left-click opens Settings' },
   { page: 'guide', section: 'steps', key: 'step_6', marker: 'Row direction, icon borders, visibility and banner position are configurable' },
@@ -88,6 +91,7 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 2, marker: 'Master toggle sits in **Settings → Tags**' },
   { category: 'addons', sortOrder: 2, marker: '[mui:ilvl]' },
   { category: 'addons', sortOrder: 3, marker: 'Install All** — full first-time setup' },
+  { category: 'addons', sortOrder: 3, marker: 'from the Setup tab' },
   { category: 'addons', sortOrder: 4, marker: 'WowUp Required / Optional' },
   { category: 'addons', sortOrder: 4, marker: 'They are recommendations, not requirements.' },
   { category: 'addons', sortOrder: 4, marker: 'WowUp](https://wowup.io/)' },
@@ -434,6 +438,20 @@ export default defineNitroPlugin(() => {
         publishedAt: CURRENT_ADDON_CHANGELOG.publishedAt,
       }).run()
       console.log(`[Init] Added current addon changelog ${CURRENT_ADDON_CHANGELOG.version}`)
+    } else if (
+      currentRelease.content.includes('three tabs')
+      || currentRelease.content.includes('individual profiles, presets')
+    ) {
+      db.update(changelogs)
+        .set({
+          content: CURRENT_ADDON_CHANGELOG.content,
+          contentEn: CURRENT_ADDON_CHANGELOG.content,
+          publishedAt: CURRENT_ADDON_CHANGELOG.publishedAt,
+          updatedAt: new Date(),
+        })
+        .where(eq(changelogs.id, currentRelease.id))
+        .run()
+      console.log(`[Init] Updated current addon changelog ${CURRENT_ADDON_CHANGELOG.version}`)
     }
   } catch (err) {
     console.error('[Init] Current addon changelog seed failed:', err)

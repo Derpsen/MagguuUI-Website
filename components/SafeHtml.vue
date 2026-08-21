@@ -4,11 +4,12 @@
 </template>
 
 <script setup lang="ts">
-import { sanitizeRichHtml } from '~/utils/richText'
+import { displayRichText } from '~/utils/richText'
 
 const props = defineProps<{
   html: string
+  breaks?: boolean
 }>()
 
-const sanitizedHtml = computed(() => sanitizeRichHtml(props.html))
+const sanitizedHtml = computed(() => displayRichText(props.html, { breaks: props.breaks }))
 </script>

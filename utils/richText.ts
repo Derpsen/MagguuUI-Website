@@ -29,6 +29,10 @@ export function sanitizeRichHtml(html: string): string {
   return sanitize(html, SANITIZE_OPTIONS)
 }
 
+export function looksLikeHtml(source: string): boolean {
+  return /<\/?[a-z][^>]*>/i.test(source)
+}
+
 export function renderMarkdownToSafeHtml(markdown: string, options: MarkdownRenderOptions = {}): string {
   if (!markdown) return ''
 
@@ -42,4 +46,11 @@ export function renderMarkdownToSafeHtml(markdown: string, options: MarkdownRend
   }) as string
 
   return sanitizeRichHtml(html)
+}
+
+/** TipTap/admin HTML stays HTML; leftover CMS markdown is rendered first. */
+export function displayRichText(source: string, options: MarkdownRenderOptions = {}): string {
+  if (!source) return ''
+  if (looksLikeHtml(source)) return sanitizeRichHtml(source)
+  return renderMarkdownToSafeHtml(source, options)
 }

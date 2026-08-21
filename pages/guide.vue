@@ -146,7 +146,8 @@
                 <SafeHtml
                   class="guide-content text-[15px] leading-relaxed"
                   :class="isDark ? 'text-silver-300' : 'text-gray-600'"
-                  :html="renderGuideContent(step.editableContent)"
+                  :html="step.editableContent"
+                  breaks
                 />
               </template>
 
@@ -237,8 +238,6 @@
 </template>
 
 <script setup lang="ts">
-import { renderMarkdownToSafeHtml } from '~/utils/richText'
-
 const toast = useToast()
 const { apiFetch } = useApi()
 const isDark = useIsDark()
@@ -319,9 +318,7 @@ watch(guideContent, (src) => {
   }
 }, { immediate: true })
 
-function renderGuideContent(text: string): string {
-  return renderMarkdownToSafeHtml(text, { breaks: true })
-}
+
 
 function stepStage(idx: number) {
   return STEP_META[idx]?.label || `Phase ${idx + 1}`

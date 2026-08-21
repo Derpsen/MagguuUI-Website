@@ -35,7 +35,7 @@
 
             <SafeHtml class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed fade-in fade-in-delay-2"
               :class="isDark ? 'text-silver-400' : 'text-gray-500'"
-              :html="content?.hero?.description || 'MagguuUI is a native EllesmereUI module for WoW Retail. Install **EllesmereUI** and the single **MagguuUI** folder, then open `/mui` and run the 4K setup. BigWigs and Northern Sky Raid Tools stay optional.'"
+              :html="content?.hero?.description || 'MagguuUI is a native EllesmereUI module for WoW Retail. Install <strong>EllesmereUI</strong> and the single <strong>MagguuUI</strong> folder, then open <code>/mui</code> and run the 4K setup. BigWigs and Northern Sky Raid Tools stay optional.'"
             />
 
             <div class="flex items-center justify-center gap-4 fade-in fade-in-delay-3">
@@ -254,7 +254,7 @@ const features = computed(() => [
   {
     emoji: '🔄',
     title: content.value?.features?.feature_2_title || 'Current Retail layouts',
-    text: content.value?.features?.feature_2_text || 'Cooldown Viewer class layouts import as **Magguu - Class Spec**. MagguuUI copies an Edit Mode layout for you to paste and never writes protected Blizzard layout state itself.',
+    text: content.value?.features?.feature_2_text || 'Cooldown Viewer class layouts import as <strong>Magguu - Class Spec</strong>. MagguuUI copies an Edit Mode layout for you to paste and never writes protected Blizzard layout state itself.',
   },
   {
     emoji: '🎯',
@@ -385,6 +385,15 @@ onUnmounted(() => {
 .home-hero-copy :deep(em),
 .home-feature-copy :deep(em) {
   color: inherit;
+}
+
+.home-hero-copy :deep(code),
+.home-feature-copy :deep(code) {
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  background: rgba(59, 139, 255, 0.12);
 }
 
 .home-hero-copy :deep(a),

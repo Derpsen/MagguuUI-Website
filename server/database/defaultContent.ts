@@ -6,7 +6,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'hero', key: 'badge', value: 'Ready for WoW 12.1', type: 'text', sortOrder: 4, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'Native Ellesmere setup', type: 'text', sortOrder: 0, locale: 'en' },
-  { page: 'home', section: 'features', key: 'feature_1_text', value: 'One sidebar row with Setup, Skinning, and QoL. Setup runs the 4K install, Magguu-Look, Load profiles, required and optional Magguu imports, and WowUp copy popups. Werkzeuge exports your live profiles.', type: 'text', sortOrder: 1, locale: 'en' },
+  { page: 'home', section: 'features', key: 'feature_1_text', value: 'One sidebar row with Setup, Skinning, and QoL. Setup runs the 4K install, Magguu-Look, Load profiles, required and optional Magguu imports, and WowUp copy popups. Tooltips stay at Magguu\'s spot. Werkzeuge exports your live profiles.', type: 'text', sortOrder: 1, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_2_title', value: 'Current Retail layouts', type: 'text', sortOrder: 3, locale: 'en' },
@@ -32,16 +32,16 @@ export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'steps', key: 'step_1', value: 'MagguuUI is a native EllesmereUI module. Install **EllesmereUI 7.9.5 or newer** first from CurseForge, Wago, or WoWInterface, and leave it enabled.\n\nWithout EllesmereUI, MagguuUI will not load.\n\nOn a brand-new Ellesmere install, finish Ellesmere\'s first-install picker. After that ReloadUI, Magguu Setup opens automatically.', locale: 'en', type: 'markdown', sortOrder: 11 },
 
   { page: 'guide', section: 'steps', key: 'step_2_title', value: '2. Install MagguuUI', locale: 'en', type: 'text', sortOrder: 20 },
-  { page: 'guide', section: 'steps', key: 'step_2', value: 'Get MagguuUI from **CurseForge**, **Wago Addons**, **WoWInterface**, or the latest [GitHub release](https://github.com/Derpsen/MagguuUI/releases/latest).\n\nThe download is **one folder**: `MagguuUI`, with `EUI`, `Data`, and `Media` nested inside it. Copy that folder into `World of Warcraft\\_retail_\\Interface\\AddOns\\`.\n\nIf an older install left `MagguuUI_Data`, `MagguuUI_EUI`, or `MagguuUI_Media` next to MagguuUI, delete those leftover folders. WoW does not load nested TOC files.', locale: 'en', type: 'markdown', sortOrder: 21 },
+  { page: 'guide', section: 'steps', key: 'step_2', value: 'Get MagguuUI from **CurseForge**, **Wago Addons**, **WoWInterface**, or the latest [GitHub release](https://github.com/Derpsen/MagguuUI/releases/latest).\n\nThe download is **one folder**: `MagguuUI`. Copy that folder into `World of Warcraft\\_retail_\\Interface\\AddOns\\`.\n\nIf an older install left `MagguuUI_Data`, `MagguuUI_EUI`, or `MagguuUI_Media` next to MagguuUI, delete those leftover folders.', locale: 'en', type: 'markdown', sortOrder: 21 },
 
   { page: 'guide', section: 'steps', key: 'step_3_title', value: '3. Add optional raid tools', locale: 'en', type: 'text', sortOrder: 30 },
   { page: 'guide', section: 'steps', key: 'step_3', value: 'Only EllesmereUI is required. Install extra addons only if you want MagguuUI to configure them:\n\n- **BigWigs** — encounter timers, MagguuUI bar style, and bundled callout sounds\n- **LittleWigs** — dungeon timers for BigWigs (WowUp starter pack; no separate Magguu profile)\n- **Northern Sky Raid Tools** — raid notes and alerts\n- **WIM** and **Waypoint UI** — optional Magguu imports when those addons are present\n\nMissing addons are skipped.\n\nCopy the **WowUp starter pack** and **optional pack** from Magguu **Setup** (`Ctrl+C`, then paste in WowUp). The Strings page is a backup of the same strings. MagguuUI shows a copy popup; it does not install addons itself.\n\nStarter pack: EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky. Optional pack extras include BugSack, MDT, Raider.IO, WIM, GTFO, EXBoss, the Ellesmere WIM skin, and ExwindCore.\n\nWowUp copy buttons turn green when every addon in that pack is installed.', locale: 'en', type: 'markdown', sortOrder: 31 },
 
   { page: 'guide', section: 'steps', key: 'step_4_title', value: '4. Open Setup and install 4K', locale: 'en', type: 'text', sortOrder: 40 },
-  { page: 'guide', section: 'steps', key: 'step_4', value: 'Log in, then open MagguuUI:\n\n- Type `/mui` or `/mui setup` in chat\n- Or open EllesmereUI and choose **MagguuUI → Optionen → Setup**\n\n**Install everything** imports the Ellesmere profile at UI scale `0.58`, then BigWigs, Northern Sky, WIM, and Waypoint UI if they are present, then Cooldown Viewer class layouts. Out-of-combat only — protected actions wait until combat ends.\n\nOn the same tab:\n\n- **Magguu-Look** — Magguu fonts, class-colored accent, Giant options panel, 4K scale, and Ellesmere QoL/Shifter defaults\n- **Load profiles** — apply already-installed Magguu profiles to this character\n- **Set scale only** — reapplies `0.58` without re-importing profiles\n- **Required / optional Magguu imports** — EllesmereUI and class layouts; BigWigs, Northern Sky, WIM, and Waypoint UI\n- **WowUp** — copy the starter pack or optional pack, then paste in WowUp\n\nImport buttons turn green after a Magguu import. WowUp buttons turn green when the pack addons are present. Setup has no Edit Mode action.\n\nLogging in on an alt asks whether to load those profiles onto that character.', locale: 'en', type: 'markdown', sortOrder: 41 },
+  { page: 'guide', section: 'steps', key: 'step_4', value: 'Log in, then open MagguuUI:\n\n- Type `/mui` or `/mui setup` in chat\n- Or open EllesmereUI and choose **MagguuUI → Optionen → Setup**\n\n**Install everything** imports the Ellesmere profile at UI scale `0.58`, then BigWigs, Northern Sky, WIM, and Waypoint UI if they are present, then Cooldown Viewer class layouts. Wait until you are out of combat.\n\nOn the same tab:\n\n- **Magguu-Look** — Magguu fonts, class colors, Giant options panel, 4K scale, Magguu extras, and a fixed tooltip that does not follow the mouse\n- **Load profiles** — apply already-installed Magguu profiles to this character\n- **Set scale only** — reapplies `0.58` without re-importing profiles\n- **Required / optional Magguu imports** — EllesmereUI and class layouts; BigWigs, Northern Sky, WIM, and Waypoint UI\n- **WowUp** — copy the starter pack or optional pack, then paste in WowUp\n\nImport buttons turn green after a Magguu import. WowUp buttons turn green when the pack addons are present.\n\nLogging in on an alt asks whether to load those profiles onto that character.', locale: 'en', type: 'markdown', sortOrder: 41 },
 
   { page: 'guide', section: 'steps', key: 'step_5_title', value: '5. Skinning and QoL', locale: 'en', type: 'text', sortOrder: 50 },
-  { page: 'guide', section: 'steps', key: 'step_5', value: 'Stay in **MagguuUI → Optionen**:\n\n- **Skinning** — split coloring for unit frames and party/raid names, plus class-colored keybind modifiers\n- **QoL** — death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, and per-spec proc-overlay hiding\n\nThese settings live in the MagguuUI Ellesmere profile. The Magguu accent-color toggle is no longer in the UI.', locale: 'en', type: 'markdown', sortOrder: 51 },
+  { page: 'guide', section: 'steps', key: 'step_5', value: 'Stay in **MagguuUI → Optionen**:\n\n- **Skinning** — split coloring for unit frames and party/raid names, plus class-colored keybind modifiers\n- **QoL** — death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, and per-spec proc-overlay hiding\n\nThese settings live in the MagguuUI Ellesmere profile.', locale: 'en', type: 'markdown', sortOrder: 51 },
 
   { page: 'guide', section: 'steps', key: 'step_6_title', value: '6. Commands and tools', locale: 'en', type: 'text', sortOrder: 60 },
   { page: 'guide', section: 'steps', key: 'step_6', value: '**Slash commands:**\n- `/mui` or `/magguu` — open MagguuUI → Setup\n- `/mui setup` — Setup tab\n- `/mui qol` — QoL tab\n- `/mui profile` — Setup tab\n- `/mui tools`, `/mui export`, or `/mui werkzeuge` — hidden Werkzeuge (exports and Discord boost)\n\nWerkzeuge stay off the normal sidebar. Type `/mui tools`, or click the **MagguuUI** group header ten times to unlock the row permanently.\n\nAfter a successful Cooldown Viewer import MagguuUI asks you to reload via Ellesmere\'s confirm popup so the layouts stick.', locale: 'en', type: 'markdown', sortOrder: 61 },
@@ -93,9 +93,9 @@ If a MagguuUI profile from a previous install is found, the import will ask befo
   {
     category: 'general',
     question: 'Which WoW version does MagguuUI support?',
-    answer: `MagguuUI targets **WoW Retail 12.1** (TOC interfaces 120000–120100), so it also loads on Midnight 12.0.x.
+    answer: `MagguuUI targets **WoW Retail 12.1** and still loads on Midnight 12.0.
 
-It depends on **EllesmereUI 7.9.5 or newer**. Classic and other flavors are not supported.`,
+It needs **EllesmereUI 7.9.5 or newer**. Classic and other flavors are not supported.`,
     sortOrder: 4,
   },
 
@@ -124,7 +124,7 @@ Delete leftover \`MagguuUI_Data\`, \`MagguuUI_EUI\`, or \`MagguuUI_Media\` folde
 - \`/mui qol\` jumps to the QoL tab
 - \`/mui tools\` opens hidden Werkzeuge
 
-There is no minimap button and no standalone installer window in this build.`,
+There is no minimap button and no separate Magguu installer window.`,
     sortOrder: 1,
   },
   {
@@ -140,9 +140,9 @@ Re-import class layouts if you want that character's Cooldown Viewer layout. Spe
   {
     category: 'installation',
     question: 'Can I use MagguuUI without EllesmereUI?',
-    answer: `**No.** MagguuUI is a native EllesmereUI module and lists EllesmereUI as a hard dependency.
+    answer: `**No.** MagguuUI lives inside EllesmereUI.
 
-It will not load unless EllesmereUI is installed **and enabled**. MagguuUI no longer ships an ElvUI installer, ElvUI tags, or a standalone options UI.`,
+It will not load unless EllesmereUI is installed **and enabled**.`,
     sortOrder: 3,
   },
 
@@ -152,11 +152,11 @@ It will not load unless EllesmereUI is installed **and enabled**. MagguuUI no lo
     answer: `In order:
 
 - **EllesmereUI** profile \`MagguuUI\` at UI scale **0.58**
-- **BigWigs** profile and boss options, if BigWigs is present (Magguu accepts the Magguu consent popup)
+- **BigWigs** profile and boss options, if BigWigs is present (Magguu accepts the BigWigs Magguu popup for you)
 - **Northern Sky Raid Tools**, **WIM**, and **Waypoint UI**, if those addons are present
 - **Cooldown Viewer** class layouts, then a reload confirm popup
 
-Per-addon Magguu imports live on **Setup**. **Magguu-Look**, **Load profiles**, and WowUp copy popups sit on the same tab. Setup has no Edit Mode action.`,
+Per-addon Magguu imports live on **Setup**. **Magguu-Look**, **Load profiles**, and WowUp copy popups sit on the same tab.`,
     sortOrder: 0,
   },
   {
@@ -164,9 +164,9 @@ Per-addon Magguu imports live on **Setup**. **Magguu-Look**, **Load profiles**, 
     question: 'How do class layouts work?',
     answer: `MagguuUI ships **Cooldown Viewer layouts** for every class.
 
-Import applies them as \`Magguu - Class Spec\` and activates the current specialization. MagguuUI then asks you to reload so Blizzard's live CDM session is not left tainted.
+Import applies them as \`Magguu - Class Spec\` and activates the current specialization. MagguuUI then asks you to reload so the layouts stick.
 
-Addon code never writes Blizzard Edit Mode. Werkzeuge can copy a layout for you to paste. Setup has no Edit Mode action.`,
+Werkzeuge can copy a layout for you to paste.`,
     sortOrder: 1,
   },
   {
@@ -188,9 +188,9 @@ If you still have \`MagguuUI_Data\` next to MagguuUI, delete it.`,
 
 **Individual profiles** — import only the piece you want from **Setup**. Required: EllesmereUI and class layouts. Optional: BigWigs, Northern Sky, WIM, and Waypoint UI.
 
-**Magguu-Look** applies Magguu fonts, class-colored accent, Giant options panel, 4K scale, and Ellesmere QoL/Shifter defaults. **Load profiles** and a standalone **4K scale** action sit on Setup. Scale reapplies \`0.58\` without re-importing profiles.
+**Magguu-Look** applies Magguu fonts, class colors, Giant options panel, 4K scale, Magguu extras, and a fixed tooltip that does not follow the mouse. **Load profiles** and a standalone **4K scale** action sit on Setup. Scale reapplies \`0.58\` without re-importing profiles.
 
-Import buttons turn green after a Magguu import. WowUp copy buttons turn green when the pack addons are present. Setup has no Edit Mode action.
+Import buttons turn green after a Magguu import. WowUp copy buttons turn green when the pack addons are present.
 
 On a new character MagguuUI asks whether to load those profiles onto the alt.`,
     sortOrder: 3,
@@ -235,15 +235,15 @@ Open them with \`/mui tools\` or \`/mui export\`. Click the **MagguuUI** group h
 - Spell-alert opacity
 - Per-spec proc-overlay hiding
 
-Settings are stored in the MagguuUI Ellesmere profile. **Magguu-Look** also writes Ellesmere QoL/Shifter defaults (quick loot, skip cinematics, hide talking head, auto repair/sell junk, and more). MagguuUI does not proxy EllesmereUI's own QoL page.`,
+Settings are stored in the MagguuUI Ellesmere profile. **Magguu-Look** also turns on Magguu extras such as quick loot, skip cinematics, hide talking head, and auto repair. Tooltips stay at Magguu's exported position and do not follow the mouse.`,
     sortOrder: 7,
   },
   {
     category: 'addons',
     question: 'Why is MagguuUI only one folder now?',
-    answer: `WoW only discovers addons as **direct children** of \`Interface/AddOns\`. Nested TOC files are ignored.
+    answer: `WoW only loads addons that sit directly in \`Interface/AddOns\`.
 
-So MagguuUI ships one folder: \`MagguuUI/EUI\`, \`MagguuUI/Data\`, and \`MagguuUI/Media\`. Leave it enabled. There is no LoadOnDemand MagguuUI_Data addon in this build.`,
+MagguuUI ships **one folder**. Leave it enabled. Delete leftover \`MagguuUI_Data\`, \`MagguuUI_EUI\`, or \`MagguuUI_Media\` folders from older installs.`,
     sortOrder: 8,
   },
   {
@@ -255,7 +255,7 @@ So MagguuUI ships one folder: \`MagguuUI/EUI\`, \`MagguuUI/Data\`, and \`MagguuU
 - \`/mui profile\` — Setup
 - \`/mui tools\` / \`/mui export\` / \`/mui werkzeuge\` — Werkzeuge
 
-Commands from the old installer (\`/mui install\`, \`/mui load\`, \`/mui changelog\`, \`/muikeys\`, \`/muiaudio\`, \`/muiautoroll\`, \`/cd\`) are gone.`,
+Older installer commands are gone.`,
     sortOrder: 9,
   },
   {
@@ -282,8 +282,8 @@ You can still change scale later in EllesmereUI; MagguuUI will not keep rewritin
 
 1. **EllesmereUI 7.9.5+ is installed and enabled**
 2. **MagguuUI is the single folder** — not leftover MagguuUI_Data beside it
-3. **You are out of combat** — protected setup waits until combat ends
-4. **Ellesmere import popups** — confirm those. Magguu accepts the Magguu BigWigs consent popup automatically
+3. **You are out of combat**
+4. **Ellesmere import popups** — confirm those. Magguu accepts the BigWigs Magguu popup for you
 
 Re-open Setup with \`/mui\` and run the 4K install again.`,
     sortOrder: 0,
@@ -301,7 +301,7 @@ Confirm both addons are enabled, EllesmereUI is 7.9.5 or newer, then \`/reload\`
     question: 'How do I reset MagguuUI and start fresh?',
     answer: `Delete leftover MagguuUI_* folders, keep the current MagguuUI folder, and re-run the 4K install from \`/mui\` → Setup.
 
-Companion settings live in the Ellesmere MagguuUI profile. Account-wide unlock state for Werkzeuge is \`MagguuDB.toolsUnlocked\`.`,
+Companion settings live in the Ellesmere MagguuUI profile. Werkzeuge stays unlocked on the account after you click the MagguuUI header ten times.`,
     sortOrder: 2,
   },
   {

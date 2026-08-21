@@ -37,6 +37,7 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'individual profiles, presets' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Profile imports Magguu strings' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Setup runs the 4K install, Magguu-Look, and Magguu profile imports' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'WowUp copy popups. Werkzeuge exports your live profiles.' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'copies an Edit Mode layout' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'never writes Blizzard Edit Mode itself' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Setup runs the 4K install, Magguu-Look, and Magguu profile imports' },
@@ -72,6 +73,7 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_2', marker: 'Get MagguuUI from any of these sources:' },
   { page: 'guide', section: 'steps', key: 'step_2', marker: 'MagguuUI runs on its own. Install only the supported addons' },
   { page: 'guide', section: 'steps', key: 'step_2', marker: 'ElvUI is optional too' },
+  { page: 'guide', section: 'steps', key: 'step_2', marker: 'WoW does not load nested TOC files' },
   { page: 'guide', section: 'steps', key: 'step_3_title', marker: '3. Log in and open the installer' },
   { page: 'guide', section: 'steps', key: 'step_3', marker: 'MagguuUI Installer' },
   { page: 'guide', section: 'steps', key: 'step_4_title', marker: '4. Click Install All' },
@@ -82,6 +84,10 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'copy the Edit Mode layout' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'Run the **4K install**. MagguuUI imports the Ellesmere profile' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'On the same tab you can apply **Magguu-Look**' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'protected actions wait until combat ends' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'Setup has no Edit Mode action' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'Ellesmere QoL/Shifter defaults' },
+  { page: 'guide', section: 'steps', key: 'step_5', marker: 'The Magguu accent-color toggle is no longer in the UI' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'Run the **4K install**. MagguuUI imports the Ellesmere profile' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'Load Profiles** popup' },
   { page: 'guide', section: 'steps', key: 'step_6', marker: 'shift+left-click opens Settings' },
@@ -99,6 +105,7 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'general', sortOrder: 2, marker: 'two folders included with every MagguuUI download' },
   { category: 'general', sortOrder: 4, marker: '11 localizations' },
   { category: 'general', sortOrder: 4, marker: 'WoW Retail 12.0' },
+  { category: 'general', sortOrder: 4, marker: 'TOC interfaces 120000' },
   { category: 'installation', sortOrder: 0, marker: 'Install **ElvUI 15.12+**' },
   { category: 'installation', sortOrder: 0, marker: 'Five steps, takes about two minutes' },
   { category: 'installation', sortOrder: 0, marker: 'click **Install All**' },
@@ -110,6 +117,8 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'installation', sortOrder: 0, marker: 'run the **4K install** on the Setup tab' },
   { category: 'installation', sortOrder: 3, marker: '**No.** ElvUI is the foundation' },
   { category: 'installation', sortOrder: 3, marker: 'without ElvUI' },
+  { category: 'installation', sortOrder: 3, marker: 'hard dependency' },
+  { category: 'installation', sortOrder: 1, marker: 'in this build' },
   { category: 'addons', sortOrder: 0, marker: 'BigWigs (or Northern Sky Raid Tools)' },
   { category: 'addons', sortOrder: 0, marker: '**Main integrations**' },
   { category: 'addons', sortOrder: 0, marker: 'Plater or Platynator' },
@@ -121,6 +130,8 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 0, marker: 'then an immediate reload' },
   { category: 'addons', sortOrder: 3, marker: 'from the **Profile** tab' },
   { category: 'addons', sortOrder: 1, marker: 'reloads immediately so Blizzard' },
+  { category: 'addons', sortOrder: 1, marker: 'Addon code never writes Blizzard Edit Mode' },
+  { category: 'addons', sortOrder: 1, marker: 'left tainted' },
   { category: 'addons', sortOrder: 1, marker: "Setup tab's copy action" },
   { category: 'addons', sortOrder: 3, marker: 'from the Setup tab' },
   { category: 'addons', sortOrder: 3, marker: '**4K install** — Ellesmere, then BigWigs if present' },
@@ -133,6 +144,14 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 1, marker: "Setup tab's copy action" },
   { category: 'addons', sortOrder: 1, marker: 'reloads immediately so Blizzard' },
   { category: 'addons', sortOrder: 3, marker: '**Magguu-Look** and a standalone **4K scale**' },
+  { category: 'addons', sortOrder: 3, marker: 'Setup has no Edit Mode action' },
+  { category: 'addons', sortOrder: 3, marker: 'Ellesmere QoL/Shifter defaults' },
+  { category: 'addons', sortOrder: 7, marker: 'does not proxy EllesmereUI' },
+  { category: 'addons', sortOrder: 8, marker: 'Nested TOC files' },
+  { category: 'addons', sortOrder: 8, marker: 'LoadOnDemand MagguuUI_Data' },
+  { category: 'addons', sortOrder: 9, marker: '/mui changelog' },
+  { category: 'troubleshooting', sortOrder: 0, marker: 'protected setup waits until combat ends' },
+  { category: 'troubleshooting', sortOrder: 2, marker: 'MagguuDB.toolsUnlocked' },
   { category: 'addons', sortOrder: 5, marker: 'Can MagguuUI auto-roll on loot for me?' },
   { category: 'addons', sortOrder: 5, marker: 'ColorModifiers' },
   { category: 'addons', sortOrder: 6, marker: 'What is MagguuUI Data' },
@@ -483,6 +502,10 @@ export default defineNitroPlugin(() => {
       || currentRelease.content.includes('individual profiles, presets')
       || currentRelease.content.includes('Giant options panel, and 4K scale in one click')
       || currentRelease.content.includes('copies an Edit Mode')
+      || currentRelease.content.includes('TOC interfaces')
+      || currentRelease.content.includes('UI strings for every Blizzard client locale')
+      || currentRelease.content.includes('accepts the Magguu consent popup automatically')
+      || currentRelease.content.includes('Ellesmere QoL/Shifter defaults')
     ) {
       db.update(changelogs)
         .set({

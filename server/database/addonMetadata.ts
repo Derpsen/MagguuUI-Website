@@ -101,6 +101,7 @@ export const RETIRED_ADDON_SLUGS = [
   'exboss',
   'exboss-data',
   'blizzi-interrupts',
+  'bli-zzi-interrupts',
 ] as const
 
 const BY_TOC_NAME = (() => {

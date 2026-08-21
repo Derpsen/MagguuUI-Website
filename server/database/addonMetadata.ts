@@ -8,8 +8,8 @@
  *   still shows up on the site.
  *
  * Manual-only entries (no tocName) are seeded once and never touched by the
- * .toc sync — Blizzard EditMode, BigWigs, and Northern Sky are the current
- * examples: they are not TOC dependencies, MagguuUI configures them when present.
+ * .toc sync — BigWigs, Northern Sky, WIM, and Waypoint UI are the current
+ * examples: they are not TOC dependencies, MagguuUI imports them when present.
  */
 
 export interface AddonDefault {
@@ -34,16 +34,8 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     name: 'EllesmereUI',
     category: 'required',
     emoji: '🎨',
-    description: 'Required UI replacement. MagguuUI is a native EllesmereUI module and needs version 7.9.5 or newer.',
+    description: 'Required UI replacement. MagguuUI is a native EllesmereUI module and needs version 7.9.5 or newer, installed and enabled.',
     url: `${CF}/ellesmereui`,
-    sortOrder: 0,
-  },
-  {
-    slug: 'blizzard-editmode',
-    name: 'Blizzard Edit Mode',
-    category: 'core',
-    emoji: '🖼️',
-    description: 'Built-in WoW layout editor. MagguuUI copies a 4K layout for you to paste; addon code never writes Edit Mode itself.',
     sortOrder: 0,
   },
   {
@@ -51,7 +43,7 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     name: 'BigWigs',
     category: 'core',
     emoji: '⏱️',
-    description: 'Optional boss-mod profile. MagguuUI registers a native MagguuUI bar style and rewrites callouts onto bundled media.',
+    description: 'Optional Magguu import. MagguuUI registers a native MagguuUI bar style and rewrites callouts onto bundled media.',
     url: `${CF}/big-wigs`,
     sortOrder: 1,
   },
@@ -60,7 +52,7 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     name: 'LittleWigs',
     category: 'optional',
     emoji: '⏱️',
-    description: 'Dungeon timers for BigWigs. Included in the WowUp starter pack; MagguuUI does not ship a separate LittleWigs profile.',
+    description: 'Dungeon timers for BigWigs. Included in the WowUp starter pack copied from Setup; MagguuUI does not ship a separate LittleWigs profile.',
     url: `${CF}/little-wigs`,
     sortOrder: 1,
   },
@@ -69,13 +61,30 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     name: 'Northern Sky Raid Tools',
     category: 'optional',
     emoji: '🧭',
-    description: 'Optional raid notes and alerts. MagguuUI imports the MagguuUI profile when NSRT is installed.',
+    description: 'Optional Magguu import for raid notes and alerts. MagguuUI imports the MagguuUI profile when NSRT is installed.',
     url: `${CF}/northern-sky-raid-tools`,
     sortOrder: 0,
+  },
+  {
+    slug: 'wim',
+    name: 'WIM',
+    category: 'optional',
+    emoji: '💬',
+    description: 'Optional Magguu import for WoW Instant Messenger. MagguuUI applies Magguu WIM settings when WIM is installed.',
+    sortOrder: 2,
+  },
+  {
+    slug: 'waypointui',
+    name: 'Waypoint UI',
+    category: 'optional',
+    emoji: '📍',
+    description: 'Optional Magguu import. MagguuUI applies Magguu Waypoint UI settings when the addon is installed.',
+    sortOrder: 3,
   },
 ]
 
 export const RETIRED_ADDON_SLUGS = [
+  'blizzard-editmode',
   'elvui',
   'plater',
   'details',
@@ -94,7 +103,6 @@ export const RETIRED_ADDON_SLUGS = [
   'handynotes',
   'handynotes-mapnotes',
   'easy-experience-bar',
-  'wim',
   'wim-elvui-skin',
   'elvui-anchor',
   'gtfo',
@@ -105,7 +113,6 @@ export const RETIRED_ADDON_SLUGS = [
   'cursor-trail',
   'mplustimer',
   'plumber',
-  'waypointui',
   'talent-tree-tweaks',
   'exboss',
   'exboss-data',

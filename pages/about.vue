@@ -35,7 +35,7 @@
           <strong :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI</strong>,
           with EUI, Data, and Media nested inside it.
           <strong :class="isDark ? 'text-white' : 'text-gray-900'">EllesmereUI 7.9.5+</strong>
-          is required. BigWigs and Northern Sky Raid Tools are optional;
+          must be installed and enabled. BigWigs, Northern Sky, WIM, and Waypoint UI are optional;
           MagguuUI configures them when they are installed and skips them otherwise.
         </p>
       </div>
@@ -54,15 +54,15 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">4K setup</strong> — Ellesmere profile at UI scale 0.58, optional BigWigs and Northern Sky imports, then Cooldown Viewer class layouts.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">4K setup</strong> — Ellesmere profile at UI scale 0.58, Magguu-Look, Load profiles, required and optional Magguu imports, and WowUp copy popups. After Ellesmere's first-install reload, Magguu Setup opens.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Class layouts</strong> — imported as <code>Magguu - Class Spec</code>. MagguuUI reloads immediately after a successful Cooldown Viewer import.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Class layouts</strong> — imported as <code>Magguu - Class Spec</code>. After a successful Cooldown Viewer import MagguuUI asks you to reload. Import buttons turn green after a Magguu import.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Edit Mode copy</strong> — you paste the layout in Blizzard's editor. Addon code never writes protected layout state.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">WowUp copy popups</strong> — starter pack (EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky) and optional extras copy from Setup. Paste in WowUp. Buttons turn green when the pack addons are present. Setup has no Edit Mode action.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />

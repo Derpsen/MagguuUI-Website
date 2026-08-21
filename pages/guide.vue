@@ -76,7 +76,7 @@
           <span class="text-gradient">{{ editableTitle || 'Installation Guide' }}</span>
         </h1>
         <p class="text-lg leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-500'">
-          {{ editableSubtitle || 'Set up MagguuUI once on your main character, then let alts load the same profiles automatically.' }}
+          {{ editableSubtitle || 'Install EllesmereUI, add the MagguuUI folder, then open /mui and run the 4K setup. Magguu-Look, Load profiles, and WowUp copy popups live on Setup. BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.' }}
         </p>
       </div>
 
@@ -244,7 +244,7 @@ const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
 usePublicPageSeo({
   title: 'Installation Guide',
-  description: 'Install EllesmereUI and the MagguuUI folder, open /mui, and run the 4K setup. BigWigs and Northern Sky Raid Tools are optional.',
+  description: 'Install EllesmereUI and the MagguuUI folder, open /mui, and run the 4K setup. Magguu-Look, Load profiles, and WowUp copy popups live on Setup.',
   path: '/guide',
 })
 const isAdmin = computed(() => {

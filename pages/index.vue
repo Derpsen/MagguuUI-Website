@@ -66,7 +66,7 @@
             :class="isDark ? 'border-white/8' : 'border-blue-100'">
             <div ref="addonsHeading" class="text-center mb-8 scroll-reveal">
               <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.addons?.title || 'Supported Addons' }}</span></h2>
-              <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'EllesmereUI is required. BigWigs and Northern Sky Raid Tools are optional.' }}</p>
+              <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'EllesmereUI is required. BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.' }}</p>
             </div>
             <div v-if="addonNames.length" ref="addonPills" class="scroll-reveal scroll-reveal-delay-1">
               <div class="flex flex-wrap justify-center gap-3 py-1">
@@ -268,12 +268,12 @@ const features = computed(() => [
   {
     emoji: '⚡',
     title: content.value?.features?.feature_1_title || 'Native Ellesmere setup',
-    text: content.value?.features?.feature_1_text || 'One sidebar row with Setup, Skinning, and QoL. Setup runs the 4K install, Magguu-Look, and Magguu profile imports. Werkzeuge exports your live profiles.',
+    text: content.value?.features?.feature_1_text || 'One sidebar row with Setup, Skinning, and QoL. Setup runs the 4K install, Magguu-Look, Load profiles, required and optional Magguu imports, and WowUp copy popups. Werkzeuge exports your live profiles.',
   },
   {
     emoji: '🔄',
     title: content.value?.features?.feature_2_title || 'Current Retail layouts',
-    text: content.value?.features?.feature_2_text || 'Cooldown Viewer class layouts import as <strong>Magguu - Class Spec</strong>. MagguuUI copies an Edit Mode layout for you to paste and never writes protected Blizzard layout state itself.',
+    text: content.value?.features?.feature_2_text || 'Cooldown Viewer class layouts import as <strong>Magguu - Class Spec</strong>. After a successful import MagguuUI asks you to reload so the layouts stick.',
   },
   {
     emoji: '🎯',

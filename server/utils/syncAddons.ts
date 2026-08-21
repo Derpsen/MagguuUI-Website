@@ -63,6 +63,7 @@ export function ensureAddonsSeeded(): SyncAddonsResult {
         sortOrder: def.sortOrder,
         isVisible: def.isVisible ?? true,
         isAvailable: true,
+        source: def.tocName ? 'toc' : 'manual',
       }
       const changed = row.name !== next.name
         || row.category !== next.category
@@ -73,6 +74,7 @@ export function ensureAddonsSeeded(): SyncAddonsResult {
         || row.sortOrder !== next.sortOrder
         || row.isVisible !== next.isVisible
         || row.isAvailable !== next.isAvailable
+        || row.source !== next.source
       if (changed) {
         db.update(addons)
           .set({ ...next, updatedAt: now })

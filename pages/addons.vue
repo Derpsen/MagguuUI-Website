@@ -8,7 +8,7 @@
         <span class="text-gradient">Addons</span>
       </h1>
       <p class="text-lg" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        EllesmereUI is required. BigWigs and Northern Sky Raid Tools are optional.
+        EllesmereUI is required. BigWigs, Northern Sky, WIM, and Waypoint UI are optional Magguu imports.
       </p>
     </div>
 
@@ -23,11 +23,14 @@
         <div class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           <p>
             <strong :class="isDark ? 'text-white' : 'text-gray-900'">What you need:</strong>
-            <code>EllesmereUI</code> 7.9.5+ and the single <code>MagguuUI</code> folder.
+            <code>EllesmereUI</code> 7.9.5+ installed and enabled, plus the single <code>MagguuUI</code> folder.
           </p>
           <p class="mt-2">
-            <strong :class="isDark ? 'text-white' : 'text-gray-900'">Optional:</strong>
-            BigWigs and Northern Sky Raid Tools. The 4K setup configures them when they are installed and skips them otherwise.
+            <strong :class="isDark ? 'text-white' : 'text-gray-900'">Optional Magguu imports:</strong>
+            BigWigs, Northern Sky Raid Tools, WIM, and Waypoint UI. Setup configures them when they are installed and skips them otherwise.
+          </p>
+          <p class="mt-2">
+            Copy the WowUp starter pack and optional pack from Magguu Setup (or the Strings page as a backup), then paste in WowUp. MagguuUI does not install addons itself.
           </p>
           <p class="mt-2">
             Older ElvUI / MagguuUI_Data installs are retired. Delete leftover <code>MagguuUI_Data</code>,
@@ -89,7 +92,7 @@
         </span>
       </div>
       <p class="text-sm mb-5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Built-in layout import plus optional raid timers when BigWigs is installed.
+        Class layouts ship with MagguuUI. BigWigs is an optional Magguu import when installed.
       </p>
       <div class="grid sm:grid-cols-2 gap-3">
         <component :is="addon.url ? 'a' : 'div'" v-for="addon in coreAddons" :key="addon.slug"
@@ -129,7 +132,7 @@
         </span>
       </div>
       <p class="text-sm mb-5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        MagguuUI configures these when they are installed. Missing addons are skipped.
+        MagguuUI imports these when they are installed. Missing addons are skipped. WowUp extras such as LittleWigs live in the starter pack.
       </p>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <component :is="addon.url ? 'a' : 'div'" v-for="addon in optionalAddons" :key="addon.slug"

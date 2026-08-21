@@ -3,7 +3,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'hero', key: 'title2', value: 'perfected.', type: 'text', sortOrder: 1, locale: 'en' },
   { page: 'home', section: 'hero', key: 'subtitle', value: 'A native 4K overhaul for EllesmereUI.', type: 'text', sortOrder: 2, locale: 'en' },
   { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI is a native EllesmereUI module for WoW Retail. Install <strong>EllesmereUI</strong> and the single <strong>MagguuUI</strong> folder, then open <code>/mui</code> and run the 4K setup. BigWigs and Northern Sky Raid Tools stay optional.', type: 'html', sortOrder: 3, locale: 'en' },
-  { page: 'home', section: 'hero', key: 'badge', value: 'Ready for WoW 12.0', type: 'text', sortOrder: 4, locale: 'en' },
+  { page: 'home', section: 'hero', key: 'badge', value: 'Ready for WoW 12.1', type: 'text', sortOrder: 4, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'Native Ellesmere setup', type: 'text', sortOrder: 0, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_1_text', value: 'One sidebar row with Setup, Skinning, and QoL. Setup runs the 4K install, Magguu-Look, and Magguu profile imports. Werkzeuge exports your live profiles.', type: 'text', sortOrder: 1, locale: 'en' },
@@ -93,7 +93,7 @@ If a MagguuUI profile from a previous install is found, the import will ask befo
   {
     category: 'general',
     question: 'Which WoW version does MagguuUI support?',
-    answer: `MagguuUI targets **WoW Retail 12.0** (TOC interfaces 120000–120100), including current Midnight patches.
+    answer: `MagguuUI targets **WoW Retail 12.1** (TOC interfaces 120000–120100), so it also loads on Midnight 12.0.x.
 
 It depends on **EllesmereUI 7.9.5 or newer**. Classic and other flavors are not supported.`,
     sortOrder: 4,

@@ -1,7 +1,7 @@
 export const CURRENT_ADDON_CHANGELOG = {
-  version: 'v12.0.25',
+  version: 'v12.1.0',
   publishedAt: new Date('2026-08-21T00:00:00Z'),
-  content: `Ready for WoW 12.0. MagguuUI lives inside EllesmereUI. Type \`/mui\` to open it.
+  content: `Ready for WoW 12.1. MagguuUI lives inside EllesmereUI. Type \`/mui\` to open it.
 
 ### What's new
 
@@ -35,5 +35,6 @@ export const CURRENT_ADDON_CHANGELOG = {
 
 - One folder only: \`MagguuUI\` (EUI, Data, and Media live inside it)
 - Delete leftover \`MagguuUI_Data\`, \`MagguuUI_EUI\`, or \`MagguuUI_Media\` folders from older installs
-- EllesmereUI 7.9.5 or newer is required. BigWigs, LittleWigs, and Northern Sky are optional`,
+- EllesmereUI 7.9.5 or newer is required. BigWigs, LittleWigs, and Northern Sky are optional
+- TOC interfaces \`120000\`–\`120100\`, so MagguuUI loads on Midnight 12.0 through 12.1`,
 } as const

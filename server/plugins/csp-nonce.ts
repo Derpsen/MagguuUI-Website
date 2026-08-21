@@ -17,7 +17,7 @@ function buildHtmlCsp(nonce: string, isDev: boolean) {
   // be nonce-tagged. Production keeps strict nonce + strict-dynamic.
   const scriptSrc = isDev
     ? "'self' 'unsafe-inline' 'unsafe-eval'"
-    : `'nonce-${nonce}' 'strict-dynamic'`
+    : `'nonce-${nonce}' 'strict-dynamic' 'self'`
   // Dev needs `ws:` for HMR; prod doesn't.
   const connectExtra = isDev ? ' ws: wss:' : ''
   return [

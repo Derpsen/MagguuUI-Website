@@ -211,25 +211,44 @@ interface HomeContent {
   [k: string]: unknown
 }
 interface LatestChange { name?: string, action?: string }
-interface ProfileItem { id: number, profile: string, string: string, [k: string]: unknown }
-type ProfileGrouped = Record<string, ProfileItem[]>
-interface LayoutItem { id: number, className?: string | null, spec?: string | null, [k: string]: unknown }
-type WowupKeyed = Record<string, { string: string, [k: string]: unknown }>
-interface ChangelogEntry { id: number, version: string, [k: string]: unknown }
+interface GroupedCount { names: string[], count: number }
 
-const { data: contentData } = await useFetch<{ data: HomeContent }>('/api/v1/content/home')
-const { data: profileData } = await useFetch<{ data: ProfileGrouped }>('/api/v1/profiles')
-const { data: layoutData } = await useFetch<{ data: LayoutItem[] }>('/api/v1/layouts')
-const { data: wowupData } = await useFetch<{ data: WowupKeyed }>('/api/v1/wowup')
-const { data: changelogData } = await useFetch<{ data: ChangelogEntry[] }>('/api/v1/changelogs')
-const { data: latestChangeData } = await useFetch<{ data: LatestChange | null }>('/api/v1/latest-change')
+function countGrouped(data: unknown): GroupedCount {
+  if (!data || typeof data !== 'object') return { names: [], count: 0 }
+  const grouped = data as Record<string, unknown>
+  const names = Object.keys(grouped)
+  const count = names.reduce((total, key) => {
+    const rows = grouped[key]
+    return total + (Array.isArray(rows) ? rows.length : 0)
+  }, 0)
+  return { names, count }
+}
+
+function countList(data: unknown) {
+  return Array.isArray(data) ? data.length : 0
+}
+
+function countKeyed(data: unknown) {
+  return data && typeof data === 'object' ? Object.keys(data).length : 0
+}
+
+const { data: contentData } = useFetch<{ data: HomeContent }>('/api/v1/content/home')
+const { data: profileMeta } = useFetch('/api/v1/profiles', {
+  transform: (res: { data?: unknown }) => countGrouped(res?.data),
+})
+const { data: layoutCount } = useFetch('/api/v1/layouts', {
+  transform: (res: { data?: unknown }) => countList(res?.data),
+})
+const { data: wowupCount } = useFetch('/api/v1/wowup', {
+  transform: (res: { data?: unknown }) => countKeyed(res?.data),
+})
+const { data: changelogCount } = useFetch('/api/v1/changelogs', {
+  transform: (res: { data?: unknown }) => countList(res?.data),
+})
+const { data: latestChangeData } = useFetch<{ data: LatestChange | null }>('/api/v1/latest-change')
 
 const content = computed(() => contentData.value?.data)
-const addonNames = computed(() => {
-  const grouped = profileData.value?.data
-  if (!grouped || typeof grouped !== 'object') return []
-  return Object.keys(grouped)
-})
+const addonNames = computed(() => profileMeta.value?.names ?? [])
 
 // Badge text: show last changed string name
 const latestBadgeText = computed(() => {
@@ -264,31 +283,17 @@ const features = computed(() => [
 ])
 
 const totalStrings = computed(() => {
-  let count = 0
-  const grouped = profileData.value?.data
-  if (grouped && typeof grouped === 'object') { for (const profiles of Object.values(grouped)) { count += profiles.length } }
-  const layouts = layoutData.value?.data
-  if (Array.isArray(layouts)) count += layouts.length
-  const wowup = wowupData.value?.data
-  if (wowup && typeof wowup === 'object') count += Object.keys(wowup).length
-  return count
+  return (profileMeta.value?.count ?? 0) + (layoutCount.value ?? 0) + (wowupCount.value ?? 0)
 })
 
 const categoryCount = computed(() => {
-  let count = 0
-  const grouped = profileData.value?.data
-  if (grouped && typeof grouped === 'object') count += Object.keys(grouped).length
-  const layouts = layoutData.value?.data
-  if (Array.isArray(layouts) && layouts.length > 0) count++
-  const wowup = wowupData.value?.data
-  if (wowup && typeof wowup === 'object' && Object.keys(wowup).length > 0) count++
+  let count = profileMeta.value?.names.length ?? 0
+  if ((layoutCount.value ?? 0) > 0) count++
+  if ((wowupCount.value ?? 0) > 0) count++
   return count
 })
 
-const updateCount = computed(() => {
-  const entries = changelogData.value?.data
-  return Array.isArray(entries) ? entries.length : 0
-})
+const updateCount = computed(() => changelogCount.value ?? 0)
 
 // Animated counter — counts up from 0 to target with easeOutCubic.
 // Both SSR and initial-client render show 0 so hydration text matches; the

@@ -50,8 +50,11 @@
 
 <script setup lang="ts">
 const error = useError()
-const isDark = useIsDark()
 const router = useRouter()
+const isDark = computed(() => {
+  if (!import.meta.client) return true
+  return document.documentElement.classList.contains('dark')
+})
 
 useSeoMeta({
   robots: 'noindex, nofollow',

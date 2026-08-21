@@ -40,12 +40,15 @@ export function renderMarkdownToSafeHtml(markdown: string, options: MarkdownRend
     ? markdown.replace(/^###\s+Changes\s+\d{4}-\d{2}-\d{2}\s*/gm, '').trim()
     : markdown
 
-  const html = marked.parse(source, {
-    async: false,
-    breaks: options.breaks ?? false,
-  }) as string
-
-  return sanitizeRichHtml(html)
+  try {
+    const html = marked.parse(source, {
+      async: false,
+      breaks: options.breaks ?? false,
+    }) as string
+    return sanitizeRichHtml(html)
+  } catch {
+    return sanitizeRichHtml(source)
+  }
 }
 
 /** TipTap/admin HTML stays HTML; leftover CMS markdown is rendered first. */

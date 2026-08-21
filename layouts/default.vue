@@ -322,10 +322,15 @@
                   :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.04]' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'">
                   {{ link.label }}
                 </NuxtLink>
-                <a v-else-if="link.href" :href="link.href" target="_blank" rel="noopener noreferrer" class="px-1.5 py-0.5 rounded-md transition-colors"
-                  :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.04]' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'">
+                <button
+                  v-else-if="link.contact"
+                  type="button"
+                  class="px-1.5 py-0.5 rounded-md transition-colors"
+                  :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.04]' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'"
+                  @click="openContact"
+                >
                   {{ link.label }}
-                </a>
+                </button>
               </template>
             </div>
 
@@ -423,7 +428,7 @@ const footerLinks = computed(() => [
   { label: 'About', to: '/about' },
   { label: 'Imprint', to: '/imprint' },
   { label: 'Privacy', to: '/privacy' },
-  { label: 'Contact', href: `mailto:${siteSettings.value.contact_email || 'contact@magguui.com'}` },
+  { label: 'Contact', contact: true },
 ])
 const bannerText = computed(() => siteSettings.value.banner_text || '')
 const maintenanceMode = computed(() => siteSettings.value.maintenance_mode === 'true')
@@ -456,6 +461,11 @@ const siteStatusClasses = computed(() => {
 function isActive(path: string): boolean {
   if (path === '/') return route.path === '/'
   return route.path.startsWith(path)
+}
+
+function openContact() {
+  const email = siteSettings.value.contact_email || 'contact@magguui.com'
+  window.location.href = `mailto:${email}`
 }
 
 function handleWindowScroll() {

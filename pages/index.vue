@@ -268,7 +268,7 @@ const features = computed(() => [
   {
     emoji: '⚡',
     title: content.value?.features?.feature_1_title || 'Native Ellesmere setup',
-    text: content.value?.features?.feature_1_text || 'One sidebar row with Setup, Skinning, QoL, and Profile. Setup runs the 4K install and Magguu-Look. Profile imports Magguu strings. Werkzeuge exports your live profiles.',
+    text: content.value?.features?.feature_1_text || 'One sidebar row with Setup, Skinning, and QoL. Setup runs the 4K install, Magguu-Look, and Magguu profile imports. Werkzeuge exports your live profiles.',
   },
   {
     emoji: '🔄',

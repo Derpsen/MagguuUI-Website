@@ -56,6 +56,12 @@ export function syncAddonProfileFile(path: string, source: string): AddonProfile
       variable: entry.variable,
       status: upsertProfile(parsed.addon, entry),
     }))
+    if (parsed.addon.toLowerCase() === 'northernskyraidtools' && parsed.format === 'single') {
+      const leftover = db.select().from(profiles)
+        .where(and(eq(profiles.addon, parsed.addon), eq(profiles.profile, 'Alerts')))
+        .get()
+      if (leftover) db.delete(profiles).where(eq(profiles.id, leftover.id)).run()
+    }
     return {
       changes,
       removedPackedDefault: parsed.addon.toLowerCase() === 'elvui'

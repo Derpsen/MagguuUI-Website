@@ -50,7 +50,7 @@
         <ul class="space-y-2.5 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Native Ellesmere module</strong> — one sidebar row with Setup, Skinning, QoL, and Profile. Open it with <code>/mui</code>.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Native Ellesmere module</strong> — one sidebar row with Setup, Skinning, and QoL. Open it with <code>/mui</code>.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />

@@ -33,6 +33,7 @@ test('accepts the current Ellesmere data files and optional WowUp', () => {
     ...REQUIRED_ADDON_LUA_FILES,
     ...OPTIONAL_ADDON_LUA_FILES,
   ]))
+  assert.deepEqual([...OPTIONAL_ADDON_LUA_FILES], ['WowUp.lua', 'WIM.lua', 'WaypointUI.lua'])
   assert.throws(
     () => assertCompleteAddonLuaSnapshot(REQUIRED_ADDON_LUA_FILES.filter(fileName => fileName !== 'BigWigs.lua')),
     expectCode('INCOMPLETE_SNAPSHOT'),
@@ -95,12 +96,25 @@ test('parses Ellesmere, BigWigs, and NSRT array tables', () => {
 
   const nsrt = parseAddonProfileLua(
     'Data/AddOns/NorthernSkyRaidTools.lua',
-    'D.nsrt = { "profile-string", "alerts-string" }',
+    'D.nsrt = "profile-string"',
   )
+  assert.equal(nsrt.format, 'single')
   assert.deepEqual(nsrt.entries.map(entry => [entry.profile, entry.string]), [
     ['Default', 'profile-string'],
-    ['Alerts', 'alerts-string'],
   ])
+
+  const wim = parseAddonProfileLua(
+    'Data/AddOns/WIM.lua',
+    'D.wim = [===[{font="Expressway"}]===]',
+  )
+  assert.equal(wim.format, 'single')
+  assert.equal(wim.entries[0]?.string, '{font="Expressway"}')
+
+  const waypoint = parseAddonProfileLua(
+    'Data/AddOns/WaypointUI.lua',
+    'D.waypointui = "{PinpointInfo=false}"',
+  )
+  assert.equal(waypoint.entries[0]?.profile, 'Default')
 })
 
 test('rejects malformed Ellesmere tables and ambiguous assignments', () => {

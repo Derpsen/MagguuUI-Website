@@ -16,7 +16,7 @@ export const REQUIRED_ADDON_LUA_FILES = [
   'EllesmereUI.lua',
   'NorthernSkyRaidTools.lua',
 ] as const
-export const OPTIONAL_ADDON_LUA_FILES = ['WowUp.lua'] as const
+export const OPTIONAL_ADDON_LUA_FILES = ['WowUp.lua', 'WIM.lua', 'WaypointUI.lua'] as const
 
 const SAFE_ADDON_PATH_RE = /^Data\/AddOns\/([A-Za-z][A-Za-z0-9_]*)\.lua$/
 const LUA_IDENTIFIER_RE = /[A-Za-z0-9_]/
@@ -24,7 +24,7 @@ const UI_SCALE_PROFILE = 'uiscale'
 const TABLE_PROFILE_NAMES: Readonly<Record<string, readonly string[]>> = {
   ellesmereui: ['Default'],
   bigwigs: ['Default', 'Boss Options'],
-  northernskyraidtools: ['Default', 'Alerts'],
+  northernskyraidtools: ['Default'],
 }
 
 export type AddonProfileLuaErrorCode =

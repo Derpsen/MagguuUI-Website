@@ -5,9 +5,9 @@ export const CURRENT_ADDON_CHANGELOG = {
 
 ### What's new
 
-- Four tabs: **Setup**, **Skinning**, **QoL**, and **Profile**
+- Three tabs: **Setup**, **Skinning**, and **QoL**
 - **Magguu-Look** applies Magguu's fonts, class-colored accent, Giant options panel, and 4K scale in one click
-- Import Magguu profiles on the **Profile** tab, grouped as required (EllesmereUI, class layouts) and optional (BigWigs, Northern Sky)
+- Setup imports Magguu profiles, grouped as required (EllesmereUI, class layouts) and optional (BigWigs, Northern Sky, WIM, Waypoint UI)
 - Export your current profiles under **Werkzeuge** (\`/mui tools\`, or click the MagguuUI header ten times)
 
 ### Setup
@@ -20,7 +20,8 @@ export const CURRENT_ADDON_CHANGELOG = {
 
 - EllesmereUI profile \`MagguuUI\` at scale 0.58
 - BigWigs profile with the MagguuUI bar style and Magguu callout sounds
-- Northern Sky Raid Tools profile and alerts
+- Northern Sky Raid Tools profile
+- WIM and Waypoint UI settings
 - Cooldown Viewer layouts named \`Magguu - Class Spec\`
 - WowUp starter pack: EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky. A second optional pack covers extras such as BugSack, MDT, Raider.IO, WIM, GTFO, and EXBoss
 

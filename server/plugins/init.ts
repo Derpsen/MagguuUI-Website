@@ -34,6 +34,9 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'MagguuUI** and **MagguuUI_Data' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Setup, Skinning, and QoL' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'individual profiles, presets' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Profile imports Magguu strings' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'Per-addon Magguu imports live on the **Profile** tab' },
+  { page: 'guide', section: 'steps', key: 'step_6', marker: 'Profile tab (import)' },
   { page: 'home', section: 'features', key: 'feature_1_title', marker: 'One-click setup' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'the in-game changelog shows you exactly what changed' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'import as **Magguu - Class Spec**' },
@@ -91,7 +94,10 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 2, marker: 'Master toggle sits in **Settings → Tags**' },
   { category: 'addons', sortOrder: 2, marker: '[mui:ilvl]' },
   { category: 'addons', sortOrder: 3, marker: 'Install All** — full first-time setup' },
+  { category: 'addons', sortOrder: 0, marker: 'profile and alerts, if NSRT is present' },
+  { category: 'addons', sortOrder: 3, marker: 'from the **Profile** tab' },
   { category: 'addons', sortOrder: 3, marker: 'from the Setup tab' },
+  { category: 'addons', sortOrder: 9, marker: 'Profile (import)' },
   { category: 'addons', sortOrder: 4, marker: 'WowUp Required / Optional' },
   { category: 'addons', sortOrder: 4, marker: 'They are recommendations, not requirements.' },
   { category: 'addons', sortOrder: 4, marker: 'WowUp](https://wowup.io/)' },
@@ -440,6 +446,8 @@ export default defineNitroPlugin(() => {
       console.log(`[Init] Added current addon changelog ${CURRENT_ADDON_CHANGELOG.version}`)
     } else if (
       currentRelease.content.includes('three tabs')
+      || currentRelease.content.includes('Four tabs')
+      || currentRelease.content.includes('profile and alerts')
       || currentRelease.content.includes('individual profiles, presets')
     ) {
       db.update(changelogs)

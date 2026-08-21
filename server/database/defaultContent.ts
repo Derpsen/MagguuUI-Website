@@ -6,7 +6,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'hero', key: 'badge', value: 'Ready for WoW 12.0', type: 'text', sortOrder: 4, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'Native Ellesmere setup', type: 'text', sortOrder: 0, locale: 'en' },
-  { page: 'home', section: 'features', key: 'feature_1_text', value: 'One sidebar row with Setup, Skinning, QoL, and Profile. Setup runs the 4K install and Magguu-Look. Profile imports Magguu strings. Werkzeuge exports your live profiles.', type: 'text', sortOrder: 1, locale: 'en' },
+  { page: 'home', section: 'features', key: 'feature_1_text', value: 'One sidebar row with Setup, Skinning, and QoL. Setup runs the 4K install, Magguu-Look, and Magguu profile imports. Werkzeuge exports your live profiles.', type: 'text', sortOrder: 1, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_2_title', value: 'Current Retail layouts', type: 'text', sortOrder: 3, locale: 'en' },
@@ -38,13 +38,13 @@ export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'steps', key: 'step_3', value: 'Only EllesmereUI is required. Install extra addons only if you want MagguuUI to configure them:\n\n- **BigWigs** — encounter timers, MagguuUI bar style, and bundled callout sounds\n- **LittleWigs** — dungeon timers for BigWigs\n- **Northern Sky Raid Tools** — raid notes and alerts\n\nMissing addons are skipped. A WowUp starter pack on the Strings page installs those together.', locale: 'en', type: 'markdown', sortOrder: 31 },
 
   { page: 'guide', section: 'steps', key: 'step_4_title', value: '4. Open Setup and install 4K', locale: 'en', type: 'text', sortOrder: 40 },
-  { page: 'guide', section: 'steps', key: 'step_4', value: 'Log in, then open MagguuUI:\n\n- Type `/mui` or `/mui setup` in chat\n- Or open EllesmereUI and choose **MagguuUI → Optionen → Setup**\n\nRun the **4K install**. MagguuUI imports the Ellesmere profile at UI scale `0.58`, then BigWigs and Northern Sky if they are present, then Cooldown Viewer class layouts. Out-of-combat only — protected actions wait until combat ends.\n\nOn the same tab you can apply **Magguu-Look** or reapply scale `0.58`.\n\nPer-addon Magguu imports live on the **Profile** tab. Logging in on an alt asks whether to load those profiles onto that character.', locale: 'en', type: 'markdown', sortOrder: 41 },
+  { page: 'guide', section: 'steps', key: 'step_4', value: 'Log in, then open MagguuUI:\n\n- Type `/mui` or `/mui setup` in chat\n- Or open EllesmereUI and choose **MagguuUI → Optionen → Setup**\n\nRun the **4K install**. MagguuUI imports the Ellesmere profile at UI scale `0.58`, then BigWigs, Northern Sky, WIM, and Waypoint UI if they are present, then Cooldown Viewer class layouts. Out-of-combat only — protected actions wait until combat ends.\n\nOn the same tab you can apply **Magguu-Look**, reapply scale `0.58`, or import a single Magguu profile.\n\nLogging in on an alt asks whether to load those profiles onto that character.', locale: 'en', type: 'markdown', sortOrder: 41 },
 
   { page: 'guide', section: 'steps', key: 'step_5_title', value: '5. Skinning and QoL', locale: 'en', type: 'text', sortOrder: 50 },
   { page: 'guide', section: 'steps', key: 'step_5', value: 'Stay in **MagguuUI → Optionen**:\n\n- **Skinning** — split coloring for unit frames and party/raid names, plus class-colored keybind modifiers\n- **QoL** — death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, and per-spec proc-overlay hiding\n\nThese settings live in the MagguuUI Ellesmere profile. The Magguu accent-color toggle is no longer in the UI.', locale: 'en', type: 'markdown', sortOrder: 51 },
 
   { page: 'guide', section: 'steps', key: 'step_6_title', value: '6. Commands and tools', locale: 'en', type: 'text', sortOrder: 60 },
-  { page: 'guide', section: 'steps', key: 'step_6', value: '**Slash commands:**\n- `/mui` or `/magguu` — open MagguuUI → Setup\n- `/mui setup` — Setup tab\n- `/mui qol` — QoL tab\n- `/mui profile` — Profile tab (import)\n- `/mui tools`, `/mui export`, or `/mui werkzeuge` — hidden Werkzeuge (exports and Discord boost)\n\nWerkzeuge stay off the normal sidebar. Type `/mui tools`, or click the **MagguuUI** group header ten times to unlock the row permanently.\n\nAfter a successful Cooldown Viewer import MagguuUI reloads immediately so the layouts stick.', locale: 'en', type: 'markdown', sortOrder: 61 },
+  { page: 'guide', section: 'steps', key: 'step_6', value: '**Slash commands:**\n- `/mui` or `/magguu` — open MagguuUI → Setup\n- `/mui setup` — Setup tab\n- `/mui qol` — QoL tab\n- `/mui profile` — Setup tab\n- `/mui tools`, `/mui export`, or `/mui werkzeuge` — hidden Werkzeuge (exports and Discord boost)\n\nWerkzeuge stay off the normal sidebar. Type `/mui tools`, or click the **MagguuUI** group header ten times to unlock the row permanently.\n\nAfter a successful Cooldown Viewer import MagguuUI reloads immediately so the layouts stick.', locale: 'en', type: 'markdown', sortOrder: 61 },
 ] as const
 
 export const DEFAULT_FAQS = [
@@ -119,7 +119,6 @@ Delete leftover \`MagguuUI_Data\`, \`MagguuUI_EUI\`, or \`MagguuUI_Media\` folde
 
 - Type \`/mui\` or \`/mui setup\` in chat
 - Open EllesmereUI and choose **MagguuUI → Optionen**
-- \`/mui profile\` jumps to Magguu imports
 - \`/mui qol\` jumps to the QoL tab
 - \`/mui tools\` opens hidden Werkzeuge
 
@@ -150,10 +149,10 @@ It will not load, and it no longer ships an ElvUI installer, ElvUI tags, or a st
 
 - **EllesmereUI** profile \`MagguuUI\` at UI scale **0.58**
 - **BigWigs** profile and boss options, if BigWigs is present
-- **Northern Sky Raid Tools** profile and alerts, if NSRT is present
+- **Northern Sky Raid Tools**, **WIM**, and **Waypoint UI**, if those addons are present
 - **Cooldown Viewer** class layouts, then an immediate reload
 
-Per-addon Magguu imports live on the **Profile** tab.`,
+Per-addon Magguu imports live on **Setup**.`,
     sortOrder: 0,
   },
   {
@@ -181,9 +180,9 @@ If you still have \`MagguuUI_Data\` next to MagguuUI, delete it.`,
   {
     category: 'addons',
     question: 'What is the difference between the full 4K install and individual profiles?',
-    answer: `**4K install** — Ellesmere, then BigWigs if present, then NSRT, then class layouts.
+    answer: `**4K install** — Ellesmere, then BigWigs if present, then NSRT, WIM, and Waypoint UI, then class layouts.
 
-**Individual profiles** — import only the piece you want from the **Profile** tab. Required: EllesmereUI and class layouts. Optional: BigWigs and Northern Sky.
+**Individual profiles** — import only the piece you want from **Setup**. Required: EllesmereUI and class layouts. Optional: BigWigs, Northern Sky, WIM, and Waypoint UI.
 
 **Magguu-Look** and a standalone **4K scale** action sit on Setup. Scale reapplies \`0.58\` without re-importing profiles.
 
@@ -247,7 +246,7 @@ So MagguuUI ships one folder: \`MagguuUI/EUI\`, \`MagguuUI/Data\`, and \`MagguuU
     answer: `- \`/mui\` / \`/magguu\` — Setup
 - \`/mui setup\` — Setup
 - \`/mui qol\` — QoL
-- \`/mui profile\` — Profile (import)
+- \`/mui profile\` — Setup
 - \`/mui tools\` / \`/mui export\` / \`/mui werkzeuge\` — Werkzeuge
 
 Commands from the old installer (\`/mui install\`, \`/mui load\`, \`/mui changelog\`, \`/muikeys\`, \`/muiaudio\`, \`/muiautoroll\`, \`/cd\`) are gone.`,

@@ -240,7 +240,7 @@ const form = reactive({
   features: {
     feature_1_emoji: "A",
     feature_1_title: "Native Ellesmere setup",
-    feature_1_text: "One sidebar row with Setup, Skinning, QoL, and Profile. Setup runs the 4K install and Magguu-Look. Profile imports Magguu strings.",
+    feature_1_text: "One sidebar row with Setup, Skinning, and QoL. Setup runs the 4K install, Magguu-Look, and Magguu profile imports.",
     feature_2_emoji: "B",
     feature_2_title: "Current Retail layouts",
     feature_2_text: "Cooldown Viewer class layouts import as Magguu - Class Spec. MagguuUI never writes Blizzard Edit Mode itself.",

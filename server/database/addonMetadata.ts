@@ -69,7 +69,7 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     name: 'Northern Sky Raid Tools',
     category: 'optional',
     emoji: '🧭',
-    description: 'Optional raid notes and alerts. MagguuUI imports the MagguuUI profile and alerts string when NSRT is installed.',
+    description: 'Optional raid notes and alerts. MagguuUI imports the MagguuUI profile when NSRT is installed.',
     url: `${CF}/northern-sky-raid-tools`,
     sortOrder: 0,
   },

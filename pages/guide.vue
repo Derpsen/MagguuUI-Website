@@ -314,8 +314,6 @@ const { data: guidePage, refresh: refreshGuide } = useFetch('/api/v1/content/gui
   default: () => ({ content: {}, title: '', subtitle: '', steps: [] as EditableStep[] }),
 })
 
-const guideContent = computed<GuideLocale>(() => guidePage.value?.content || {})
-
 const editableTitle = ref('')
 const editableSubtitle = ref('')
 const steps = ref<EditableStep[]>([])
@@ -351,10 +349,10 @@ function stepIcon(idx: number) {
 }
 
 function cancelEdit() {
-  const src = guideContent.value
-  editableTitle.value = stripHtml(src?.intro?.title || '')
-  editableSubtitle.value = stripHtml(src?.intro?.text || '')
-  steps.value = parseSteps(src?.steps)
+  const page = guidePage.value
+  editableTitle.value = page?.title || ''
+  editableSubtitle.value = page?.subtitle || ''
+  steps.value = (page?.steps || []).map(step => ({ ...step }))
   editMode.value = false
 }
 

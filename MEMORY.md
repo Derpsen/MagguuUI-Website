@@ -43,7 +43,7 @@
 
 ## Architecture Notes
 
-- Admin routes run with `ssr: false` in `nuxt.config.ts`.
+- Admin routes mostly run with `ssr: false` in `nuxt.config.ts`; `/admin/login` is SSR-on (more-specific rule before `/admin/**`).
 - Auth is hybrid-compatible: login still returns a JWT in the response body, but the admin client restores primarily from HttpOnly cookie + session restore.
 - Session tracking and persistent rate limits are stored in SQLite.
 - Startup seeds admin, guide, and FAQ data; forced guide/FAQ code re-sync is opt-in via `NUXT_SYNC_SEEDED_CONTENT=true`.
@@ -81,6 +81,14 @@
 - `/api/v1/sync/snapshot` returns profiles, WowUp, and class layouts from one SQLite transaction with a revision hash, including hidden synchronization state.
 - Manual GitHub pulls and signed `main`-push webhooks fetch complete, size-bounded Lua snapshots at one immutable commit SHA and apply validated profile/class writes transactionally.
 - Auth authorization resolves the current user and role from SQLite on every request, so deletion, lock, or demotion invalidates existing JWT claims immediately.
+
+
+## SPA admin + color-mode hydration trap (2026-08-23)
+
+- Hard reload of SPA `/admin/**` (`ssr: false`) can client-500 with `hooks.hookOnce is not a function` while HTTP stays 200.
+- `@nuxt/ui` colors plugin FOUC cleanup runs only when `isHydrating && !payload.serverRendered` and calls Unhead `hookOnce`; Nuxt 4.5.2 ships Unhead v3 `HookableCore` without it. SPA nav from a public SSR page is fine.
+- Mitigation: `/admin/login` uses `ssr: true` so login hard-loads skip that branch (`data-ssr` true). Other admin hard-loads may still be fragile until `@nuxt/ui` >= 4.10.0 (upstream #6658; Dependabot PR) or SPA admin is widened to SSR.
+- Lock currently resolves `nuxt@4.5.2` from caret `^4.4.8`; avoid assuming 4.4.x at build time. Not OG-secret / CSP related.
 
 ## Visible Risks
 

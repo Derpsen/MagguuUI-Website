@@ -76,7 +76,14 @@ const errorDesc = computed(() => {
 })
 
 function goHome() {
-  clearError({ redirect: '/' })
+  // clearError({ redirect: '/' }) can leave SPA clients on /home (404) after a
+  // fatal error — especially from admin routes with ssr:false. Hard-nav to /.
+  clearError()
+  if (import.meta.client) {
+    window.location.assign('/')
+    return
+  }
+  return navigateTo('/', { external: true })
 }
 
 function handleError() {

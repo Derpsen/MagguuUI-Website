@@ -131,7 +131,7 @@ const sections = [
 
 interface FaqEntry { id: number, question: string, answer: string, [k: string]: unknown }
 type FaqByCategory = Record<string, FaqEntry[]>
-const { data: rawData, pending } = await useFetch<{ data: FaqByCategory }>('/api/v1/faqs')
+const { data: rawData, pending } = useFetch<{ data: FaqByCategory }>('/api/v1/faqs')
 const faqData = computed<FaqByCategory>(() => rawData.value?.data || {})
 const hasFaqs = computed(() => Object.values(faqData.value).some(arr => arr?.length > 0))
 

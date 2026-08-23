@@ -294,7 +294,7 @@ usePublicPageSeo({
 })
 
 interface ChangelogPageEntry { id: number, version: string, content: string, contentEn?: string | null, publishedAt: string | number | null, [k: string]: unknown }
-const { data: changelogData } = await useFetch<{ data: ChangelogPageEntry[] }>('/api/v1/changelogs')
+const { data: changelogData } = useFetch<{ data: ChangelogPageEntry[] }>('/api/v1/changelogs')
 const allEntries = computed<ChangelogPageEntry[]>(() => changelogData.value?.data || [])
 
 function renderMarkdown(text: string): string {

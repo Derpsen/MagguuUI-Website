@@ -34,7 +34,15 @@ export default defineNitroPlugin((nitroApp) => {
   // serialized so 401/403/etc. on admin/auth still carry private-cache headers.
   nitroApp.hooks.hook('error', (error, { event }) => {
     const path = event?.path || event?.node?.req?.url || ''
-    console.error('[Nitro error]', path, error)
+    // Expected 404s (e.g. stale OG image URLs) are not actionable; keep the
+    // console focused on real failures that can surface as live HTTP 500s.
+    const statusCode = typeof (error as { statusCode?: number })?.statusCode === 'number'
+      ? (error as { statusCode: number }).statusCode
+      : 500
+    const unhandled = Boolean((error as { unhandled?: boolean })?.unhandled)
+    if (statusCode >= 500 || unhandled) {
+      console.error('[Nitro error]', path, error)
+    }
     if (!event) return
     setResponseHeader(event, 'Cache-Control', 'private, no-store, no-cache, must-revalidate')
     if (!isPrivateApiPath(path)) return

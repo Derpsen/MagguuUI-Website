@@ -254,7 +254,7 @@ const isAdmin = computed(() => {
 
 interface GuideLocale { [k: string]: unknown }
 interface GuidePayload { en?: GuideLocale, de?: GuideLocale, [k: string]: unknown }
-const { data: guideData, refresh: refreshGuide } = await useFetch<{ data: GuidePayload }>('/api/v1/content/guide')
+const { data: guideData, refresh: refreshGuide } = useFetch<{ data: GuidePayload }>('/api/v1/content/guide')
 
 const guideContent = computed<GuideLocale>(() => {
   const raw = guideData.value?.data

@@ -191,7 +191,7 @@ interface AddonsResponse {
   total: number
 }
 
-const { data } = await useFetch<{ data: AddonsResponse }>('/api/v1/addons')
+const { data } = useFetch<{ data: AddonsResponse }>('/api/v1/addons')
 const requiredAddons = computed<Addon[]>(() => data.value?.data?.required ?? [])
 const coreAddons = computed<Addon[]>(() => data.value?.data?.core ?? [])
 const optionalAddons = computed<Addon[]>(() => data.value?.data?.optional ?? [])

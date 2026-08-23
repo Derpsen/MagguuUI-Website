@@ -4,69 +4,73 @@
 
 <template>
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-    <!-- Admin controls (client-only to avoid layout shift on SSR) -->
+    <!-- Admin controls: ClientOnly always renders a div (fallback + hidden when guest) -->
     <ClientOnly>
-    <div v-if="isAdmin" class="flex items-center justify-end gap-2 mb-5 fade-in">
-      <template v-if="editMode">
-        <button
-          @click="saveAll"
-          :disabled="saving"
-          class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all"
-          :class="saving ? 'bg-brand-400/60 cursor-wait' : 'bg-brand-400 hover:bg-brand-500'"
-        >
-          <svg v-if="saving" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-          <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-          Save
-        </button>
-        <button
-          @click="cancelEdit"
-          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
-          :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/5 border border-brand-400/15' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-gray-200'"
-        >
-          Cancel
-        </button>
+      <div
+        class="flex items-center justify-end gap-2 mb-5 fade-in"
+        :class="isAdmin ? '' : 'hidden'"
+        :aria-hidden="isAdmin ? undefined : 'true'"
+      >
+        <template v-if="isAdmin && editMode">
+          <button
+            @click="saveAll"
+            :disabled="saving"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all"
+            :class="saving ? 'bg-brand-400/60 cursor-wait' : 'bg-brand-400 hover:bg-brand-500'"
+          >
+            <svg v-if="saving" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+            <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+            Save
+          </button>
+          <button
+            @click="cancelEdit"
+            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
+            :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/5 border border-brand-400/15' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-gray-200'"
+          >
+            Cancel
+          </button>
+        </template>
+        <template v-else-if="isAdmin">
+          <button
+            @click="editMode = true"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+            :class="isDark ? 'bg-brand-400/10 text-brand-400 hover:bg-brand-400/20 border border-brand-400/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'"
+          >
+            <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+            Edit Page
+          </button>
+          <NuxtLink
+            to="/admin/content/guide"
+            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
+            :class="isDark ? 'bg-white/5 text-silver-400 hover:text-white hover:bg-white/10 border border-brand-400/15' : 'bg-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-200 border border-gray-200'"
+          >
+            Full Editor
+          </NuxtLink>
+        </template>
+      </div>
+      <template #fallback>
+        <div class="hidden mb-5" aria-hidden="true" />
       </template>
-      <template v-else>
-        <button
-          @click="editMode = true"
-          class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-          :class="isDark ? 'bg-brand-400/10 text-brand-400 hover:bg-brand-400/20 border border-brand-400/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'"
-        >
-          <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
-          Edit Page
-        </button>
-        <NuxtLink
-          to="/admin/content/guide"
-          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
-          :class="isDark ? 'bg-white/5 text-silver-400 hover:text-white hover:bg-white/10 border border-brand-400/15' : 'bg-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-200 border border-gray-200'"
-        >
-          Full Editor
-        </NuxtLink>
-      </template>
-    </div>
     </ClientOnly>
 
-    <Transition name="bar">
-      <div
-        v-if="editMode"
-        class="flex items-center gap-2 mb-5 px-3 py-2 rounded-lg"
-        :class="isDark ? 'bg-brand-400/10 border border-brand-400/20' : 'bg-blue-50 border border-blue-200'"
-      >
-        <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
-        <span class="text-xs font-medium" :class="isDark ? 'text-brand-400' : 'text-blue-600'">Edit mode — change text below, then click Save</span>
-      </div>
-    </Transition>
+    <!-- No Transition: comment/fragment placeholders mismatch a stable div tree -->
+    <div
+      v-if="editMode"
+      class="flex items-center gap-2 mb-5 px-3 py-2 rounded-lg"
+      :class="isDark ? 'bg-brand-400/10 border border-brand-400/20' : 'bg-blue-50 border border-blue-200'"
+    >
+      <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
+      <span class="text-xs font-medium" :class="isDark ? 'text-brand-400' : 'text-blue-600'">Edit mode — change text below, then click Save</span>
+    </div>
 
-    <Transition name="toast">
-      <div
-        v-if="showSaved"
-        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg border backdrop-blur-xl"
-        :class="isDark ? 'bg-emerald-900/80 border-emerald-400/20 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700'"
-      >
-        <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-        <span class="text-sm font-medium">Changes saved</span>
-      </div>
-    </Transition>
+    <div
+      v-if="showSaved"
+      class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg border backdrop-blur-xl"
+      :class="isDark ? 'bg-emerald-900/80 border-emerald-400/20 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700'"
+    >
+      <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+      <span class="text-sm font-medium">Changes saved</span>
+    </div>
 
     <!-- Header -->
     <section class="mb-12 fade-in">
@@ -165,6 +169,9 @@
                     <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-silver-500' : 'text-gray-400'">Content</label>
                     <ClientOnly>
                       <TipTapEditor v-model="step.editableContent" placeholder="Step content..." min-height="120px" />
+                      <template #fallback>
+                        <div class="min-h-[120px] rounded-xl" aria-hidden="true" />
+                      </template>
                     </ClientOnly>
                   </div>
                 </div>
@@ -480,9 +487,4 @@ async function saveAll() {
 }
 .guide-content :deep(hr) { margin: 1rem 0; border-color: rgba(59, 139, 255, 0.15); }
 
-.bar-enter-active, .bar-leave-active { transition: all 0.25s ease; }
-.bar-enter-from, .bar-leave-to { opacity: 0; transform: translateY(-8px); }
-
-.toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
-.toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, 20px); }
 </style>

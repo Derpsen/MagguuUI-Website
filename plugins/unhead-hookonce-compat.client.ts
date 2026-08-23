@@ -12,6 +12,7 @@
  * because the colors plugin already ran with serverRendered=true.
  *
  * Upstream: nuxt/ui#6658. This polyfill avoids a broader @nuxt/ui bump.
+ * Build-time patch: modules/fix-nuxt-ui-colors-hookonce.ts
  */
 export default defineNuxtPlugin({
   name: 'unhead-hookonce-compat',
@@ -19,7 +20,7 @@ export default defineNuxtPlugin({
   setup() {
     if (!import.meta.client) return
 
-    let head: ReturnType<typeof injectHead>
+    let head: ReturnType<typeof injectHead> | undefined
     try {
       head = injectHead()
     }
@@ -27,23 +28,27 @@ export default defineNuxtPlugin({
       return
     }
 
+    if (!head?.hooks) return
+
     type HookFn = (...args: unknown[]) => unknown
-    type Unhook = () => void
-    const hooks = head?.hooks as {
+    type Unhook = () => undefined
+    const hooks = head.hooks as {
       hook?: (name: string, fn: HookFn) => Unhook | undefined
       hookOnce?: (name: string, fn: HookFn) => Unhook | undefined
-    } | undefined
+    }
 
-    if (!hooks || typeof hooks.hookOnce === 'function' || typeof hooks.hook !== 'function') {
+    const baseHook = hooks.hook
+    if (typeof hooks.hookOnce === 'function' || typeof baseHook !== 'function') {
       return
     }
 
     hooks.hookOnce = (name, fn) => {
-      const unhook = hooks.hook?.(name, (...args: unknown[]) => {
-        unhook?.()
+      const state: { stop?: Unhook } = {}
+      state.stop = baseHook(name, (...args: unknown[]) => {
+        state.stop?.()
         return fn(...args)
       })
-      return unhook
+      return state.stop
     }
   },
 })

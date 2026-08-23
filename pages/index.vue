@@ -52,8 +52,7 @@
             </div>
 
             <div class="mt-14 w-full">
-              <div class="w-full max-w-md mx-auto h-px mb-10"
-                :class="isDark ? 'bg-gradient-to-r from-transparent via-brand-400/20 to-transparent' : 'bg-gradient-to-r from-transparent via-blue-200 to-transparent'" />
+              <div class="hero-stat-divider w-full max-w-md mx-auto mb-10" />
               <div class="flex items-center justify-center gap-16 sm:gap-24">
                 <div v-for="stat in stats" :key="stat.label" class="text-center">
                   <div class="text-4xl sm:text-5xl font-extrabold text-gradient mb-1.5">{{ stat.value }}</div>
@@ -99,7 +98,7 @@
         <div v-for="(feat, idx) in features" :key="idx"
           class="feature-card feature-reveal-item rounded-2xl p-8 group scroll-reveal"
           :class="`scroll-reveal-delay-${idx + 1}`">
-          <div class="w-14 h-14 rounded-xl bg-ellesmere/10 flex items-center justify-center mb-6 group-hover:bg-ellesmere/15 transition-colors">
+          <div class="w-14 h-14 rounded-xl bg-ellesmere/10 border border-ellesmere/20 flex items-center justify-center mb-6 group-hover:bg-ellesmere/15 group-hover:border-ellesmere/30 transition-colors">
             <span class="text-2xl">{{ feat.emoji }}</span>
           </div>
           <h3 class="text-lg font-semibold text-gradient-subtle mb-3">{{ feat.title }}</h3>

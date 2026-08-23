@@ -21,8 +21,8 @@
         <div class="public-nav-shell rounded-[1.45rem] px-3 sm:px-4 py-3">
           <div class="flex items-center justify-between gap-3 lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-center">
             <NuxtLink to="/" class="flex items-center group shrink-0">
-              <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl transition-transform duration-300 group-hover:scale-[1.04]"
-                :class="isDark ? 'bg-white/[0.06] border border-white/10' : 'bg-white/90 border border-blue-100 shadow-sm'">
+              <span class="public-brand-mark inline-flex items-center justify-center w-11 h-11 rounded-2xl transition-transform duration-300 group-hover:scale-[1.04]"
+                :class="isDark ? 'bg-white/[0.06]' : 'bg-white/90 shadow-sm'">
                 <img src="/logo.png" alt="MagguuUI" width="28" height="28" class="w-7 h-7" />
               </span>
             </NuxtLink>
@@ -41,6 +41,7 @@
                       ? 'text-silver-400 hover:text-white hover:bg-white/[0.05]'
                       : 'text-gray-500 hover:text-gray-900 hover:bg-white'"
                 >
+                  <span v-if="isActive(link.to)" class="public-nav-active-dot" aria-hidden="true" />
                   <UIcon :name="link.icon" class="w-3.5 h-3.5 opacity-80" />
                   {{ link.label }}
                 </NuxtLink>
@@ -104,6 +105,7 @@
                     ? 'text-silver-400 hover:text-white hover:bg-white/[0.05]'
                     : 'text-gray-500 hover:text-gray-900 hover:bg-white'"
               >
+                <span v-if="isActive(link.to)" class="public-nav-active-dot" aria-hidden="true" />
                 <UIcon :name="link.icon" class="w-3.5 h-3.5 opacity-80" />
                 {{ link.label }}
               </NuxtLink>
@@ -304,6 +306,7 @@
           <!-- Brand strip -->
           <div class="relative px-6 py-6 sm:py-7 text-center"
             :class="isDark ? 'bg-gradient-to-r from-brand-950/60 via-brand-900/40 to-brand-950/60' : 'bg-gradient-to-r from-blue-50 via-blue-100/60 to-blue-50'">
+            <div class="public-footer-brand-accent absolute inset-x-8 top-0" aria-hidden="true" />
             <div class="flex items-center justify-center gap-3 mb-2">
               <img src="/logo.png" alt="MagguuUI" width="24" height="24" loading="lazy" class="w-6 h-6" />
               <span class="text-lg font-bold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-900'">{{ siteName }}</span>
@@ -440,7 +443,7 @@ const siteStatusLabel = computed(() => {
 const siteStatusDot = computed(() => {
   if (maintenanceMode.value) return 'bg-amber-400'
   if (bannerText.value) return 'bg-blue-400'
-  return 'bg-emerald-400'
+  return 'bg-ellesmere'
 })
 const siteStatusClasses = computed(() => {
   if (maintenanceMode.value) {
@@ -454,8 +457,8 @@ const siteStatusClasses = computed(() => {
       : 'bg-blue-50 text-blue-700 border border-blue-100'
   }
   return isDark.value
-    ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-400/20'
-    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+    ? 'bg-ellesmere/10 text-ellesmere border border-ellesmere/20'
+    : 'bg-ellesmere/10 text-emerald-800 border border-ellesmere/30'
 })
 
 function isActive(path: string): boolean {

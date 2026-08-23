@@ -147,7 +147,7 @@ html, body, #__nuxt {
   right: -7rem;
   width: 28rem;
   height: 28rem;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.12), transparent 70%);
+  background: radial-gradient(circle, rgba(12, 210, 157, 0.11), transparent 70%);
   animation-delay: -6s;
 }
 
@@ -204,9 +204,9 @@ html, body, #__nuxt {
 
 .public-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, rgba(59, 139, 255, 0.85), rgba(96, 165, 250, 0.95), rgba(255, 255, 255, 0.95));
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.9), rgba(59, 139, 255, 0.95), rgba(12, 210, 157, 0.9));
   transform-origin: 0 50%;
-  box-shadow: 0 0 18px rgba(59, 139, 255, 0.35);
+  box-shadow: 0 0 18px rgba(59, 139, 255, 0.28), 0 0 12px rgba(12, 210, 157, 0.18);
 }
 
 .public-status-chip {
@@ -351,11 +351,41 @@ html, body, #__nuxt {
 .text-ellesmere { color: var(--color-ellesmere); }
 .bg-ellesmere\/10 { background-color: color-mix(in srgb, var(--color-ellesmere) 10%, transparent); }
 .bg-ellesmere\/15 { background-color: color-mix(in srgb, var(--color-ellesmere) 15%, transparent); }
+.border-ellesmere\/20 { border-color: color-mix(in srgb, var(--color-ellesmere) 20%, transparent); }
+.border-ellesmere\/30 { border-color: color-mix(in srgb, var(--color-ellesmere) 30%, transparent); }
 .accent-ellesmere-dot {
   background-color: color-mix(in srgb, var(--color-ellesmere) 45%, transparent);
 }
 .group:hover .accent-ellesmere-dot {
   background-color: var(--color-ellesmere);
+}
+
+/* Quiet dual-brand accents for public chrome (Magguu blue + Ellesmere teal) */
+.public-brand-mark {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-brand-400) 22%, transparent),
+              0 0 0 1px color-mix(in srgb, var(--color-ellesmere) 12%, transparent);
+}
+html:not(.dark) .public-brand-mark {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-brand-500) 18%, transparent),
+              0 0 0 1px color-mix(in srgb, var(--color-ellesmere) 14%, transparent);
+}
+.public-nav-active-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 999px;
+  background: var(--color-ellesmere);
+  flex-shrink: 0;
+}
+.public-footer-brand-accent {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(59, 139, 255, 0.55), rgba(12, 210, 157, 0.65), transparent);
+}
+.hero-stat-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59, 139, 255, 0.35), rgba(12, 210, 157, 0.4), transparent);
+}
+html:not(.dark) .hero-stat-divider {
+  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.25), rgba(12, 210, 157, 0.3), transparent);
 }
 
 /* ─── Unified Public Button Primitives ────────────────────── */
@@ -579,9 +609,9 @@ html:not(.dark) .btn-icon:hover:not(:disabled) {
 }
 
 .feature-card:hover {
-  border-color: rgba(59, 139, 255, 0.15);
+  border-color: color-mix(in srgb, var(--color-ellesmere) 28%, rgba(59, 139, 255, 0.18));
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(59, 139, 255, 0.06);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 28px rgba(59, 139, 255, 0.05), 0 0 22px rgba(12, 210, 157, 0.06);
 }
 
 /* ─── Addon Pills ─────────────────────────────────── */
@@ -593,9 +623,9 @@ html:not(.dark) .btn-icon:hover:not(:disabled) {
 }
 
 .addon-pill:hover {
-  border-color: rgba(59, 139, 255, 0.2);
+  border-color: color-mix(in srgb, var(--color-ellesmere) 32%, rgba(59, 139, 255, 0.16));
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 12px rgba(59, 139, 255, 0.06);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 12px rgba(12, 210, 157, 0.08);
 }
 
 /* ─── Version Badge ──────────────────────────────── */
@@ -626,7 +656,7 @@ html:not(.dark) .btn-icon:hover:not(:disabled) {
 
 /* ─── Hero Badge Bump ──────────────────────────── */
 .hero-badge {
-  animation: fadeIn 0.6s ease-out, badgeBump 2s ease-in-out 1.5s infinite;
+  /* static — no bounce; teal + Magguu accents live on the pill itself */
 }
 @keyframes badgeBump {
   0%, 100% { transform: translateY(0); }
@@ -649,7 +679,7 @@ html:not(.dark) .btn-icon:hover:not(:disabled) {
 
 .section-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(59, 139, 255, 0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(59, 139, 255, 0.18), rgba(12, 210, 157, 0.22), transparent);
 }
 
 /* ─── Heading Glow (bright light behind page titles) ── */
@@ -869,8 +899,8 @@ html.light .feature-card {
 }
 
 html.light .feature-card:hover {
-  border-color: rgba(59, 139, 255, 0.18);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  border-color: color-mix(in srgb, var(--color-ellesmere) 26%, rgba(59, 139, 255, 0.16));
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08), 0 0 18px rgba(12, 210, 157, 0.05);
 }
 
 html.light .addon-pill {
@@ -879,8 +909,8 @@ html.light .addon-pill {
 }
 
 html.light .addon-pill:hover {
-  border-color: rgba(59, 139, 255, 0.2);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 0 12px rgba(59, 139, 255, 0.04);
+  border-color: color-mix(in srgb, var(--color-ellesmere) 28%, rgba(59, 139, 255, 0.14));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 0 12px rgba(12, 210, 157, 0.05);
 }
 
 html.light .version-badge {
@@ -890,7 +920,7 @@ html.light .version-badge {
 }
 
 html.light .section-divider {
-  background: linear-gradient(90deg, transparent, rgba(59, 139, 255, 0.12), transparent);
+  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.14), rgba(12, 210, 157, 0.16), transparent);
 }
 
 html.light .prose-custom h1, html.light .prose-custom h2, html.light .prose-custom h3, html.light .prose-custom h4 { color: #1e293b; }

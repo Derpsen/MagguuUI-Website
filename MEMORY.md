@@ -7,9 +7,21 @@
 - Deployment: Docker on Unraid — image built by `.github/workflows/docker.yml` and published to GHCR; Unraid pulls via *Check for Updates* → *Apply Update*
 - Repo contains the public website, admin panel, and Nitro/API backend in one app
 
+## Agent / Buddy ops
+
+- Entrypoint: `AGENTS.md` → `CLAUDE.md` (depth) → this file (ops history).
+- Buddy is the single front door; helpers report to Buddy. Clear in-scope fixes
+  may push/merge to main under the hub standing order; no force-push; tags need
+  an explicit release ask.
+- Production: Unraid container `MagguuUI` / image `ghcr.io/derpsen/magguuui-website`;
+  `ui.magguu.xyz` → `http://192.168.178.21:3000` (`br0`). Transient 500 after
+  deploy is possible — recheck.
+- `error.vue` Home → `/` only (never `/home`).
+- CodeQL `init` and `analyze` must share one commit pin.
+
 ## Important Paths
 
-- Docs: `README.md`, `CLAUDE.md`, `MEMORY.md`
+- Docs: `README.md`, `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`
 - Frontend: `pages/`, `components/`, `layouts/`, `assets/css/main.css`, `composables/`
 - Backend: `server/api/`, `server/utils/`, `server/plugins/`, `server/middleware/`
 - Database: `server/database/index.ts`, `server/database/schema.ts`, `drizzle.config.ts`

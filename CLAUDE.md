@@ -76,6 +76,27 @@ Known inaccurate legacy seed claims may be repaired by exact marker during start
 
 **Color mode**: default follows the OS via `colorMode.preference: 'system'`. Do not hardcode `dark` as the preference.
 
+**error.vue Home**: the Home action must go to `/`, never `/home`. Prefer
+`clearError()` then `window.location.assign('/')` (or `navigateTo('/', { external: true })`).
+`clearError({ redirect: '/' })` has stranded SPA/admin clients on `/home` (404).
+
+**Deploy / Unraid**: production container name is `MagguuUI`, image
+`ghcr.io/derpsen/magguuui-website`. Live hostname `ui.magguu.xyz`; LAN
+`http://192.168.178.21:3000` (`br0`). A transient HTTP 500 right after an
+image update can occur while the new process binds — recheck before calling it a
+regression. Do not build on Unraid; pull the GHCR image.
+
+**CodeQL pins**: `github/codeql-action/init` and `analyze` in
+`.github/workflows/codeql.yml` must use the same commit SHA. Do not leave
+init/analyze on different pins.
+
+**Grok Bot / Buddy + Git publish**: Marco uses Grok Bot "Buddy" as the single
+front door; helpers report to Buddy. Interactive sessions: never commit/push/tag
+unless explicitly asked. Helpers under Buddy's hub standing order may commit,
+push, and merge clear in-scope fixes to main without a per-change ask; never
+force-push; never publish unrelated dirty WIP; tags/releases need an explicit
+release ask. Agent entrypoint: `AGENTS.md`.
+
 ## References
 
 - Database schema: `server/database/schema.ts`
@@ -94,3 +115,5 @@ Known inaccurate legacy seed claims may be repaired by exact marker during start
 - Do not commit secrets, runtime databases, uploads, build output, or generated archives.
 - Do not perform major dependency upgrades without a separate compatibility pass.
 - Do not build directly on Unraid; CI publishes the GHCR image and Unraid pulls it.
+- Do not point error.vue Home at `/home`; use `/`.
+- Do not pin CodeQL init and analyze to different SHAs.

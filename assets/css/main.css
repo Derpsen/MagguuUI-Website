@@ -38,6 +38,11 @@
   --color-silver-700: #2d3f58;
   --color-silver-800: #1e3048;
   --color-silver-900: #152438;
+
+  /* Ellesmere accent (MagguuUI host UI brand teal) */
+  --color-ellesmere-50: #e6faf5;
+  --color-ellesmere-400: #0CD29D;
+  --color-ellesmere: #0CD29D;
 }
 
 /* ─── Fonts (fallback for non-Tailwind contexts) ── */
@@ -340,6 +345,16 @@ html, body, #__nuxt {
   background-position: 100% 100%;
   box-shadow: 0 6px 24px rgba(5, 150, 105, 0.3);
   transform: translateY(-1px);
+}
+
+/* --- Ellesmere teal utilities --- */
+.text-ellesmere { color: var(--color-ellesmere); }
+.bg-ellesmere\/10 { background-color: color-mix(in srgb, var(--color-ellesmere) 10%, transparent); }
+.accent-ellesmere-dot {
+  background-color: color-mix(in srgb, var(--color-ellesmere) 45%, transparent);
+}
+.group:hover .accent-ellesmere-dot {
+  background-color: var(--color-ellesmere);
 }
 
 /* ─── Unified Public Button Primitives ────────────────────── */

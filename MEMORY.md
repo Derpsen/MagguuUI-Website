@@ -19,6 +19,13 @@
 - `error.vue` Home → `/` only (never `/home`).
 - CodeQL `init` and `analyze` must share one commit pin.
 
+
+## Design
+
+- Marco's direction for the public home: clean and clear — primary CTA **Install & Setup** (`/guide`), secondary **Import Strings** (`/strings`). Little glass/motion; no hero fade-in or bounce scroll cue.
+- Brand palette: Magguu blue (existing `--color-brand-*`) plus Ellesmere teal `#0CD29D` (`--color-ellesmere`). Use teal for soft accent dots / feature highlights, not a full admin retheme.
+- Home copy stays factual about EllesmereUI (native module, `/mui` 4K setup, optional BigWigs / Northern Sky, Smart Tab, Quick Focus, audio switcher). Seed defaults live in `server/database/defaultContent.ts` (EN + DE).
+
 ## Important Paths
 
 - Docs: `README.md`, `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`

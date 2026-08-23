@@ -1,11 +1,11 @@
 <!--
-  Landing Page — Full fade-in + scroll reveal animations
+  Landing Page — premium-clean hero, factual Ellesmere copy
   Content from API with static fallbacks
 -->
 
 <template>
   <div>
-    <!-- Hero Section — full viewport, fade in on load -->
+    <!-- Hero Section — full viewport -->
     <section aria-label="Hero" class="relative flex flex-col" style="min-height: calc(100dvh - 5rem);">
       <!-- Admin Edit Button -->
       <div v-if="isLoggedIn" class="absolute top-4 right-4 sm:right-8 z-10">
@@ -20,37 +20,38 @@
         <div class="relative px-6 py-8 sm:px-10 sm:py-12 lg:px-12 lg:py-14">
           <div class="max-w-4xl mx-auto flex flex-col items-center text-center">
             <!-- Badge — links to changelog, shows last change -->
-            <NuxtLink to="/changelog" class="hero-badge inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium mb-10 fade-in cursor-pointer transition-all hover:scale-105 border"
+            <NuxtLink to="/changelog" class="hero-badge inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium mb-10 cursor-pointer transition-colors border"
               :class="isDark
                 ? 'bg-brand-400/8 border-brand-400/15 text-brand-300'
                 : 'bg-brand-400/6 border-brand-400/15 text-blue-700'">
-              <span>🚀</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-ellesmere" aria-hidden="true" />
               <span>{{ latestBadgeText }}</span>
             </NuxtLink>
 
-            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.1] mb-8 fade-in fade-in-delay-1">
+            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.1] mb-8">
               <span class="text-gradient">{{ content?.hero?.title || 'Your WoW Interface,' }}</span> <br />
               <span class="text-gradient">{{ content?.hero?.title2 || 'perfected.' }}</span>
             </h1>
 
-            <SafeHtml class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed fade-in fade-in-delay-2"
+            <SafeHtml class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed"
               :class="isDark ? 'text-silver-400' : 'text-gray-500'"
-              :html="content?.hero?.description || 'MagguuUI is a native EllesmereUI module for WoW Retail. Install <strong>EllesmereUI</strong> and the single <strong>MagguuUI</strong> folder, then open <code>/mui</code> and run the 4K setup. BigWigs and Northern Sky Raid Tools stay optional.'"
+              :html="content?.hero?.description || 'MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the single <strong>MagguuUI</strong> folder, then open <code>/mui</code> and run the 4K setup. BigWigs and Northern Sky stay optional.'"
             />
 
-            <div class="flex items-center justify-center gap-4 fade-in fade-in-delay-3">
-              <NuxtLink to="/strings" class="btn-gradient px-8 py-4 rounded-xl text-white font-semibold text-lg inline-flex items-center gap-2">
-                <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
-                Import Strings
+            <div class="flex flex-wrap items-center justify-center gap-4">
+              <NuxtLink to="/guide" class="btn-gradient px-8 py-4 rounded-xl text-white font-semibold text-lg inline-flex items-center gap-2">
+                Install &amp; Setup
               </NuxtLink>
-              <NuxtLink to="/guide"
-                class="glass glass-hover px-8 py-4 rounded-xl font-semibold text-lg inline-flex items-center gap-2 transition-all"
-                :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-                📖 Guides
+              <NuxtLink to="/strings"
+                class="px-8 py-4 rounded-xl font-semibold text-lg inline-flex items-center gap-2 border transition-colors"
+                :class="isDark
+                  ? 'border-brand-400/30 text-silver-300 hover:text-white hover:border-brand-400/50 bg-transparent'
+                  : 'border-blue-200 text-gray-600 hover:text-gray-900 hover:border-blue-300 bg-transparent'">
+                Import Strings
               </NuxtLink>
             </div>
 
-            <div class="mt-14 w-full fade-in fade-in-delay-4">
+            <div class="mt-14 w-full">
               <div class="w-full max-w-md mx-auto h-px mb-10"
                 :class="isDark ? 'bg-gradient-to-r from-transparent via-brand-400/20 to-transparent' : 'bg-gradient-to-r from-transparent via-blue-200 to-transparent'" />
               <div class="flex items-center justify-center gap-16 sm:gap-24">
@@ -73,7 +74,7 @@
                 <NuxtLink v-for="addon in addonNames" :key="addon" :to="`/strings?addon=${encodeURIComponent(addon)}`"
                   class="addon-pill px-5 py-3 rounded-xl text-sm font-medium transition-all group inline-flex items-center gap-2"
                   :class="isDark ? 'text-silver-300 hover:text-brand-400' : 'text-gray-600 hover:text-brand-500'">
-                  <span class="w-2 h-2 rounded-full bg-brand-400/40 group-hover:bg-brand-400 transition-colors" />
+                  <span class="w-2 h-2 rounded-full accent-ellesmere-dot transition-colors" />
                   {{ addon }}
                   <svg aria-hidden="true" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
@@ -86,21 +87,9 @@
       </div>
     </section>
 
-    <!-- Scroll indicator — fixed overlay, fades out on scroll -->
-    <div
-      class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex justify-center fade-in fade-in-delay-4 pointer-events-none transition-opacity duration-500"
-      :style="{ opacity: scrollIndicatorOpacity }">
-      <div class="scroll-bounce backdrop-blur-sm rounded-full p-2"
-        :class="isDark ? 'bg-brand-950/60' : 'bg-white/60'">
-        <svg aria-hidden="true" class="w-7 h-7" :class="isDark ? 'text-brand-400/70' : 'text-blue-400'" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
-      </div>
-    </div>
-
     <div class="section-divider" />
 
-    <!-- Features — scroll reveal -->
+    <!-- Features -->
     <section aria-label="Features" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
       <div ref="featuresHeading" class="text-center mb-16 scroll-reveal">
         <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.features_heading?.title || 'Why MagguuUI?' }}</span></h2>
@@ -110,7 +99,7 @@
         <div v-for="(feat, idx) in features" :key="idx"
           class="feature-card feature-reveal-item rounded-2xl p-8 group scroll-reveal"
           :class="`scroll-reveal-delay-${idx + 1}`">
-          <div class="w-14 h-14 rounded-xl bg-brand-400/10 flex items-center justify-center mb-6 group-hover:bg-brand-400/15 transition-colors">
+          <div class="w-14 h-14 rounded-xl bg-ellesmere/10 flex items-center justify-center mb-6 group-hover:bg-ellesmere/15 transition-colors">
             <span class="text-2xl">{{ feat.emoji }}</span>
           </div>
           <h3 class="text-lg font-semibold text-gradient-subtle mb-3">{{ feat.title }}</h3>
@@ -268,17 +257,17 @@ const features = computed(() => [
   {
     emoji: '⚡',
     title: content.value?.features?.feature_1_title || 'Native Ellesmere setup',
-    text: content.value?.features?.feature_1_text || 'One sidebar row with Setup, Skinning, and QoL. Setup runs the 4K install, Magguu-Look, Load profiles, required and optional Magguu imports, and WowUp copy popups. Werkzeuge exports your live profiles.',
+    text: content.value?.features?.feature_1_text || 'One sidebar row with Setup, Skinning, and QoL. Gold <strong>Install everything</strong>, Magguu-Look, Load profiles, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.',
   },
   {
     emoji: '🔄',
     title: content.value?.features?.feature_2_title || 'Current Retail layouts',
-    text: content.value?.features?.feature_2_text || 'Cooldown Viewer class layouts import as <strong>Magguu - Class Spec</strong>. After a successful import MagguuUI asks you to reload so the layouts stick.',
+    text: content.value?.features?.feature_2_text || 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, and Waypoint UI.',
   },
   {
     emoji: '🎯',
     title: content.value?.features?.feature_3_title || 'Skinning and QoL included',
-    text: content.value?.features?.feature_3_text || 'Split unit and group names, class-colored keybind modifiers, death-release protection, co-tank frames, stealth reminders, spell-alert opacity, Smart Tab, Quick Focus, and an audio device switcher on the Ellesmere speaker icon live in the MagguuUI profile.',
+    text: content.value?.features?.feature_3_text || 'Split name colors and class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, and an <strong>Audio device switcher</strong> on the Ellesmere speaker.',
   },
 ])
 
@@ -328,23 +317,12 @@ const stats = computed(() => [
   { value: animatedUpdates.value, label: 'Updates' },
 ])
 
-// ─── Scroll Indicator ─────────────────────
-const scrollIndicatorOpacity = ref(1)
-let homeRevealObserver: IntersectionObserver | null = null
-
-function handleHeroScroll() {
-  const y = window.scrollY
-  scrollIndicatorOpacity.value = y < 80 ? 1 : Math.max(0, 1 - (y - 80) / 120)
-}
-
 // ─── Scroll Reveal ─────────────────────
+let homeRevealObserver: IntersectionObserver | null = null
 const featuresHeading = ref<HTMLElement | null>(null)
 const addonsHeading = ref<HTMLElement | null>(null)
 const addonPills = ref<HTMLElement | null>(null)
 onMounted(() => {
-  window.addEventListener('scroll', handleHeroScroll, { passive: true })
-  handleHeroScroll()
-
   homeRevealObserver = new IntersectionObserver((entries) => {
     for (const entry of entries) {
       if (entry.isIntersecting) {
@@ -362,9 +340,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (import.meta.client) {
-    window.removeEventListener('scroll', handleHeroScroll)
-  }
   homeRevealObserver?.disconnect()
   homeRevealObserver = null
 })

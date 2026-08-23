@@ -2,19 +2,19 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'hero', key: 'title', value: 'Your WoW Interface,', type: 'text', sortOrder: 0, locale: 'en' },
   { page: 'home', section: 'hero', key: 'title2', value: 'perfected.', type: 'text', sortOrder: 1, locale: 'en' },
   { page: 'home', section: 'hero', key: 'subtitle', value: 'A native 4K overhaul for EllesmereUI.', type: 'text', sortOrder: 2, locale: 'en' },
-  { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI is a native EllesmereUI module for WoW Retail. Install <strong>EllesmereUI</strong> and the single <strong>MagguuUI</strong> folder, then open <code>/mui</code> and run the 4K setup. BigWigs and Northern Sky Raid Tools stay optional.', type: 'html', sortOrder: 3, locale: 'en' },
+  { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the single <strong>MagguuUI</strong> folder, then open <code>/mui</code> and run the 4K setup. BigWigs and Northern Sky stay optional.', type: 'html', sortOrder: 3, locale: 'en' },
   { page: 'home', section: 'hero', key: 'badge', value: 'Ready for WoW 12.1', type: 'text', sortOrder: 4, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'Native Ellesmere setup', type: 'text', sortOrder: 0, locale: 'en' },
-  { page: 'home', section: 'features', key: 'feature_1_text', value: 'One sidebar row with Setup, Skinning, and QoL. Setup runs the 4K install, Magguu-Look, Load profiles, required and optional Magguu imports, and WowUp copy popups. Tooltips stay at Magguu\'s spot. Werkzeuge exports your live profiles.', type: 'text', sortOrder: 1, locale: 'en' },
+  { page: 'home', section: 'features', key: 'feature_1_text', value: 'One sidebar row with Setup, Skinning, and QoL. Gold <strong>Install everything</strong>, Magguu-Look, Load profiles, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.', type: 'html', sortOrder: 1, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_2_title', value: 'Current Retail layouts', type: 'text', sortOrder: 3, locale: 'en' },
-  { page: 'home', section: 'features', key: 'feature_2_text', value: 'Cooldown Viewer class layouts import as <strong>Magguu - Class Spec</strong>. After a successful import MagguuUI asks you to reload so the layouts stick.', type: 'html', sortOrder: 4, locale: 'en' },
+  { page: 'home', section: 'features', key: 'feature_2_text', value: 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, and Waypoint UI.', type: 'html', sortOrder: 4, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_2_icon', value: 'i-heroicons-squares-2x2', type: 'text', sortOrder: 5, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_3_title', value: 'Skinning and QoL included', type: 'text', sortOrder: 6, locale: 'en' },
-  { page: 'home', section: 'features', key: 'feature_3_text', value: 'Split unit and group names, class-colored keybind modifiers, death-release protection, co-tank frames, stealth reminders, spell-alert opacity, Smart Tab, Quick Focus, and an audio device switcher on the Ellesmere speaker icon live in the MagguuUI profile.', type: 'text', sortOrder: 7, locale: 'en' },
+  { page: 'home', section: 'features', key: 'feature_3_text', value: 'Split name colors and class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, and an <strong>Audio device switcher</strong> on the Ellesmere speaker.', type: 'html', sortOrder: 7, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_3_icon', value: 'i-heroicons-sparkles', type: 'text', sortOrder: 8, locale: 'en' },
 
   { page: 'home', section: 'features_heading', key: 'title', value: 'Why MagguuUI?', type: 'text', sortOrder: 0, locale: 'en' },
@@ -22,6 +22,30 @@ export const DEFAULT_HOME_CONTENT = [
 
   { page: 'home', section: 'addons', key: 'title', value: 'Supported Addons', type: 'text', sortOrder: 0, locale: 'en' },
   { page: 'home', section: 'addons', key: 'subtitle', value: 'EllesmereUI is required. BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.', type: 'text', sortOrder: 1, locale: 'en' },
+
+  { page: 'home', section: 'hero', key: 'title', value: 'Dein WoW-Interface,', type: 'text', sortOrder: 0, locale: 'de' },
+  { page: 'home', section: 'hero', key: 'title2', value: 'perfektioniert.', type: 'text', sortOrder: 1, locale: 'de' },
+  { page: 'home', section: 'hero', key: 'subtitle', value: 'Ein natives 4K-Overhaul für EllesmereUI.', type: 'text', sortOrder: 2, locale: 'de' },
+  { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI ist ein natives <strong>EllesmereUI</strong>-Modul für WoW Retail. Installiere <strong>EllesmereUI</strong> und den einen Ordner <strong>MagguuUI</strong>, öffne <code>/mui</code> und starte das 4K-Setup. BigWigs und Northern Sky bleiben optional.', type: 'html', sortOrder: 3, locale: 'de' },
+  { page: 'home', section: 'hero', key: 'badge', value: 'Bereit für WoW 12.1', type: 'text', sortOrder: 4, locale: 'de' },
+
+  { page: 'home', section: 'features', key: 'feature_1_title', value: 'Natives Ellesmere-Setup', type: 'text', sortOrder: 0, locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_1_text', value: 'Eine Sidebar-Zeile mit Setup, Skinning und QoL. Goldenes <strong>Install everything</strong>, Magguu-Look, Profile laden, Pflicht- und optionale Imports sowie WowUp-Copy-Strings liegen unter Setup. Öffnen mit <code>/mui</code>. Werkzeuge über <code>/mui tools</code> oder 10 Klicks auf den MagguuUI-Header.', type: 'html', sortOrder: 1, locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'de' },
+
+  { page: 'home', section: 'features', key: 'feature_2_title', value: 'Aktuelle Retail-Layouts', type: 'text', sortOrder: 3, locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_2_text', value: 'Ellesmere-Profil <strong>MagguuUI</strong> mit Scale <strong>0.58</strong> und festem Tooltip. Klassen-Layouts als <strong>Magguu - Class Spec</strong>. Optionale Profile für BigWigs, Northern Sky, WIM und Waypoint UI.', type: 'html', sortOrder: 4, locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_2_icon', value: 'i-heroicons-squares-2x2', type: 'text', sortOrder: 5, locale: 'de' },
+
+  { page: 'home', section: 'features', key: 'feature_3_title', value: 'Skinning und QoL inklusive', type: 'text', sortOrder: 6, locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_3_text', value: 'Getrennte Namensfarben und klassenfarbige Keybind-Modifier. QoL: Death Release, Co-Tank, Stealth/Stance, Spell Alerts, <strong>Smart Tab</strong>, <strong>Quick Focus</strong> und ein <strong>Audio-Geräte-Umschalter</strong> am Ellesmere-Lautsprecher.', type: 'html', sortOrder: 7, locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_3_icon', value: 'i-heroicons-sparkles', type: 'text', sortOrder: 8, locale: 'de' },
+
+  { page: 'home', section: 'features_heading', key: 'title', value: 'Warum MagguuUI?', type: 'text', sortOrder: 0, locale: 'de' },
+  { page: 'home', section: 'features_heading', key: 'subtitle', value: 'Ein 4K-EllesmereUI-Setup mit optionalen Raid-Tools', type: 'text', sortOrder: 1, locale: 'de' },
+
+  { page: 'home', section: 'addons', key: 'title', value: 'Unterstützte Addons', type: 'text', sortOrder: 0, locale: 'de' },
+  { page: 'home', section: 'addons', key: 'subtitle', value: 'EllesmereUI ist erforderlich. BigWigs, LittleWigs und Northern Sky Raid Tools sind optional.', type: 'text', sortOrder: 1, locale: 'de' },
 ] as const
 
 export const DEFAULT_GUIDE_CONTENT = [

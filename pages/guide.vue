@@ -73,10 +73,10 @@
       <div v-if="!editMode" class="max-w-3xl mx-auto text-center heading-glow">
         <h1 class="text-4xl sm:text-5xl font-bold leading-tight mb-4 flex items-center justify-center gap-3">
           <UIcon name="i-heroicons-book-open" class="w-8 h-8 text-brand-400 flex-shrink-0" />
-          <span class="text-gradient">{{ editableTitle || 'Installation Guide' }}</span>
+          <span class="text-gradient">{{ visibleTitle || 'Installation Guide' }}</span>
         </h1>
         <p class="text-lg leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-500'">
-          {{ editableSubtitle || 'Install EllesmereUI, add the MagguuUI folder, then open /mui and run the 4K setup. Magguu-Look, Load profiles, and WowUp copy popups live on Setup. BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.' }}
+          {{ visibleSubtitle || 'Install EllesmereUI, add the MagguuUI folder, then open /mui and run the 4K setup. Magguu-Look, Load profiles, and WowUp copy popups live on Setup. BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.' }}
         </p>
       </div>
 
@@ -102,11 +102,11 @@
     </section>
 
     <!-- Layout: steps + sidebar -->
-    <div v-if="steps.length" class="grid lg:grid-cols-[minmax(0,1fr)_260px] gap-8 lg:gap-12 items-start">
+    <div v-if="visibleSteps.length" class="grid lg:grid-cols-[minmax(0,1fr)_260px] gap-8 lg:gap-12 items-start">
       <!-- Steps -->
       <div class="space-y-5">
         <article
-          v-for="(step, idx) in steps"
+          v-for="(step, idx) in visibleSteps"
           :id="`step-${idx + 1}`"
           :key="step.num"
           class="guide-step glass-card rounded-2xl p-6 sm:p-7 transition-all fade-in"
@@ -124,7 +124,7 @@
                   : 'bg-blue-50 text-blue-600 border border-blue-200'">
                 {{ idx + 1 }}
               </div>
-              <span v-if="idx < steps.length - 1" aria-hidden="true" class="w-px h-6"
+              <span v-if="idx < visibleSteps.length - 1" aria-hidden="true" class="w-px h-6"
                 :class="isDark ? 'bg-brand-400/15' : 'bg-blue-100'" />
             </div>
 
@@ -182,7 +182,7 @@
             On this page
           </p>
           <ol class="space-y-1">
-            <li v-for="(step, idx) in steps" :key="`jump-${step.num}`">
+            <li v-for="(step, idx) in visibleSteps" :key="`jump-${step.num}`">
               <a :href="`#step-${idx + 1}`"
                 class="guide-jump flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-colors"
                 :class="isDark
@@ -320,6 +320,11 @@ const steps = ref<EditableStep[]>([])
 const editMode = ref(false)
 const saving = ref(false)
 const showSaved = ref(false)
+
+// Prefer payload-backed computeds for SSR/hydration; edit refs only while editing.
+const visibleTitle = computed(() => editMode.value ? editableTitle.value : (guidePage.value?.title || ''))
+const visibleSubtitle = computed(() => editMode.value ? editableSubtitle.value : (guidePage.value?.subtitle || ''))
+const visibleSteps = computed(() => editMode.value ? steps.value : (guidePage.value?.steps || []))
 
 const STEP_META = [
   { label: 'Prepare', icon: 'i-heroicons-wrench-screwdriver' },

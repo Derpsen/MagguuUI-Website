@@ -135,3 +135,9 @@
 - Drizzle schema parity improved with matching non-unique indexes for `sessions`, `login_attempts`, and `rate_limits`.
 - Raw SQLite bootstrap now also matches Drizzle for `profiles.custom_fields`, `wowup_strings.sort_order`, `wowup_strings.custom_fields`, `users.is_locked`, `users.locked_until`, and the fresh-DB `site_content(page, section, key, locale)` unique index.
 - A real middleware-order bug was found and fixed: admin auth failures now still receive private/no-store headers because `server/middleware/admin-api.ts` applies shared private headers before calling `requireAuth`.
+
+## Admin login client 500 (2026-08-23)
+
+- Hard reload of `/admin/login` (ssr:false SPA shell) crashed client init with `NUXT_E1005` / `injectHead().hooks.hookOnce is not a function`.
+- Cause: `@nuxt/ui@4.9` colors plugin SPA FOUC path vs Unhead v3 `HookableCore` (Nuxt 4.5). Public SSR pages OK; SPA nav after public page OK.
+- Fix: `modules/fix-nuxt-ui-colors-hookonce.ts` (vite transform) + `plugins/unhead-hookonce-compat.client.ts` polyfill. Upstream: nuxt/ui#6658; prefer bumping `@nuxt/ui` later.

@@ -254,19 +254,6 @@ const isAdmin = computed(() => {
 
 interface GuideLocale { [k: string]: unknown }
 interface GuidePayload { en?: GuideLocale, de?: GuideLocale, [k: string]: unknown }
-const { data: guideData, refresh: refreshGuide } = useFetch<{ data: GuidePayload }>('/api/v1/content/guide')
-
-const guideContent = computed<GuideLocale>(() => {
-  const raw = guideData.value?.data
-  return raw?.en || raw?.de || raw || {}
-})
-
-const editableTitle = ref('')
-const editableSubtitle = ref('')
-const editMode = ref(false)
-const saving = ref(false)
-const showSaved = ref(false)
-
 function stripHtml(str: string): string {
   return str.replace(/<[^>]*>/g, '').trim()
 }
@@ -277,16 +264,12 @@ interface EditableStep {
   editableContent: string
 }
 
-const steps = ref<EditableStep[]>([])
-
-const STEP_META = [
-  { label: 'Prepare', icon: 'i-heroicons-wrench-screwdriver' },
-  { label: 'Install', icon: 'i-heroicons-arrow-down-tray' },
-  { label: 'Launch', icon: 'i-heroicons-play' },
-  { label: 'Apply', icon: 'i-heroicons-sparkles' },
-  { label: 'Alt Sync', icon: 'i-heroicons-users' },
-  { label: 'Finish', icon: 'i-heroicons-check-badge' },
-] as const
+interface GuidePageState {
+  content: GuideLocale
+  title: string
+  subtitle: string
+  steps: EditableStep[]
+}
 
 function parseSteps(raw: Record<string, string> | undefined): EditableStep[] {
   if (!raw || typeof raw !== 'object') return []
@@ -310,13 +293,52 @@ function parseSteps(raw: Record<string, string> | undefined): EditableStep[] {
     .filter((step) => step.editableContent || step.editableTitle)
 }
 
-watch(guideContent, (src) => {
-  if (!editMode.value) {
-    editableTitle.value = stripHtml(src?.intro?.title || '')
-    editableSubtitle.value = stripHtml(src?.intro?.text || '')
-    steps.value = parseSteps(src?.steps)
+function toGuidePageState(res: { data?: GuidePayload } | null | undefined): GuidePageState {
+  const raw = res?.data
+  const content = (raw?.en || raw?.de || raw || {}) as GuideLocale
+  const intro = (content.intro || {}) as Record<string, string>
+  const stepsRaw = content.steps as Record<string, string> | undefined
+  return {
+    content,
+    title: stripHtml(intro.title || ''),
+    subtitle: stripHtml(intro.text || ''),
+    steps: parseSteps(stepsRaw),
   }
-}, { immediate: true })
+}
+
+// No top-level await — parse in transform so SSR payload already has steps
+// (a post-fetch watch left steps=[] on the server HTML → hydration mismatch).
+const { data: guidePage, refresh: refreshGuide } = useFetch('/api/v1/content/guide', {
+  key: 'public-guide',
+  transform: (res: { data?: GuidePayload }) => toGuidePageState(res),
+  default: () => ({ content: {}, title: '', subtitle: '', steps: [] as EditableStep[] }),
+})
+
+const guideContent = computed<GuideLocale>(() => guidePage.value?.content || {})
+
+const editableTitle = ref('')
+const editableSubtitle = ref('')
+const steps = ref<EditableStep[]>([])
+const editMode = ref(false)
+const saving = ref(false)
+const showSaved = ref(false)
+
+const STEP_META = [
+  { label: 'Prepare', icon: 'i-heroicons-wrench-screwdriver' },
+  { label: 'Install', icon: 'i-heroicons-arrow-down-tray' },
+  { label: 'Launch', icon: 'i-heroicons-play' },
+  { label: 'Apply', icon: 'i-heroicons-sparkles' },
+  { label: 'Alt Sync', icon: 'i-heroicons-users' },
+  { label: 'Finish', icon: 'i-heroicons-check-badge' },
+] as const
+
+watch(guidePage, (page) => {
+  if (!editMode.value && page) {
+    editableTitle.value = page.title
+    editableSubtitle.value = page.subtitle
+    steps.value = page.steps.map(step => ({ ...step }))
+  }
+}, { immediate: true, flush: 'sync' })
 
 
 

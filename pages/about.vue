@@ -70,7 +70,7 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Quality of life</strong> — death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, and per-spec proc-overlay hiding.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Quality of life</strong> — death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, per-spec proc-overlay hiding, Smart Tab (chat channel cycling), Quick Focus (modifier-click to focus), and the audio device switcher on the Ellesmere speaker icon.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />

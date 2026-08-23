@@ -38,11 +38,14 @@
       <section class="rounded-2xl border p-6 sm:p-8 lg:p-10 max-w-md lg:max-w-none mx-auto w-full"
         :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-slate-200 shadow-sm'">
         <div class="flex items-center justify-between gap-3 mb-8">
-          <div>
+          <div class="flex items-start gap-3 min-w-0">
+            <img src="/logo.png" alt="MagguuUI" width="40" height="40" class="h-10 w-10 shrink-0 lg:hidden">
+            <div class="min-w-0">
             <h2 class="text-xl font-semibold mb-1" :class="isDark ? 'text-white' : 'text-slate-900'">Sign in</h2>
             <p class="text-sm" :class="isDark ? 'text-slate-400' : 'text-slate-500'">
               Enter your credentials to access the admin panel.
             </p>
+            </div>
           </div>
 
           <button class="p-2 rounded-lg transition-colors"

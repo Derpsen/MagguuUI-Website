@@ -4,8 +4,8 @@
   "description": "Native 4K overhaul for EllesmereUI — profiles, class layouts, and optional raid tools.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a1628",
-  "theme_color": "#0c1b35",
+  "background_color": "#0b1118",
+  "theme_color": "#061f1b",
   "icons": [
     { "src": "/favicon-32.png", "sizes": "32x32", "type": "image/png" },
     { "src": "/logo.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }

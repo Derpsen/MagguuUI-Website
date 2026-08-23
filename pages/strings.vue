@@ -184,7 +184,7 @@
       <!-- ═══ WowUp ═══ -->
       <div v-if="activeTab === 'wowup'" role="tabpanel" id="tabpanel-wowup" aria-labelledby="tab-wowup" tabindex="0">
         <div class="mb-5 rounded-xl border px-4 py-3 text-sm leading-relaxed"
-          :class="isDark ? 'border-brand-400/15 bg-brand-400/5 text-silver-400' : 'border-blue-100 bg-blue-50 text-gray-600'">
+          :class="isDark ? 'border-brand-400/15 bg-brand-400/5 text-silver-400' : 'border-brand-100 bg-brand-50 text-gray-600'">
           These are the same WowUp strings Magguu Setup copies in-game. Starter Addons is EllesmereUI, MagguuUI, BigWigs, LittleWigs, and Northern Sky.
           Optional Addons are extras such as BugSack, MDT, Raider.IO, WIM, GTFO, EXBoss, the Ellesmere WIM skin, and ExwindCore.
           MagguuUI itself only needs EllesmereUI plus the MagguuUI folder. Paste the string in WowUp — MagguuUI does not install addons itself.
@@ -287,7 +287,7 @@ usePublicPageSeo({
 
 const inputClass = computed(() => isDark.value
   ? 'bg-brand-900/50 border border-brand-400/15 text-white focus:border-brand-400/30 focus:outline-none'
-  : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-blue-300 focus:outline-none')
+  : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-brand-300 focus:outline-none')
 
 const route = useRoute()
 const router = useRouter()

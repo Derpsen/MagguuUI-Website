@@ -14,7 +14,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'features', key: 'feature_2_icon', value: 'i-heroicons-squares-2x2', type: 'text', sortOrder: 5, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_3_title', value: 'Skinning and QoL included', type: 'text', sortOrder: 6, locale: 'en' },
-  { page: 'home', section: 'features', key: 'feature_3_text', value: 'Split unit and group names, class-colored keybind modifiers, death-release protection, co-tank frames, stealth reminders, and spell-alert opacity live in the MagguuUI profile.', type: 'text', sortOrder: 7, locale: 'en' },
+  { page: 'home', section: 'features', key: 'feature_3_text', value: 'Split unit and group names, class-colored keybind modifiers, death-release protection, co-tank frames, stealth reminders, spell-alert opacity, Smart Tab, Quick Focus, and an audio device switcher on the Ellesmere speaker icon live in the MagguuUI profile.', type: 'text', sortOrder: 7, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_3_icon', value: 'i-heroicons-sparkles', type: 'text', sortOrder: 8, locale: 'en' },
 
   { page: 'home', section: 'features_heading', key: 'title', value: 'Why MagguuUI?', type: 'text', sortOrder: 0, locale: 'en' },
@@ -41,7 +41,7 @@ export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'steps', key: 'step_4', value: 'Log in, then open MagguuUI:\n\n- Type `/mui` or `/mui setup` in chat\n- Or open EllesmereUI and choose **MagguuUI → Optionen → Setup**\n\n**Install everything** imports the Ellesmere profile at UI scale `0.58`, then BigWigs, Northern Sky, WIM, and Waypoint UI if they are present, then Cooldown Viewer class layouts. Wait until you are out of combat.\n\nOn the same tab:\n\n- **Magguu-Look** — Magguu fonts, class colors, Giant options panel, 4K scale, Magguu extras, and a fixed tooltip that does not follow the mouse\n- **Load profiles** — apply already-installed Magguu profiles to this character\n- **Set scale only** — reapplies `0.58` without re-importing profiles\n- **Required / optional Magguu imports** — EllesmereUI and class layouts; BigWigs, Northern Sky, WIM, and Waypoint UI\n- **WowUp** — copy the starter pack or optional pack, then paste in WowUp\n\nImport buttons turn green after a Magguu import. WowUp buttons turn green when the pack addons are present.\n\nLogging in on an alt asks whether to load those profiles onto that character.', locale: 'en', type: 'markdown', sortOrder: 41 },
 
   { page: 'guide', section: 'steps', key: 'step_5_title', value: '5. Skinning and QoL', locale: 'en', type: 'text', sortOrder: 50 },
-  { page: 'guide', section: 'steps', key: 'step_5', value: 'Stay in **MagguuUI → Optionen**:\n\n- **Skinning** — split coloring for unit frames and party/raid names, plus class-colored keybind modifiers\n- **QoL** — death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, and per-spec proc-overlay hiding\n\nThese settings live in the MagguuUI Ellesmere profile.', locale: 'en', type: 'markdown', sortOrder: 51 },
+  { page: 'guide', section: 'steps', key: 'step_5', value: 'Stay in **MagguuUI → Optionen**:\n\n- **Skinning** — split coloring for unit frames and party/raid names, plus class-colored keybind modifiers\n- **QoL** — death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, per-spec proc-overlay hiding, Smart Tab (chat channel cycling), Quick Focus (modifier-click to focus), and an audio device switcher on the Ellesmere speaker icon\n\nThese settings live in the MagguuUI Ellesmere profile.', locale: 'en', type: 'markdown', sortOrder: 51 },
 
   { page: 'guide', section: 'steps', key: 'step_6_title', value: '6. Commands and tools', locale: 'en', type: 'text', sortOrder: 60 },
   { page: 'guide', section: 'steps', key: 'step_6', value: '**Slash commands:**\n- `/mui` or `/magguu` — open MagguuUI → Setup\n- `/mui setup` — Setup tab\n- `/mui qol` — QoL tab\n- `/mui profile` — Setup tab\n- `/mui tools`, `/mui export`, or `/mui werkzeuge` — hidden Werkzeuge (exports and Discord boost)\n\nWerkzeuge stay off the normal sidebar. Type `/mui tools`, or click the **MagguuUI** group header ten times to unlock the row permanently.\n\nAfter a successful Cooldown Viewer import MagguuUI asks you to reload via Ellesmere\'s confirm popup so the layouts stick.', locale: 'en', type: 'markdown', sortOrder: 61 },
@@ -234,6 +234,9 @@ Open them with \`/mui tools\` or \`/mui export\`. Click the **MagguuUI** group h
 - Stealth and stance reminders
 - Spell-alert opacity
 - Per-spec proc-overlay hiding
+- Smart Tab (chat channel cycling)
+- Quick Focus (modifier-click to focus)
+- Audio device switcher on the Ellesmere speaker icon
 
 Settings are stored in the MagguuUI Ellesmere profile. **Magguu-Look** also turns on Magguu extras such as quick loot, skip cinematics, hide talking head, and auto repair. Tooltips stay at Magguu's exported position and do not follow the mouse.`,
     sortOrder: 7,

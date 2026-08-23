@@ -23,7 +23,7 @@
             <NuxtLink to="/" class="flex items-center group shrink-0">
               <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl transition-transform duration-300 group-hover:scale-[1.04]"
                 :class="isDark ? 'bg-white/[0.06] border border-white/10' : 'bg-white/90 border border-blue-100 shadow-sm'">
-                <img src="/logo.svg" alt="MagguuUI" width="28" height="28" class="w-7 h-7" />
+                <img src="/logo.png" alt="MagguuUI" width="28" height="28" class="w-7 h-7" />
               </span>
             </NuxtLink>
 
@@ -305,7 +305,7 @@
           <div class="relative px-6 py-6 sm:py-7 text-center"
             :class="isDark ? 'bg-gradient-to-r from-brand-950/60 via-brand-900/40 to-brand-950/60' : 'bg-gradient-to-r from-blue-50 via-blue-100/60 to-blue-50'">
             <div class="flex items-center justify-center gap-3 mb-2">
-              <img src="/logo.svg" alt="MagguuUI" width="24" height="24" loading="lazy" class="w-6 h-6" />
+              <img src="/logo.png" alt="MagguuUI" width="24" height="24" loading="lazy" class="w-6 h-6" />
               <span class="text-lg font-bold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-900'">{{ siteName }}</span>
             </div>
             <p class="text-xs max-w-md mx-auto" :class="isDark ? 'text-silver-400' : 'text-gray-500'">

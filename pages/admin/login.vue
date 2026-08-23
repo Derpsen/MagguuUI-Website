@@ -9,7 +9,7 @@
     <div class="relative z-10 w-full max-w-6xl mx-auto grid gap-6 lg:grid-cols-[1.05fr_0.95fr] items-center">
       <section class="hidden lg:block pr-6">
         <div class="mb-6">
-          <img src="/logo.svg" alt="MagguuUI" class="h-10 w-10 mb-5">
+          <img src="/logo.png" alt="MagguuUI" class="h-10 w-10 mb-5">
         </div>
 
         <h1 class="text-4xl lg:text-5xl font-bold leading-tight mb-4" :class="isDark ? 'text-white' : 'text-slate-900'">

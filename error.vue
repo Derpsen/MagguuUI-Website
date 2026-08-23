@@ -42,7 +42,7 @@
 
       <!-- MagguuUI Logo -->
       <div class="mt-12 opacity-30">
-        <img src="/logo.svg" alt="MagguuUI" width="40" height="40" loading="lazy" class="w-10 h-10 mx-auto" />
+        <img src="/logo.png" alt="MagguuUI" width="40" height="40" loading="lazy" class="w-10 h-10 mx-auto" />
       </div>
     </div>
   </div>

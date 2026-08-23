@@ -1,4 +1,4 @@
-﻿# MagguuUI-Website
+# MagguuUI-Website
 
 Public website, admin panel, and REST API for MagguuUI import strings (EllesmereUI, BigWigs, Northern Sky Raid Tools, class layouts). Live site: `https://ui.magguu.xyz`.
 
@@ -51,7 +51,7 @@ npm run db:seed        # seed default data
 
 **Tailwind v4**: there is no `tailwind.config.ts`. Keep theme configuration in `assets/css/main.css` via `@theme`.
 
-**Admin SSR**: `/admin/**` must stay `ssr:false` in `nuxt.config.ts` to avoid auth-token flash. Public pages remain SSR for SEO.
+**Admin SSR**: `/admin/**` stays `ssr:false` in `nuxt.config.ts` to avoid auth-token flash on authenticated shells. **Exception:** `/admin/login` is `ssr:true` (more-specific routeRule before the catch-all) so hard reload skips the Unhead `hookOnce` SPA trap with `@nuxt/ui` colors (see MEMORY.md). Public pages remain SSR for SEO. Keep the `#62` Unhead polyfill until `@nuxt/ui` >= 4.10.0.
 
 **Auth**: `requireAuth(event)` accepts legacy bearer tokens and HttpOnly cookie sessions. Client hydration uses `/api/v1/auth/session`, which returns `null` instead of 401 for missing/invalid cookies so public pages stay console-clean.
 

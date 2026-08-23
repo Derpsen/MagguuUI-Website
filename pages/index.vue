@@ -23,7 +23,7 @@
             <NuxtLink to="/changelog" class="hero-badge inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium mb-10 cursor-pointer transition-colors border"
               :class="isDark
                 ? 'bg-brand-400/8 border-brand-400/15 text-brand-300'
-                : 'bg-brand-400/6 border-brand-400/15 text-blue-700'">
+                : 'bg-brand-400/6 border-brand-400/15 text-brand-700'">
               <span class="w-1.5 h-1.5 rounded-full bg-ellesmere" aria-hidden="true" />
               <span>{{ latestBadgeText }}</span>
             </NuxtLink>
@@ -46,7 +46,7 @@
                 class="px-8 py-4 rounded-xl font-semibold text-lg inline-flex items-center gap-2 border transition-colors"
                 :class="isDark
                   ? 'border-brand-400/30 text-silver-300 hover:text-white hover:border-brand-400/50 bg-transparent'
-                  : 'border-blue-200 text-gray-600 hover:text-gray-900 hover:border-blue-300 bg-transparent'">
+                  : 'border-brand-200 text-gray-600 hover:text-gray-900 hover:border-brand-300 bg-transparent'">
                 Import Strings
               </NuxtLink>
             </div>
@@ -63,7 +63,7 @@
           </div>
 
           <div class="mt-12 pt-10 border-t"
-            :class="isDark ? 'border-white/8' : 'border-blue-100'">
+            :class="isDark ? 'border-white/8' : 'border-brand-100'">
             <div ref="addonsHeading" class="text-center mb-8 scroll-reveal">
               <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.addons?.title || 'Supported Addons' }}</span></h2>
               <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'EllesmereUI is required. BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.' }}</p>
@@ -377,7 +377,7 @@ onUnmounted(() => {
 
 .home-hero-copy :deep(a),
 .home-feature-copy :deep(a) {
-  color: var(--color-brand-300, #90bbff);
+  color: var(--color-brand-300, #45e0bb);
   text-decoration: underline;
   text-underline-offset: 0.18em;
 }

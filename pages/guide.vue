@@ -34,7 +34,7 @@
           <button
             @click="editMode = true"
             class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-            :class="isDark ? 'bg-brand-400/10 text-brand-400 hover:bg-brand-400/20 border border-brand-400/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'"
+            :class="isDark ? 'bg-brand-400/10 text-brand-400 hover:bg-brand-400/20 border border-brand-400/20' : 'bg-brand-50 text-brand-600 hover:bg-brand-100 border border-brand-200'"
           >
             <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
             Edit Page
@@ -57,10 +57,10 @@
     <div
       v-if="editMode"
       class="flex items-center gap-2 mb-5 px-3 py-2 rounded-lg"
-      :class="isDark ? 'bg-brand-400/10 border border-brand-400/20' : 'bg-blue-50 border border-blue-200'"
+      :class="isDark ? 'bg-brand-400/10 border border-brand-400/20' : 'bg-brand-50 border border-brand-200'"
     >
       <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
-      <span class="text-xs font-medium" :class="isDark ? 'text-brand-400' : 'text-blue-600'">Edit mode — change text below, then click Save</span>
+      <span class="text-xs font-medium" :class="isDark ? 'text-brand-400' : 'text-brand-600'">Edit mode — change text below, then click Save</span>
     </div>
 
     <div
@@ -90,7 +90,7 @@
           <input
             v-model="editableTitle"
             class="w-full text-2xl sm:text-3xl font-bold rounded-2xl px-4 py-3 border-2 transition-colors outline-none"
-            :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-blue-200 focus:border-blue-500'"
+            :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-brand-200 focus:border-brand-500'"
           >
         </div>
         <div>
@@ -99,7 +99,7 @@
             v-model="editableSubtitle"
             rows="3"
             class="w-full text-base rounded-2xl px-4 py-3 border-2 transition-colors outline-none resize-none"
-            :class="isDark ? 'bg-brand-800/50 text-silver-300 border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-700 border-blue-200 focus:border-blue-500'"
+            :class="isDark ? 'bg-brand-800/50 text-silver-300 border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-700 border-brand-200 focus:border-brand-500'"
           ></textarea>
         </div>
       </div>
@@ -117,7 +117,7 @@
           :style="{ animationDelay: `${idx * 50}ms`, animationFillMode: 'both' }"
           :class="isDark
             ? 'hover:border-brand-400/25 hover:shadow-lg hover:shadow-brand-400/5'
-            : 'hover:border-blue-200 hover:shadow-lg hover:shadow-blue-100'"
+            : 'hover:border-brand-200 hover:shadow-lg hover:shadow-brand-100'"
         >
           <div class="flex items-start gap-4 sm:gap-5">
             <!-- Step number -->
@@ -125,11 +125,11 @@
               <div class="guide-step-number"
                 :class="isDark
                   ? 'bg-brand-400/10 text-brand-300 border border-brand-400/25'
-                  : 'bg-blue-50 text-blue-600 border border-blue-200'">
+                  : 'bg-brand-50 text-brand-600 border border-brand-200'">
                 {{ idx + 1 }}
               </div>
               <span v-if="idx < visibleSteps.length - 1" aria-hidden="true" class="w-px h-6"
-                :class="isDark ? 'bg-brand-400/15' : 'bg-blue-100'" />
+                :class="isDark ? 'bg-brand-400/15' : 'bg-brand-100'" />
             </div>
 
             <!-- Content -->
@@ -162,7 +162,7 @@
                     <input
                       v-model="step.editableTitle"
                       class="w-full font-semibold rounded-xl px-3 py-2 border-2 transition-colors outline-none"
-                      :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-blue-200 focus:border-blue-500'"
+                      :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-brand-200 focus:border-brand-500'"
                     >
                   </div>
                   <div>
@@ -194,11 +194,11 @@
                 class="guide-jump flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-colors"
                 :class="isDark
                   ? 'text-silver-300 hover:text-white hover:bg-white/5'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-blue-50'">
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-brand-50'">
                 <span class="inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-bold flex-shrink-0"
                   :class="isDark
                     ? 'bg-brand-400/10 text-brand-300'
-                    : 'bg-blue-50 text-blue-600'">
+                    : 'bg-brand-50 text-brand-600'">
                   {{ idx + 1 }}
                 </span>
                 <span class="truncate">{{ step.editableTitle || `Step ${idx + 1}` }}</span>
@@ -435,7 +435,7 @@ async function saveAll() {
 .guide-content :deep(p:last-child) { margin-bottom: 0; }
 .guide-content :deep(strong) { font-weight: 700; color: inherit; }
 .guide-content :deep(a) {
-  color: var(--brand-400, #4e9eff);
+  color: var(--brand-400, #0CD29D);
   text-decoration: underline;
   text-underline-offset: 2px;
 }

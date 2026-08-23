@@ -278,7 +278,7 @@ const features = computed(() => [
   {
     emoji: '🎯',
     title: content.value?.features?.feature_3_title || 'Skinning and QoL included',
-    text: content.value?.features?.feature_3_text || 'Split unit and group names, class-colored keybind modifiers, death-release protection, co-tank frames, stealth reminders, and spell-alert opacity live in the MagguuUI profile.',
+    text: content.value?.features?.feature_3_text || 'Split unit and group names, class-colored keybind modifiers, death-release protection, co-tank frames, stealth reminders, spell-alert opacity, Smart Tab, Quick Focus, and an audio device switcher on the Ellesmere speaker icon live in the MagguuUI profile.',
   },
 ])
 

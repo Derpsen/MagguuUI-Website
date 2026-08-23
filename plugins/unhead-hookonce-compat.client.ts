@@ -19,7 +19,7 @@ export default defineNuxtPlugin({
   setup() {
     if (!import.meta.client) return
 
-    let head: ReturnType<typeof injectHead> | null = null
+    let head: ReturnType<typeof injectHead>
     try {
       head = injectHead()
     }
@@ -27,9 +27,11 @@ export default defineNuxtPlugin({
       return
     }
 
+    type HookFn = (...args: unknown[]) => unknown
+    type Unhook = () => void
     const hooks = head?.hooks as {
-      hook?: (name: string, fn: (...args: unknown[]) => unknown) => (() => void) | void
-      hookOnce?: (name: string, fn: (...args: unknown[]) => unknown) => (() => void) | void
+      hook?: (name: string, fn: HookFn) => Unhook | undefined
+      hookOnce?: (name: string, fn: HookFn) => Unhook | undefined
     } | undefined
 
     if (!hooks || typeof hooks.hookOnce === 'function' || typeof hooks.hook !== 'function') {

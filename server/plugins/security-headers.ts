@@ -36,10 +36,9 @@ export default defineNitroPlugin((nitroApp) => {
     const path = event?.path || event?.node?.req?.url || ''
     // Expected 404s (e.g. stale OG image URLs) are not actionable; keep the
     // console focused on real failures that can surface as live HTTP 500s.
-    const statusCode = typeof (error as { statusCode?: number })?.statusCode === 'number'
-      ? (error as { statusCode: number }).statusCode
-      : 500
-    const unhandled = Boolean((error as { unhandled?: boolean })?.unhandled)
+    const err = error as unknown as { statusCode?: number, unhandled?: boolean }
+    const statusCode = typeof err.statusCode === 'number' ? err.statusCode : 500
+    const unhandled = Boolean(err.unhandled)
     if (statusCode >= 500 || unhandled) {
       console.error('[Nitro error]', path, error)
     }

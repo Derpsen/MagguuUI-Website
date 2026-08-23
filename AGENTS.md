@@ -21,12 +21,9 @@ strings. Live: `https://ui.magguu.xyz`. Production runs as Unraid container
 
 ## Git / publish (Buddy hub)
 
-- Interactive/ad-hoc sessions: do not commit, push, or create git tags unless
-  the user explicitly asks for that exact publish step.
-- Grok Bot helpers under Buddy's hub standing order: for clear in-scope
-  bug/tasks, may commit, push, and merge to main without a per-change ask;
-  never force-push; never publish unrelated dirty WIP; report results to Buddy.
-- Tags and releases still need an explicit release ask.
+- **Grok Bot helpers (Stack Fixer, etc.) under Buddy:** Standing autonomy. For clear in-scope Website work (bugs, redesign, copy, logos, deps), commit, push, and merge to main **without asking Marco** and without waiting for a go-ahead. Never force-push. Never publish unrelated dirty WIP. Report only to Buddy (short German + links). Marco only reads Buddy — do not ask him for permission in this chat.
+- Tags and releases still need an explicit release ask via Buddy.
+- Manual human Cursor sessions (Marco himself): do not commit/push/tag unless he asks.
 
 ## Grok Bot / Buddy
 

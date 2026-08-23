@@ -76,11 +76,11 @@ export default defineNuxtConfig({
       // would leak a request to Google on privacy-sensitive routes (imprint,
       // privacy) even when the admin has disabled ads.
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' },
-        { rel: 'icon', type: 'image/png', href: '/logo.png' },
-        { rel: 'shortcut icon', href: '/logo.png' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16.png' },
+        { rel: 'shortcut icon', href: '/favicon-32.png' },
         /* canonical is set per-page via usePublicPageSeo composable */
-        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/logo.png' },
         { rel: 'manifest', href: '/manifest.json' },
         { rel: 'dns-prefetch', href: 'https://api.iconify.design' },
       ],

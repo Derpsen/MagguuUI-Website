@@ -350,6 +350,7 @@ html, body, #__nuxt {
 /* --- Ellesmere teal utilities --- */
 .text-ellesmere { color: var(--color-ellesmere); }
 .bg-ellesmere\/10 { background-color: color-mix(in srgb, var(--color-ellesmere) 10%, transparent); }
+.bg-ellesmere\/15 { background-color: color-mix(in srgb, var(--color-ellesmere) 15%, transparent); }
 .accent-ellesmere-dot {
   background-color: color-mix(in srgb, var(--color-ellesmere) 45%, transparent);
 }

@@ -1,4 +1,4 @@
-# MagguuUI-Website
+﻿# MagguuUI-Website
 
 Public website, admin panel, and REST API for MagguuUI import strings (EllesmereUI, BigWigs, Northern Sky Raid Tools, class layouts). Live site: `https://ui.magguu.xyz`.
 
@@ -90,13 +90,7 @@ regression. Do not build on Unraid; pull the GHCR image.
 `.github/workflows/codeql.yml` must use the same commit SHA. Do not leave
 init/analyze on different pins.
 
-**Grok Bot / Buddy + Git publish**: Marco uses Grok Bot "Buddy" as the single
-front door; helpers report to Buddy. Interactive sessions: never commit/push/tag
-unless explicitly asked. Helpers under Buddy's hub standing order may commit,
-push, and merge clear in-scope fixes to main without a per-change ask; never
-force-push; never publish unrelated dirty WIP; tags/releases need an explicit
-release ask. Agent entrypoint: `AGENTS.md`.
-
+**Grok Bot / Buddy + Git publish**: Marco uses Buddy as the single front door; helpers report only to Buddy. **Helpers (Stack Fixer) have standing autonomy** — clear in-scope Website work: commit/push/merge to main without asking Marco; never force-push; never unrelated dirty WIP. Do not send Marco approval questions. Tags/releases need an explicit release ask via Buddy. Agent entrypoint: `AGENTS.md`.
 ## References
 
 - Database schema: `server/database/schema.ts`

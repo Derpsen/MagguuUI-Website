@@ -7,6 +7,11 @@
  * - CSP `script-src` allows that nonce and uses `'strict-dynamic'` so scripts loaded
  *   by the hydrated runtime (e.g. AdSense) inherit trust without wildcards.
  * - Non-HTML responses get a locked-down baseline CSP (no scripts at all).
+ *
+ * SPA shells (`routeRules` `ssr: false`, e.g. `/admin/**`) place
+ * `window.__NUXT_SITE_CONFIG__` in `html.body`. Skipping that fragment left the
+ * inline script without a nonce, so production CSP blocked it on hard reload of
+ * `/admin/login` and the client fell into the 500 error page.
  */
 
 import { randomBytes } from 'node:crypto'
@@ -17,7 +22,7 @@ function buildHtmlCsp(nonce: string, isDev: boolean) {
   // be nonce-tagged. Production keeps strict nonce + strict-dynamic.
   const scriptSrc = isDev
     ? "'self' 'unsafe-inline' 'unsafe-eval'"
-    : `'nonce-${nonce}' 'strict-dynamic'`
+    : `'nonce-${nonce}' 'strict-dynamic' 'self'`
   // Dev needs `ws:` for HMR; prod doesn't.
   const connectExtra = isDev ? ' ws: wss:' : ''
   return [
@@ -36,8 +41,8 @@ function buildHtmlCsp(nonce: string, isDev: boolean) {
   ].join('; ')
 }
 
-function injectNonce(fragments: string[], nonce: string) {
-  return fragments.map(fragment =>
+function injectNonce(fragments: string[] | undefined, nonce: string) {
+  return (fragments || []).map(fragment =>
     fragment.replace(/<script(?![^>]*\bnonce=)/gi, `<script nonce="${nonce}"`),
   )
 }
@@ -46,18 +51,26 @@ export default defineNitroPlugin((nitroApp) => {
   const isDev = process.env.NODE_ENV === 'development'
 
   nitroApp.hooks.hook('render:html', (html, { event }) => {
-    const nonce = randomBytes(16).toString('base64')
-    event.context.cspNonce = nonce
+    try {
+      const nonce = randomBytes(16).toString('base64')
+      event.context.cspNonce = nonce
 
-    if (!isDev) {
-      html.head = injectNonce(html.head, nonce)
-      html.bodyPrepend = injectNonce(html.bodyPrepend, nonce)
-      html.bodyAppend = injectNonce(html.bodyAppend, nonce)
+      if (!isDev) {
+        html.head = injectNonce(html.head, nonce)
+        html.bodyPrepend = injectNonce(html.bodyPrepend, nonce)
+        // SPA shells put site-config / payload scripts here — must be nonced too.
+        html.body = injectNonce(html.body, nonce)
+        html.bodyAppend = injectNonce(html.bodyAppend, nonce)
+      }
+
+      // Always set the HTML CSP so the locked-down JSON-baseline from
+      // routeRules doesn't leak onto HTML responses (which would block all
+      // styles and scripts in dev where there's no nonce injection).
+      setResponseHeader(event, 'Content-Security-Policy', buildHtmlCsp(nonce, isDev))
     }
-
-    // Always set the HTML CSP so the locked-down JSON-baseline from
-    // routeRules doesn't leak onto HTML responses (which would block all
-    // styles and scripts in dev where there's no nonce injection).
-    setResponseHeader(event, 'Content-Security-Policy', buildHtmlCsp(nonce, isDev))
+    catch (error) {
+      // Never let a CSP plugin failure turn a valid HTML response into a 500.
+      console.error('[csp-nonce] failed to apply nonce/CSP', error)
+    }
   })
 })

@@ -1,22 +1,45 @@
 export const CURRENT_ADDON_CHANGELOG = {
-  version: 'v12.0.24',
-  publishedAt: new Date('2026-06-24T00:00:00Z'),
-  content: `### Improved
+  version: 'v12.1.0',
+  publishedAt: new Date('2026-08-22T00:00:00Z'),
+  content: `Ready for WoW 12.1. MagguuUI lives inside EllesmereUI. Type \`/mui\` to open it.
 
-- **MagguuUI starts on its own:** ElvUI is no longer required for the addon to load. If ElvUI is missing, only the ElvUI-specific profile and tags are skipped.
-- **Fresh installs are smoother:** **Install All** skips addons that are missing or disabled instead of getting stuck on a clean setup.
-- **Setup is easier to scan:** addon lists now show matching addon icons in the installer, expert view, and status overview.
-- **Itemlevel colors are yours:** you can now choose the itemlevel where green, blue, purple, and orange tag colors start.
-- **More Keystone List control:** show a scalable compact Group Finder join banner with colored player names, dungeon icons, and remembered position; mirror the row layout, see the teleport cast inside the dungeon icon, adjust icon borders, or turn click-to-teleport off.
-- **Updated addon profiles:** the included setup profiles were refreshed for the latest package.
-- **Clearer WowUp page:** the old required list is now called **Starter Addons**, so it is clear these are recommendations for a quick start.
-- **Cleaner CurseForge info:** supported addons are listed as optional extras instead of old or misleading dependency entries.
-- **Ready for WoW 12.0.7:** both addon folders stay aligned with the current Retail client.
+### What's new
 
-### Fixed
+- Three tabs: **Setup**, **Skinning**, and **QoL**. **Werkzeuge** stays hidden until you click the MagguuUI header ten times, or type \`/mui tools\`
+- **Magguu-Look** applies Magguu fonts, class colors, the Giant options panel, 4K scale, and Magguu extras such as quick loot, skip cinematics, hide talking head, and auto repair
+- Tooltips stay at Magguu's exported position. They do not follow the mouse
+- Setup imports Magguu profiles. Required: EllesmereUI and class layouts. Optional: BigWigs, Northern Sky, WIM, and Waypoint UI. Import buttons turn green after Magguu's profile is imported
+- WowUp starter and optional packs copy from Setup. Those buttons turn green when the pack addons are installed; hover lists what's in the pack
+- After Ellesmere's first-install picker, Magguu Setup opens on the next login. Export your current profiles under **Werkzeuge** (\`/mui tools\`)
 
-- **No ElvUI hard block:** MagguuUI no longer refuses to load just because ElvUI is not installed.
-- **Platynator imports work again:** the profile import no longer fails with the invalid import error.
-- **Keystone List is safer:** keystone changes update cleanly, and clicking a row now always uses the dungeon shown on that row.
-- **No unnecessary local dev deploys:** the Sync Pack Tool no longer deploys a new local dev version when the saved profile data did not actually change.`,
+### Setup
+
+- **Install everything** is the gold button. Also on Setup: **Set scale only**, **Apply Magguu-Look**, and **Load profiles**
+- Import buttons stay red if the addon is missing or Magguu's profile is not imported yet
+- Copy the WowUp starter pack and the optional pack, then paste them in WowUp
+- On a new character, MagguuUI asks whether to load those profiles onto the alt
+- Class-layout import asks you to reload. Magguu accepts the BigWigs Magguu popup for you. Confirm popups stay until you click
+- UI scale 0.58 for 4K, without re-importing profiles
+
+### Profiles
+
+- Current Magguu profiles for EllesmereUI, BigWigs, Northern Sky, WIM, and Waypoint UI
+- EllesmereUI profile \`MagguuUI\` at scale 0.58
+- BigWigs profile with the MagguuUI bar style and Magguu callout sounds
+- Cooldown Viewer layouts named \`Magguu - Class Spec\`
+- WowUp starter pack: EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky. Optional extras such as BugSack, MDT, Raider.IO, WIM, GTFO, EXBoss, the Ellesmere WIM skin, and ExwindCore
+
+### Skinning and quality of life
+
+- Split colors for unit-frame names and party/raid names
+- Class-colored keybind modifiers
+- Death-release protection, co-tank frame, stealth and stance reminders, spell-alert opacity, hide proc overlays
+
+### Install notes
+
+- One folder only: \`MagguuUI\`
+- Delete leftover \`MagguuUI_Data\`, \`MagguuUI_EUI\`, or \`MagguuUI_Media\` folders from older installs
+- EllesmereUI 7.9.5 or newer must be installed and enabled. BigWigs, LittleWigs, and Northern Sky are optional
+- Works on WoW 12.1 and still loads on Midnight 12.0
+- UI in every WoW client language Magguu ships`,
 } as const

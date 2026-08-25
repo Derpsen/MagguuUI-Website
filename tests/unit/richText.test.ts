@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { renderMarkdownToSafeHtml, sanitizeRichHtml } from '../../utils/richText'
+import { displayRichText, renderMarkdownToSafeHtml, sanitizeRichHtml } from '../../utils/richText'
 
 describe('rich text sanitization', () => {
   it('keeps the supported editorial markup', () => {
@@ -26,5 +26,20 @@ describe('rich text sanitization', () => {
 
     assert.match(html, /<strong>Bold<\/strong>/)
     assert.match(html, /href="https:\/\/example\.com"/)
+  })
+
+  it('renders leftover CMS markdown as HTML', () => {
+    const html = displayRichText('Install **EllesmereUI** and open `/mui`.')
+
+    assert.match(html, /<strong>EllesmereUI<\/strong>/)
+    assert.match(html, /<code>\/mui<\/code>/)
+    assert.doesNotMatch(html, /\*\*/)
+  })
+
+  it('leaves TipTap HTML as HTML', () => {
+    const html = displayRichText('<p>Install <strong>EllesmereUI</strong> and open <code>/mui</code>.</p>')
+
+    assert.match(html, /<strong>EllesmereUI<\/strong>/)
+    assert.match(html, /<code>\/mui<\/code>/)
   })
 })

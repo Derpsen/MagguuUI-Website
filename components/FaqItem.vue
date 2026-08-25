@@ -30,7 +30,8 @@
             <SafeHtml
               class="faq-answer text-sm leading-relaxed"
               :class="isDark ? 'text-silver-300' : 'text-gray-600'"
-              :html="safeAnswer"
+              :html="answer"
+              breaks
             />
           </div>
         </div>
@@ -40,17 +41,11 @@
 </template>
 
 <script setup lang="ts">
-import { renderMarkdownToSafeHtml } from '~/utils/richText'
-
-const props = defineProps<{
+defineProps<{
   question: string
   answer: string
   isDark: boolean
 }>()
-
-// Render answers as Markdown so list items, bold, code, and links get
-// proper formatting instead of appearing as one wall of text.
-const safeAnswer = computed(() => renderMarkdownToSafeHtml(props.answer))
 
 const uid = useId()
 const open = ref(false)

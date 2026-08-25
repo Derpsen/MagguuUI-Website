@@ -220,33 +220,33 @@ const loading = ref(true)
 const saving = ref(false)
 const tab = ref<"edit" | "preview">("edit")
 
-const previewAddons = ["ElvUI", "Plater / Platynator", "BigWigs / EXBoss", "Details"]
+const previewAddons = ["EllesmereUI", "BigWigs", "Northern Sky Raid Tools"]
 const featureIndices = [1, 2, 3] as const
 
 const form = reactive({
   hero: {
     title: "Your WoW Interface,",
     title2: "perfected.",
-    description: "MagguuUI is a standalone installer for WoW Retail. It only needs the two included addon folders; every external integration, including ElvUI, is optional.",
+    description: "MagguuUI is a native EllesmereUI module for WoW Retail. Install EllesmereUI and the MagguuUI folder, then open /mui and run the 4K setup.",
   } as Record<string, string>,
   addons: {
     title: "Supported Addons",
-    subtitle: "Every external integration is optional — choose only the addons you want",
+    subtitle: "EllesmereUI is required. BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.",
   } as Record<string, string>,
   features_heading: {
     title: "Why MagguuUI?",
-    subtitle: "A complete setup without forced external dependencies",
+    subtitle: "A 4K EllesmereUI setup with optional raid tools",
   } as Record<string, string>,
   features: {
     feature_1_emoji: "A",
-    feature_1_title: "One-click setup",
-    feature_1_text: "Install MagguuUI and MagguuUI_Data, click Install All, and missing integrations are skipped automatically.",
+    feature_1_title: "Native Ellesmere setup",
+    feature_1_text: "One sidebar row with Setup, Skinning, and QoL. Setup runs the 4K install, Magguu-Look, Load profiles, required and optional Magguu imports, and WowUp copy popups.",
     feature_2_emoji: "B",
-    feature_2_title: "Always up to date",
-    feature_2_text: "Profiles are tuned for the current WoW patch, with clear in-game update notices and a changelog.",
+    feature_2_title: "Current Retail layouts",
+    feature_2_text: "Cooldown Viewer class layouts import as Magguu - Class Spec. After a successful import MagguuUI asks you to reload so the layouts stick.",
     feature_3_emoji: "C",
-    feature_3_title: "Useful extras built in",
-    feature_3_text: "Class layouts, adjustable item-level colors, AutoRoll, audio switching and a compact Keystone List are included.",
+    feature_3_title: "Skinning and QoL included",
+    feature_3_text: "Split names, class-colored keybinds, death-release protection, co-tank frames, stealth reminders, and spell-alert opacity.",
   } as Record<string, string>,
 })
 

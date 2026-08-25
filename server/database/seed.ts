@@ -13,7 +13,7 @@ import { mkdirSync } from 'fs'
 import bcrypt from 'bcrypt'
 import * as schema from './schema'
 import { initializeDatabase } from './bootstrap'
-import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_SITE_CONTENT } from './defaultContent'
+import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_HOME_CONTENT, DEFAULT_SITE_CONTENT } from './defaultContent'
 import { SITE_SETTINGS_DEFAULTS } from '../../utils/siteSettingsDefaults'
 
 const DB_PATH = join(process.cwd(), 'data', 'magguuui.db')
@@ -52,39 +52,40 @@ async function seed() {
   console.log(`  - ${DEFAULT_SITE_CONTENT.length} default content entries ensured`)
 
   if (shouldSyncSeededContent) {
-    const existingGuideContent = db.select().from(schema.siteContent)
-      .where(and(eq(schema.siteContent.page, 'guide'), eq(schema.siteContent.locale, 'en')))
-      .all()
-    const guideByKey = new Map(existingGuideContent.map((item) => [`${item.section}:${item.key}:${item.locale}`, item]))
-
-    let guideInserted = 0
-    let guideUpdated = 0
-    for (const entry of DEFAULT_GUIDE_CONTENT) {
-      const key = `${entry.section}:${entry.key}:${entry.locale}`
-      const existing = guideByKey.get(key)
-
-      if (!existing) {
-        db.insert(schema.siteContent).values(entry).run()
-        guideInserted++
-        continue
+    const syncPage = (page: 'home' | 'guide', entries: readonly typeof DEFAULT_SITE_CONTENT[number][]) => {
+      const existingRows = db.select().from(schema.siteContent)
+        .where(and(eq(schema.siteContent.page, page), eq(schema.siteContent.locale, 'en')))
+        .all()
+      const byKey = new Map(existingRows.map((item) => [`${item.section}:${item.key}:${item.locale}`, item]))
+      let inserted = 0
+      let updated = 0
+      for (const entry of entries) {
+        const key = `${entry.section}:${entry.key}:${entry.locale}`
+        const existing = byKey.get(key)
+        if (!existing) {
+          db.insert(schema.siteContent).values(entry).run()
+          inserted++
+          continue
+        }
+        if (existing.value !== entry.value
+          || existing.sortOrder !== entry.sortOrder
+          || existing.type !== entry.type) {
+          db.update(schema.siteContent).set({
+            value: entry.value,
+            type: entry.type,
+            sortOrder: entry.sortOrder,
+            updatedAt: new Date(),
+          }).where(eq(schema.siteContent.id, existing.id)).run()
+          updated++
+        }
       }
-
-      if (existing.value !== entry.value
-        || existing.sortOrder !== entry.sortOrder
-        || existing.type !== entry.type) {
-        db.update(schema.siteContent).set({
-          value: entry.value,
-          type: entry.type,
-          sortOrder: entry.sortOrder,
-          updatedAt: new Date(),
-        }).where(eq(schema.siteContent.id, existing.id)).run()
-        guideUpdated++
-      }
+      console.log(`  - ${page} synced (${inserted} inserted, ${updated} updated)`)
     }
 
-    console.log(`  - Guide synced (${guideInserted} inserted, ${guideUpdated} updated)`)
+    syncPage('home', DEFAULT_HOME_CONTENT)
+    syncPage('guide', DEFAULT_GUIDE_CONTENT)
   } else {
-    console.log('  - Guide sync skipped (set NUXT_SYNC_SEEDED_CONTENT=true to force code-driven sync)')
+    console.log('  - Home/guide sync skipped (set NUXT_SYNC_SEEDED_CONTENT=true to force code-driven sync)')
   }
 
   const existingFaqs = db.select().from(schema.faqs).all()
@@ -136,6 +137,20 @@ async function seed() {
   }
 
   console.log(`  - ${defaultSettings.length} settings ensured`)
+
+  if (shouldSyncSeededContent) {
+    const publicCopyKeys = ['site_description', 'meta_description'] as const
+    let settingsUpdated = 0
+    for (const key of publicCopyKeys) {
+      db.update(schema.settings)
+        .set({ value: SITE_SETTINGS_DEFAULTS[key], updatedAt: new Date() })
+        .where(eq(schema.settings.key, key))
+        .run()
+      settingsUpdated++
+    }
+    console.log(`  - ${settingsUpdated} public site settings aligned`)
+  }
+
   console.log('\nSeed complete!')
   process.exit(0)
 }

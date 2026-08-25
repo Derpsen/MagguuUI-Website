@@ -25,16 +25,18 @@
           <span class="text-gradient-subtle">What is MagguuUI?</span>
         </h2>
         <p class="text-sm leading-relaxed mb-3" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-          MagguuUI is a standalone in-game installer and UI toolkit for World of Warcraft Retail.
-          It can apply Blizzard layouts and hand-tuned profiles for the supported addons you choose,
-          giving you a ready-to-play setup in a few clicks — without editing files or pasting import strings by hand.
+          MagguuUI is a native 4K overhaul for
+          <strong :class="isDark ? 'text-white' : 'text-gray-900'">EllesmereUI</strong>
+          on World of Warcraft Retail. It has no standalone installer and no separate options window.
+          Everything lives in EllesmereUI under MagguuUI → Optionen.
         </p>
         <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-          The only required pieces are the two included addon folders:
-          <strong :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI</strong> and
-          <strong :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI_Data</strong>.
-          No external addon is required. ElvUI, Plater, Platynator, BigWigs and every other integration are optional;
-          MagguuUI configures the ones you have installed and safely skips the rest.
+          The download is one folder:
+          <strong :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI</strong>,
+          with EUI, Data, and Media nested inside it.
+          <strong :class="isDark ? 'text-white' : 'text-gray-900'">EllesmereUI 7.9.5+</strong>
+          must be installed and enabled. BigWigs, Northern Sky, WIM, and Waypoint UI are optional;
+          MagguuUI configures them when they are installed and skips them otherwise.
         </p>
       </div>
 
@@ -48,43 +50,31 @@
         <ul class="space-y-2.5 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">One-click Install All</strong> — applies the included layouts and profiles for the supported addons you actually have installed.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Native Ellesmere module</strong> — one sidebar row with Setup, Skinning, and QoL. Open it with <code>/mui</code>.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Class &amp; spec layouts</strong> — built-in Blizzard Edit Mode layouts and optional cooldown layouts for every class and specialization.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">4K setup</strong> — Ellesmere profile at UI scale 0.58, Magguu-Look, Load profiles, required and optional Magguu imports, and WowUp copy popups. After Ellesmere's first-install reload, Magguu Setup opens.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Update notifications</strong> — chat hint or popup whenever a new version is released, configurable in <code>/mui settings</code>.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Class layouts</strong> — imported as <code>Magguu - Class Spec</code>. After a successful Cooldown Viewer import MagguuUI asks you to reload. Import buttons turn green after a Magguu import.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Keystone List</strong> — a compact Mythic+ overview with dungeon teleports, a configurable group-join banner and useful key details.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">WowUp copy popups</strong> — starter pack (EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky) and optional extras copy from Setup. Paste in WowUp. Buttons turn green when the pack addons are present. Setup has no Edit Mode action.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Optional ElvUI tools</strong> — import the MagguuUI profile, color action-bar keybinds by class and use the custom item-level tags when ElvUI 15.12+ is installed.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Skinning</strong> — split unit and party/raid names plus class-colored keybind modifiers.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Quality-of-life tools</strong> — quick Great Vault access, minimap and AddonCompartment controls, a draggable audio output switcher and an in-game changelog.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Quality of life</strong> — death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, per-spec proc-overlay hiding, Smart Tab (chat channel cycling), Quick Focus (modifier-click to focus), and the audio device switcher on the Ellesmere speaker icon.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Automatic loot rolls</strong> — opt-in per category (Toys, Mounts, Recipes, Housing, Transmog) with combat-safe queue and loot-council conflict warning.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Custom gear tags</strong> — optional ElvUI tags show item level and tier bonus, with adjustable color thresholds in <em>Settings → Tags → Gear</em>.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Alts in seconds</strong> — after one main setup, alts get a short Load Profiles popup instead of the full installer.</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">11 languages out of the box</strong> — enUS / enGB, deDE, frFR, esES, esMX, ruRU, ptBR, itIT, koKR, zhCN, zhTW. Picks up your client locale automatically.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Hidden Werkzeuge</strong> — profile exports and Discord boost via <code>/mui tools</code>, or unlock the sidebar row with ten clicks on the MagguuUI header.</span>
           </li>
         </ul>
       </div>
@@ -97,12 +87,11 @@
           <span class="text-gradient-subtle">What this website is for</span>
         </h2>
         <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-          The website is a backup for everything the in-game addon already gives you. If you ever need to
-          re-install a single profile by hand, copy a class layout for a friend, or just see what is
-          currently shipped, you can browse and copy the raw import strings here on the
+          The website is a backup for the profiles MagguuUI already ships in-game. If you ever need to
+          copy a class layout for a friend, or just see what is currently shipped, browse the
           <NuxtLink to="/strings" class="text-brand-400 hover:underline">Strings</NuxtLink> page —
           and read the <NuxtLink to="/changelog" class="text-brand-400 hover:underline">Changelog</NuxtLink>
-          to see what changed in each release. For most users the in-game installer is all you need.
+          for each release. For most users, <code>/mui</code> and the 4K setup are all you need.
         </p>
       </div>
 
@@ -115,7 +104,7 @@
         </h2>
         <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           Questions, feedback or bug reports? Send an email to
-          <a :href="`mailto:${contactEmail}`" class="text-brand-400 hover:underline">{{ contactEmail }}</a>
+          <button type="button" class="text-brand-400 hover:underline" @click="openContact">{{ contactEmail }}</button>
           or create a
           <a :href="githubIssuesUrl" target="_blank" rel="noopener noreferrer" class="text-brand-400 hover:underline">GitHub Issue</a>.
         </p>
@@ -152,11 +141,15 @@ const isDark = useIsDark()
 const { observe } = useScrollReveal()
 const siteSettings = usePublicPageSeo({
   title: 'About',
-  description: 'Learn about MagguuUI, the standalone WoW Retail installer with optional addon integrations and built-in UI tools.',
+  description: 'Learn about MagguuUI, the native 4K overhaul for EllesmereUI with curated profiles, class layouts, and optional raid tools.',
   path: '/about',
 })
 
 const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguui.com')
 const githubUrl = computed(() => siteSettings.value.github_url || 'https://github.com/Derpsen/MagguuUI')
 const githubIssuesUrl = computed(() => githubUrl.value.endsWith('/issues') ? githubUrl.value : `${githubUrl.value.replace(/\/$/, '')}/issues`)
+
+function openContact() {
+  window.location.href = `mailto:${contactEmail.value}`
+}
 </script>

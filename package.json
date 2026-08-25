@@ -31,7 +31,7 @@
     "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@iconify-json/heroicons": "^1.2.0",
     "@iconify-json/simple-icons": "^1.2.89",
-    "@nuxt/ui": "^4.9.0",
+    "@nuxt/ui": "^4.10.0",
     "@resvg/resvg-js": "^2.6.2",
     "@simplewebauthn/browser": "^13.2.0",
     "@simplewebauthn/server": "^13.3.2",
@@ -59,7 +59,7 @@
     "zod": "^4.3.0"
   },
   "devDependencies": {
-    "@nuxt/eslint": "^1.16.0",
+    "@nuxt/eslint": "^1.17.0",
     "@playwright/test": "^1.52.0",
     "@types/bcrypt": "^6.0.0",
     "@types/better-sqlite3": "^7.6.12",

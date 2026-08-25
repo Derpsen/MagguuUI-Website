@@ -1,6 +1,6 @@
 # MagguuUI-Website
 
-Public website, admin panel, and REST API for WoW UI import strings (ElvUI, Plater, BigWigs, Details, etc.). Live site: `https://ui.magguu.xyz`.
+Public website, admin panel, and REST API for MagguuUI import strings (EllesmereUI, BigWigs, Northern Sky Raid Tools, class layouts). Live site: `https://ui.magguu.xyz`.
 
 ## Stack
 
@@ -51,7 +51,7 @@ npm run db:seed        # seed default data
 
 **Tailwind v4**: there is no `tailwind.config.ts`. Keep theme configuration in `assets/css/main.css` via `@theme`.
 
-**Admin SSR**: `/admin/**` must stay `ssr:false` in `nuxt.config.ts` to avoid auth-token flash. Public pages remain SSR for SEO.
+**Admin SSR**: `/admin/**` stays `ssr:false` in `nuxt.config.ts` to avoid auth-token flash on authenticated shells. **Exception:** `/admin/login` is `ssr:true` (more-specific routeRule before the catch-all) so hard reload skips the Unhead `hookOnce` SPA trap with `@nuxt/ui` colors (see MEMORY.md). Public pages remain SSR for SEO. Keep the `#62` Unhead polyfill until `@nuxt/ui` >= 4.10.0.
 
 **Auth**: `requireAuth(event)` accepts legacy bearer tokens and HttpOnly cookie sessions. Client hydration uses `/api/v1/auth/session`, which returns `null` instead of 401 for missing/invalid cookies so public pages stay console-clean.
 
@@ -69,13 +69,28 @@ npm run db:seed        # seed default data
 
 **Private API headers**: admin/auth error responses need private no-store headers via `server/plugins/security-headers.ts`. The smoke verifier checks this behavior.
 
-**Addon sync**: `server/api/v1/webhooks/github.post.ts` accepts signed events only from the configured repository, imports `main` pushes from the immutable `after` SHA, and handles `CHANGELOG.md`, `MagguuUI.toc`, and `MagguuUI_Data/*.lua` independently. Manual pulls likewise resolve `main` once and fetch the complete AddOn directory at that SHA. Repository automation reads hidden canonical state through one transactional, token-only `/api/v1/sync/snapshot`; component projections remain under `/api/v1/sync/*`, while public projections stay unauthenticated.
+**Addon sync**: `server/api/v1/webhooks/github.post.ts` accepts signed events only from the configured repository, imports `main` pushes from the immutable `after` SHA, and handles `CHANGELOG.md`, `MagguuUI.toc`, and `Data/*.lua` independently. Manual pulls likewise resolve `main` once and fetch the complete Data directory at that SHA. Repository automation reads hidden canonical state through one transactional, token-only `/api/v1/sync/snapshot`; component projections remain under `/api/v1/sync/*`, while public projections stay unauthenticated.
 
 **Seeded content**: `NUXT_SYNC_SEEDED_CONTENT=true` makes startup upsert home, guide, and FAQ content from `server/database/defaultContent.ts`. Without it, seed data is only created for empty DBs.
 Known inaccurate legacy seed claims may be repaired by exact marker during startup; arbitrary admin-authored content remains untouched.
 
 **Color mode**: default follows the OS via `colorMode.preference: 'system'`. Do not hardcode `dark` as the preference.
 
+**error.vue Home**: the Home action must go to `/`, never `/home`. Prefer
+`clearError()` then `window.location.assign('/')` (or `navigateTo('/', { external: true })`).
+`clearError({ redirect: '/' })` has stranded SPA/admin clients on `/home` (404).
+
+**Deploy / Unraid**: production container name is `MagguuUI`, image
+`ghcr.io/derpsen/magguuui-website`. Live hostname `ui.magguu.xyz`; LAN
+`http://192.168.178.21:3000` (`br0`). A transient HTTP 500 right after an
+image update can occur while the new process binds — recheck before calling it a
+regression. Do not build on Unraid; pull the GHCR image.
+
+**CodeQL pins**: `github/codeql-action/init` and `analyze` in
+`.github/workflows/codeql.yml` must use the same commit SHA. Do not leave
+init/analyze on different pins.
+
+**Grok Bot / Buddy + Git publish**: Marco uses Buddy as the single front door; helpers report only to Buddy. **Helpers (Stack Fixer) have standing autonomy** — clear in-scope Website work: commit/push/merge to main without asking Marco; never force-push; never unrelated dirty WIP. Do not send Marco approval questions. Tags/releases need an explicit release ask via Buddy. Agent entrypoint: `AGENTS.md`.
 ## References
 
 - Database schema: `server/database/schema.ts`
@@ -94,3 +109,5 @@ Known inaccurate legacy seed claims may be repaired by exact marker during start
 - Do not commit secrets, runtime databases, uploads, build output, or generated archives.
 - Do not perform major dependency upgrades without a separate compatibility pass.
 - Do not build directly on Unraid; CI publishes the GHCR image and Unraid pulls it.
+- Do not point error.vue Home at `/home`; use `/`.
+- Do not pin CodeQL init and analyze to different SHAs.

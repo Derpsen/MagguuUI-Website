@@ -1,7 +1,7 @@
 /**
  * POST /api/v1/admin/github/pull
  *
- * Imports one coherent snapshot of MagguuUI_Data from the configured addon
+ * Imports one coherent snapshot of Data/ from the configured addon
  * repository. The branch head is resolved once; every Lua file is fetched at
  * that immutable commit so a concurrent push cannot produce a mixed DB state.
  */

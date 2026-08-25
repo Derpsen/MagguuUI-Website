@@ -20,7 +20,7 @@ const timestamps = {
 }
 
 // ─── Addon Profiles ────────────────────────────────
-// Import strings for Plater, ElvUI, BigWigs, Details, etc.
+// Import strings for EllesmereUI, BigWigs, Northern Sky Raid Tools, etc.
 
 export const profiles = sqliteTable('profiles', {
   id: integer('id').primaryKey({ autoIncrement: true }),

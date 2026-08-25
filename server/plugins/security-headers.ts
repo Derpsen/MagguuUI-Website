@@ -32,9 +32,18 @@ export default defineNitroPlugin((nitroApp) => {
   // Error path — h3's sendError sets `Cache-Control: no-cache` by default,
   // which overrides the middleware headers. Re-apply after the error is
   // serialized so 401/403/etc. on admin/auth still carry private-cache headers.
-  nitroApp.hooks.hook('error', (_error, { event }) => {
+  nitroApp.hooks.hook('error', (error, { event }) => {
+    const path = event?.path || event?.node?.req?.url || ''
+    // Expected 404s (e.g. stale OG image URLs) are not actionable; keep the
+    // console focused on real failures that can surface as live HTTP 500s.
+    const err = error as unknown as { statusCode?: number, unhandled?: boolean }
+    const statusCode = typeof err.statusCode === 'number' ? err.statusCode : 500
+    const unhandled = Boolean(err.unhandled)
+    if (statusCode >= 500 || unhandled) {
+      console.error('[Nitro error]', path, error)
+    }
     if (!event) return
-    const path = event.path || event.node?.req?.url || ''
+    setResponseHeader(event, 'Cache-Control', 'private, no-store, no-cache, must-revalidate')
     if (!isPrivateApiPath(path)) return
 
     applyPrivateApiHeaders(event)

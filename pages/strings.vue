@@ -34,9 +34,9 @@
         </p>
         <p>
           <strong :class="isDark ? 'text-white' : 'text-gray-900'">You usually do not need this page.</strong>
-          The <NuxtLink to="/guide" class="text-brand-400 hover:underline">MagguuUI in-game installer</NuxtLink>
-          imports all of these for you with one click. This page exists as a backup if you ever want to import a single
-          profile by hand, share one with a friend, or check what is currently shipped.
+          Open <code>/mui</code> and run the 4K setup from
+          <NuxtLink to="/guide" class="text-brand-400 hover:underline">the installation guide</NuxtLink>.
+          This page is a backup if you want to import a single profile by hand, share one, or check what is shipped.
         </p>
         <p>
           <strong :class="isDark ? 'text-white' : 'text-gray-900'">How to use a string manually:</strong>
@@ -72,12 +72,15 @@
             </select>
           </div>
           <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1" enter-to-class="opacity-100 translate-y-0">
-            <div v-if="selectedClass">
+            <div v-if="selectedClass && layoutSpecs.length > 1">
               <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Specialization</label>
               <select v-model="selectedSpec" class="select-styled w-full px-4 py-3.5 rounded-xl text-base cursor-pointer" :class="isDark ? 'text-white' : 'text-gray-900'">
                 <option v-for="spec in layoutSpecs" :key="spec" :value="spec">{{ spec }}</option>
               </select>
             </div>
+            <p v-else-if="selectedClass && selectedSpec" class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+              One Cooldown Viewer layout for this class. Import applies every spec as <code>Magguu - {{ selectedClass }} Spec</code>.
+            </p>
           </Transition>
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
             <div v-if="selectedLayout" class="space-y-4 pt-1">
@@ -181,9 +184,10 @@
       <!-- ═══ WowUp ═══ -->
       <div v-if="activeTab === 'wowup'" role="tabpanel" id="tabpanel-wowup" aria-labelledby="tab-wowup" tabindex="0">
         <div class="mb-5 rounded-xl border px-4 py-3 text-sm leading-relaxed"
-          :class="isDark ? 'border-brand-400/15 bg-brand-400/5 text-silver-400' : 'border-blue-100 bg-blue-50 text-gray-600'">
-          These packages are optional recommendations for WowUp. MagguuUI does not require any external addon,
-          and some listed addons are alternatives to each other. Choose the package you want, then review the list in WowUp before installing.
+          :class="isDark ? 'border-brand-400/15 bg-brand-400/5 text-silver-400' : 'border-brand-100 bg-brand-50 text-gray-600'">
+          These are the same WowUp strings Magguu Setup copies in-game. Starter Addons is EllesmereUI, MagguuUI, BigWigs, LittleWigs, and Northern Sky.
+          Optional Addons are extras such as BugSack, MDT, Raider.IO, WIM, GTFO, EXBoss, the Ellesmere WIM skin, and ExwindCore.
+          MagguuUI itself only needs EllesmereUI plus the MagguuUI folder. Paste the string in WowUp — MagguuUI does not install addons itself.
         </div>
         <div v-if="wowupList.length" class="space-y-5">
           <div>
@@ -277,13 +281,13 @@ const { isLoggedIn } = useAuth()
 const { apiFetch } = useApi()
 usePublicPageSeo({
   title: 'Import Strings',
-  description: 'Browse optional addon profiles, class layouts, and WowUp starter packages shipped with MagguuUI.',
+  description: 'Browse EllesmereUI, BigWigs, Northern Sky, WIM, and Waypoint UI profiles plus Cooldown Viewer layouts and WowUp packs shipped with MagguuUI.',
   path: '/strings',
 })
 
 const inputClass = computed(() => isDark.value
   ? 'bg-brand-900/50 border border-brand-400/15 text-white focus:border-brand-400/30 focus:outline-none'
-  : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-blue-300 focus:outline-none')
+  : 'bg-gray-50 border border-gray-200 text-gray-900 focus:border-brand-300 focus:outline-none')
 
 const route = useRoute()
 const router = useRouter()
@@ -293,9 +297,9 @@ const activeTab = ref((route.query.tab as string) || 'layouts')
 
 const tabSubtitle = computed(() => {
   switch (activeTab.value) {
-    case 'layouts': return 'Choose your class and specialization to copy the import string.'
-    case 'profiles': return 'Choose your addon and profile to copy the import string.'
-    case 'wowup': return 'Optional starter packages for WowUp — review the addons before installing.'
+    case 'layouts': return 'Copy the Cooldown Viewer layout for your class.'
+    case 'profiles': return 'Copy EllesmereUI, BigWigs, Northern Sky, WIM, or Waypoint UI profile strings.'
+    case 'wowup': return 'Same packs Magguu Setup copies — starter plus optional extras. EllesmereUI is still required.'
     default: return 'Choose your category and class to copy the import string.'
   }
 })
@@ -309,9 +313,9 @@ interface PublicWowup { id: number, string: string, description?: string | null,
 type ProfileGroupedPublic = Record<string, PublicProfile[]>
 type WowupKeyedPublic = Record<string, PublicWowup>
 
-const { data: profileData, refresh: refreshProfiles } = await useFetch<{ data: ProfileGroupedPublic }>('/api/v1/profiles')
-const { data: wowupData, refresh: refreshWowup } = await useFetch<{ data: WowupKeyedPublic }>('/api/v1/wowup')
-const { data: layoutData, refresh: refreshLayouts } = await useFetch<{ data: PublicLayout[] }>('/api/v1/layouts')
+const { data: profileData, refresh: refreshProfiles } = useFetch<{ data: ProfileGroupedPublic }>('/api/v1/profiles')
+const { data: wowupData, refresh: refreshWowup } = useFetch<{ data: WowupKeyedPublic }>('/api/v1/wowup')
+const { data: layoutData, refresh: refreshLayouts } = useFetch<{ data: PublicLayout[] }>('/api/v1/layouts')
 
 type FlatProfile = PublicProfile & { addon: string }
 

@@ -48,7 +48,7 @@
         </h2>
         <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           Email:
-          <a :href="`mailto:${contactEmail}`" class="text-brand-400 hover:underline">{{ contactEmail }}</a>
+          <button type="button" class="text-brand-400 hover:underline" @click="openContact">{{ contactEmail }}</button>
         </p>
       </div>
 
@@ -81,6 +81,10 @@ const siteSettings = usePublicPageSeo({
 })
 
 const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguui.com')
+
+function openContact() {
+  window.location.href = `mailto:${contactEmail.value}`
+}
 const imprintName = computed(() => siteSettings.value.imprint_name || siteSettings.value.site_name || 'MagguuUI')
 const imprintStreet = computed(() => siteSettings.value.imprint_street || '')
 const imprintCity = computed(() => siteSettings.value.imprint_city || '')

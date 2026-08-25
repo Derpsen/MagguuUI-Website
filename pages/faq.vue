@@ -40,7 +40,7 @@
           <!-- Section Header -->
           <div class="flex items-start gap-3.5 mb-6 px-1">
             <span class="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-              :class="isDark ? 'bg-brand-400/10 text-brand-400' : 'bg-blue-50 text-blue-600'">
+              :class="isDark ? 'bg-brand-400/10 text-brand-400' : 'bg-brand-50 text-brand-600'">
               <UIcon :name="section.icon" class="w-4.5 h-4.5" />
             </span>
             <div class="flex-1">
@@ -98,7 +98,7 @@ const { isLoggedIn } = useAuth()
 const { observe } = useScrollReveal()
 const siteSettings = usePublicPageSeo({
   title: 'FAQ',
-  description: 'MagguuUI answers for installation, the two included folders, optional addon integrations, profiles, and troubleshooting.',
+  description: 'MagguuUI answers for EllesmereUI setup, the 4K install, optional BigWigs and Northern Sky profiles, and troubleshooting.',
   path: '/faq',
 })
 
@@ -131,7 +131,7 @@ const sections = [
 
 interface FaqEntry { id: number, question: string, answer: string, [k: string]: unknown }
 type FaqByCategory = Record<string, FaqEntry[]>
-const { data: rawData, pending } = await useFetch<{ data: FaqByCategory }>('/api/v1/faqs')
+const { data: rawData, pending } = useFetch<{ data: FaqByCategory }>('/api/v1/faqs')
 const faqData = computed<FaqByCategory>(() => rawData.value?.data || {})
 const hasFaqs = computed(() => Object.values(faqData.value).some(arr => arr?.length > 0))
 

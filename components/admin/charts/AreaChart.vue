@@ -10,14 +10,10 @@
 
 <script setup lang="ts">
 import VChart from 'vue-echarts'
-
-interface DataPoint {
-  label: string
-  value: number
-}
+import { createChartTheme, type ChartDataPoint } from '~/utils/chartTheme'
 
 const props = withDefaults(defineProps<{
-  data: DataPoint[]
+  data: ChartDataPoint[]
   height?: string
   color?: string
   emptyText?: string
@@ -34,8 +30,7 @@ const props = withDefaults(defineProps<{
 const isDark = useIsDark()
 
 const chartOption = computed(() => {
-  const textColor = isDark.value ? 'rgba(148, 163, 184, 0.7)' : 'rgba(100, 116, 139, 0.7)'
-  const gridLineColor = isDark.value ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'
+  const theme = createChartTheme(isDark.value)
 
   return {
     grid: { top: 8, right: 8, bottom: 24, left: 40 },
@@ -45,22 +40,20 @@ const chartOption = computed(() => {
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: {
-        color: textColor,
+        color: theme.textColor,
         fontSize: 11,
         interval: Math.max(0, Math.floor(props.data.length / 7) - 1),
       },
     },
     yAxis: {
       type: 'value' as const,
-      splitLine: { lineStyle: { color: gridLineColor } },
-      axisLabel: { color: textColor, fontSize: 11 },
+      splitLine: { lineStyle: { color: theme.gridLineColor } },
+      axisLabel: { color: theme.textColor, fontSize: 11 },
     },
     tooltip: {
       trigger: 'axis' as const,
-      backgroundColor: isDark.value ? '#1e293b' : '#ffffff',
-      borderColor: isDark.value ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-      textStyle: { color: isDark.value ? '#e2e8f0' : '#1e293b', fontSize: 12 },
-      axisPointer: { lineStyle: { color: gridLineColor } },
+      ...theme.tooltip,
+      axisPointer: { lineStyle: { color: theme.gridLineColor } },
     },
     series: [{
       type: 'line' as const,

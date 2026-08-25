@@ -128,7 +128,7 @@
       </div>
       <div>
         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Import String</label>
-        <UTextarea v-model="form.importString" :rows="6" :disabled="saving" class="font-mono text-xs" placeholder="ElvUI Layout String..." />
+        <UTextarea v-model="form.importString" :rows="6" :disabled="saving" class="font-mono text-xs" placeholder="Cooldown Viewer layout string..." />
       </div>
       <div class="grid gap-4 sm:grid-cols-2">
         <div>

@@ -4,6 +4,7 @@
  * Format (from WoW addon toc):
  *   ## OptionalDeps: Foo, Bar, !Baz, ...
  *   ## RequiredDeps: SomeFramework
+ *   ## Dependencies: SomeFramework   (alias of RequiredDeps)
  *
  * Lines starting with `## ` carry metadata. Dep tokens are comma-separated.
  * Names with a leading `!` are libraries that load before others (e.g. !BugGrabber).
@@ -35,7 +36,7 @@ export function parseAddonToc(content: string): TocAddonRef[] {
     const value = m[2].trim()
     if (key === 'optionaldeps') {
       optional.push(...splitDeps(value))
-    } else if (key === 'requireddeps') {
+    } else if (key === 'requireddeps' || key === 'dependencies') {
       required.push(...splitDeps(value))
     }
   }

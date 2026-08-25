@@ -1,11 +1,11 @@
-/** Shared parser and DB upserts for MagguuUI_Data/Classes/*.lua. */
+/** Shared parser and DB upserts for Data/Classes/*.lua. */
 
 import { and, eq } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
 import { characterLayouts } from '~/server/database/schema'
-import { MAX_IMPORT_STRING_BYTES, assertImportStringSize } from '~/server/utils/addonProfileLua'
+import { ADDON_REPO_DATA_ROOT, MAX_IMPORT_STRING_BYTES, assertImportStringSize } from '~/server/utils/addonProfileLua'
 
-export const CLASS_DATA_ROOT = 'MagguuUI_Data/Classes'
+export const CLASS_DATA_ROOT = `${ADDON_REPO_DATA_ROOT}/Classes`
 export const MAX_CLASS_LUA_SOURCE_BYTES = MAX_IMPORT_STRING_BYTES * 4 + 1024 * 1024
 
 export const CLASS_FILE_TO_NAME: Readonly<Record<string, string>> = {
@@ -24,7 +24,7 @@ export const CLASS_FILE_TO_NAME: Readonly<Record<string, string>> = {
   'Warrior.lua': 'Warrior',
 }
 
-const SAFE_CLASS_PATH_RE = /^MagguuUI_Data\/Classes\/([A-Za-z][A-Za-z0-9_]*)\.lua$/
+const SAFE_CLASS_PATH_RE = /^Data\/Classes\/([A-Za-z][A-Za-z0-9_]*)\.lua$/
 
 export interface ClassLayoutSyncChange {
   spec: string
@@ -48,13 +48,18 @@ export function parseSafeClassLuaPath(path: string) {
 export function syncClassLayoutFile(path: string, source: string): ClassLayoutFileSyncResult {
   const validated = validateClassLayoutFile(path, source)
   const { descriptor, parsed } = validated
-  const changes = sqlite.transaction(() => parsed.map((item, index) => {
-    const spec = item.spec || `Spec ${index + 1}`
-    return {
-      spec,
-      status: upsertClassLayout(descriptor.className, spec, item.importString, index),
-    }
-  }))()
+  const changes = sqlite.transaction(() => {
+    const nextSpecs = new Set(parsed.map((item, index) => item.spec || `Spec ${index + 1}`))
+    const synced = parsed.map((item, index) => {
+      const spec = item.spec || `Spec ${index + 1}`
+      return {
+        spec,
+        status: upsertClassLayout(descriptor.className, spec, item.importString, index),
+      }
+    })
+    pruneStaleClassLayouts(descriptor.className, nextSpecs)
+    return synced
+  })()
   return { ...descriptor, changes }
 }
 
@@ -69,9 +74,17 @@ export function validateClassLayoutFile(path: string, source: string) {
 
 function parseClassLua(content: string, fileName: string) {
   const expectedVariable = fileName.replace(/\.lua$/, '').toLowerCase()
+  const stringAssignment = content.match(new RegExp(`D\\.${expectedVariable}\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"`, 'i'))
+  if (stringAssignment?.[1] !== undefined) {
+    const importString = decodeQuotedValue(stringAssignment[1])
+    if (!importString) throw new Error(`${fileName} contains an empty class layout string`)
+    assertImportStringSize(importString, `${fileName}:Cooldown Viewer`)
+    return [{ spec: 'Cooldown Viewer', importString }]
+  }
+
   const assignmentMatches = content.match(new RegExp(`D\\.${expectedVariable}\\s*=\\s*\\{`, 'gi')) || []
   if (assignmentMatches.length !== 1) {
-    throw new Error(`${fileName} must contain exactly one D.${expectedVariable} table assignment`)
+    throw new Error(`${fileName} must contain exactly one D.${expectedVariable} string or table assignment`)
   }
 
   const specs: Array<{ spec: string, importString: string }> = []
@@ -138,4 +151,14 @@ function upsertClassLayout(
     isVisible: true,
   }).run()
   return 'created'
+}
+
+function pruneStaleClassLayouts(className: string, keepSpecs: Set<string>) {
+  const existing = db.select().from(characterLayouts)
+    .where(eq(characterLayouts.className, className))
+    .all()
+  for (const row of existing) {
+    if (row.spec && keepSpecs.has(row.spec)) continue
+    db.delete(characterLayouts).where(eq(characterLayouts.id, row.id)).run()
+  }
 }

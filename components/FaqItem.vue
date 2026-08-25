@@ -27,8 +27,12 @@
       <div class="overflow-hidden">
         <div class="px-6 sm:px-7 pb-6 pt-0">
           <div class="border-t pt-4" :class="isDark ? 'border-brand-400/10' : 'border-gray-200'">
-            <div class="faq-answer text-sm leading-relaxed" :class="isDark ? 'text-silver-300' : 'text-gray-600'"
-              v-html="safeAnswer" />
+            <SafeHtml
+              class="faq-answer text-sm leading-relaxed"
+              :class="isDark ? 'text-silver-300' : 'text-gray-600'"
+              :html="answer"
+              breaks
+            />
           </div>
         </div>
       </div>
@@ -37,17 +41,11 @@
 </template>
 
 <script setup lang="ts">
-import { renderMarkdownToSafeHtml } from '~/utils/richText'
-
-const props = defineProps<{
+defineProps<{
   question: string
   answer: string
   isDark: boolean
 }>()
-
-// Render answers as Markdown so list items, bold, code, and links get
-// proper formatting instead of appearing as one wall of text.
-const safeAnswer = computed(() => renderMarkdownToSafeHtml(props.answer))
 
 const uid = useId()
 const open = ref(false)

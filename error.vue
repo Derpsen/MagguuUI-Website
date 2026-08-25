@@ -23,12 +23,16 @@
 
       <!-- Actions -->
       <div class="flex items-center justify-center gap-4">
-        <NuxtLink to="/" class="btn-gradient px-6 py-3 rounded-xl text-white font-semibold inline-flex items-center gap-2">
+        <button
+          type="button"
+          class="btn-gradient px-6 py-3 rounded-xl text-white font-semibold inline-flex items-center gap-2"
+          @click="goHome"
+        >
           <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
           </svg>
           Home
-        </NuxtLink>
+        </button>
         <button @click="handleError" class="px-6 py-3 rounded-xl font-semibold transition-all inline-flex items-center gap-2"
           :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'"
           :style="isDark ? 'background: rgba(15, 28, 52, 0.6); border: 1px solid rgba(59, 139, 255, 0.1);' : 'background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(59, 139, 255, 0.12);'">
@@ -38,7 +42,7 @@
 
       <!-- MagguuUI Logo -->
       <div class="mt-12 opacity-30">
-        <img src="/logo.svg" alt="MagguuUI" width="40" height="40" loading="lazy" class="w-10 h-10 mx-auto" />
+        <img src="/logo.png" alt="MagguuUI" width="40" height="40" loading="lazy" class="w-10 h-10 mx-auto" />
       </div>
     </div>
   </div>
@@ -46,8 +50,11 @@
 
 <script setup lang="ts">
 const error = useError()
-const isDark = useIsDark()
 const router = useRouter()
+const isDark = computed(() => {
+  if (!import.meta.client) return true
+  return document.documentElement.classList.contains('dark')
+})
 
 useSeoMeta({
   robots: 'noindex, nofollow',
@@ -68,6 +75,17 @@ const errorDesc = computed(() => {
   return error.value?.message || 'Unknown error'
 })
 
+function goHome() {
+  // clearError({ redirect: '/' }) can leave SPA clients on /home (404) after a
+  // fatal error — especially from admin routes with ssr:false. Hard-nav to /.
+  clearError()
+  if (import.meta.client) {
+    window.location.assign('/')
+    return
+  }
+  return navigateTo('/', { external: true })
+}
+
 function handleError() {
   if (import.meta.client && window.history.length > 1) {
     clearError()
@@ -75,6 +93,6 @@ function handleError() {
     return
   }
 
-  clearError({ redirect: '/' })
+  goHome()
 }
 </script>

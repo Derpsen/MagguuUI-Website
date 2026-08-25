@@ -54,7 +54,7 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: defaultMetaDescription },
         { name: 'author', content: defaultSiteName },
-        { name: 'theme-color', content: '#0c1b35' },
+        { name: 'theme-color', content: '#061f1b' },
         { name: 'google-adsense-account', content: 'ca-pub-3382298185404332' },
         { name: 'google-site-verification', content: 'PST-5t5R4xh66Qhf0PxadvnLxGg_A3We1Ku752iuVBI' },
         { property: 'og:type', content: 'website' },
@@ -76,11 +76,11 @@ export default defineNuxtConfig({
       // would leak a request to Google on privacy-sensitive routes (imprint,
       // privacy) even when the admin has disabled ads.
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' },
-        { rel: 'icon', type: 'image/png', href: '/logo.png' },
-        { rel: 'shortcut icon', href: '/logo.png' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16.png' },
+        { rel: 'shortcut icon', href: '/favicon-32.png' },
         /* canonical is set per-page via usePublicPageSeo composable */
-        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/logo.png' },
         { rel: 'manifest', href: '/manifest.json' },
         { rel: 'dns-prefetch', href: 'https://api.iconify.design' },
       ],
@@ -168,6 +168,19 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    // Hard-load of SPA /admin/** hits @nuxt/ui colors FOUC path that calls
+    // Unhead hookOnce (missing on Nuxt 4.5 / Unhead v3) and surfaces client 500.
+    // Login is the public entry; SSR-on skips that branch (serverRendered=true).
+    // Keep other admin routes SPA; more-specific rule must precede the catch-all.
+    '/admin/login': {
+      ssr: true,
+      headers: {
+        'Cache-Control': 'private, no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'X-Robots-Tag': 'noindex, nofollow, noarchive',
+      },
+    },
     '/admin/**': {
       ssr: false,
       headers: {

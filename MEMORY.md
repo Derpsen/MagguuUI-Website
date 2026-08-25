@@ -83,11 +83,12 @@
 - Auth authorization resolves the current user and role from SQLite on every request, so deletion, lock, or demotion invalidates existing JWT claims immediately.
 
 
-## SPA admin + color-mode hydration trap (2026-08-23)
+## SPA admin + color-mode hydration trap (2026-08-23; resolved 2026-08-25)
 
-- Hard reload of SPA `/admin/**` (`ssr: false`) can client-500 with `hooks.hookOnce is not a function` while HTTP stays 200.
-- `@nuxt/ui` colors plugin FOUC cleanup runs only when `isHydrating && !payload.serverRendered` and calls Unhead `hookOnce`; Nuxt 4.5.2 ships Unhead v3 `HookableCore` without it. SPA nav from a public SSR page is fine.
-- Mitigation: `/admin/login` uses `ssr: true` so login hard-loads skip that branch (`data-ssr` true). Other admin hard-loads may still be fragile until `@nuxt/ui` >= 4.10.0 (upstream #6658; Dependabot PR) or SPA admin is widened to SSR.
+- Was: hard reload of SPA `/admin/**` (`ssr: false`) client-500 with `hooks.hookOnce is not a function` while HTTP stayed 200.
+- Cause: `@nuxt/ui` 4.9 colors plugin FOUC cleanup called Unhead `hookOnce`; Nuxt 4.5.x Unhead v3 `HookableCore` lacked it.
+- Resolved by `@nuxt/ui` 4.10 (nuxt/ui#6658). Local Unhead polyfill (`modules/fix-nuxt-ui-colors-hookonce.ts` + `plugins/unhead-hookonce-compat.client.ts`) removed.
+- `/admin/login` remains `ssr: true` (more-specific routeRule before `/admin/**` SPA catch-all). Keep that exception.
 - Lock currently resolves `nuxt@4.5.2` from caret `^4.4.8`; avoid assuming 4.4.x at build time. Not OG-secret / CSP related.
 
 ## Visible Risks
@@ -144,8 +145,8 @@
 - Raw SQLite bootstrap now also matches Drizzle for `profiles.custom_fields`, `wowup_strings.sort_order`, `wowup_strings.custom_fields`, `users.is_locked`, `users.locked_until`, and the fresh-DB `site_content(page, section, key, locale)` unique index.
 - A real middleware-order bug was found and fixed: admin auth failures now still receive private/no-store headers because `server/middleware/admin-api.ts` applies shared private headers before calling `requireAuth`.
 
-## Admin login client 500 (2026-08-23)
+## Admin login client 500 (2026-08-23; resolved 2026-08-25)
 
-- Hard reload of `/admin/login` (ssr:false SPA shell) crashed client init with `NUXT_E1005` / `injectHead().hooks.hookOnce is not a function`.
-- Cause: `@nuxt/ui@4.9` colors plugin SPA FOUC path vs Unhead v3 `HookableCore` (Nuxt 4.5). Public SSR pages OK; SPA nav after public page OK.
-- Fix: `modules/fix-nuxt-ui-colors-hookonce.ts` (vite transform) + `plugins/unhead-hookonce-compat.client.ts` polyfill. Upstream: nuxt/ui#6658; prefer bumping `@nuxt/ui` later.
+- Hard reload of `/admin/login` (then ssr:false SPA shell) crashed client init with `NUXT_E1005` / `injectHead().hooks.hookOnce is not a function`.
+- Cause: `@nuxt/ui@4.9` colors plugin SPA FOUC path vs Unhead v3 `HookableCore` (Nuxt 4.5).
+- Interim fix was a local Unhead polyfill; superseded by `@nuxt/ui` 4.10 (nuxt/ui#6658). Polyfill files removed. `/admin/login` stays `ssr: true`.

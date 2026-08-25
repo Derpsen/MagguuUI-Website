@@ -4,7 +4,7 @@ Public website, admin panel, and REST API for MagguuUI import strings (Ellesmere
 
 ## Stack
 
-Nuxt 4.4, Vue 3.5, TypeScript 6, Nuxt UI 4.9, Tailwind CSS 4.3 (CSS-first), Drizzle 0.45, SQLite via `better-sqlite3` 12, Node 24, and `nuxt-og-image` 6 with Satori.
+Nuxt 4.4, Vue 3.5, TypeScript 6, Nuxt UI 4.10, Tailwind CSS 4.3 (CSS-first), Drizzle 0.45, SQLite via `better-sqlite3` 12, Node 24, and `nuxt-og-image` 6 with Satori.
 
 Auth uses JWT, HttpOnly cookies, session tracking, and WebAuthn/passkeys. Validation uses Zod. Linting uses Nuxt ESLint Flat Config without a separate Prettier setup; use `npm run lint`, `npm run typecheck`, build, smoke, and Playwright tests as the project checks.
 
@@ -51,7 +51,7 @@ npm run db:seed        # seed default data
 
 **Tailwind v4**: there is no `tailwind.config.ts`. Keep theme configuration in `assets/css/main.css` via `@theme`.
 
-**Admin SSR**: `/admin/**` stays `ssr:false` in `nuxt.config.ts` to avoid auth-token flash on authenticated shells. **Exception:** `/admin/login` is `ssr:true` (more-specific routeRule before the catch-all) so hard reload skips the Unhead `hookOnce` SPA trap with `@nuxt/ui` colors (see MEMORY.md). Public pages remain SSR for SEO. Keep the `#62` Unhead polyfill until `@nuxt/ui` >= 4.10.0.
+**Admin SSR**: `/admin/**` stays `ssr:false` in `nuxt.config.ts` to avoid auth-token flash on authenticated shells. **Exception:** `/admin/login` is `ssr:true` (more-specific routeRule before the catch-all). Public pages remain SSR for SEO. The Unhead `hookOnce` polyfill was removed after `@nuxt/ui` 4.10 (nuxt/ui#6658).
 
 **Auth**: `requireAuth(event)` accepts legacy bearer tokens and HttpOnly cookie sessions. Client hydration uses `/api/v1/auth/session`, which returns `null` instead of 401 for missing/invalid cookies so public pages stay console-clean.
 

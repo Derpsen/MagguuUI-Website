@@ -168,10 +168,9 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    // Hard-load of SPA /admin/** hits @nuxt/ui colors FOUC path that calls
-    // Unhead hookOnce (missing on Nuxt 4.5 / Unhead v3) and surfaces client 500.
-    // Login is the public entry; SSR-on skips that branch (serverRendered=true).
-    // Keep other admin routes SPA; more-specific rule must precede the catch-all.
+    // `/admin/login` is the public entry and stays SSR-on. Other `/admin/**`
+    // routes stay SPA (`ssr: false`) to avoid auth-token flash. More-specific
+    // rule must precede the catch-all.
     '/admin/login': {
       ssr: true,
       headers: {

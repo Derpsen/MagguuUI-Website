@@ -16,7 +16,7 @@ const props = defineProps<{
   fullWidth?: boolean
 }>()
 
-const { data: settings } = await useFetch('/api/v1/settings')
+const { data: settings } = useFetch('/api/v1/settings')
 
 const publisherId = computed(() => settings.value?.data?.adsense_publisher_id || '')
 const enabled = computed(() => settings.value?.data?.adsense_enabled === 'true')

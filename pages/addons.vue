@@ -8,14 +8,14 @@
         <span class="text-gradient">Addons</span>
       </h1>
       <p class="text-lg" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Every supported integration in one place &mdash; all external addons are optional.
+        EllesmereUI is required. BigWigs, Northern Sky, WIM, and Waypoint UI are optional Magguu imports.
       </p>
     </div>
 
     <div class="glass-card rounded-2xl p-5 sm:p-6 mb-10 fade-in fade-in-delay-1">
       <div class="flex items-start gap-3">
         <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0"
-          :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-blue-50 text-blue-700'">
+          :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-brand-50 text-brand-700'">
           <svg aria-hidden="true" class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
           </svg>
@@ -23,45 +23,84 @@
         <div class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           <p>
             <strong :class="isDark ? 'text-white' : 'text-gray-900'">What you need:</strong>
-            the two folders included with the download &mdash; <code>MagguuUI</code> and <code>MagguuUI_Data</code>.
+            <code>EllesmereUI</code> 7.9.5+ installed and enabled, plus the single <code>MagguuUI</code> folder.
           </p>
           <p class="mt-2">
-            <strong :class="isDark ? 'text-white' : 'text-gray-900'">External requirements: none.</strong>
-            ElvUI and every addon below are optional. Choose only the integrations you want; Install All skips everything else.
+            <strong :class="isDark ? 'text-white' : 'text-gray-900'">Optional Magguu imports:</strong>
+            BigWigs, Northern Sky Raid Tools, WIM, and Waypoint UI. Setup configures them when they are installed and skips them otherwise.
           </p>
           <p class="mt-2">
-            The <NuxtLink to="/strings?tab=wowup" class="text-brand-400 hover:underline">WowUp Starter and Optional packages</NuxtLink>
-            are convenient recommendations, not required bundles.
+            Copy the WowUp starter pack and optional pack from Magguu Setup (or the Strings page as a backup), then paste in WowUp. MagguuUI does not install addons itself.
+          </p>
+          <p class="mt-2">
+            Older ElvUI / MagguuUI_Data installs are retired. Delete leftover <code>MagguuUI_Data</code>,
+            <code>MagguuUI_EUI</code>, or <code>MagguuUI_Media</code> folders beside MagguuUI.
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Main integrations -->
-    <section class="mb-12 fade-in fade-in-delay-3">
+    <section v-if="requiredAddons.length" class="mb-12 fade-in fade-in-delay-2">
       <div class="flex items-center gap-2 mb-5">
         <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg"
-          :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-blue-50 text-blue-700'">
+          :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-brand-50 text-brand-700'">
+          <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+        </span>
+        <h2 class="text-xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Required</h2>
+        <span class="ml-auto text-xs font-medium px-2.5 py-1 rounded-full"
+          :class="isDark ? 'bg-brand-400/10 text-brand-300 border border-brand-400/18' : 'bg-brand-50 text-brand-700 border border-brand-200'">
+          {{ requiredAddons.length }} {{ requiredAddons.length === 1 ? 'addon' : 'addons' }}
+        </span>
+      </div>
+      <p class="text-sm mb-5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+        MagguuUI will not load without this host UI.
+      </p>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <component :is="addon.url ? 'a' : 'div'" v-for="addon in requiredAddons" :key="addon.slug"
+          v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
+          class="glass-card rounded-xl p-5 flex items-start gap-4 transition-all hover:scale-[1.01] group"
+          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-brand-200']">
+          <span class="inline-flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0 text-lg"
+            :class="isDark ? 'bg-brand-400/10 text-brand-300' : 'bg-brand-50 text-brand-600'">
+            {{ addon.emoji }}
+          </span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <h3 class="font-semibold transition-colors" :class="[addon.url ? 'group-hover:text-brand-400' : '', isDark ? 'text-white' : 'text-gray-900']">{{ addon.name }}</h3>
+            </div>
+            <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</p>
+          </div>
+        </component>
+      </div>
+    </section>
+
+    <!-- Main integrations -->
+    <section v-if="coreAddons.length" class="mb-12 fade-in fade-in-delay-3">
+      <div class="flex items-center gap-2 mb-5">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg"
+          :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-brand-50 text-brand-700'">
           <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
             </svg>
         </span>
-        <h2 class="text-xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Popular Integrations</h2>
+        <h2 class="text-xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Included with MagguuUI</h2>
         <span class="ml-auto text-xs font-medium px-2.5 py-1 rounded-full"
-          :class="isDark ? 'bg-brand-400/10 text-brand-300 border border-brand-400/18' : 'bg-blue-50 text-blue-700 border border-blue-200'">
+          :class="isDark ? 'bg-brand-400/10 text-brand-300 border border-brand-400/18' : 'bg-brand-50 text-brand-700 border border-brand-200'">
           {{ coreAddons.length }} addons
         </span>
       </div>
       <p class="text-sm mb-5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Common starting choices, all still optional. You do not need every alternative in a category.
+        Class layouts ship with MagguuUI. BigWigs is an optional Magguu import when installed.
       </p>
       <div class="grid sm:grid-cols-2 gap-3">
         <component :is="addon.url ? 'a' : 'div'" v-for="addon in coreAddons" :key="addon.slug"
           v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
           class="glass-card rounded-xl p-5 flex items-start gap-4 transition-all hover:scale-[1.01] group"
-          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-blue-200']">
+          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-brand-200']">
           <span class="inline-flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0 text-lg"
-            :class="isDark ? 'bg-brand-400/10 text-brand-300' : 'bg-blue-50 text-blue-600'">
+            :class="isDark ? 'bg-brand-400/10 text-brand-300' : 'bg-brand-50 text-brand-600'">
             {{ addon.emoji }}
           </span>
           <div class="flex-1 min-w-0">
@@ -78,7 +117,7 @@
     </section>
 
     <!-- Optional Section -->
-    <section class="fade-in fade-in-delay-4">
+    <section v-if="optionalAddons.length" class="fade-in fade-in-delay-4">
       <div class="flex items-center gap-2 mb-5">
         <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg"
           :class="isDark ? 'bg-emerald-500/12 text-emerald-400' : 'bg-emerald-50 text-emerald-700'">
@@ -93,13 +132,13 @@
         </span>
       </div>
       <p class="text-sm mb-5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Install any of these for extra functionality &mdash; MagguuUI will configure them automatically if present.
+        MagguuUI imports these when they are installed. Missing addons are skipped. WowUp extras such as LittleWigs live in the starter pack.
       </p>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <component :is="addon.url ? 'a' : 'div'" v-for="addon in optionalAddons" :key="addon.slug"
           v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
           class="glass-card rounded-xl p-4 flex items-start gap-3 transition-all hover:scale-[1.01] group"
-          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-blue-200']">
+          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-brand-200']">
           <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg flex-shrink-0 text-base"
             :class="isDark ? 'bg-white/[0.04] text-silver-400' : 'bg-gray-50 text-gray-500'">
             {{ addon.emoji }}
@@ -120,9 +159,9 @@
     <div class="text-center mt-12 pt-6 border-t fade-in"
       :class="isDark ? 'border-brand-400/10' : 'border-gray-200'">
       <p class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Want a quick starting point? Use the optional
-        <NuxtLink to="/strings?tab=wowup" class="text-brand-400 hover:underline">WowUp Starter package</NuxtLink>
-        or follow the <NuxtLink to="/guide" class="text-brand-400 hover:underline">Installation Guide</NuxtLink>.
+        Ready to install? Follow the
+        <NuxtLink to="/guide" class="text-brand-400 hover:underline">Installation Guide</NuxtLink>
+        or copy profiles from <NuxtLink to="/strings" class="text-brand-400 hover:underline">Import Strings</NuxtLink>.
       </p>
     </div>
   </div>
@@ -133,7 +172,7 @@ const isDark = useIsDark()
 
 usePublicPageSeo({
   title: 'Addons',
-  description: 'See every optional addon MagguuUI can configure and learn which two included folders are actually required.',
+  description: 'See the addons MagguuUI needs and the optional raid tools it can configure.',
   path: '/addons',
 })
 
@@ -146,12 +185,14 @@ interface Addon {
 }
 
 interface AddonsResponse {
+  required: Addon[]
   core: Addon[]
   optional: Addon[]
   total: number
 }
 
-const { data } = await useFetch<{ data: AddonsResponse }>('/api/v1/addons')
+const { data } = useFetch<{ data: AddonsResponse }>('/api/v1/addons')
+const requiredAddons = computed<Addon[]>(() => data.value?.data?.required ?? [])
 const coreAddons = computed<Addon[]>(() => data.value?.data?.core ?? [])
 const optionalAddons = computed<Addon[]>(() => data.value?.data?.optional ?? [])
 </script>

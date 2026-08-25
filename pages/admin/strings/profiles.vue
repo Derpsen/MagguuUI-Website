@@ -113,7 +113,7 @@
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
           <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Addon *</label>
-          <UInput v-model="form.addon" placeholder="e.g. ElvUI, Plater, Details!" :disabled="saving" />
+          <UInput v-model="form.addon" placeholder="e.g. EllesmereUI, BigWigs" :disabled="saving" />
         </div>
         <div>
           <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Profile Name *</label>

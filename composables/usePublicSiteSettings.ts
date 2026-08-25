@@ -9,6 +9,9 @@ import { PUBLIC_SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
  * errors on pages that called other composables (useRoute, additional
  * useFetch) after `await usePublicPageSeo(...)`, because Nuxt 4 can drop
  * the AsyncLocalStorage instance context across nested awaits.
+ *
+ * Same rule for public pages: never await useFetch / await useAsyncData
+ * in script setup — it intermittently 500s SSR (hard reload / cold nav).
  */
 export function usePublicSiteSettings() {
   const siteSettings = useState<Record<string, string>>('site-settings', () => ({ ...PUBLIC_SITE_SETTINGS_DEFAULTS }))

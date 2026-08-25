@@ -7,9 +7,28 @@
 - Deployment: Docker on Unraid — image built by `.github/workflows/docker.yml` and published to GHCR; Unraid pulls via *Check for Updates* → *Apply Update*
 - Repo contains the public website, admin panel, and Nitro/API backend in one app
 
+## Agent / Buddy ops
+
+- Entrypoint: `AGENTS.md` → `CLAUDE.md` (depth) → this file (ops history).
+- Buddy is the single front door; helpers report to Buddy. Clear in-scope fixes
+  may push/merge to main under the hub standing order; no force-push; tags need
+  an explicit release ask.
+- Production: Unraid container `MagguuUI` / image `ghcr.io/derpsen/magguuui-website`;
+  `ui.magguu.xyz` → `http://192.168.178.21:3000` (`br0`). Transient 500 after
+  deploy is possible — recheck.
+- `error.vue` Home → `/` only (never `/home`).
+- CodeQL `init` and `analyze` must share one commit pin.
+
+
+## Design
+
+- Marco's direction for the public home: clean and clear — primary CTA **Install & Setup** (`/guide`), secondary **Import Strings** (`/strings`). Little glass/motion; no hero fade-in or bounce scroll cue.
+- Brand palette (public): Ellesmere teal `#0CD29D` is **primary** via `--color-brand-*` (hover/pressed `#0AA882` / `#088F6F`). `--color-ellesmere` aliases brand-400. Backgrounds are charcoal/near-black — not navy-blue brand dominance. Old Magguu blue is demoted; admin keeps its own accent tokens (light touch only if shared tokens force it). Admin brand marks use `/logo.png` (same as public).
+- Home copy stays factual about EllesmereUI (native module, `/mui` 4K setup, optional BigWigs / Northern Sky, Smart Tab, Quick Focus, audio switcher). Seed defaults live in `server/database/defaultContent.ts` (EN + DE).
+
 ## Important Paths
 
-- Docs: `README.md`, `CLAUDE.md`, `MEMORY.md`
+- Docs: `README.md`, `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`
 - Frontend: `pages/`, `components/`, `layouts/`, `assets/css/main.css`, `composables/`
 - Backend: `server/api/`, `server/utils/`, `server/plugins/`, `server/middleware/`
 - Database: `server/database/index.ts`, `server/database/schema.ts`, `drizzle.config.ts`
@@ -24,7 +43,7 @@
 
 ## Architecture Notes
 
-- Admin routes run with `ssr: false` in `nuxt.config.ts`.
+- Admin routes mostly run with `ssr: false` in `nuxt.config.ts`; `/admin/login` is SSR-on (more-specific rule before `/admin/**`).
 - Auth is hybrid-compatible: login still returns a JWT in the response body, but the admin client restores primarily from HttpOnly cookie + session restore.
 - Session tracking and persistent rate limits are stored in SQLite.
 - Startup seeds admin, guide, and FAQ data; forced guide/FAQ code re-sync is opt-in via `NUXT_SYNC_SEEDED_CONTENT=true`.
@@ -62,6 +81,14 @@
 - `/api/v1/sync/snapshot` returns profiles, WowUp, and class layouts from one SQLite transaction with a revision hash, including hidden synchronization state.
 - Manual GitHub pulls and signed `main`-push webhooks fetch complete, size-bounded Lua snapshots at one immutable commit SHA and apply validated profile/class writes transactionally.
 - Auth authorization resolves the current user and role from SQLite on every request, so deletion, lock, or demotion invalidates existing JWT claims immediately.
+
+
+## SPA admin + color-mode hydration trap (2026-08-23)
+
+- Hard reload of SPA `/admin/**` (`ssr: false`) can client-500 with `hooks.hookOnce is not a function` while HTTP stays 200.
+- `@nuxt/ui` colors plugin FOUC cleanup runs only when `isHydrating && !payload.serverRendered` and calls Unhead `hookOnce`; Nuxt 4.5.2 ships Unhead v3 `HookableCore` without it. SPA nav from a public SSR page is fine.
+- Mitigation: `/admin/login` uses `ssr: true` so login hard-loads skip that branch (`data-ssr` true). Other admin hard-loads may still be fragile until `@nuxt/ui` >= 4.10.0 (upstream #6658; Dependabot PR) or SPA admin is widened to SSR.
+- Lock currently resolves `nuxt@4.5.2` from caret `^4.4.8`; avoid assuming 4.4.x at build time. Not OG-secret / CSP related.
 
 ## Visible Risks
 
@@ -116,3 +143,9 @@
 - Drizzle schema parity improved with matching non-unique indexes for `sessions`, `login_attempts`, and `rate_limits`.
 - Raw SQLite bootstrap now also matches Drizzle for `profiles.custom_fields`, `wowup_strings.sort_order`, `wowup_strings.custom_fields`, `users.is_locked`, `users.locked_until`, and the fresh-DB `site_content(page, section, key, locale)` unique index.
 - A real middleware-order bug was found and fixed: admin auth failures now still receive private/no-store headers because `server/middleware/admin-api.ts` applies shared private headers before calling `requireAuth`.
+
+## Admin login client 500 (2026-08-23)
+
+- Hard reload of `/admin/login` (ssr:false SPA shell) crashed client init with `NUXT_E1005` / `injectHead().hooks.hookOnce is not a function`.
+- Cause: `@nuxt/ui@4.9` colors plugin SPA FOUC path vs Unhead v3 `HookableCore` (Nuxt 4.5). Public SSR pages OK; SPA nav after public page OK.
+- Fix: `modules/fix-nuxt-ui-colors-hookonce.ts` (vite transform) + `plugins/unhead-hookonce-compat.client.ts` polyfill. Upstream: nuxt/ui#6658; prefer bumping `@nuxt/ui` later.

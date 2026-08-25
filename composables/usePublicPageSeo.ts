@@ -18,12 +18,12 @@ export function usePublicPageSeo(options: PublicPageSeoOptions) {
 
   const siteName = computed(() => siteSettings.value.site_name || PUBLIC_SITE_SETTINGS_DEFAULTS.site_name)
   const fullTitle = computed(() => buildPublicPageTitle(options.title, siteName.value))
-  // Only honour an explicit admin-supplied og_image_url. When unset, fall
-  // through to nuxt-og-image's auto-injected per-route Satori card instead
-  // of a static logo PNG, which renders poorly on Twitter/Facebook cards.
-  const customOgImage = computed(() => {
+  // Prefer an admin-pinned image. Otherwise use the static logo so page
+  // SSR never waits on runtime OG generation (that path 500s without a
+  // signing secret, then 404s on the generated URL).
+  const ogImage = computed(() => {
     const v = siteSettings.value.og_image_url?.trim()
-    return v ? v : null
+    return v || buildPublicUrl('/logo.png')
   })
   const canonicalUrl = computed(() => buildPublicUrl(options.path))
 
@@ -34,15 +34,11 @@ export function usePublicPageSeo(options: PublicPageSeoOptions) {
     ogDescription: options.description,
     ogSiteName: siteName,
     ogUrl: canonicalUrl,
-    ...(customOgImage.value
-      ? {
-          ogImage: customOgImage.value,
-          ogImageWidth: 1200,
-          ogImageHeight: 630,
-          ogImageType: 'image/png',
-          twitterImage: customOgImage.value,
-        }
-      : {}),
+    ogImage,
+    ogImageWidth: 1200,
+    ogImageHeight: 630,
+    ogImageType: 'image/png',
+    twitterImage: ogImage,
     twitterTitle: fullTitle,
     twitterDescription: options.description,
     twitterCard: 'summary_large_image',

@@ -19,7 +19,7 @@ test('verifies the exact GitHub HMAC without accepting missing or malformed sign
 
 test('classifies canonical paths independently', () => {
   const classified = classifyCanonicalPushChanges(
-    new Set(['MagguuUI_Data/AddOns/Plater.lua', 'CHANGELOG.md']),
+    new Set(['Data/AddOns/BigWigs.lua', 'CHANGELOG.md']),
     { forced: false, commitCount: 1 },
   )
 

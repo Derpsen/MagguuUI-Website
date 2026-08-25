@@ -4,79 +4,83 @@
 
 <template>
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-    <!-- Admin controls (client-only to avoid layout shift on SSR) -->
+    <!-- Admin controls: ClientOnly always renders a div (fallback + hidden when guest) -->
     <ClientOnly>
-    <div v-if="isAdmin" class="flex items-center justify-end gap-2 mb-5 fade-in">
-      <template v-if="editMode">
-        <button
-          @click="saveAll"
-          :disabled="saving"
-          class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all"
-          :class="saving ? 'bg-brand-400/60 cursor-wait' : 'bg-brand-400 hover:bg-brand-500'"
-        >
-          <svg v-if="saving" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-          <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-          Save
-        </button>
-        <button
-          @click="cancelEdit"
-          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
-          :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/5 border border-brand-400/15' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-gray-200'"
-        >
-          Cancel
-        </button>
+      <div
+        class="flex items-center justify-end gap-2 mb-5 fade-in"
+        :class="isAdmin ? '' : 'hidden'"
+        :aria-hidden="isAdmin ? undefined : 'true'"
+      >
+        <template v-if="isAdmin && editMode">
+          <button
+            @click="saveAll"
+            :disabled="saving"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all"
+            :class="saving ? 'bg-brand-400/60 cursor-wait' : 'bg-brand-400 hover:bg-brand-500'"
+          >
+            <svg v-if="saving" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+            <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+            Save
+          </button>
+          <button
+            @click="cancelEdit"
+            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
+            :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/5 border border-brand-400/15' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-gray-200'"
+          >
+            Cancel
+          </button>
+        </template>
+        <template v-else-if="isAdmin">
+          <button
+            @click="editMode = true"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+            :class="isDark ? 'bg-brand-400/10 text-brand-400 hover:bg-brand-400/20 border border-brand-400/20' : 'bg-brand-50 text-brand-600 hover:bg-brand-100 border border-brand-200'"
+          >
+            <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+            Edit Page
+          </button>
+          <NuxtLink
+            to="/admin/content/guide"
+            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
+            :class="isDark ? 'bg-white/5 text-silver-400 hover:text-white hover:bg-white/10 border border-brand-400/15' : 'bg-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-200 border border-gray-200'"
+          >
+            Full Editor
+          </NuxtLink>
+        </template>
+      </div>
+      <template #fallback>
+        <div class="hidden mb-5" aria-hidden="true" />
       </template>
-      <template v-else>
-        <button
-          @click="editMode = true"
-          class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-          :class="isDark ? 'bg-brand-400/10 text-brand-400 hover:bg-brand-400/20 border border-brand-400/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'"
-        >
-          <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
-          Edit Page
-        </button>
-        <NuxtLink
-          to="/admin/content/guide"
-          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
-          :class="isDark ? 'bg-white/5 text-silver-400 hover:text-white hover:bg-white/10 border border-brand-400/15' : 'bg-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-200 border border-gray-200'"
-        >
-          Full Editor
-        </NuxtLink>
-      </template>
-    </div>
     </ClientOnly>
 
-    <Transition name="bar">
-      <div
-        v-if="editMode"
-        class="flex items-center gap-2 mb-5 px-3 py-2 rounded-lg"
-        :class="isDark ? 'bg-brand-400/10 border border-brand-400/20' : 'bg-blue-50 border border-blue-200'"
-      >
-        <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
-        <span class="text-xs font-medium" :class="isDark ? 'text-brand-400' : 'text-blue-600'">Edit mode — change text below, then click Save</span>
-      </div>
-    </Transition>
+    <!-- No Transition: comment/fragment placeholders mismatch a stable div tree -->
+    <div
+      v-if="editMode"
+      class="flex items-center gap-2 mb-5 px-3 py-2 rounded-lg"
+      :class="isDark ? 'bg-brand-400/10 border border-brand-400/20' : 'bg-brand-50 border border-brand-200'"
+    >
+      <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
+      <span class="text-xs font-medium" :class="isDark ? 'text-brand-400' : 'text-brand-600'">Edit mode — change text below, then click Save</span>
+    </div>
 
-    <Transition name="toast">
-      <div
-        v-if="showSaved"
-        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg border backdrop-blur-xl"
-        :class="isDark ? 'bg-emerald-900/80 border-emerald-400/20 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700'"
-      >
-        <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-        <span class="text-sm font-medium">Changes saved</span>
-      </div>
-    </Transition>
+    <div
+      v-if="showSaved"
+      class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg border backdrop-blur-xl"
+      :class="isDark ? 'bg-emerald-900/80 border-emerald-400/20 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700'"
+    >
+      <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+      <span class="text-sm font-medium">Changes saved</span>
+    </div>
 
     <!-- Header -->
     <section class="mb-12 fade-in">
       <div v-if="!editMode" class="max-w-3xl mx-auto text-center heading-glow">
         <h1 class="text-4xl sm:text-5xl font-bold leading-tight mb-4 flex items-center justify-center gap-3">
           <UIcon name="i-heroicons-book-open" class="w-8 h-8 text-brand-400 flex-shrink-0" />
-          <span class="text-gradient">{{ editableTitle || 'Installation Guide' }}</span>
+          <span class="text-gradient">{{ visibleTitle || 'Installation Guide' }}</span>
         </h1>
         <p class="text-lg leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-500'">
-          {{ editableSubtitle || 'Set up MagguuUI once on your main character, then let alts load the same profiles automatically.' }}
+          {{ visibleSubtitle || 'Install EllesmereUI, add the MagguuUI folder, then open /mui and run the 4K setup. Magguu-Look, Load profiles, and WowUp copy popups live on Setup. BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.' }}
         </p>
       </div>
 
@@ -86,7 +90,7 @@
           <input
             v-model="editableTitle"
             class="w-full text-2xl sm:text-3xl font-bold rounded-2xl px-4 py-3 border-2 transition-colors outline-none"
-            :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-blue-200 focus:border-blue-500'"
+            :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-brand-200 focus:border-brand-500'"
           >
         </div>
         <div>
@@ -95,25 +99,25 @@
             v-model="editableSubtitle"
             rows="3"
             class="w-full text-base rounded-2xl px-4 py-3 border-2 transition-colors outline-none resize-none"
-            :class="isDark ? 'bg-brand-800/50 text-silver-300 border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-700 border-blue-200 focus:border-blue-500'"
+            :class="isDark ? 'bg-brand-800/50 text-silver-300 border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-700 border-brand-200 focus:border-brand-500'"
           ></textarea>
         </div>
       </div>
     </section>
 
     <!-- Layout: steps + sidebar -->
-    <div v-if="steps.length" class="grid lg:grid-cols-[minmax(0,1fr)_260px] gap-8 lg:gap-12 items-start">
+    <div v-if="visibleSteps.length" class="grid lg:grid-cols-[minmax(0,1fr)_260px] gap-8 lg:gap-12 items-start">
       <!-- Steps -->
       <div class="space-y-5">
         <article
-          v-for="(step, idx) in steps"
+          v-for="(step, idx) in visibleSteps"
           :id="`step-${idx + 1}`"
           :key="step.num"
           class="guide-step glass-card rounded-2xl p-6 sm:p-7 transition-all fade-in"
           :style="{ animationDelay: `${idx * 50}ms`, animationFillMode: 'both' }"
           :class="isDark
             ? 'hover:border-brand-400/25 hover:shadow-lg hover:shadow-brand-400/5'
-            : 'hover:border-blue-200 hover:shadow-lg hover:shadow-blue-100'"
+            : 'hover:border-brand-200 hover:shadow-lg hover:shadow-brand-100'"
         >
           <div class="flex items-start gap-4 sm:gap-5">
             <!-- Step number -->
@@ -121,11 +125,11 @@
               <div class="guide-step-number"
                 :class="isDark
                   ? 'bg-brand-400/10 text-brand-300 border border-brand-400/25'
-                  : 'bg-blue-50 text-blue-600 border border-blue-200'">
+                  : 'bg-brand-50 text-brand-600 border border-brand-200'">
                 {{ idx + 1 }}
               </div>
-              <span v-if="idx < steps.length - 1" aria-hidden="true" class="w-px h-6"
-                :class="isDark ? 'bg-brand-400/15' : 'bg-blue-100'" />
+              <span v-if="idx < visibleSteps.length - 1" aria-hidden="true" class="w-px h-6"
+                :class="isDark ? 'bg-brand-400/15' : 'bg-brand-100'" />
             </div>
 
             <!-- Content -->
@@ -146,7 +150,8 @@
                 <SafeHtml
                   class="guide-content text-[15px] leading-relaxed"
                   :class="isDark ? 'text-silver-300' : 'text-gray-600'"
-                  :html="renderGuideContent(step.editableContent)"
+                  :html="step.editableContent"
+                  breaks
                 />
               </template>
 
@@ -157,13 +162,16 @@
                     <input
                       v-model="step.editableTitle"
                       class="w-full font-semibold rounded-xl px-3 py-2 border-2 transition-colors outline-none"
-                      :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-blue-200 focus:border-blue-500'"
+                      :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-brand-200 focus:border-brand-500'"
                     >
                   </div>
                   <div>
                     <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-silver-500' : 'text-gray-400'">Content</label>
                     <ClientOnly>
                       <TipTapEditor v-model="step.editableContent" placeholder="Step content..." min-height="120px" />
+                      <template #fallback>
+                        <div class="min-h-[120px] rounded-xl" aria-hidden="true" />
+                      </template>
                     </ClientOnly>
                   </div>
                 </div>
@@ -181,16 +189,16 @@
             On this page
           </p>
           <ol class="space-y-1">
-            <li v-for="(step, idx) in steps" :key="`jump-${step.num}`">
+            <li v-for="(step, idx) in visibleSteps" :key="`jump-${step.num}`">
               <a :href="`#step-${idx + 1}`"
                 class="guide-jump flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-colors"
                 :class="isDark
                   ? 'text-silver-300 hover:text-white hover:bg-white/5'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-blue-50'">
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-brand-50'">
                 <span class="inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-bold flex-shrink-0"
                   :class="isDark
                     ? 'bg-brand-400/10 text-brand-300'
-                    : 'bg-blue-50 text-blue-600'">
+                    : 'bg-brand-50 text-brand-600'">
                   {{ idx + 1 }}
                 </span>
                 <span class="truncate">{{ step.editableTitle || `Step ${idx + 1}` }}</span>
@@ -237,15 +245,13 @@
 </template>
 
 <script setup lang="ts">
-import { renderMarkdownToSafeHtml } from '~/utils/richText'
-
 const toast = useToast()
 const { apiFetch } = useApi()
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
 usePublicPageSeo({
   title: 'Installation Guide',
-  description: 'Install both included MagguuUI folders, choose any optional integrations, and complete the standalone setup step by step.',
+  description: 'Install EllesmereUI and the MagguuUI folder, open /mui, and run the 4K setup. Magguu-Look, Load profiles, and WowUp copy popups live on Setup.',
   path: '/guide',
 })
 const isAdmin = computed(() => {
@@ -255,19 +261,6 @@ const isAdmin = computed(() => {
 
 interface GuideLocale { [k: string]: unknown }
 interface GuidePayload { en?: GuideLocale, de?: GuideLocale, [k: string]: unknown }
-const { data: guideData, refresh: refreshGuide } = await useFetch<{ data: GuidePayload }>('/api/v1/content/guide')
-
-const guideContent = computed<GuideLocale>(() => {
-  const raw = guideData.value?.data
-  return raw?.en || raw?.de || raw || {}
-})
-
-const editableTitle = ref('')
-const editableSubtitle = ref('')
-const editMode = ref(false)
-const saving = ref(false)
-const showSaved = ref(false)
-
 function stripHtml(str: string): string {
   return str.replace(/<[^>]*>/g, '').trim()
 }
@@ -278,16 +271,12 @@ interface EditableStep {
   editableContent: string
 }
 
-const steps = ref<EditableStep[]>([])
-
-const STEP_META = [
-  { label: 'Prepare', icon: 'i-heroicons-wrench-screwdriver' },
-  { label: 'Install', icon: 'i-heroicons-arrow-down-tray' },
-  { label: 'Launch', icon: 'i-heroicons-play' },
-  { label: 'Apply', icon: 'i-heroicons-sparkles' },
-  { label: 'Alt Sync', icon: 'i-heroicons-users' },
-  { label: 'Finish', icon: 'i-heroicons-check-badge' },
-] as const
+interface GuidePageState {
+  content: GuideLocale
+  title: string
+  subtitle: string
+  steps: EditableStep[]
+}
 
 function parseSteps(raw: Record<string, string> | undefined): EditableStep[] {
   if (!raw || typeof raw !== 'object') return []
@@ -311,17 +300,57 @@ function parseSteps(raw: Record<string, string> | undefined): EditableStep[] {
     .filter((step) => step.editableContent || step.editableTitle)
 }
 
-watch(guideContent, (src) => {
-  if (!editMode.value) {
-    editableTitle.value = stripHtml(src?.intro?.title || '')
-    editableSubtitle.value = stripHtml(src?.intro?.text || '')
-    steps.value = parseSteps(src?.steps)
+function toGuidePageState(res: { data?: GuidePayload } | null | undefined): GuidePageState {
+  const raw = res?.data
+  const content = (raw?.en || raw?.de || raw || {}) as GuideLocale
+  const intro = (content.intro || {}) as Record<string, string>
+  const stepsRaw = content.steps as Record<string, string> | undefined
+  return {
+    content,
+    title: stripHtml(intro.title || ''),
+    subtitle: stripHtml(intro.text || ''),
+    steps: parseSteps(stepsRaw),
   }
-}, { immediate: true })
-
-function renderGuideContent(text: string): string {
-  return renderMarkdownToSafeHtml(text, { breaks: true })
 }
+
+// No top-level await — parse in transform so SSR payload already has steps
+// (a post-fetch watch left steps=[] on the server HTML → hydration mismatch).
+const { data: guidePage, refresh: refreshGuide } = useFetch('/api/v1/content/guide', {
+  key: 'public-guide',
+  transform: (res: { data?: GuidePayload }) => toGuidePageState(res),
+  default: () => ({ content: {}, title: '', subtitle: '', steps: [] as EditableStep[] }),
+})
+
+const editableTitle = ref('')
+const editableSubtitle = ref('')
+const steps = ref<EditableStep[]>([])
+const editMode = ref(false)
+const saving = ref(false)
+const showSaved = ref(false)
+
+// Prefer payload-backed computeds for SSR/hydration; edit refs only while editing.
+const visibleTitle = computed(() => editMode.value ? editableTitle.value : (guidePage.value?.title || ''))
+const visibleSubtitle = computed(() => editMode.value ? editableSubtitle.value : (guidePage.value?.subtitle || ''))
+const visibleSteps = computed(() => editMode.value ? steps.value : (guidePage.value?.steps || []))
+
+const STEP_META = [
+  { label: 'Prepare', icon: 'i-heroicons-wrench-screwdriver' },
+  { label: 'Install', icon: 'i-heroicons-arrow-down-tray' },
+  { label: 'Launch', icon: 'i-heroicons-play' },
+  { label: 'Apply', icon: 'i-heroicons-sparkles' },
+  { label: 'Alt Sync', icon: 'i-heroicons-users' },
+  { label: 'Finish', icon: 'i-heroicons-check-badge' },
+] as const
+
+watch(guidePage, (page) => {
+  if (!editMode.value && page) {
+    editableTitle.value = page.title
+    editableSubtitle.value = page.subtitle
+    steps.value = page.steps.map(step => ({ ...step }))
+  }
+}, { immediate: true, flush: 'sync' })
+
+
 
 function stepStage(idx: number) {
   return STEP_META[idx]?.label || `Phase ${idx + 1}`
@@ -332,10 +361,10 @@ function stepIcon(idx: number) {
 }
 
 function cancelEdit() {
-  const src = guideContent.value
-  editableTitle.value = stripHtml(src?.intro?.title || '')
-  editableSubtitle.value = stripHtml(src?.intro?.text || '')
-  steps.value = parseSteps(src?.steps)
+  const page = guidePage.value
+  editableTitle.value = page?.title || ''
+  editableSubtitle.value = page?.subtitle || ''
+  steps.value = (page?.steps || []).map(step => ({ ...step }))
   editMode.value = false
 }
 
@@ -406,7 +435,7 @@ async function saveAll() {
 .guide-content :deep(p:last-child) { margin-bottom: 0; }
 .guide-content :deep(strong) { font-weight: 700; color: inherit; }
 .guide-content :deep(a) {
-  color: var(--brand-400, #4e9eff);
+  color: var(--brand-400, #0CD29D);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -458,9 +487,4 @@ async function saveAll() {
 }
 .guide-content :deep(hr) { margin: 1rem 0; border-color: rgba(59, 139, 255, 0.15); }
 
-.bar-enter-active, .bar-leave-active { transition: all 0.25s ease; }
-.bar-enter-from, .bar-leave-to { opacity: 0; transform: translateY(-8px); }
-
-.toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
-.toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, 20px); }
 </style>

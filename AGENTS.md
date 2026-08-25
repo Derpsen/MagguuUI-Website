@@ -16,7 +16,7 @@ strings. Live: `https://ui.magguu.xyz`. Production runs as Unraid container
   process binds — recheck before treating it as a lasting regression.
 - `error.vue` Home must navigate to `/`, never `/home` (clearError redirect
   can strand SPA/admin clients on a 404 `/home`).
-- Admin routeRules: `/admin/**` stays `ssr:false` (auth flash). Exception: `/admin/login` is `ssr:true`. Keep Unhead `hookOnce` polyfill (#62) until `@nuxt/ui` >= 4.10. Depth: `CLAUDE.md` / `MEMORY.md`.
+- Admin routeRules: `/admin/**` stays `ssr:false` (auth flash). Exception: `/admin/login` is `ssr:true`. Depth: `CLAUDE.md` / `MEMORY.md`.
 - CodeQL: `github/codeql-action/init` and `analyze` must use the **same**
   commit pin in `.github/workflows/codeql.yml`.
 

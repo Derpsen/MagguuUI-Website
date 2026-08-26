@@ -185,9 +185,9 @@
       <div v-if="activeTab === 'wowup'" role="tabpanel" id="tabpanel-wowup" aria-labelledby="tab-wowup" tabindex="0">
         <div class="mb-5 rounded-xl border px-4 py-3 text-sm leading-relaxed"
           :class="isDark ? 'border-brand-400/15 bg-brand-400/5 text-silver-400' : 'border-brand-100 bg-brand-50 text-gray-600'">
-          These are the same WowUp strings Magguu Setup copies in-game. Starter Addons is EllesmereUI, MagguuUI, BigWigs, LittleWigs, and Northern Sky.
-          Optional Addons are extras such as BugSack, MDT, Raider.IO, WIM, GTFO, EXBoss, the Ellesmere WIM skin, and ExwindCore.
-          MagguuUI itself only needs EllesmereUI plus the MagguuUI folder. Paste the string in WowUp — MagguuUI does not install addons itself.
+          These are the same WowUp strings Magguu Setup copies in-game. Starter Addons is EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, and EXCore.
+          Optional Addons are extras such as BugSack, MDT, Raider.IO, WIM, GTFO, the Ellesmere WIM skin, Premade Groups Filter, and KeystoneLoot.
+          MagguuUI itself only needs EllesmereUI plus the MagguuUI group. Paste the string in WowUp — MagguuUI does not install addons itself.
         </div>
         <div v-if="wowupList.length" class="space-y-5">
           <div>

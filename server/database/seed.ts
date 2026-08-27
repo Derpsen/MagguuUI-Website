@@ -6,7 +6,7 @@
  */
 
 import { drizzle } from 'drizzle-orm/better-sqlite3'
-import { and, eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import Database from 'better-sqlite3'
 import { join } from 'path'
 import { mkdirSync } from 'fs'

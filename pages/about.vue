@@ -54,7 +54,7 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">4K setup</strong> — Ellesmere profile at UI scale 0.58, Magguu Settings, Load profiles, required and optional Magguu imports, and WowUp copy popups. Ellesmere start popup is skipped; Magguu Setup opens.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Apply Magguu profiles</strong> — Ellesmere profile at UI scale 0.58, Magguu Settings, Load profiles, required and optional Magguu imports, and WowUp copy popups. Ellesmere start popup is skipped; Magguu Setup opens on that login.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
@@ -62,7 +62,7 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">WowUp copy popups</strong> — starter pack (EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore) and optional extras (including Premade Groups Filter and KeystoneLoot) copy from Setup. Paste in WowUp. Buttons turn green when the pack addons are present. Setup has no Edit Mode action.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">WowUp copy popups</strong> — starter pack (EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore) and optional extras (including Premade Groups Filter and KeystoneLoot) copy from Setup. Paste in WowUp. Buttons turn green when the pack addons are present. Apply Magguu profiles writes the HUD Edit Mode layout MagguuUI once.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
@@ -91,7 +91,7 @@
           copy a class layout for a friend, or just see what is currently shipped, browse the
           <NuxtLink to="/strings" class="text-brand-400 hover:underline">Strings</NuxtLink> page —
           and read the <NuxtLink to="/changelog" class="text-brand-400 hover:underline">Changelog</NuxtLink>
-          for each release. For most users, <code>/mui</code> and the 4K setup are all you need.
+          for each release. For most users, <code>/mui</code> and Apply Magguu profiles are all you need.
         </p>
       </div>
 

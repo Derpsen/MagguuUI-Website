@@ -2,7 +2,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'hero', key: 'title', value: 'Your WoW Interface,', type: 'text', sortOrder: 0, locale: 'en' },
   { page: 'home', section: 'hero', key: 'title2', value: 'perfected.', type: 'text', sortOrder: 1, locale: 'en' },
   { page: 'home', section: 'hero', key: 'subtitle', value: 'A native 4K overhaul for EllesmereUI.', type: 'text', sortOrder: 2, locale: 'en' },
-  { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run the 4K setup. BigWigs and Northern Sky stay optional.', type: 'html', sortOrder: 3, locale: 'en' },
+  { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>. BigWigs and Northern Sky stay optional.', type: 'html', sortOrder: 3, locale: 'en' },
   { page: 'home', section: 'hero', key: 'badge', value: 'Ready for WoW 12.1', type: 'text', sortOrder: 4, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'Native Ellesmere setup', type: 'text', sortOrder: 0, locale: 'en' },
@@ -26,11 +26,11 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'hero', key: 'title', value: 'Dein WoW-Interface,', type: 'text', sortOrder: 0, locale: 'de' },
   { page: 'home', section: 'hero', key: 'title2', value: 'perfektioniert.', type: 'text', sortOrder: 1, locale: 'de' },
   { page: 'home', section: 'hero', key: 'subtitle', value: 'Ein natives 4K-Overhaul für EllesmereUI.', type: 'text', sortOrder: 2, locale: 'de' },
-  { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI ist ein natives <strong>EllesmereUI</strong>-Modul für WoW Retail. Installiere <strong>EllesmereUI</strong> und die vier MagguuUI-Addon-Ordner, öffne <code>/mui</code> und starte das 4K-Setup. BigWigs und Northern Sky bleiben optional.', type: 'html', sortOrder: 3, locale: 'de' },
+  { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI ist ein natives <strong>EllesmereUI</strong>-Modul für WoW Retail. Installiere <strong>EllesmereUI</strong> und die vier MagguuUI-Addon-Ordner, öffne <code>/mui</code> und starte <strong>Magguu-Profile übernehmen</strong>. BigWigs und Northern Sky bleiben optional.', type: 'html', sortOrder: 3, locale: 'de' },
   { page: 'home', section: 'hero', key: 'badge', value: 'Bereit für WoW 12.1', type: 'text', sortOrder: 4, locale: 'de' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'Natives Ellesmere-Setup', type: 'text', sortOrder: 0, locale: 'de' },
-  { page: 'home', section: 'features', key: 'feature_1_text', value: 'Zwei Sidebar-Zeilen: <strong>Options</strong> (Setup, Skinning, QoL) und <strong>Changelog</strong>. Goldenes <strong>Apply Magguu profiles</strong>, Magguu Settings und Profile laden nebeneinander, Pflicht- und optionale Imports sowie WowUp-Copy-Strings liegen unter Setup. Öffnen mit <code>/mui</code>. Werkzeuge über <code>/mui tools</code> oder 10 Klicks auf den MagguuUI-Header.', type: 'html', sortOrder: 1, locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_1_text', value: 'Zwei Sidebar-Zeilen: <strong>Options</strong> (Setup, Skinning, QoL) und <strong>Changelog</strong>. Goldenes <strong>Magguu-Profile übernehmen</strong>, Magguu Settings und Profile laden nebeneinander, Pflicht- und optionale Imports sowie WowUp-Copy-Strings liegen unter Setup. Öffnen mit <code>/mui</code>. Werkzeuge über <code>/mui tools</code> oder 10 Klicks auf den MagguuUI-Header.', type: 'html', sortOrder: 1, locale: 'de' },
   { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'de' },
 
   { page: 'home', section: 'features', key: 'feature_2_title', value: 'Aktuelle Retail-Layouts', type: 'text', sortOrder: 3, locale: 'de' },
@@ -50,10 +50,10 @@ export const DEFAULT_HOME_CONTENT = [
 
 export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'intro', key: 'title', value: 'Installation Guide', locale: 'en', type: 'text', sortOrder: 0 },
-  { page: 'guide', section: 'intro', key: 'text', value: 'Install EllesmereUI, add the four MagguuUI addon folders, then open /mui and run the 4K setup. Magguu Settings, Load profiles, and WowUp copy popups live on Setup. BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.', locale: 'en', type: 'text', sortOrder: 1 },
+  { page: 'guide', section: 'intro', key: 'text', value: 'Install EllesmereUI, add the four MagguuUI addon folders, then open /mui and run Apply Magguu profiles. Magguu Settings, Load profiles, and WowUp copy popups live on Setup. BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.', locale: 'en', type: 'text', sortOrder: 1 },
 
   { page: 'guide', section: 'steps', key: 'step_1_title', value: '1. Install EllesmereUI', locale: 'en', type: 'text', sortOrder: 10 },
-  { page: 'guide', section: 'steps', key: 'step_1', value: 'MagguuUI is a native EllesmereUI module. Install **EllesmereUI 9.0.6 or newer** first from CurseForge, Wago, or WoWInterface, and leave it enabled.\n\nWithout EllesmereUI, MagguuUI will not load.\n\nEllesmere\'s start popup is skipped. Magguu Setup opens so you can apply Magguu profiles.', locale: 'en', type: 'markdown', sortOrder: 11 },
+  { page: 'guide', section: 'steps', key: 'step_1', value: 'MagguuUI is a native EllesmereUI module. Install **EllesmereUI 9.0.6 or newer** first from CurseForge, Wago, or WoWInterface, and leave it enabled.\n\nWithout EllesmereUI, MagguuUI will not load.\n\nEllesmere\'s start popup is skipped. Magguu Setup opens on that login so you can Apply Magguu profiles.', locale: 'en', type: 'markdown', sortOrder: 11 },
 
   { page: 'guide', section: 'steps', key: 'step_2_title', value: '2. Install MagguuUI', locale: 'en', type: 'text', sortOrder: 20 },
   { page: 'guide', section: 'steps', key: 'step_2', value: 'Get MagguuUI from **CurseForge**, **Wago Addons**, **WoWInterface**, or the latest [GitHub release](https://github.com/Derpsen/MagguuUI/releases/latest).\n\nThe download is **four sibling folders**, like BigWigs: `MagguuUI`, `MagguuUI_Data` (MagguuUI [Data], LoadOnDemand), `MagguuUI_EUI` ([EUI]), and `MagguuUI_Media` ([Media]). Copy all four into `World of Warcraft\\_retail_\\Interface\\AddOns\\` and keep them enabled.\n\nDo not delete `MagguuUI_Data`, `MagguuUI_EUI`, or `MagguuUI_Media` — they are required siblings. Nested-only copies inside MagguuUI are obsolete.', locale: 'en', type: 'markdown', sortOrder: 21 },
@@ -61,8 +61,8 @@ export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'steps', key: 'step_3_title', value: '3. Add optional raid tools', locale: 'en', type: 'text', sortOrder: 30 },
   { page: 'guide', section: 'steps', key: 'step_3', value: 'Only EllesmereUI is required. Install extra addons only if you want MagguuUI to configure them:\n\n- **BigWigs** — encounter timers, MagguuUI bar style, and bundled callout sounds\n- **LittleWigs** — dungeon timers for BigWigs (WowUp starter pack; no separate Magguu profile)\n- **Northern Sky Raid Tools** — raid notes and alerts\n- **WIM**, **Waypoint UI**, **EXBoss**, and **KeystoneLoot** — optional Magguu imports when those addons are present\n- **EXBoss** — Magguu appearance and author configs; import again replaces those Magguu configs\n- **EXCore** — in the WowUp starter pack with EXBoss; no separate Magguu profile\n\nMissing addons are skipped.\n\nCopy the **WowUp starter pack** and **optional pack** from Magguu **Setup** (`Ctrl+C`, then paste in WowUp). The Strings page is a backup of the same strings. MagguuUI shows a copy popup; it does not install addons itself.\n\nStarter pack: EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. Optional pack: BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, KeystoneLoot.\n\nWowUp copy buttons turn green when every addon in that pack is installed.', locale: 'en', type: 'markdown', sortOrder: 31 },
 
-  { page: 'guide', section: 'steps', key: 'step_4_title', value: '4. Open Setup and install 4K', locale: 'en', type: 'text', sortOrder: 40 },
-  { page: 'guide', section: 'steps', key: 'step_4', value: 'Log in, then open MagguuUI:\n\n- Type `/mui` or `/mui setup` in chat\n- Or open EllesmereUI and choose **MagguuUI → Optionen → Setup**\n\n**Apply Magguu profiles** is the gold button. It imports the Ellesmere profile at UI scale `0.58`, then BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot if they are present, then Cooldown Viewer class layouts. Wait until you are out of combat.\n\nOn the same tab, **Magguu Settings** and **Load profiles** sit side by side below Apply Magguu profiles:\n\n- **Magguu Settings** — Magguu fonts, class colors, Giant options panel, 4K scale, Magguu extras, and a fixed tooltip that does not follow the mouse. Scale `0.58` is applied by Apply Magguu profiles and Magguu Settings\n- **Load profiles** — apply already-installed Magguu profiles to this character\n- **Required / optional Magguu imports** — EllesmereUI and class layouts; BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot\n- **WowUp** — copy the starter pack or optional pack, then paste in WowUp\n\nImport buttons turn green after a Magguu import. WowUp buttons turn green when the pack addons are present.\n\nLogging in on an alt asks whether to load those profiles onto that character.', locale: 'en', type: 'markdown', sortOrder: 41 },
+  { page: 'guide', section: 'steps', key: 'step_4_title', value: '4. Open Setup and Apply Magguu profiles', locale: 'en', type: 'text', sortOrder: 40 },
+  { page: 'guide', section: 'steps', key: 'step_4', value: 'Log in, then open MagguuUI:\n\n- Type `/mui` or `/mui setup` in chat\n- Or open EllesmereUI and choose **MagguuUI → Optionen → Setup**\n\n**Apply Magguu profiles** is the gold button. It imports the Ellesmere profile at UI scale `0.58`, then BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot if they are present, then Cooldown Viewer class layouts. It also writes the HUD Edit Mode layout **MagguuUI** once. Ellesmere Magguu import pre-checks **Window & Tooltip Skins**. Wait until you are out of combat.\n\nOn the same tab, **Magguu Settings** and **Load profiles** sit side by side below Apply Magguu profiles:\n\n- **Magguu Settings** — Magguu fonts, class colors, Giant options panel, 4K scale, Magguu extras, and a fixed tooltip that does not follow the mouse. Scale `0.58` is applied by Apply Magguu profiles and Magguu Settings\n- **Load profiles** — apply already-installed Magguu profiles to this character\n- **Required / optional Magguu imports** — EllesmereUI and class layouts; BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot\n- **WowUp** — copy the starter pack or optional pack, then paste in WowUp\n\nImport buttons turn green after a Magguu import. WowUp buttons turn green when the pack addons are present.\n\nLogging in on an alt asks whether to load those profiles onto that character.', locale: 'en', type: 'markdown', sortOrder: 41 },
 
   { page: 'guide', section: 'steps', key: 'step_5_title', value: '5. Skinning and QoL', locale: 'en', type: 'text', sortOrder: 50 },
   { page: 'guide', section: 'steps', key: 'step_5', value: 'Stay in **MagguuUI → Optionen**:\n\n- **Skinning** — split coloring for unit frames and party/raid names, plus class-colored keybind modifiers\n- **QoL** — death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, per-spec proc-overlay hiding, Smart Tab (chat channel cycling), Quick Focus (modifier-click to focus), and an audio device switcher on the Ellesmere speaker icon\n\nThese settings live in the MagguuUI Ellesmere profile.', locale: 'en', type: 'markdown', sortOrder: 51 },
@@ -79,7 +79,7 @@ export const DEFAULT_FAQS = [
 
 It has no standalone installer and no separate options window. Everything lives in EllesmereUI under **MagguuUI → Optionen**.
 
-Install EllesmereUI plus the four MagguuUI addon folders, open \`/mui\`, and run the 4K setup.`,
+Install EllesmereUI plus the four MagguuUI addon folders, open \`/mui\`, and run **Apply Magguu profiles**.`,
     sortOrder: 0,
   },
   {
@@ -154,7 +154,7 @@ There is no minimap button and no separate Magguu installer window.`,
   {
     category: 'installation',
     question: 'Do I have to repeat everything on my alts?',
-    answer: `Ellesmere profiles are account-wide, so the MagguuUI profile is already there after the first 4K install.
+    answer: `Ellesmere profiles are account-wide, so the MagguuUI profile is already there after the first Apply Magguu profiles.
 
 On a new character MagguuUI asks whether to **load those profiles** onto the alt. You can also press **Load profiles** on Setup.
 
@@ -172,7 +172,7 @@ It will not load unless EllesmereUI is installed **and enabled**.`,
 
   {
     category: 'addons',
-    question: 'What does the 4K install configure?',
+    question: 'What does Apply Magguu profiles configure?',
     answer: `In order:
 
 - **EllesmereUI** profile \`MagguuUI\` at UI scale **0.58**
@@ -207,7 +207,7 @@ Do **not** delete \`MagguuUI_Data\`, \`MagguuUI_EUI\`, or \`MagguuUI_Media\` —
   },
   {
     category: 'addons',
-    question: 'What is the difference between the full 4K install and individual profiles?',
+    question: 'What is the difference between Apply Magguu profiles and individual profiles?',
     answer: `**Apply Magguu profiles** — Ellesmere at scale 0.58, then BigWigs / NSRT / WIM / Waypoint UI / EXBoss / KeystoneLoot if present, then class layouts.
 
 **Individual profiles** — import only the piece you want from **Setup**. Required: EllesmereUI and class layouts. Optional: BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot.
@@ -309,7 +309,7 @@ You can still change scale later in EllesmereUI; MagguuUI will not keep rewritin
 
   {
     category: 'troubleshooting',
-    question: "The 4K install didn't do anything",
+    question: "Apply Magguu profiles didn't do anything",
     answer: `Check these:
 
 1. **EllesmereUI 9.0.6+ is installed and enabled**

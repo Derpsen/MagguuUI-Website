@@ -12,7 +12,7 @@ Tone match: "Your WoW Interface, perfected." Keep copy short. Prefer seed keys i
 **description** (html-safe):
 
 ```html
-MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the single <strong>MagguuUI</strong> folder, then open <code>/mui</code> and run the 4K setup. BigWigs and Northern Sky stay optional.
+MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>. BigWigs and Northern Sky stay optional.
 ```
 
 ## Feature cards
@@ -23,7 +23,7 @@ MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install
 **text** (html-safe):
 
 ```html
-One sidebar row with Setup, Skinning, and QoL. Gold <strong>Install everything</strong>, Magguu-Look, Load profiles, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.
+Two sidebar rows: <strong>Options</strong> (Setup, Skinning, QoL) and <strong>Changelog</strong>. Gold <strong>Apply Magguu profiles</strong>, Magguu Settings and Load profiles side by side, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.
 ```
 
 ### 2 — Current Retail layouts
@@ -32,7 +32,7 @@ One sidebar row with Setup, Skinning, and QoL. Gold <strong>Install everything</
 **text** (html-safe):
 
 ```html
-Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, and Waypoint UI.
+Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot.
 ```
 
 ### 3 — Skinning and QoL

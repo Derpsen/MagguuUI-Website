@@ -35,7 +35,7 @@
 
             <SafeHtml class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed"
               :class="isDark ? 'text-silver-400' : 'text-gray-500'"
-              :html="content?.hero?.description || 'MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the single <strong>MagguuUI</strong> folder, then open <code>/mui</code> and run the 4K setup. BigWigs and Northern Sky stay optional.'"
+              :html="content?.hero?.description || 'MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>. BigWigs and Northern Sky stay optional.'"
             />
 
             <div class="flex flex-wrap items-center justify-center gap-4">
@@ -261,7 +261,7 @@ const features = computed(() => [
   {
     emoji: '🔄',
     title: content.value?.features?.feature_2_title || 'Current Retail layouts',
-    text: content.value?.features?.feature_2_text || 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, and Waypoint UI.',
+    text: content.value?.features?.feature_2_text || 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot.',
   },
   {
     emoji: '🎯',

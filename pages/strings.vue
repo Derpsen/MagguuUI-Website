@@ -34,7 +34,7 @@
         </p>
         <p>
           <strong :class="isDark ? 'text-white' : 'text-gray-900'">You usually do not need this page.</strong>
-          Open <code>/mui</code> and run the 4K setup from
+          Open <code>/mui</code> and run Apply Magguu profiles from
           <NuxtLink to="/guide" class="text-brand-400 hover:underline">the installation guide</NuxtLink>.
           This page is a backup if you want to import a single profile by hand, share one, or check what is shipped.
         </p>
@@ -186,7 +186,7 @@
         <div class="mb-5 rounded-xl border px-4 py-3 text-sm leading-relaxed"
           :class="isDark ? 'border-brand-400/15 bg-brand-400/5 text-silver-400' : 'border-brand-100 bg-brand-50 text-gray-600'">
           These are the same WowUp strings Magguu Setup copies in-game. Starter Addons is EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, and EXCore.
-          Optional Addons are extras such as BugSack, MDT, Raider.IO, WIM, GTFO, the Ellesmere WIM skin, Premade Groups Filter, and KeystoneLoot.
+          Optional Addons are extras such as BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, and KeystoneLoot.
           MagguuUI itself only needs EllesmereUI plus the MagguuUI group. Paste the string in WowUp — MagguuUI does not install addons itself.
         </div>
         <div v-if="wowupList.length" class="space-y-5">
@@ -281,7 +281,7 @@ const { isLoggedIn } = useAuth()
 const { apiFetch } = useApi()
 usePublicPageSeo({
   title: 'Import Strings',
-  description: 'Browse EllesmereUI, BigWigs, Northern Sky, WIM, and Waypoint UI profiles plus Cooldown Viewer layouts and WowUp packs shipped with MagguuUI.',
+  description: 'Browse EllesmereUI, BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot profiles plus Cooldown Viewer layouts and WowUp packs shipped with MagguuUI.',
   path: '/strings',
 })
 

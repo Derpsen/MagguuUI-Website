@@ -31,11 +31,11 @@
           Everything lives in EllesmereUI under MagguuUI → Optionen.
         </p>
         <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-          The download is one folder:
+          The download is four sibling folders:
           <strong :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI</strong>,
-          with EUI, Data, and Media nested inside it.
-          <strong :class="isDark ? 'text-white' : 'text-gray-900'">EllesmereUI 7.9.5+</strong>
-          must be installed and enabled. BigWigs, Northern Sky, WIM, and Waypoint UI are optional;
+          MagguuUI [Data], MagguuUI [EUI], and MagguuUI [Media]. Keep all four enabled in Interface/AddOns.
+          <strong :class="isDark ? 'text-white' : 'text-gray-900'">EllesmereUI 9.0.6+</strong>
+          must be installed and enabled. BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot are optional;
           MagguuUI configures them when they are installed and skips them otherwise.
         </p>
       </div>
@@ -50,7 +50,7 @@
         <ul class="space-y-2.5 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Native Ellesmere module</strong> — one sidebar row with Setup, Skinning, and QoL. Open it with <code>/mui</code>.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Native Ellesmere module</strong> — two sidebar rows: Options (Setup, Skinning, QoL) and Changelog. Open it with <code>/mui</code>.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />

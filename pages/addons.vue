@@ -8,7 +8,7 @@
         <span class="text-gradient">Addons</span>
       </h1>
       <p class="text-lg" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        EllesmereUI is required. BigWigs, Northern Sky, WIM, and Waypoint UI are optional Magguu imports.
+        EllesmereUI is required. MagguuUI is four sibling addons. BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot are optional Magguu imports.
       </p>
     </div>
 
@@ -23,18 +23,18 @@
         <div class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           <p>
             <strong :class="isDark ? 'text-white' : 'text-gray-900'">What you need:</strong>
-            <code>EllesmereUI</code> 7.9.5+ installed and enabled, plus the single <code>MagguuUI</code> folder.
+            <code>EllesmereUI</code> 9.0.6+ installed and enabled, plus four sibling folders: <code>MagguuUI</code>, <code>MagguuUI_Data</code> (MagguuUI [Data]), <code>MagguuUI_EUI</code> ([EUI]), and <code>MagguuUI_Media</code> ([Media]). Keep all four enabled.
           </p>
           <p class="mt-2">
             <strong :class="isDark ? 'text-white' : 'text-gray-900'">Optional Magguu imports:</strong>
-            BigWigs, Northern Sky Raid Tools, WIM, and Waypoint UI. Setup configures them when they are installed and skips them otherwise.
+            BigWigs, Northern Sky Raid Tools, WIM, Waypoint UI, EXBoss, and KeystoneLoot. Setup configures them when they are installed and skips them otherwise.
           </p>
           <p class="mt-2">
             Copy the WowUp starter pack and optional pack from Magguu Setup (or the Strings page as a backup), then paste in WowUp. MagguuUI does not install addons itself.
           </p>
           <p class="mt-2">
-            Older ElvUI / MagguuUI_Data installs are retired. Delete leftover <code>MagguuUI_Data</code>,
-            <code>MagguuUI_EUI</code>, or <code>MagguuUI_Media</code> folders beside MagguuUI.
+            MagguuUI ships like BigWigs: keep <code>MagguuUI</code>, <code>MagguuUI_Data</code>,
+            <code>MagguuUI_EUI</code>, and <code>MagguuUI_Media</code> enabled. They are required siblings, not leftovers.
           </p>
         </div>
       </div>

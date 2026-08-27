@@ -103,6 +103,16 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_6', marker: 'Row direction, icon borders, visibility and banner position are configurable' },
   { page: 'guide', section: 'steps', key: 'step_6', marker: '**Custom ElvUI tags**' },
   { page: 'guide', section: 'steps', key: 'step_6', marker: 'reloads immediately so the layouts stick' },
+  { page: 'home', section: 'hero', key: 'description', marker: 'and the single <strong>MagguuUI</strong> folder' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'One sidebar row with Setup, Skinning, and QoL' },
+  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'Optional profiles for BigWigs, Northern Sky, WIM, and Waypoint UI' },
+  { page: 'guide', section: 'intro', key: 'text', marker: 'add the MagguuUI folder, then open /mui' },
+  { page: 'guide', section: 'steps', key: 'step_1', marker: 'EllesmereUI 7.9.5 or newer' },
+  { page: 'guide', section: 'steps', key: 'step_2', marker: 'The download is **one folder**' },
+  { page: 'guide', section: 'steps', key: 'step_2', marker: 'delete those leftover folders' },
+  { page: 'guide', section: 'steps', key: 'step_3', marker: 'Optional pack extras include BugSack, MDT, Raider.IO, WIM, GTFO' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: '**Set scale only**' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: '**Install everything** imports the Ellesmere profile at UI scale' },
 ] as const
 
 const LEGACY_FAQ_MARKERS = [
@@ -179,6 +189,27 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'troubleshooting', sortOrder: 1, marker: 'Update Hint Mode' },
   { category: 'troubleshooting', sortOrder: 2, marker: 'Hard Reset' },
   { category: 'troubleshooting', sortOrder: 3, marker: 'Your ElvUI version' },
+  { category: 'general', sortOrder: 0, marker: 'plus the MagguuUI folder' },
+  { category: 'general', sortOrder: 2, marker: 'EllesmereUI 7.9.5+' },
+  { category: 'general', sortOrder: 2, marker: 'one AddOns folder with nested' },
+  { category: 'general', sortOrder: 4, marker: 'EllesmereUI 7.9.5 or newer' },
+  { category: 'installation', sortOrder: 0, marker: 'Copy the single **MagguuUI** folder' },
+  { category: 'installation', sortOrder: 0, marker: 'Delete leftover' },
+  { category: 'installation', sortOrder: 0, marker: 'EllesmereUI 7.9.5+' },
+  { category: 'addons', sortOrder: 0, marker: '**WIM**, and **Waypoint UI**, if those addons are present' },
+  { category: 'addons', sortOrder: 2, marker: 'Data and Media live **inside** the MagguuUI folder' },
+  { category: 'addons', sortOrder: 2, marker: 'If you still have' },
+  { category: 'addons', sortOrder: 3, marker: 'standalone **4K scale** action' },
+  { category: 'addons', sortOrder: 3, marker: 'Optional: BigWigs, Northern Sky, WIM, and Waypoint UI' },
+  { category: 'addons', sortOrder: 4, marker: 'plus the MagguuUI folder' },
+  { category: 'addons', sortOrder: 4, marker: 'extras such as BugSack, MDT, Raider.IO' },
+  { category: 'addons', sortOrder: 8, marker: 'Why is MagguuUI only one folder now?' },
+  { category: 'addons', sortOrder: 8, marker: 'ships **one folder**. Leave it enabled. Delete leftover' },
+  { category: 'addons', sortOrder: 11, marker: 'standalone scale action apply' },
+  { category: 'troubleshooting', sortOrder: 0, marker: 'EllesmereUI 7.9.5+ is installed and enabled' },
+  { category: 'troubleshooting', sortOrder: 0, marker: 'MagguuUI is the single folder' },
+  { category: 'troubleshooting', sortOrder: 1, marker: 'EllesmereUI is 7.9.5 or newer' },
+  { category: 'troubleshooting', sortOrder: 2, marker: 'Delete leftover MagguuUI_* folders' },
 ] as const
 
 // Nitro's runNitroPlugins calls plugins without awaiting their promise.
@@ -515,6 +546,9 @@ export default defineNitroPlugin(() => {
       || currentRelease.content.includes('UI strings for every Blizzard client locale')
       || currentRelease.content.includes('accepts the Magguu consent popup automatically')
       || currentRelease.content.includes('Ellesmere QoL/Shifter defaults')
+      || currentRelease.content.includes('7.9.5')
+      || currentRelease.content.includes('Set scale only')
+      || currentRelease.content.includes('one folder')
     ) {
       db.update(changelogs)
         .set({

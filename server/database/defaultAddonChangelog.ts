@@ -20,7 +20,7 @@ export const CURRENT_ADDON_CHANGELOG = {
 ### Setup
 
 - **Install everything** is the centered gold button. Below it: **Apply Magguu-Look** and **Load profiles** side by side.
-- **Load profiles** switches existing Magguu profiles onto this character. It does not re-import or overwrite them. Class layouts are installed per character.
+- **Load profiles** switches existing Magguu profiles onto this character. It does not re-import or overwrite them. Class layouts and KeystoneLoot Best in Slot (if KeystoneLoot is installed and enabled) are installed per character. If a Magguu profile is missing, you get a chat message.
 - On a new character, MagguuUI asks whether to load those profiles onto the alt.
 - Class-layout import asks you to reload the UI. Magguu accepts the BigWigs Magguu popup for you. Confirm popups stay until you click.
 - UI scale \`0.58\` is applied by **Install everything** and Magguu-Look.
@@ -32,6 +32,7 @@ export const CURRENT_ADDON_CHANGELOG = {
 - BigWigs profile with the MagguuUI bar style and Magguu callout sounds
 - Cooldown layouts named \`Magguu - Class Spec\`
 - KeystoneLoot Best in Slot for the current class, Devourer included
+- WowUp starter and optional packs as listed under What's new
 
 ### Skinning and quality of life
 

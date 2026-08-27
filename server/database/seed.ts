@@ -54,7 +54,7 @@ async function seed() {
   if (shouldSyncSeededContent) {
     const syncPage = (page: 'home' | 'guide', entries: readonly typeof DEFAULT_SITE_CONTENT[number][]) => {
       const existingRows = db.select().from(schema.siteContent)
-        .where(and(eq(schema.siteContent.page, page), eq(schema.siteContent.locale, 'en')))
+        .where(eq(schema.siteContent.page, page))
         .all()
       const byKey = new Map(existingRows.map((item) => [`${item.section}:${item.key}:${item.locale}`, item]))
       let inserted = 0

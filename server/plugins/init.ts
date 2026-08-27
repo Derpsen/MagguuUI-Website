@@ -393,7 +393,7 @@ export default defineNitroPlugin(() => {
     if (shouldSyncSeededContent) {
       const syncSection = (page: 'home' | 'guide', entries: readonly SeedContentEntry[]) => {
         const existing = db.select().from(siteContent)
-          .where(and(eq(siteContent.page, page), eq(siteContent.locale, DEFAULT_CONTENT_LOCALE)))
+          .where(eq(siteContent.page, page))
           .all()
         const byKey = new Map(existing.map((item) => [`${item.section}:${item.key}:${item.locale}`, item]))
 

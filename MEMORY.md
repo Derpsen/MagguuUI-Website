@@ -3,13 +3,13 @@
 ## Overview
 
 - Project: `MagguuUI-Website`
-- Stack: Nuxt 4, Vue 3, TypeScript, Nuxt UI v4, Tailwind v4, SQLite (`better-sqlite3`), Drizzle ORM
+- Stack: Nuxt 4 (caret ^4.4.8; lock may resolve 4.5.x), Vue 3.5, TypeScript 6, Nuxt UI 4.10, Tailwind CSS 4.3 (CSS-first), Drizzle 0.45, SQLite via `better-sqlite3` 12 (WAL, busy_timeout=5000), Node 24, nuxt-og-image 6 with Satori. Validation: Zod. Lint: Nuxt ESLint Flat Config (no separate Prettier).
 - Deployment: Docker on Unraid — image built by `.github/workflows/docker.yml` and published to GHCR; Unraid pulls via *Check for Updates* → *Apply Update*
 - Repo contains the public website, admin panel, and Nitro/API backend in one app
 
 ## Agent / Buddy ops
 
-- Entrypoint: `AGENTS.md` → `CLAUDE.md` (depth) → this file (ops history).
+- Entrypoint: `AGENTS.md` → this file (ops history).
 - Buddy is the single front door; helpers report to Buddy. Clear in-scope fixes
   may push/merge to main under the hub standing order; no force-push; tags need
   an explicit release ask.
@@ -28,12 +28,17 @@
 
 ## Important Paths
 
-- Docs: `README.md`, `AGENTS.md`, `CLAUDE.md`, `MEMORY.md`
+- Docs: `README.md`, `AGENTS.md`, `MEMORY.md`
 - Frontend: `pages/`, `components/`, `layouts/`, `assets/css/main.css`, `composables/`
 - Backend: `server/api/`, `server/utils/`, `server/plugins/`, `server/middleware/`
 - Database: `server/database/index.ts`, `server/database/schema.ts`, `drizzle.config.ts`
 - Deployment: `Dockerfile`, `.dockerignore`, `.github/workflows/docker.yml`, `unraid/magguuui-website.xml`
 - Verification: `scripts/verify-build.mjs`
+- Env: `.env.example`, `docs/env-vars.md`
+- Auth/session: `server/utils/auth.ts`, `server/utils/session.ts`, `server/utils/rateLimit.ts`
+- API helpers: `server/utils/response.ts`
+- String CRUD: `composables/useStringManager.ts`
+- OG default: `components/OgImage/MagguuOg.satori.vue`
 
 ## Collaboration Notes
 
@@ -48,6 +53,14 @@
 - Session tracking and persistent rate limits are stored in SQLite.
 - Startup seeds admin, guide, and FAQ data; forced guide/FAQ code re-sync is opt-in via `NUXT_SYNC_SEEDED_CONTENT=true`.
 - DB structure is still defined in both manual SQL bootstrap logic and the Drizzle schema.
+
+## Implementation notes
+
+- Public SSR pages feed public API routes with SWR route rules; admin SPA (`ssr:false`) talks to `/api/v1/admin/*` (JWT/cookie). Server API uses SQLite WAL mode with `busy_timeout=5000`. Docker image goes Unraid / Cloudflare Tunnel to `ui.magguu.xyz`.
+- `requireAuth(event)` accepts legacy bearer tokens and HttpOnly cookie sessions. Keep the softer `/api/v1/auth/session` endpoint aligned with `requireAuth`.
+- OG images: Satori templates need a `.satori.vue` suffix. Site-wide default is `components/OgImage/MagguuOg.satori.vue` (`nuxt.config.ts`).
+- GitHub webhook `server/api/v1/webhooks/github.post.ts` accepts signed events only from the configured repository, imports main pushes from the immutable after SHA, and handles `CHANGELOG.md`, `MagguuUI.toc`, and `Data/*.lua` independently. Manual pulls resolve main once and fetch the complete Data directory at that SHA.
+- Required production env: `NUXT_JWT_SECRET`, `NUXT_ADMIN_PASSWORD`. See `.env.example` and `docs/env-vars.md`.
 
 ## Current Hardening State
 

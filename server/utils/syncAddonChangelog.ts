@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
 import { changelogs } from '~/server/database/schema'
-import { parseAddonChangelog } from '~/server/utils/parseAddonChangelog'
+import { parseAddonChangelog, pickLatestAddonChangelog } from '~/server/utils/parseAddonChangelog'
 
 export interface AddonChangelogSyncStats {
   inserted: number
@@ -9,39 +9,45 @@ export interface AddonChangelogSyncStats {
   skipped: number
 }
 
+/**
+ * Upsert only the newest CHANGELOG.md heading.
+ * Older ## versions stay on GitHub; admin can still keep historical rows.
+ */
 export function syncAddonChangelog(markdown: string): AddonChangelogSyncStats {
   const entries = parseAddonChangelog(markdown)
-  const stats: AddonChangelogSyncStats = { inserted: 0, updated: 0, skipped: 0 }
+  const latest = pickLatestAddonChangelog(entries)
+  const historical = Math.max(0, entries.length - (latest ? 1 : 0))
+  const stats: AddonChangelogSyncStats = { inserted: 0, updated: 0, skipped: historical }
+
+  if (!latest) return stats
 
   sqlite.transaction(() => {
-    for (const entry of entries) {
-      const existing = db.select().from(changelogs).where(eq(changelogs.version, entry.version)).get()
-      if (existing) {
-        if (existing.content !== entry.content) {
-          db.update(changelogs)
-            .set({
-              content: entry.content,
-              contentEn: entry.content,
-              isPublished: true,
-              publishedAt: entry.publishedAt,
-              updatedAt: new Date(),
-            })
-            .where(eq(changelogs.id, existing.id))
-            .run()
-          stats.updated++
-        } else {
-          stats.skipped++
-        }
+    const existing = db.select().from(changelogs).where(eq(changelogs.version, latest.version)).get()
+    if (existing) {
+      if (existing.content !== latest.content) {
+        db.update(changelogs)
+          .set({
+            content: latest.content,
+            contentEn: latest.content,
+            isPublished: true,
+            publishedAt: latest.publishedAt,
+            updatedAt: new Date(),
+          })
+          .where(eq(changelogs.id, existing.id))
+          .run()
+        stats.updated++
       } else {
-        db.insert(changelogs).values({
-          version: entry.version,
-          content: entry.content,
-          contentEn: entry.content,
-          isPublished: true,
-          publishedAt: entry.publishedAt,
-        }).run()
-        stats.inserted++
+        stats.skipped++
       }
+    } else {
+      db.insert(changelogs).values({
+        version: latest.version,
+        content: latest.content,
+        contentEn: latest.content,
+        isPublished: true,
+        publishedAt: latest.publishedAt,
+      }).run()
+      stats.inserted++
     }
   })()
 

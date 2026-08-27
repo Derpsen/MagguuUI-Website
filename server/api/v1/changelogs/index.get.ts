@@ -1,44 +1,38 @@
 /**
- * GET /api/v1/changelogs?locale=de|en&limit=50&offset=0
+ * GET /api/v1/changelogs?locale=de|en
  *
- * Returns published changelog entries, newest first.
- * Bounded list — `limit` capped at 200; auto-generated entries from admin
- * CRUD push the row count up over time, so unbounded responses would slowly
- * inflate this hot SWR-cached payload.
- * If locale=en, uses contentEn (falls back to content if empty).
+ * Public feed: the latest published MagguuUI version only.
+ * Full history stays on GitHub CHANGELOG.md and in admin (/api/v1/admin/changelogs).
+ * Query limit/offset are accepted for compatibility but ignored.
  */
 
-import { eq, desc, count } from 'drizzle-orm'
+import { and, desc, eq, like } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { changelogs } from '~/server/database/schema'
-
-const DEFAULT_LIMIT = 50
-const MAX_LIMIT = 200
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const locale = (query.locale as string) || 'de'
-  const limit = Math.min(MAX_LIMIT, Math.max(1, Number(query.limit) || DEFAULT_LIMIT))
-  const offset = Math.max(0, Number(query.offset) || 0)
 
-  const where = eq(changelogs.isPublished, true)
+  const where = and(
+    eq(changelogs.isPublished, true),
+    like(changelogs.version, 'v%'),
+  )
 
-  const totalRow = db.select({ n: count() }).from(changelogs).where(where).get()
-  const total = totalRow?.n ?? 0
-
-  const rows = db
+  const latest = db
     .select()
     .from(changelogs)
     .where(where)
     .orderBy(desc(changelogs.publishedAt))
-    .limit(limit)
-    .offset(offset)
-    .all()
+    .limit(1)
+    .get()
 
-  const mapped = rows.map(row => ({
-    ...row,
-    content: locale === 'en' && row.contentEn ? row.contentEn : row.content,
-  }))
+  const mapped = latest
+    ? [{
+        ...latest,
+        content: locale === 'en' && latest.contentEn ? latest.contentEn : latest.content,
+      }]
+    : []
 
-  return apiSuccess(mapped, { count: mapped.length, total, limit, offset })
+  return apiSuccess(mapped, { count: mapped.length, total: mapped.length, limit: 1, offset: 0 })
 })

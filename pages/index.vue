@@ -256,7 +256,7 @@ const features = computed(() => [
   {
     emoji: '⚡',
     title: content.value?.features?.feature_1_title || 'Native Ellesmere setup',
-    text: content.value?.features?.feature_1_text || 'One sidebar row with Setup, Skinning, and QoL. Gold <strong>Install everything</strong>, Magguu-Look, Load profiles, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.',
+    text: content.value?.features?.feature_1_text || 'Two sidebar rows: Options (Setup, Skinning, QoL) and Changelog. Gold <strong>Apply Magguu profiles</strong>, Magguu Settings, Load profiles, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.',
   },
   {
     emoji: '🔄',

@@ -54,7 +54,7 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">4K setup</strong> — Ellesmere profile at UI scale 0.58, Magguu-Look, Load profiles, required and optional Magguu imports, and WowUp copy popups. After Ellesmere's first-install reload, Magguu Setup opens.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">4K setup</strong> — Ellesmere profile at UI scale 0.58, Magguu Settings, Load profiles, required and optional Magguu imports, and WowUp copy popups. Ellesmere start popup is skipped; Magguu Setup opens.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />

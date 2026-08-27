@@ -38,6 +38,7 @@
 - Auth/session: `server/utils/auth.ts`, `server/utils/session.ts`, `server/utils/rateLimit.ts`
 - API helpers: `server/utils/response.ts`
 - String CRUD: `composables/useStringManager.ts`
+- Admin navigation: `composables/useAdminNavigation.ts`
 - OG default: `components/OgImage/MagguuOg.satori.vue`
 
 ## Collaboration Notes
@@ -51,16 +52,16 @@
 - Admin routes mostly run with `ssr: false` in `nuxt.config.ts`; `/admin/login` is SSR-on (more-specific rule before `/admin/**`).
 - Auth is hybrid-compatible: login still returns a JWT in the response body, but the admin client restores primarily from HttpOnly cookie + session restore.
 - Session tracking and persistent rate limits are stored in SQLite.
-- Startup seeds admin, guide, and FAQ data; forced guide/FAQ code re-sync is opt-in via `NUXT_SYNC_SEEDED_CONTENT=true`.
+- Startup seeds admin, guide, and FAQ data; forced guide/FAQ code re-sync is opt-in via `NUXT_SYNC_SEEDED_CONTENT=true`. Known inaccurate legacy seed claims may be repaired by exact marker during startup; arbitrary admin-authored content remains untouched.
 - DB structure is still defined in both manual SQL bootstrap logic and the Drizzle schema.
 
 ## Implementation notes
 
 - Public SSR pages feed public API routes with SWR route rules; admin SPA (`ssr:false`) talks to `/api/v1/admin/*` (JWT/cookie). Server API uses SQLite WAL mode with `busy_timeout=5000`. Docker image goes Unraid / Cloudflare Tunnel to `ui.magguu.xyz`.
-- `requireAuth(event)` accepts legacy bearer tokens and HttpOnly cookie sessions. Keep the softer `/api/v1/auth/session` endpoint aligned with `requireAuth`.
+- `requireAuth(event)` accepts legacy bearer tokens and HttpOnly cookie sessions. Session validation is bound to browser + OS family (`server/utils/session.ts`). Keep the softer `/api/v1/auth/session` endpoint aligned with `requireAuth`.
 - OG images: Satori templates need a `.satori.vue` suffix. Site-wide default is `components/OgImage/MagguuOg.satori.vue` (`nuxt.config.ts`).
 - GitHub webhook `server/api/v1/webhooks/github.post.ts` accepts signed events only from the configured repository, imports main pushes from the immutable after SHA, and handles `CHANGELOG.md`, `MagguuUI.toc`, and `Data/*.lua` independently. Manual pulls resolve main once and fetch the complete Data directory at that SHA.
-- Required production env: `NUXT_JWT_SECRET`, `NUXT_ADMIN_PASSWORD`. See `.env.example` and `docs/env-vars.md`.
+- Required production env: `NUXT_JWT_SECRET`, `NUXT_ADMIN_PASSWORD`. Optional: `NUXT_GITHUB_TOKEN`, `NUXT_WEBAUTHN_*`, `API_BEARER_TOKEN`, `NUXT_OG_IMAGE_SECRET`. See `.env.example` and `docs/env-vars.md`.
 
 ## Current Hardening State
 

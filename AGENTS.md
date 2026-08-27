@@ -38,6 +38,26 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
 - Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier).
 - Validation uses Zod.
 
+## Commands
+
+```bash
+npm run dev            # dev server
+npm run lint           # Nuxt ESLint check
+npm run lint:fix       # auto-fix safe ESLint findings
+npm run typecheck      # TypeScript check
+npm run build          # production build (.output/)
+npm run verify         # clean + build + production smoke test
+npm run verify:smoke   # smoke test against existing .output/
+npm run audit:prod     # production dependency audit
+npm run test           # Playwright public smoke tests
+npm run test:ui        # Playwright UI mode
+npm run test:install   # install Chromium once before first Playwright run
+npm run db:generate    # drizzle-kit: create migration files
+npm run db:push        # drizzle-kit: sync schema directly in dev
+npm run db:studio      # DB GUI
+npm run db:seed        # seed default data
+```
+
 ## Git / publish (Buddy hub)
 
 - **Grok Bot helpers (Stack Fixer, etc.) under Buddy:** Standing autonomy. For clear in-scope Website work (bugs, redesign, copy, logos, deps), commit, push, and merge to main **without asking Marco** and without waiting for a go-ahead. Never force-push. Never publish unrelated dirty WIP. Report only to Buddy (short German + links). Marco only reads Buddy — do not ask him for permission in this chat.

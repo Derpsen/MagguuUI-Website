@@ -120,7 +120,7 @@ const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
 const siteSettings = usePublicSiteSettings()
 const homeMetaTitle = computed(() => siteSettings.value.meta_title || 'MagguuUI - Your WoW Interface, perfected.')
-const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and MagguuUI, open /mui, and run the 4K setup. BigWigs and Northern Sky Raid Tools stay optional.')
+const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. BigWigs and Northern Sky stay optional.')
 const homeOgImage = computed(() => siteSettings.value.og_image_url || buildPublicUrl('/logo.png'))
 const homeCanonical = buildPublicUrl('/')
 const homeSiteName = computed(() => siteSettings.value.site_name || 'MagguuUI')
@@ -266,7 +266,7 @@ const features = computed(() => [
   {
     emoji: '🎯',
     title: content.value?.features?.feature_3_title || 'Skinning and QoL included',
-    text: content.value?.features?.feature_3_text || 'Split name colors and class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, and an <strong>Audio device switcher</strong> on the Ellesmere speaker.',
+    text: content.value?.features?.feature_3_text || 'Skinning is one <strong>NAMES &amp; COLORS</strong> section (two columns): split unit-frame names, split party and raid names, split EXBoss names, and class-colored keybind modifiers. EXBoss split does not use the EXBoss class-color option. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level, <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, and an <strong>Audio device switcher</strong> on the Ellesmere speaker.',
   },
 ])
 

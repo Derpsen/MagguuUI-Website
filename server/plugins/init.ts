@@ -62,6 +62,10 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'Cooldown Viewer class layouts import as' },
   { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Split unit and group names, class-colored keybind modifiers' },
   { page: 'home', section: 'features', key: 'feature_3_text', marker: 'audio device switcher on the Ellesmere speaker icon live in the MagguuUI profile' },
+  { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Split name colors and class-colored keybind modifiers' },
+  { page: 'guide', section: 'steps', key: 'step_5', marker: 'split coloring for unit frames and party/raid names, plus class-colored keybind modifiers' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'apply already-installed Magguu profiles to this character' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'Import buttons turn green after a Magguu import' },
   { page: 'home', section: 'features_heading', key: 'subtitle', marker: 'Everything you need — in one package' },
   { page: 'home', section: 'features_heading', key: 'subtitle', marker: 'A complete setup without forced external dependencies' },
   { page: 'home', section: 'addons', key: 'subtitle', marker: 'Profiles for 30+ of the most popular WoW addons' },
@@ -181,6 +185,10 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 9, marker: 'Dev Tools tab' },
   { category: 'addons', sortOrder: 10, marker: 'Keystone List section in MagguuUI settings' },
   { category: 'addons', sortOrder: 10, marker: 'Keystone List' },
+  { category: 'addons', sortOrder: 10, marker: 'character name and realm separately' },
+  { category: 'addons', sortOrder: 3, marker: 'turn green after a Magguu import' },
+  { category: 'installation', sortOrder: 2, marker: "Re-import class layouts if you want that character's Cooldown Viewer layout" },
+  { category: 'addons', sortOrder: 7, marker: 'Per-spec proc-overlay hiding\n- Smart Tab' },
   { category: 'addons', sortOrder: 11, marker: '[mui:ilvl]' },
   { category: 'troubleshooting', sortOrder: 0, marker: 'ElvUI enabled and version 15.12' },
   { category: 'troubleshooting', sortOrder: 0, marker: 'At least one supported addon is enabled' },
@@ -335,6 +343,11 @@ export default defineNitroPlugin(() => {
       {
         key: 'meta_description',
         value: 'Standalone WoW Retail setup with no required external addons. Install MagguuUI, choose the integrations you want, and apply their profiles with one click.',
+        replacement: SITE_SETTINGS_DEFAULTS.meta_description,
+      },
+      {
+        key: 'meta_description',
+        value: 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and MagguuUI, open /mui, and run the 4K setup. BigWigs and Northern Sky Raid Tools stay optional.',
         replacement: SITE_SETTINGS_DEFAULTS.meta_description,
       },
     ] as const
@@ -549,6 +562,8 @@ export default defineNitroPlugin(() => {
       || currentRelease.content.includes('7.9.5')
       || currentRelease.content.includes('Set scale only')
       || currentRelease.content.includes('one folder')
+      || currentRelease.content.includes('All Bosses merge')
+      || currentRelease.content.includes('Dual ring/trinket')
     ) {
       db.update(changelogs)
         .set({

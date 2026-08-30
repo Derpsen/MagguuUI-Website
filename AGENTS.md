@@ -33,6 +33,12 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
   creation. Do not hand-write migration files unless the strategy changes.
 - Do not perform major dependency upgrades without a separate compatibility
   pass.
+- MagguuUI public copy (home/guide/FAQ/changelog/addon metadata) must stay
+  aligned with the current MagguuUI release: four sibling folders, Load
+  profiles activate-only except class layouts and KeystoneLoot BiS, Skinning
+  NAMES & COLORS DualRow (unit-frame | party/raid; EXBoss | keybinds),
+  EXBoss split independent of EXBoss class-color, Archon BiS one item per
+  slot with two rings and two trinkets. Do not restore Ashvane or MagguuKSL.
 - After behavior changes run `npm run typecheck`, `npm run build`, `npm run verify:smoke`, and `npm test`.
 - After dependency changes also run `npm run audit:prod`.
 - Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier).

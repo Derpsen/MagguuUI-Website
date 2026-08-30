@@ -9,7 +9,7 @@ export const SITE_SETTINGS_DEFAULTS = {
   maintenance_mode: 'false',
   banner_text: '',
   meta_title: 'MagguuUI - Your WoW Interface, perfected.',
-  meta_description: 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and MagguuUI, open /mui, and run the 4K setup. BigWigs and Northern Sky Raid Tools stay optional.',
+  meta_description: 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. BigWigs and Northern Sky stay optional.',
   // Empty by default — leaves nuxt-og-image's per-route Satori card as the
   // canonical OG image. Admins can still pin a specific image via settings.
   og_image_url: '',

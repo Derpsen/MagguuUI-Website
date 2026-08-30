@@ -41,5 +41,5 @@ Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with 
 **text** (html-safe):
 
 ```html
-Split name colors and class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, and an <strong>Audio device switcher</strong> on the Ellesmere speaker.
+Skinning is one <strong>NAMES &amp; COLORS</strong> section (two columns): split unit-frame names, split party and raid names, split EXBoss names, and class-colored keybind modifiers. EXBoss split does not use the EXBoss class-color option. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level, <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, and an <strong>Audio device switcher</strong> on the Ellesmere speaker.
 ```

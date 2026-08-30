@@ -4,7 +4,7 @@ withDefaults(defineProps<{
   description?: string
 }>(), {
   title: 'Your WoW Interface, perfected.',
-  description: 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and MagguuUI, open /mui, and run the 4K setup.',
+  description: 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and MagguuUI, open /mui, and run Apply Magguu profiles.',
 })
 </script>
 
@@ -26,7 +26,7 @@ withDefaults(defineProps<{
     <div style="margin-top: auto; display: flex; align-items: center; gap: 16px; font-size: 22px; color: #64748b; font-family: 'JetBrains Mono', monospace;">
       <span style="display: flex;">ui.magguu.xyz</span>
       <span style="display: flex; color: #3b8bff;">·</span>
-      <span style="display: flex;">EllesmereUI 4K setup</span>
+      <span style="display: flex;">EllesmereUI Magguu profiles</span>
     </div>
   </div>
 </template>

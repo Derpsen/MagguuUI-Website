@@ -197,7 +197,7 @@ The app bootstraps key defaults on startup, including:
 Repository-driven FAQ/guide re-sync is now opt-in via `NUXT_SYNC_SEEDED_CONTENT=true`.
 Known outdated default claims, such as the former ElvUI installer and MagguuUI_Data two-folder layout, are repaired by exact marker without replacing unrelated admin-edited content.
 
-GitHub sync follows the addon's current single-folder layout. Profile and class data are pulled from `Data/`, while `MagguuUI.toc` and `CHANGELOG.md` stay at the repository root. Published releases refresh the public changelog as a fallback when a push event was missed.
+MagguuUI ships four sibling addons. GitHub profile sync still reads lua from the legacy `Data/AddOns/` path; `MagguuUI.toc` and `CHANGELOG.md` stay at the repository root. Published releases refresh the public changelog as a fallback when a push event was missed.
 
 The browser-facing profile, WowUp, and layout projections remain public. Repository automation consumes the transactionally consistent `/api/v1/sync/snapshot`; component projections remain available at `/api/v1/sync/profiles`, `/api/v1/sync/wowup`, and `/api/v1/sync/layouts/grouped`. These routes include hidden synchronization state and always require `API_BEARER_TOKEN` (mirrored as `WEBSITE_API_KEY` in the AddOn repository).
 

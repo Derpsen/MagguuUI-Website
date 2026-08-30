@@ -243,10 +243,10 @@ const form = reactive({
     feature_1_text: "Two sidebar rows: Options (Setup, Skinning, QoL) and Changelog. Gold Apply Magguu profiles, Magguu Settings and Load profiles side by side, required and optional imports, and WowUp copy strings live on Setup.",
     feature_2_emoji: "B",
     feature_2_title: "Current Retail layouts",
-    feature_2_text: "Cooldown Viewer class layouts import as Magguu - Class Spec. After a successful import MagguuUI asks you to reload so the layouts stick.",
+    feature_2_text: "Ellesmere profile MagguuUI at scale 0.58 with a fixed tooltip. Class layouts import as Magguu - Class Spec. Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot.",
     feature_3_emoji: "C",
     feature_3_title: "Skinning and QoL included",
-    feature_3_text: "Split names, class-colored keybinds, death-release protection, co-tank frames, stealth reminders, and spell-alert opacity.",
+    feature_3_text: "NAMES & COLORS (two columns): split unit-frame, party/raid, and EXBoss names plus class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party/raid item level, Smart Tab, Quick Focus, and an audio device switcher.",
   } as Record<string, string>,
 })
 

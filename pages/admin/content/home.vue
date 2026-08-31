@@ -246,7 +246,7 @@ const form = reactive({
     feature_2_text: "Ellesmere profile MagguuUI at scale 0.58 with a fixed tooltip. Class layouts import as Magguu - Class Spec. Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot.",
     feature_3_emoji: "C",
     feature_3_title: "Skinning and QoL included",
-    feature_3_text: "NAMES & COLORS (two columns): split unit-frame, party/raid, and EXBoss names plus class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party/raid item level, Smart Tab, Quick Focus, and an audio device switcher.",
+    feature_3_text: "NAMES & COLORS (two columns): split unit-frame, party/raid, and EXBoss names plus class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party/raid item level (and 2P/4P), Smart Tab, Quick Focus, and an audio device switcher.",
   } as Record<string, string>,
 })
 

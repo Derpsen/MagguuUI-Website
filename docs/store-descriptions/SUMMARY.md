@@ -6,7 +6,7 @@ Drafts live in `/workspace/magguuui-store-descriptions/`. No git tags. No push.
 
 - **CurseForge + Wago (live):** Correctly say EllesmereUI / `/mui`. Update **one folder** to the **four sibling** MagguuUI group. **Included** QoL line stops at co-tank, stealth, death-release — **omits Smart Tab, Quick Focus, Audio device switcher**. Fixed-tooltip wording was soft (“tooltip stays put”).
 - **WoWInterface (live):** Fuller page, same QoL gap — Death Release / Co-Tank / Stealth / Spell Alerts only; **no Smart Tab, Quick Focus, Audio switcher**.
-- **Website `defaultContent.ts` (seed on box):** Feature 3 already lists Smart Tab / Quick Focus / Audio. Hero + cards here are a polish pass (clearer Setup/tools wording, explicit scale/tooltip on card 2). Live marketing site may still show older ElvUI copy in places — replace with these EN (and optional DE) strings.
+- **Website `defaultContent.ts` (seed on box):** Feature 3 already lists Smart Tab / Quick Focus / Audio. Hero + cards here are a polish pass (clearer Setup/tools wording, explicit scale/tooltip on card 2). Website seed is aligned (EllesmereUI 9.0.6+, four siblings, Magguu Settings, DualRow NAMES & COLORS, Itemlevel 2P/4P). Remaining ElvUI strings are historical FAQ plus init.ts DB-repair markers.
 - **All drafts:** Keep MagguuUI as a **module inside EllesmereUI** (not ElvUI). Require EllesmereUI **9.0.6+**. Four sibling folders: `MagguuUI`, `MagguuUI_Data` ([Data]), `MagguuUI_EUI` ([EUI]), `MagguuUI_Media` ([Media]) — keep all four enabled. Ready for **12.1**, still loads **12.0**.
 
 ## Paste instructions

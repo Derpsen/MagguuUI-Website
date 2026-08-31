@@ -266,7 +266,7 @@ const features = computed(() => [
   {
     emoji: '🎯',
     title: content.value?.features?.feature_3_title || 'Skinning and QoL included',
-    text: content.value?.features?.feature_3_text || 'Skinning is one <strong>NAMES &amp; COLORS</strong> section (two columns): split unit-frame names, split party and raid names, split EXBoss names, and class-colored keybind modifiers. EXBoss split does not use the EXBoss class-color option. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level, <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, and an <strong>Audio device switcher</strong> on the Ellesmere speaker.',
+    text: content.value?.features?.feature_3_text || 'Skinning is one <strong>NAMES &amp; COLORS</strong> section (two columns): split unit-frame names, split party and raid names, split EXBoss names, and class-colored keybind modifiers. EXBoss split does not use the EXBoss class-color option. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (and 2P/4P), <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, and an <strong>Audio device switcher</strong> on the Ellesmere speaker.',
   },
 ])
 

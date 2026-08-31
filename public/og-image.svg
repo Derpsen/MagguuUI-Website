@@ -25,7 +25,7 @@
   <!-- Subtitle -->
   <text x="600" y="400" text-anchor="middle" fill="#94a3b8" font-size="28" font-weight="500" font-family="'Plus Jakarta Sans', sans-serif">Dein WoW Interface, perfektioniert.</text>
   <!-- Description -->
-  <text x="600" y="460" text-anchor="middle" fill="#64748b" font-size="20" font-family="'Plus Jakarta Sans', sans-serif">Import Strings für ElvUI, Plater, BigWigs, Details &amp; mehr</text>
+  <text x="600" y="460" text-anchor="middle" fill="#64748b" font-size="20" font-family="'Plus Jakarta Sans', sans-serif">EllesmereUI · MagguuUI Vier-Addon-Gruppe · Magguu Settings / Profile laden</text>
   <!-- URL -->
   <text x="600" y="560" text-anchor="middle" fill="#475569" font-size="18" font-family="'JetBrains Mono', monospace">ui.magguu.xyz</text>
 </svg>

@@ -13,7 +13,7 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/Derpsen/MagguuUI-Website/issues</Support>
   <Project>https://github.com/Derpsen/MagguuUI-Website</Project>
-  <Overview>Public website + admin panel + REST API for WoW UI import strings (ElvUI, Plater, BigWigs, Details, etc.). Nuxt 4 + SQLite (WAL) + Drizzle. Runs headless behind a reverse proxy / Cloudflare Tunnel. Live: ui.magguu.xyz.</Overview>
+  <Overview>Public website + admin panel + REST API for MagguuUI (EllesmereUI companion): four-addon group, Magguu Settings / Load profiles, and WowUp packs. Nuxt 4 + SQLite (WAL) + Drizzle. Runs headless behind a reverse proxy / Cloudflare Tunnel. Live: ui.magguu.xyz.</Overview>
   <Category>Network:Web Tools:</Category>
   <WebUI>http://[IP]:[PORT:3000]/</WebUI>
   <TemplateURL/>

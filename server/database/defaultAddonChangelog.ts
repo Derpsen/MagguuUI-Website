@@ -12,7 +12,7 @@ export const CURRENT_ADDON_CHANGELOG = {
 - **Apply Magguu profiles** writes the HUD Edit Mode layout **MagguuUI** once.
 - Ellesmere start popup is skipped; Magguu Setup opens on that login.
 - Bundled profiles recaptured from Magguu Tools (Ellesmere 9.0.7).
-- **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. **Optional:** BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, KeystoneLoot.
+- **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. **Optional:** BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, KeystoneLoot, Auctionator.
 - **Skinning** is one **NAMES & COLORS** section (two columns): split unit-frame names, split party and raid names, split EXBoss names, and class-colored keybind modifiers. EXBoss split does not use the EXBoss class-color option. Magguu Settings turns these on; reset turns them off.
 - **QoL** includes party and raid item level (and 2P/4P) on Ellesmere group frames.
 

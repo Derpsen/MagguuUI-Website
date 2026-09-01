@@ -186,7 +186,7 @@
         <div class="mb-5 rounded-xl border px-4 py-3 text-sm leading-relaxed"
           :class="isDark ? 'border-brand-400/15 bg-brand-400/5 text-silver-400' : 'border-brand-100 bg-brand-50 text-gray-600'">
           These are the same WowUp strings Magguu Setup copies in-game. Starter Addons is EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, and EXCore.
-          Optional Addons are extras such as BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, and KeystoneLoot.
+          Optional Addons are extras such as BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, KeystoneLoot, and Auctionator.
           MagguuUI itself only needs EllesmereUI plus the MagguuUI group. Paste the string in WowUp — MagguuUI does not install addons itself.
         </div>
         <div v-if="wowupList.length" class="space-y-5">

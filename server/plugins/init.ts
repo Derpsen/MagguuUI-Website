@@ -115,6 +115,7 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_2', marker: 'The download is **one folder**' },
   { page: 'guide', section: 'steps', key: 'step_2', marker: 'delete those leftover folders' },
   { page: 'guide', section: 'steps', key: 'step_3', marker: 'Optional pack extras include BugSack, MDT, Raider.IO, WIM, GTFO' },
+  { page: 'guide', section: 'steps', key: 'step_3', marker: 'Premade Groups Filter, KeystoneLoot.' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: '**Set scale only**' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: '**Install everything** imports the Ellesmere profile at UI scale' },
 ] as const
@@ -211,6 +212,7 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 3, marker: 'Optional: BigWigs, Northern Sky, WIM, and Waypoint UI' },
   { category: 'addons', sortOrder: 4, marker: 'plus the MagguuUI folder' },
   { category: 'addons', sortOrder: 4, marker: 'extras such as BugSack, MDT, Raider.IO' },
+  { category: 'addons', sortOrder: 4, marker: 'Premade Groups Filter, and KeystoneLoot' },
   { category: 'addons', sortOrder: 8, marker: 'Why is MagguuUI only one folder now?' },
   { category: 'addons', sortOrder: 8, marker: 'ships **one folder**. Leave it enabled. Delete leftover' },
   { category: 'addons', sortOrder: 11, marker: 'standalone scale action apply' },
@@ -564,6 +566,7 @@ export default defineNitroPlugin(() => {
       || currentRelease.content.includes('one folder')
       || currentRelease.content.includes('All Bosses merge')
       || currentRelease.content.includes('Dual ring/trinket')
+      || currentRelease.content.includes('Premade Groups Filter, KeystoneLoot.')
     ) {
       db.update(changelogs)
         .set({

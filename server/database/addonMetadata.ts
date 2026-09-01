@@ -107,7 +107,7 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     name: 'KeystoneLoot',
     category: 'optional',
     emoji: '💎',
-    description: 'Optional Magguu import and WowUp optional pack. Setup and Load profiles import Archon Best in Slot for your current class, including Devourer: one item per slot, two rings and two trinkets. Overwrites current KeystoneLoot favorites.',
+    description: 'Optional Magguu import and WowUp optional pack. Setup and Load profiles fill the third-party KeystoneLoot addon with Archon Best in Slot for your current class (all specs): one item per slot, two rings and two trinkets. Overwrites current KeystoneLoot favorites.',
     url: `${CF}/keystoneloot`,
     sortOrder: 6,
   },

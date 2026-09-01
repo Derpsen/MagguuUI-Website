@@ -6,7 +6,7 @@ export const CURRENT_ADDON_CHANGELOG = {
 ### What's new
 
 - Changelog, Setup buttons, hints, and tooltips in **all 11 WoW client languages** (enUS, deDE, esES, esMX, frFR, itIT, koKR, ptBR, ruRU, zhCN, zhTW).
-- **Setup → Optional** and **Load profiles** import KeystoneLoot Best in Slot for your current class, including **Devourer**. Archon outfit: one item per slot, two rings and two trinkets. No MagguuKSL addon.
+- **Setup → Optional** and **Load profiles** fill the third-party KeystoneLoot addon with Archon Best in Slot for your current class (all specs). Archon outfit: one item per slot, two rings and two trinkets.
 - MagguuUI ships as a **four-addon group** like BigWigs: **MagguuUI**, **[Data]**, **[EUI]**, and **[Media]**. Keep all four enabled. Needs **EllesmereUI 9.0.6+**.
 - Gold Setup is **Apply Magguu profiles**. Below it: **Magguu Settings** and **Load profiles**. Scale \`0.58\` comes from those two. No Set-scale-only.
 - **Apply Magguu profiles** writes the HUD Edit Mode layout **MagguuUI** once.

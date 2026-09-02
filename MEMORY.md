@@ -20,6 +20,12 @@
 - CodeQL `init` and `analyze` must share one commit pin.
 
 
+## WowUp packs (2026-09-01)
+
+- **Starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore.
+- **Optional:** BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, KeystoneLoot, Auctionator.
+- No WindTools. KeystoneLoot = Archon-BiS, all specs; never MagguuKSL; never name Devourer as a special include.
+
 ## Design
 
 - Marco's direction for the public home: clean and clear — primary CTA **Install & Setup** (`/guide`), secondary **Import Strings** (`/strings`). Little glass/motion; no hero fade-in or bounce scroll cue.

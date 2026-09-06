@@ -3,9 +3,14 @@
  * Auto-imported by Nuxt from utils/.
  */
 
+function toDate(value: string | number | Date | null): Date | null {
+  if (!value) return null
+  return value instanceof Date ? value : typeof value === 'number' ? new Date(value * 1000) : new Date(value)
+}
+
 export function timeAgo(value: string | number | Date | null): string {
-  if (!value) return ''
-  const date = value instanceof Date ? value : typeof value === 'number' ? new Date(value * 1000) : new Date(value)
+  const date = toDate(value)
+  if (!date) return ''
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
   if (seconds < 60) return 'just now'
   const minutes = Math.floor(seconds / 60)
@@ -18,8 +23,8 @@ export function timeAgo(value: string | number | Date | null): string {
 }
 
 export function absoluteDate(value: string | number | Date | null): string {
-  if (!value) return ''
-  const date = value instanceof Date ? value : typeof value === 'number' ? new Date(value * 1000) : new Date(value)
+  const date = toDate(value)
+  if (!date) return ''
   return date.toLocaleDateString('en', { day: '2-digit', month: 'short' })
 }
 

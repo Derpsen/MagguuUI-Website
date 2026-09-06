@@ -32,7 +32,7 @@ Zwei Sidebar-Zeilen: <strong>Options</strong> (Setup, Skinning, QoL) und <strong
 **text** (html-sicher):
 
 ```html
-Ellesmere-Profil <strong>MagguuUI</strong> mit Scale <strong>0.58</strong> und festem Tooltip. Klassen-Layouts als <strong>Magguu - Class Spec</strong>. Optionale Profile für BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss und KeystoneLoot.
+Ellesmere-Profil <strong>MagguuUI</strong> mit Scale <strong>0.58</strong> und festem Tooltip. Klassen-Layouts als <strong>Magguu - Class Spec</strong>. Optionale Profile für BigWigs, Northern Sky, WIM, Waypoint UI und EXBoss.
 ```
 
 ### 3 — Skinning und QoL

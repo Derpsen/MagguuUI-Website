@@ -36,20 +36,19 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
 - MagguuUI public copy (home/guide/FAQ/changelog/addon metadata) must stay
   aligned with the current MagguuUI release: four sibling folders, EllesmereUI
   9.0.6+ (live 9.0.8), Magguu Settings / Load profiles activate-only except
-  class layouts and KeystoneLoot BiS, Skinning NAMES & COLORS DualRow
+  class layouts, Skinning NAMES & COLORS DualRow
   (unit-frame | party/raid; EXBoss | keybinds), EXBoss split independent of
-  EXBoss class-color, Archon BiS one item per slot with two rings and two
-  trinkets. Do not restore Ashvane or MagguuKSL.
+  EXBoss class-color. Do not restore Ashvane.
 - After behavior changes run `npm run typecheck`, `npm run build`, `npm run verify:smoke`, and `npm test`.
 - After dependency changes also run `npm run audit:prod`.
 - Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier).
 - Validation uses Zod.
 
-## WowUp packs (2026-09-01)
+## WowUp packs (2026-09-06)
 
 - **Starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore.
-- **Optional:** BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, KeystoneLoot, Auctionator.
-- No WindTools. KeystoneLoot = Archon-BiS, all specs; never MagguuKSL; never name Devourer as a special include.
+- **Optional:** BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, Auctionator.
+- No WindTools.
 
 ## Commands
 

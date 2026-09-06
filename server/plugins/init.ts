@@ -40,14 +40,12 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'WowUp copy popups. Werkzeuge exports your live profiles.' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'copies an Edit Mode layout' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'never writes Blizzard Edit Mode itself' },
-  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Setup runs the 4K install, Magguu-Look, and Magguu profile imports' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'Per-addon Magguu imports live on the **Profile** tab' },
   { page: 'guide', section: 'steps', key: 'step_6', marker: 'Profile tab (import)' },
   { page: 'guide', section: 'steps', key: 'step_6', marker: 'reloads immediately so the layouts stick' },
   { page: 'home', section: 'features', key: 'feature_1_title', marker: 'One-click setup' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'the in-game changelog shows you exactly what changed' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'import as **Magguu - Class Spec**' },
-  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'copies an Edit Mode layout' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'never writes protected Blizzard layout state' },
   { page: 'home', section: 'features', key: 'feature_3_title', marker: 'Class layouts + custom tags' },
   { page: 'home', section: 'features', key: 'feature_3_title', marker: 'Useful extras built in' },
@@ -101,12 +99,10 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'Setup has no Edit Mode action' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'Ellesmere QoL/Shifter defaults' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'The Magguu accent-color toggle is no longer in the UI' },
-  { page: 'guide', section: 'steps', key: 'step_4', marker: 'Run the **4K install**. MagguuUI imports the Ellesmere profile' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'Load Profiles** popup' },
   { page: 'guide', section: 'steps', key: 'step_6', marker: 'shift+left-click opens Settings' },
   { page: 'guide', section: 'steps', key: 'step_6', marker: 'Row direction, icon borders, visibility and banner position are configurable' },
   { page: 'guide', section: 'steps', key: 'step_6', marker: '**Custom ElvUI tags**' },
-  { page: 'guide', section: 'steps', key: 'step_6', marker: 'reloads immediately so the layouts stick' },
   { page: 'home', section: 'hero', key: 'description', marker: 'and the single <strong>MagguuUI</strong> folder' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'One sidebar row with Setup, Skinning, and QoL' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'Optional profiles for BigWigs, Northern Sky, WIM, and Waypoint UI' },
@@ -118,6 +114,13 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_3', marker: 'Premade Groups Filter, KeystoneLoot.' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: '**Set scale only**' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: '**Install everything** imports the Ellesmere profile at UI scale' },
+  { page: 'guide', section: 'steps', key: 'step_3', marker: 'KeystoneLoot, Auctionator' },
+  { page: 'guide', section: 'steps', key: 'step_3', marker: '**KeystoneLoot**' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'KeystoneLoot' },
+  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'KeystoneLoot' },
+  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'EXBoss, and KeystoneLoot' },
+  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'EXBoss und KeystoneLoot' },
+  { page: 'guide', section: 'steps', key: 'step_3', marker: 'KeystoneLoot' },
 ] as const
 
 const LEGACY_FAQ_MARKERS = [
@@ -137,8 +140,6 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'installation', sortOrder: 1, marker: '/mui install' },
   { category: 'installation', sortOrder: 2, marker: 'Load Profiles** popup' },
   { category: 'installation', sortOrder: 2, marker: 're-run class layouts if you want' },
-  { category: 'installation', sortOrder: 2, marker: 're-run class layouts if you want' },
-  { category: 'installation', sortOrder: 0, marker: 'run the **4K install** on the Setup tab' },
   { category: 'installation', sortOrder: 3, marker: '**No.** ElvUI is the foundation' },
   { category: 'installation', sortOrder: 3, marker: 'without ElvUI' },
   { category: 'installation', sortOrder: 3, marker: 'hard dependency' },
@@ -150,7 +151,6 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 2, marker: '[mui:ilvl]' },
   { category: 'addons', sortOrder: 3, marker: 'Install All** — full first-time setup' },
   { category: 'addons', sortOrder: 0, marker: 'profile and alerts, if NSRT is present' },
-  { category: 'addons', sortOrder: 0, marker: 'then an immediate reload' },
   { category: 'addons', sortOrder: 0, marker: 'then an immediate reload' },
   { category: 'addons', sortOrder: 3, marker: 'from the **Profile** tab' },
   { category: 'addons', sortOrder: 1, marker: 'reloads immediately so Blizzard' },
@@ -165,8 +165,6 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 4, marker: 'WowUp](https://wowup.io/)' },
   { category: 'addons', sortOrder: 4, marker: 'MagguuUI no longer ships a WowUp package file' },
   { category: 'addons', sortOrder: 4, marker: 'The Strings page has two' },
-  { category: 'addons', sortOrder: 1, marker: "Setup tab's copy action" },
-  { category: 'addons', sortOrder: 1, marker: 'reloads immediately so Blizzard' },
   { category: 'addons', sortOrder: 3, marker: '**Magguu-Look** and a standalone **4K scale**' },
   { category: 'addons', sortOrder: 3, marker: 'Setup has no Edit Mode action' },
   { category: 'addons', sortOrder: 3, marker: 'Ellesmere QoL/Shifter defaults' },
@@ -220,6 +218,14 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'troubleshooting', sortOrder: 0, marker: 'MagguuUI is the single folder' },
   { category: 'troubleshooting', sortOrder: 1, marker: 'EllesmereUI is 7.9.5 or newer' },
   { category: 'troubleshooting', sortOrder: 2, marker: 'Delete leftover MagguuUI_* folders' },
+  { category: 'addons', sortOrder: 4, marker: 'KeystoneLoot, and Auctionator' },
+  { category: 'general', sortOrder: 2, marker: 'KeystoneLoot' },
+  { category: 'installation', sortOrder: 0, marker: 'KeystoneLoot' },
+  { category: 'installation', sortOrder: 2, marker: 'KeystoneLoot Best in Slot' },
+  { category: 'addons', sortOrder: 0, marker: 'KeystoneLoot' },
+  { category: 'addons', sortOrder: 3, marker: 'KeystoneLoot' },
+  { category: 'installation', sortOrder: 2, marker: 'KeystoneLoot' },
+  { category: 'addons', sortOrder: 4, marker: 'KeystoneLoot' },
 ] as const
 
 // Nitro's runNitroPlugins calls plugins without awaiting their promise.
@@ -567,6 +573,11 @@ export default defineNitroPlugin(() => {
       || currentRelease.content.includes('All Bosses merge')
       || currentRelease.content.includes('Dual ring/trinket')
       || currentRelease.content.includes('Premade Groups Filter, KeystoneLoot.')
+      || currentRelease.content.includes('KeystoneLoot, Auctionator')
+      || currentRelease.content.includes('third-party KeystoneLoot')
+      || currentRelease.content.includes('KeystoneLoot Best in Slot')
+      || currentRelease.content.includes('Archon Best in Slot')
+      || currentRelease.content.includes('KeystoneLoot')
     ) {
       db.update(changelogs)
         .set({

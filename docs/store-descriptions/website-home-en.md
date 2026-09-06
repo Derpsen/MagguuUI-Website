@@ -32,7 +32,7 @@ Two sidebar rows: <strong>Options</strong> (Setup, Skinning, QoL) and <strong>Ch
 **text** (html-safe):
 
 ```html
-Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot.
+Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss.
 ```
 
 ### 3 — Skinning and QoL

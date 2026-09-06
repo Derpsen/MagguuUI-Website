@@ -4,7 +4,7 @@ import { CURRENT_ADDON_CHANGELOG } from '../../server/database/defaultAddonChang
 import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT } from '../../server/database/defaultContent'
 
 const STARTER = 'EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore'
-const OPTIONAL = 'BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, KeystoneLoot, Auctionator'
+const OPTIONAL = 'BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, Auctionator'
 
 describe('WowUp pack copy', () => {
   it('keeps starter membership unchanged and adds Auctionator only to Optional', () => {

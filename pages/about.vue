@@ -35,7 +35,7 @@
           <strong :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI</strong>,
           MagguuUI [Data], MagguuUI [EUI], and MagguuUI [Media]. Keep all four enabled in Interface/AddOns.
           <strong :class="isDark ? 'text-white' : 'text-gray-900'">EllesmereUI 9.0.6+</strong>
-          must be installed and enabled. BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot are optional;
+          must be installed and enabled. BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss are optional;
           MagguuUI configures them when they are installed and skips them otherwise.
         </p>
       </div>
@@ -62,7 +62,7 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">WowUp copy popups</strong> — starter pack (EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore) and optional extras (including Premade Groups Filter, KeystoneLoot, and Auctionator) copy from Setup. Paste in WowUp. Buttons turn green when the pack addons are present. Apply Magguu profiles writes the HUD Edit Mode layout MagguuUI once.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">WowUp copy popups</strong> — starter pack (EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore) and optional extras (including Premade Groups Filter and Auctionator) copy from Setup. Paste in WowUp. Buttons turn green when the pack addons are present. Apply Magguu profiles writes the HUD Edit Mode layout MagguuUI once.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />

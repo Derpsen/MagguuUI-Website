@@ -10,7 +10,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_2_title', value: 'Current Retail layouts', type: 'text', sortOrder: 3, locale: 'en' },
-  { page: 'home', section: 'features', key: 'feature_2_text', value: 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot.', type: 'html', sortOrder: 4, locale: 'en' },
+  { page: 'home', section: 'features', key: 'feature_2_text', value: 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss.', type: 'html', sortOrder: 4, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_2_icon', value: 'i-heroicons-squares-2x2', type: 'text', sortOrder: 5, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_3_title', value: 'Skinning and QoL included', type: 'text', sortOrder: 6, locale: 'en' },
@@ -34,7 +34,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'de' },
 
   { page: 'home', section: 'features', key: 'feature_2_title', value: 'Aktuelle Retail-Layouts', type: 'text', sortOrder: 3, locale: 'de' },
-  { page: 'home', section: 'features', key: 'feature_2_text', value: 'Ellesmere-Profil <strong>MagguuUI</strong> mit Scale <strong>0.58</strong> und festem Tooltip. Klassen-Layouts als <strong>Magguu - Class Spec</strong>. Optionale Profile für BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss und KeystoneLoot.', type: 'html', sortOrder: 4, locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_2_text', value: 'Ellesmere-Profil <strong>MagguuUI</strong> mit Scale <strong>0.58</strong> und festem Tooltip. Klassen-Layouts als <strong>Magguu - Class Spec</strong>. Optionale Profile für BigWigs, Northern Sky, WIM, Waypoint UI und EXBoss.', type: 'html', sortOrder: 4, locale: 'de' },
   { page: 'home', section: 'features', key: 'feature_2_icon', value: 'i-heroicons-squares-2x2', type: 'text', sortOrder: 5, locale: 'de' },
 
   { page: 'home', section: 'features', key: 'feature_3_title', value: 'Skinning und QoL inklusive', type: 'text', sortOrder: 6, locale: 'de' },
@@ -59,10 +59,10 @@ export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'steps', key: 'step_2', value: 'Get MagguuUI from **CurseForge**, **Wago Addons**, **WoWInterface**, or the latest [GitHub release](https://github.com/Derpsen/MagguuUI/releases/latest).\n\nThe download is **four sibling folders**, like BigWigs: `MagguuUI`, `MagguuUI_Data` (MagguuUI [Data], LoadOnDemand), `MagguuUI_EUI` ([EUI]), and `MagguuUI_Media` ([Media]). Copy all four into `World of Warcraft\\_retail_\\Interface\\AddOns\\` and keep them enabled.\n\nDo not delete `MagguuUI_Data`, `MagguuUI_EUI`, or `MagguuUI_Media` — they are required siblings. Nested-only copies inside MagguuUI are obsolete.', locale: 'en', type: 'markdown', sortOrder: 21 },
 
   { page: 'guide', section: 'steps', key: 'step_3_title', value: '3. Add optional raid tools', locale: 'en', type: 'text', sortOrder: 30 },
-  { page: 'guide', section: 'steps', key: 'step_3', value: 'Only EllesmereUI is required. Install extra addons only if you want MagguuUI to configure them:\n\n- **BigWigs** — encounter timers, MagguuUI bar style, and bundled callout sounds\n- **LittleWigs** — dungeon timers for BigWigs (WowUp starter pack; no separate Magguu profile)\n- **Northern Sky Raid Tools** — raid notes and alerts\n- **WIM**, **Waypoint UI**, **EXBoss**, and **KeystoneLoot** — optional Magguu imports when those addons are present\n- **EXBoss** — Magguu appearance and author configs; import again replaces those Magguu configs\n- **EXCore** — in the WowUp starter pack with EXBoss; no separate Magguu profile\n\nMissing addons are skipped.\n\nCopy the **WowUp starter pack** and **optional pack** from Magguu **Setup** (`Ctrl+C`, then paste in WowUp). The Strings page is a backup of the same strings. MagguuUI shows a copy popup; it does not install addons itself.\n\nStarter pack: EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. Optional pack: BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, KeystoneLoot, Auctionator.\n\nWowUp copy buttons turn green when every addon in that pack is installed.', locale: 'en', type: 'markdown', sortOrder: 31 },
+  { page: 'guide', section: 'steps', key: 'step_3', value: 'Only EllesmereUI is required. Install extra addons only if you want MagguuUI to configure them:\n\n- **BigWigs** — encounter timers, MagguuUI bar style, and bundled callout sounds\n- **LittleWigs** — dungeon timers for BigWigs (WowUp starter pack; no separate Magguu profile)\n- **Northern Sky Raid Tools** — raid notes and alerts\n- **WIM**, **Waypoint UI**, and **EXBoss** — optional Magguu imports when those addons are present\n- **EXBoss** — Magguu appearance and author configs; import again replaces those Magguu configs\n- **EXCore** — in the WowUp starter pack with EXBoss; no separate Magguu profile\n\nMissing addons are skipped.\n\nCopy the **WowUp starter pack** and **optional pack** from Magguu **Setup** (`Ctrl+C`, then paste in WowUp). The Strings page is a backup of the same strings. MagguuUI shows a copy popup; it does not install addons itself.\n\nStarter pack: EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. Optional pack: BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, Auctionator.\n\nWowUp copy buttons turn green when every addon in that pack is installed.', locale: 'en', type: 'markdown', sortOrder: 31 },
 
   { page: 'guide', section: 'steps', key: 'step_4_title', value: '4. Open Setup and Apply Magguu profiles', locale: 'en', type: 'text', sortOrder: 40 },
-  { page: 'guide', section: 'steps', key: 'step_4', value: 'Log in, then open MagguuUI:\n\n- Type `/mui` or `/mui setup` in chat\n- Or open EllesmereUI and choose **MagguuUI → Optionen → Setup**\n\n**Apply Magguu profiles** is the gold button. It imports the Ellesmere profile at UI scale `0.58`, then BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot if they are present, then Cooldown Viewer class layouts. It also writes the HUD Edit Mode layout **MagguuUI** once. Ellesmere Magguu import pre-checks **Window & Tooltip Skins**. Wait until you are out of combat.\n\nOn the same tab, **Magguu Settings** and **Load profiles** sit side by side below Apply Magguu profiles:\n\n- **Magguu Settings** — Magguu fonts, class colors, Giant options panel, 4K scale, all four Skinning NAMES & COLORS toggles, Magguu extras, and a fixed tooltip that does not follow the mouse. Scale `0.58` is applied by Apply Magguu profiles and Magguu Settings\n- **Load profiles** — switch this character onto Magguu profiles already on the account. It does not re-import or overwrite them, except class layouts and KeystoneLoot Best in Slot when KeystoneLoot is installed and enabled\n- **Required / optional Magguu imports** — EllesmereUI and class layouts; BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot\n- **WowUp** — copy the starter pack or optional pack, then paste in WowUp\n\nImport buttons: green means the Magguu profile is loaded on this character, orange means installed but not loaded here, red means missing. WowUp buttons turn green when every addon in that pack is installed.\n\nLogging in on an alt asks whether to load those profiles onto that character.', locale: 'en', type: 'markdown', sortOrder: 41 },
+  { page: 'guide', section: 'steps', key: 'step_4', value: 'Log in, then open MagguuUI:\n\n- Type `/mui` or `/mui setup` in chat\n- Or open EllesmereUI and choose **MagguuUI → Optionen → Setup**\n\n**Apply Magguu profiles** is the gold button. It imports the Ellesmere profile at UI scale `0.58`, then BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss if they are present, then Cooldown Viewer class layouts. It also writes the HUD Edit Mode layout **MagguuUI** once. Ellesmere Magguu import pre-checks **Window & Tooltip Skins**. Wait until you are out of combat.\n\nOn the same tab, **Magguu Settings** and **Load profiles** sit side by side below Apply Magguu profiles:\n\n- **Magguu Settings** — Magguu fonts, class colors, Giant options panel, 4K scale, all four Skinning NAMES & COLORS toggles, Magguu extras, and a fixed tooltip that does not follow the mouse. Scale `0.58` is applied by Apply Magguu profiles and Magguu Settings\n- **Load profiles** — switch this character onto Magguu profiles already on the account. It does not re-import or overwrite them, except class layouts\n- **Required / optional Magguu imports** — EllesmereUI and class layouts; BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss\n- **WowUp** — copy the starter pack or optional pack, then paste in WowUp\n\nImport buttons: green means the Magguu profile is loaded on this character, orange means installed but not loaded here, red means missing. WowUp buttons turn green when every addon in that pack is installed.\n\nLogging in on an alt asks whether to load those profiles onto that character.', locale: 'en', type: 'markdown', sortOrder: 41 },
 
   { page: 'guide', section: 'steps', key: 'step_5_title', value: '5. Skinning and QoL', locale: 'en', type: 'text', sortOrder: 50 },
   { page: 'guide', section: 'steps', key: 'step_5', value: 'Stay in **MagguuUI → Optionen**:\n\n- **Skinning** — one **NAMES & COLORS** section (two columns): split unit-frame names, split party and raid names, split EXBoss names, and class-colored keybind modifiers. EXBoss split does not use the EXBoss class-color option. Magguu Settings turns these on; reset turns them off\n- **QoL** — death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, per-spec proc-overlay hiding, party and raid item level (and 2P/4P), Smart Tab (chat channel cycling), Quick Focus (modifier-click to focus), and an audio device switcher on the Ellesmere speaker icon\n\nThese settings live in the MagguuUI Ellesmere profile.', locale: 'en', type: 'markdown', sortOrder: 51 },
@@ -103,7 +103,7 @@ There is no paid tier, no premium content, and no ads.`,
 - **EllesmereUI 9.0.6+** — required host UI
 - **MagguuUI** as four sibling AddOns folders: MagguuUI, MagguuUI_Data (MagguuUI [Data]), MagguuUI_EUI ([EUI]), and MagguuUI_Media ([Media]). Keep all four enabled.
 
-**BigWigs**, **LittleWigs**, and **Northern Sky Raid Tools** are optional. MagguuUI configures them when they are installed and skips them otherwise. Optional Magguu imports also include WIM, Waypoint UI, EXBoss, and KeystoneLoot.`,
+**BigWigs**, **LittleWigs**, and **Northern Sky Raid Tools** are optional. MagguuUI configures them when they are installed and skips them otherwise. Optional Magguu imports also include WIM, Waypoint UI, and EXBoss.`,
     sortOrder: 2,
   },
   {
@@ -130,7 +130,7 @@ It needs **EllesmereUI 9.0.6 or newer**. Classic and other flavors are not suppo
 
 1. Install **EllesmereUI 9.0.6+** and leave it enabled
 2. Copy all four MagguuUI folders into \`Interface/AddOns\`: MagguuUI, MagguuUI_Data, MagguuUI_EUI, MagguuUI_Media — keep them enabled
-3. Optionally install BigWigs, LittleWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and/or KeystoneLoot
+3. Optionally install BigWigs, LittleWigs, Northern Sky, WIM, Waypoint UI, and/or EXBoss
 4. Log in, type \`/mui\`, and run **Apply Magguu profiles** on Setup. Apply **Magguu Settings** and **Load profiles** side by side, and copy WowUp packs from the same tab
 
 Ellesmere's start popup is skipped. Magguu Setup opens so you can apply Magguu profiles.
@@ -158,7 +158,7 @@ There is no minimap button and no separate Magguu installer window.`,
 
 On a new character MagguuUI asks whether to **load those profiles** onto the alt. You can also press **Load profiles** on Setup.
 
-**Load profiles** switches existing Magguu profiles onto this character. It does not re-import or overwrite them. Class layouts and KeystoneLoot Best in Slot (if KeystoneLoot is installed and enabled) are installed per character. Spec changes use layouts named \`Magguu - Class Spec\`.`,
+**Load profiles** switches existing Magguu profiles onto this character. It does not re-import or overwrite them. Class layouts are installed per character. Spec changes use layouts named \`Magguu - Class Spec\`.`,
     sortOrder: 2,
   },
   {
@@ -177,7 +177,7 @@ It will not load unless EllesmereUI is installed **and enabled**.`,
 
 - **EllesmereUI** profile \`MagguuUI\` at UI scale **0.58**
 - **BigWigs** profile and boss options, if BigWigs is present (Magguu accepts the BigWigs Magguu popup for you)
-- **Northern Sky Raid Tools**, **WIM**, **Waypoint UI**, **EXBoss** (appearance and authors per role; re-import replaces Magguu configs), and **KeystoneLoot** (Archon BiS, overwrite), if those addons are present
+- **Northern Sky Raid Tools**, **WIM**, **Waypoint UI**, and **EXBoss** (appearance and authors per role; re-import replaces Magguu configs), if those addons are present
 - **Cooldown Viewer** class layouts, then a reload confirm popup
 
 Per-addon Magguu imports live on **Setup**. Gold **Apply Magguu profiles**, then **Magguu Settings** and **Load profiles** side by side, plus WowUp copy popups.`,
@@ -208,11 +208,11 @@ Do **not** delete \`MagguuUI_Data\`, \`MagguuUI_EUI\`, or \`MagguuUI_Media\` —
   {
     category: 'addons',
     question: 'What is the difference between Apply Magguu profiles and individual profiles?',
-    answer: `**Apply Magguu profiles** — Ellesmere at scale 0.58, then BigWigs / NSRT / WIM / Waypoint UI / EXBoss / KeystoneLoot if present, then class layouts.
+    answer: `**Apply Magguu profiles** — Ellesmere at scale 0.58, then BigWigs / NSRT / WIM / Waypoint UI / EXBoss if present, then class layouts.
 
-**Individual profiles** — import only the piece you want from **Setup**. Required: EllesmereUI and class layouts. Optional: BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot.
+**Individual profiles** — import only the piece you want from **Setup**. Required: EllesmereUI and class layouts. Optional: BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss.
 
-**Magguu Settings** applies Magguu fonts, class colors, Giant options panel, 4K scale, all four Skinning NAMES & COLORS toggles, Magguu extras, and a fixed tooltip that does not follow the mouse. **Magguu Settings** and **Load profiles** sit side by side below Apply Magguu profiles. Scale \`0.58\` is applied by Apply Magguu profiles and Magguu Settings — there is no Set-scale-only button. **Load profiles** does not re-import Magguu profiles except class layouts and KeystoneLoot Best in Slot.
+**Magguu Settings** applies Magguu fonts, class colors, Giant options panel, 4K scale, all four Skinning NAMES & COLORS toggles, Magguu extras, and a fixed tooltip that does not follow the mouse. **Magguu Settings** and **Load profiles** sit side by side below Apply Magguu profiles. Scale \`0.58\` is applied by Apply Magguu profiles and Magguu Settings — there is no Set-scale-only button. **Load profiles** does not re-import Magguu profiles except class layouts.
 
 Import buttons: green means the Magguu profile is loaded on this character, orange means installed but not loaded here, red means missing. WowUp copy buttons turn green when every addon in that pack is installed.
 
@@ -227,7 +227,7 @@ On a new character MagguuUI asks whether to load those profiles onto the alt.`,
 Copy the packs from Magguu **Setup** (\`/mui\`) and paste them in [WowUp](https://wowup.io/). The Strings page is a backup of the same strings. MagguuUI shows a copy popup; it does not install addons itself.
 
 - **Starter pack** — EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, and EXCore
-- **Optional pack** — BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, KeystoneLoot, and Auctionator
+- **Optional pack** — BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, and Auctionator
 
 WowUp copy buttons turn green when every addon in that pack is installed. They are recommendations, not requirements.`,
     sortOrder: 4,

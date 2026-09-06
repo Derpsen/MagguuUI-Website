@@ -101,16 +101,6 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     url: `${CF}/excore`,
     sortOrder: 5,
   },
-  {
-    slug: 'keystoneloot',
-    tocName: 'KeystoneLoot',
-    name: 'KeystoneLoot',
-    category: 'optional',
-    emoji: '💎',
-    description: 'Optional Magguu import and WowUp optional pack. Setup and Load profiles fill the third-party KeystoneLoot addon with Archon Best in Slot for your current class (all specs): one item per slot, two rings and two trinkets. Overwrites current KeystoneLoot favorites.',
-    url: `${CF}/keystoneloot`,
-    sortOrder: 6,
-  },
 ]
 
 export const RETIRED_ADDON_SLUGS = [
@@ -146,6 +136,7 @@ export const RETIRED_ADDON_SLUGS = [
   'exboss-data',
   'blizzi-interrupts',
   'bli-zzi-interrupts',
+  'keystoneloot',
 ] as const
 
 const BY_TOC_NAME = (() => {

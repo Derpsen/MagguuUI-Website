@@ -261,7 +261,7 @@ const features = computed(() => [
   {
     emoji: '🔄',
     title: content.value?.features?.feature_2_title || 'Current Retail layouts',
-    text: content.value?.features?.feature_2_text || 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss, and KeystoneLoot.',
+    text: content.value?.features?.feature_2_text || 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss.',
   },
   {
     emoji: '🎯',

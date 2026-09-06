@@ -2,9 +2,8 @@
  * POST /api/v1/admin/faqs/reorder
  */
 
-import { eq } from 'drizzle-orm'
-import { db, sqlite } from '~/server/database'
 import { faqs } from '~/server/database/schema'
+import { reorderBySortOrder } from '~/server/utils/adminCrud'
 import { validateBody, reorderSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
@@ -12,11 +11,8 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const data = validateBody(reorderSchema, body)
 
-  sqlite.transaction(() => {
-    for (const item of data.items) {
-      db.update(faqs).set({ sortOrder: item.sortOrder }).where(eq(faqs.id, item.id)).run()
-    }
-  })()
+  // Preserve prior FAQ behavior: sortOrder only (no updatedAt touch).
+  reorderBySortOrder(faqs, data.items, { touchUpdatedAt: false })
 
   logActivity({
     action: 'updated',

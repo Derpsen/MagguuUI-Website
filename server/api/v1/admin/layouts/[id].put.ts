@@ -6,10 +6,10 @@ import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { characterLayouts } from '~/server/database/schema'
 import { validateBody, layoutUpdateSchema } from '~/server/utils/validation'
+import { parseRouteId } from '~/server/utils/adminCrud'
 
 export default defineEventHandler(async (event) => {
-  const id = Number(getRouterParam(event, 'id'))
-  if (isNaN(id)) throw createError({ statusCode: 400, message: 'Invalid ID' })
+  const id = parseRouteId(event)
 
   const existing = db.select().from(characterLayouts).where(eq(characterLayouts.id, id)).get()
   if (!existing) throw createError({ statusCode: 404, message: 'Not found' })

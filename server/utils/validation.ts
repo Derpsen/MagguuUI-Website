@@ -173,6 +173,18 @@ export const fieldDefinitionCreateSchema = z.object({
 
 export const fieldDefinitionUpdateSchema = fieldDefinitionCreateSchema.partial()
 
+// ─── Visibility / sort toggles (shared) ───────────
+
+/** WowUp PATCH: visibility only (matches prior wowupToggleSchema). */
+export const visibilityToggleSchema = z.object({
+  isVisible: z.boolean().optional(),
+})
+
+/** Profiles / layouts PATCH: visibility + optional sortOrder. */
+export const entityToggleSchema = visibilityToggleSchema.extend({
+  sortOrder: z.number().int().optional(),
+})
+
 // ─── Reorder (shared) ─────────────────────────────
 
 export const reorderSchema = z.object({

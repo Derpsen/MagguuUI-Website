@@ -4,21 +4,13 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { z } from 'zod'
 import { db } from '~/server/database'
 import { characterLayouts } from '~/server/database/schema'
-import { validateBody } from '~/server/utils/validation'
-
-const layoutToggleSchema = z.object({
-  isVisible: z.boolean().optional(),
-  sortOrder: z.number().int().optional(),
-})
+import { parseRouteId } from '~/server/utils/adminCrud'
+import { validateBody, entityToggleSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const id = Number(getRouterParam(event, 'id'))
-  if (isNaN(id)) {
-    throw createError({ statusCode: 400, message: 'Invalid ID' })
-  }
+  const id = parseRouteId(event)
 
   const existing = db.select().from(characterLayouts).where(eq(characterLayouts.id, id)).get()
   if (!existing) {
@@ -26,7 +18,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
-  const data = validateBody(layoutToggleSchema, body)
+  const data = validateBody(entityToggleSchema, body)
 
   const result = db.update(characterLayouts)
     .set({

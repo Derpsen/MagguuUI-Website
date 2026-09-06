@@ -8,12 +8,10 @@ import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { profiles } from '~/server/database/schema'
 import { validateBody, profileUpdateSchema } from '~/server/utils/validation'
+import { parseRouteId } from '~/server/utils/adminCrud'
 
 export default defineEventHandler(async (event) => {
-  const id = Number(getRouterParam(event, 'id'))
-  if (isNaN(id)) {
-    throw createError({ statusCode: 400, message: 'Invalid ID' })
-  }
+  const id = parseRouteId(event)
 
   const existing = db.select().from(profiles).where(eq(profiles.id, id)).get()
   if (!existing) {

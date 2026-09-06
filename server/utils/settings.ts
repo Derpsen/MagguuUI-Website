@@ -5,7 +5,9 @@
  * Avoids hitting SQLite on every single request.
  */
 
-import { sqlite } from '~/server/database'
+import { eq } from 'drizzle-orm'
+import { db, sqlite } from '~/server/database'
+import { settings } from '~/server/database/schema'
 
 // ─── Cached Settings Reader ─────────────────────
 
@@ -49,6 +51,20 @@ function getSettingNumber(key: string, fallback: number): number {
 function getSettingBool(key: string, fallback: boolean): boolean {
   const val = getSetting(key, String(fallback))
   return val === 'true'
+}
+
+/**
+ * Upsert a settings row and invalidate the in-memory cache for that key.
+ * Shared by GitHub pull, webhook release, and admin version-check.
+ */
+export function upsertSetting(key: string, value: string) {
+  const existing = db.select().from(settings).where(eq(settings.key, key)).get()
+  if (existing) {
+    db.update(settings).set({ value, updatedAt: new Date() }).where(eq(settings.id, existing.id)).run()
+  } else {
+    db.insert(settings).values({ key, value }).run()
+  }
+  invalidateSettingsCache(key)
 }
 
 /**

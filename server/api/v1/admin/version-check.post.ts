@@ -8,6 +8,7 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { settings } from '~/server/database/schema'
+import { upsertSetting } from '~/server/utils/settings'
 
 export default defineEventHandler(async (event) => {
   // Even though the middleware authenticates this endpoint, an admin token
@@ -62,22 +63,8 @@ export default defineEventHandler(async (event) => {
 
     const latestVersion = (response.tag_name || '').replace(/^v/, '')
 
-    // Store in settings
-    const existing = db.select().from(settings).where(eq(settings.key, 'github_latest_version')).get()
-    if (existing) {
-      db.update(settings).set({ value: latestVersion, updatedAt: new Date() }).where(eq(settings.id, existing.id)).run()
-    } else {
-      db.insert(settings).values({ key: 'github_latest_version', value: latestVersion }).run()
-    }
-
-    // Also store last check time
-    const checkTime = db.select().from(settings).where(eq(settings.key, 'github_last_check')).get()
-    const now = new Date().toISOString()
-    if (checkTime) {
-      db.update(settings).set({ value: now, updatedAt: new Date() }).where(eq(settings.id, checkTime.id)).run()
-    } else {
-      db.insert(settings).values({ key: 'github_last_check', value: now }).run()
-    }
+    upsertSetting('github_latest_version', latestVersion)
+    upsertSetting('github_last_check', new Date().toISOString())
 
     // Get local version for comparison
     const localVersion = db.select().from(settings).where(eq(settings.key, 'addon_version')).get()

@@ -6,69 +6,26 @@
  * that immutable commit so a concurrent push cannot produce a mixed DB state.
  */
 
-import { eq } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
-import { settings, syncHistory } from '~/server/database/schema'
+import { syncHistory } from '~/server/database/schema'
 import {
-  ADDON_DATA_ROOT,
-  MAX_ADDON_LUA_SOURCE_BYTES,
-  assertCompleteAddonLuaSnapshot,
-  parseSafeAddonLuaPath,
-} from '~/server/utils/addonProfileLua'
-import {
-  syncAddonProfileFile,
-  syncWowUpFile,
-  validateAddonProfileFile,
-} from '~/server/utils/addonProfileSync'
-import {
-  CLASS_DATA_ROOT,
-  CLASS_FILE_TO_NAME,
-  MAX_CLASS_LUA_SOURCE_BYTES,
-  syncClassLayoutFile,
-  validateClassLayoutFile,
-} from '~/server/utils/classLayoutSync'
+  applyAddonLuaSnapshot,
+  applyClassLuaSnapshot,
+  fetchAddonLuaSnapshot,
+  fetchClassLuaSnapshot,
+  type GithubDataSyncResult,
+} from '~/server/utils/githubDataSnapshot'
 import { createSyncChangelog } from '~/server/utils/syncChangelog'
 import { syncAddonChangelog, type AddonChangelogSyncStats } from '~/server/utils/syncAddonChangelog'
 import {
   fetchGitHubTextFile,
   getGitHubBranchHeadSha,
-  listGitHubDirectoryFiles,
   parseGitHubRepo,
 } from '~/server/utils/github'
+import { upsertSetting } from '~/server/utils/settings'
 
 const MAIN_BRANCH = 'main'
 const MAX_CHANGELOG_BYTES = 4 * 1024 * 1024
-
-interface SyncResult {
-  file: string
-  addon: string
-  status: string
-}
-
-function upsertSetting(key: string, value: string) {
-  const existing = db.select().from(settings).where(eq(settings.key, key)).get()
-  if (existing) {
-    db.update(settings).set({ value, updatedAt: new Date() }).where(eq(settings.id, existing.id)).run()
-  } else {
-    db.insert(settings).values({ key, value }).run()
-  }
-}
-
-function appendAddonResults(results: SyncResult[], file: string, sync: ReturnType<typeof syncAddonProfileFile>) {
-  for (const change of sync.changes) {
-    results.push({
-      file,
-      addon: `${change.addon}/${change.profile}`,
-      status: change.status,
-    })
-  }
-}
-
-function appendWowUpResults(results: SyncResult[], file: string, sync: ReturnType<typeof syncWowUpFile>) {
-  for (const change of sync.changes) {
-    results.push({ file, addon: `WowUp/${change.name}`, status: change.status })
-  }
-}
 
 export default defineEventHandler(async (event) => {
   const ip = getClientIp(event)
@@ -86,70 +43,20 @@ export default defineEventHandler(async (event) => {
   }
 
   const { owner, repo } = repoRef
-  const results: SyncResult[] = []
+  const results: GithubDataSyncResult[] = []
   let addonChangelog: AddonChangelogSyncStats | null = null
 
   try {
     const snapshotSha = await getGitHubBranchHeadSha({ owner, repo, branch: MAIN_BRANCH, token })
-    const addonFiles = await listGitHubDirectoryFiles({
-      owner,
-      repo,
-      path: ADDON_DATA_ROOT,
-      ref: snapshotSha,
-      token,
-    })
-    const luaFiles = addonFiles.filter(file => file.name.endsWith('.lua')).sort((a, b) => a.path.localeCompare(b.path))
-    assertCompleteAddonLuaSnapshot(luaFiles.map(file => file.name))
-    const addonSources: Array<{ path: string, content: string, isWowUp: boolean }> = []
-    for (const file of luaFiles) {
-      const descriptor = parseSafeAddonLuaPath(file.path)
-      if (file.size > MAX_ADDON_LUA_SOURCE_BYTES) {
-        throw new Error(`${file.path} exceeds the ${MAX_ADDON_LUA_SOURCE_BYTES}-byte safety limit`)
-      }
-      const content = await fetchGitHubTextFile({
-        owner,
-        repo,
-        path: file.path,
-        ref: snapshotSha,
-        token,
-        maxBytes: MAX_ADDON_LUA_SOURCE_BYTES,
-      })
-      validateAddonProfileFile(file.path, content)
-      addonSources.push({ path: file.path, content, isWowUp: descriptor.isWowUp })
-    }
-
-    const classSources: Array<{ path: string, content: string, className: string }> = []
-    for (const [fileName, className] of Object.entries(CLASS_FILE_TO_NAME)) {
-      const classPath = `${CLASS_DATA_ROOT}/${fileName}`
-      const content = await fetchGitHubTextFile({
-        owner,
-        repo,
-        path: classPath,
-        ref: snapshotSha,
-        token,
-        maxBytes: MAX_CLASS_LUA_SOURCE_BYTES,
-      })
-      validateClassLayoutFile(classPath, content)
-      classSources.push({ path: classPath, content, className })
-    }
+    const fetchOpts = { owner, repo, ref: snapshotSha, token }
+    const addonSources = await fetchAddonLuaSnapshot(fetchOpts)
+    const classSources = await fetchClassLuaSnapshot(fetchOpts)
 
     // Every remote read and parser completed before the first mutation. The
     // outer transaction also rolls back earlier files if a DB write fails.
     sqlite.transaction(() => {
-      for (const source of addonSources) {
-        if (source.isWowUp) {
-          appendWowUpResults(results, source.path, syncWowUpFile(source.path, source.content))
-        } else {
-          appendAddonResults(results, source.path, syncAddonProfileFile(source.path, source.content))
-        }
-      }
-      for (const source of classSources) {
-        const sync = syncClassLayoutFile(source.path, source.content)
-        const status = sync.changes.some(change => change.status === 'created')
-          ? 'created'
-          : sync.changes.some(change => change.status === 'updated') ? 'updated' : 'unchanged'
-        results.push({ file: source.path, addon: `${source.className} (${sync.changes.length} specs)`, status })
-      }
+      applyAddonLuaSnapshot(addonSources, results)
+      applyClassLuaSnapshot(classSources, results)
     })()
 
     try {

@@ -121,6 +121,12 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'EXBoss, and KeystoneLoot' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'EXBoss und KeystoneLoot' },
   { page: 'guide', section: 'steps', key: 'step_3', marker: 'KeystoneLoot' },
+  { page: 'home', section: 'features', key: 'feature_3_text', marker: 'split EXBoss names' },
+  { page: 'home', section: 'features', key: 'feature_3_text', marker: 'EXBoss split does not use' },
+  { page: 'home', section: 'features', key: 'feature_3_text', marker: 'EXBoss-Namen', locale: 'de' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'all four Skinning NAMES & COLORS toggles' },
+  { page: 'guide', section: 'steps', key: 'step_5', marker: 'split EXBoss names' },
+  { page: 'guide', section: 'steps', key: 'step_5', marker: 'EXBoss split does not use' },
 ] as const
 
 const LEGACY_FAQ_MARKERS = [
@@ -226,6 +232,9 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 3, marker: 'KeystoneLoot' },
   { category: 'installation', sortOrder: 2, marker: 'KeystoneLoot' },
   { category: 'addons', sortOrder: 4, marker: 'KeystoneLoot' },
+  { category: 'addons', sortOrder: 3, marker: 'all four Skinning NAMES & COLORS toggles' },
+  { category: 'addons', sortOrder: 10, marker: 'Split EXBoss names' },
+  { category: 'addons', sortOrder: 7, marker: 'Smart Tab (chat channel cycling)\n- Quick Focus' },
 ] as const
 
 // Nitro's runNitroPlugins calls plugins without awaiting their promise.
@@ -378,11 +387,12 @@ export default defineNitroPlugin(() => {
     // full NUXT_SYNC_SEEDED_CONTENT syncing is disabled.
     let repairedContent = 0
     for (const legacy of LEGACY_CONTENT_MARKERS) {
+      const locale = 'locale' in legacy ? legacy.locale : DEFAULT_CONTENT_LOCALE
       const replacement = DEFAULT_SITE_CONTENT.find(entry =>
         entry.page === legacy.page
         && entry.section === legacy.section
         && entry.key === legacy.key
-        && entry.locale === DEFAULT_CONTENT_LOCALE,
+        && entry.locale === locale,
       )
       if (!replacement) continue
 
@@ -391,7 +401,7 @@ export default defineNitroPlugin(() => {
           eq(siteContent.page, legacy.page),
           eq(siteContent.section, legacy.section),
           eq(siteContent.key, legacy.key),
-          eq(siteContent.locale, DEFAULT_CONTENT_LOCALE),
+          eq(siteContent.locale, locale),
         ))
         .get()
       if (!row || !row.value.includes(legacy.marker)) continue
@@ -578,6 +588,8 @@ export default defineNitroPlugin(() => {
       || currentRelease.content.includes('KeystoneLoot Best in Slot')
       || currentRelease.content.includes('Archon Best in Slot')
       || currentRelease.content.includes('KeystoneLoot')
+      || currentRelease.content.includes('split EXBoss names')
+      || currentRelease.content.includes('Ellesmere 9.0.7')
     ) {
       db.update(changelogs)
         .set({

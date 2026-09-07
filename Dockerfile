@@ -45,10 +45,14 @@ ENV NODE_ENV=production \
 # dumb-init forwards signals correctly to the Node process, so `docker stop`
 # triggers a clean Nitro shutdown (flushes SQLite WAL, closes sessions).
 RUN apt-get update \
+  && apt-get upgrade -y --no-install-recommends \
   && apt-get install -y --no-install-recommends dumb-init ca-certificates \
   && rm -rf /var/lib/apt/lists/* \
   && rm -rf /usr/local/lib/node_modules/npm \
-  && rm -f /usr/local/bin/npm /usr/local/bin/npx
+            /usr/local/lib/node_modules/corepack \
+            /opt/yarn-v1.22.22 \
+  && rm -f /usr/local/bin/npm /usr/local/bin/npx \
+           /usr/local/bin/corepack /usr/local/bin/yarn /usr/local/bin/yarnpkg
 
 LABEL org.opencontainers.image.title="MagguuUI Website" \
       org.opencontainers.image.description="Nuxt website, admin panel, and API for MagguuUI" \

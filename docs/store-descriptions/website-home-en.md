@@ -12,7 +12,7 @@ Tone match: "Your WoW Interface, perfected." Keep copy short. Prefer seed keys i
 **description** (html-safe):
 
 ```html
-MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>. BigWigs and Northern Sky stay optional.
+MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Install All</strong>. BigWigs and Northern Sky stay optional.
 ```
 
 ## Feature cards
@@ -23,7 +23,7 @@ MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install
 **text** (html-safe):
 
 ```html
-Two sidebar rows: <strong>Options</strong> (Setup, Skinning, QoL) and <strong>Changelog</strong>. Gold <strong>Apply Magguu profiles</strong>, Magguu Settings and Load profiles side by side, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.
+Two sidebar rows: <strong>Options</strong> (Setup, Skinning, QoL) and <strong>Changelog</strong>. Gold <strong>Install All</strong>, Magguu Settings and Load profiles side by side, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.
 ```
 
 ### 2 — Current Retail layouts

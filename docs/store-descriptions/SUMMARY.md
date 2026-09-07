@@ -7,7 +7,7 @@ Drafts live in `/workspace/magguuui-store-descriptions/`. No git tags. No push.
 - **CurseForge + Wago (live):** Correctly say EllesmereUI / `/mui`. Update **one folder** to the **four sibling** MagguuUI group. **Included** QoL line stops at co-tank, stealth, death-release — **omits Smart Tab, Quick Focus, Audio device switcher**. Fixed-tooltip wording was soft (“tooltip stays put”).
 - **WoWInterface (live):** Fuller page, same QoL gap — Death Release / Co-Tank / Stealth / Spell Alerts only; **no Smart Tab, Quick Focus, Audio switcher**.
 - **Website `defaultContent.ts` (seed on box):** Feature 3 lists Smart Tab / Hide Services / Quick Focus / Audio. DualRow NAMES & COLORS is unit-frame and party/raid split names plus class keybinds — no EXBoss split. Website seed is aligned (EllesmereUI 9.0.6+, four siblings, Magguu Settings, Itemlevel 2P/4P). Remaining ElvUI strings are historical FAQ plus init.ts DB-repair markers.
-- **All drafts:** Keep MagguuUI as a **module inside EllesmereUI** (not ElvUI). Require EllesmereUI **9.0.6+**. Four sibling folders: `MagguuUI`, `MagguuUI_Data` ([Data]), `MagguuUI_EUI` ([EUI]), `MagguuUI_Media` ([Media]) — keep all four enabled. Ready for **12.1**, still loads **12.0**.
+- **All drafts:** Keep MagguuUI as a **module inside EllesmereUI** (not ElvUI). Require EllesmereUI **9.0.6+** (live **9.1.6**; MagguuUI bake **9.0.8**). Install All / Magguu Settings / Load Profiles wording per product facts. Four sibling folders: `MagguuUI`, `MagguuUI_Data` ([Data]), `MagguuUI_EUI` ([EUI]), `MagguuUI_Media` ([Media]) — keep all four enabled. Ready for **12.1**, still loads **12.0**.
 
 ## Paste instructions
 
@@ -26,4 +26,4 @@ Drafts live in `/workspace/magguuui-store-descriptions/`. No git tags. No push.
 - [x] Quick Focus  
 - [x] Audio device switcher (Ellesmere speaker)  
 
-Also listed: Death Release, Co-Tank, Stealth/Stance, Spell Alerts. Do not list EXBoss split names.
+Also listed: Death Release, Co-Tank, Stealth/Stance, Spell Alerts. Do not list EXBoss split names. No foreign person/author credits in copy — Magguu/MagguuUI naming only; keep product addon names.

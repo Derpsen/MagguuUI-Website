@@ -35,7 +35,7 @@
 
             <SafeHtml class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed"
               :class="isDark ? 'text-silver-400' : 'text-gray-500'"
-              :html="content?.hero?.description || 'MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>. BigWigs and Northern Sky stay optional.'"
+              :html="content?.hero?.description || 'MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Install All</strong>. BigWigs and Northern Sky stay optional.'"
             />
 
             <div class="flex flex-wrap items-center justify-center gap-4">
@@ -120,7 +120,7 @@ const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
 const siteSettings = usePublicSiteSettings()
 const homeMetaTitle = computed(() => siteSettings.value.meta_title || 'MagguuUI - Your WoW Interface, perfected.')
-const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. BigWigs and Northern Sky stay optional.')
+const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Install All. BigWigs and Northern Sky stay optional.')
 const homeOgImage = computed(() => siteSettings.value.og_image_url || buildPublicUrl('/logo.png'))
 const homeCanonical = buildPublicUrl('/')
 const homeSiteName = computed(() => siteSettings.value.site_name || 'MagguuUI')
@@ -256,7 +256,7 @@ const features = computed(() => [
   {
     emoji: '⚡',
     title: content.value?.features?.feature_1_title || 'Native Ellesmere setup',
-    text: content.value?.features?.feature_1_text || 'Two sidebar rows: Options (Setup, Skinning, QoL) and Changelog. Gold <strong>Apply Magguu profiles</strong>, Magguu Settings, Load profiles, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.',
+    text: content.value?.features?.feature_1_text || 'Two sidebar rows: Options (Setup, Skinning, QoL) and Changelog. Gold <strong>Install All</strong>, Magguu Settings, Load profiles, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.',
   },
   {
     emoji: '🔄',

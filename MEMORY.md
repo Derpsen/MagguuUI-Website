@@ -26,11 +26,27 @@
 - **Optional:** BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, Auctionator.
 - No WindTools.
 
+## MagguuUI product facts (2026-09-07)
+
+- EllesmereUI TOC min **9.0.6+**; **live 9.1.6**; MagguuUI bake still **9.0.8**.
+- Four siblings: MagguuUI / MagguuUI_Data / MagguuUI_EUI / MagguuUI_Media.
+- Ellesmere bake: **delta-only** — keep MagguuUI overlay, fonts, media, scales.
+- **Targeted Spell Bars** (Ellesmere Mythic+ Nearby Cast) **ON**; **EXBoss MythicCast OFF**.
+- MagguuUI_EUI: **Boiling Point** stays; TopBar, Hearth-Picker, MagguuUI FPS/MS removed.
+- AuraBuff count text **CENTER**. Hide Services is secret-safe (do not claim unsafe).
+- Fresh install: **Install All** imports bake + Magguu Look + companions.
+- **Magguu Settings** = overlay/QoL only (no Ellesmere reimport).
+- **Load Profiles** activates — does not reimport bake.
+- Tools Export "Alles an/aus" / NSRT Export-Fix: soft/docs only until shipped.
+- Public copy naming: **Magguu / MagguuUI only** — scrub foreign person/author credits; keep product addon names. Do not credit Magguu as author of foreign addons.
+- Store/Website public changelog = **latest version only**.
+- Design: clean, clear, Ellesmere teal; little gimmick.
+
 ## Design
 
 - Marco's direction for the public home: clean and clear — primary CTA **Install & Setup** (`/guide`), secondary **Import Strings** (`/strings`). Little glass/motion; no hero fade-in or bounce scroll cue.
 - Brand palette (public): Ellesmere teal `#0CD29D` is **primary** via `--color-brand-*` (hover/pressed `#0AA882` / `#088F6F`). `--color-ellesmere` aliases brand-400. Backgrounds are charcoal/near-black — not navy-blue brand dominance. Old Magguu blue is demoted; admin keeps its own accent tokens (light touch only if shared tokens force it). Admin brand marks use `/logo.png` (same as public).
-- Home copy stays factual about EllesmereUI (native module, `/mui` Apply Magguu profiles, optional BigWigs / Northern Sky, Skinning NAMES & COLORS DualRow for unit-frame and party/raid split names plus class-colored keybinds — no EXBoss split, party/raid item level, Smart Tab, Hide Services on General, Quick Focus, audio switcher). Seed defaults live in `server/database/defaultContent.ts` (EN + DE). Known-stale seed claims need a `LEGACY_*` marker in `server/plugins/init.ts` or `NUXT_SYNC_SEEDED_CONTENT=true`.
+- Home copy stays factual about EllesmereUI (native module, `/mui` Install All, Magguu Settings overlay/QoL, Load Profiles activate-only, optional BigWigs / Northern Sky, Skinning NAMES & COLORS DualRow for unit-frame and party/raid split names plus class-colored keybinds — no EXBoss split, party/raid item level, Smart Tab, Hide Services on General, Quick Focus, audio switcher, Targeted Spell Bars). Seed defaults live in `server/database/defaultContent.ts` (EN + DE). Known-stale seed claims need a `LEGACY_*` marker in `server/plugins/init.ts` or `NUXT_SYNC_SEEDED_CONTENT=true`. Public pages prefer Magguu/MagguuUI naming and product addon names — no foreign person/author credits.
 
 ## Important Paths
 

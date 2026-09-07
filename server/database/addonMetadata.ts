@@ -78,7 +78,7 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     name: 'Waypoint UI',
     category: 'optional',
     emoji: '📍',
-    description: 'Optional Magguu import. MagguuUI applies Magguu Waypoint UI settings when the addon is installed.',
+    description: 'Optional MagguuUI import. MagguuUI applies MagguuUI Waypoint UI settings when the addon is installed.',
     sortOrder: 3,
   },
   {
@@ -87,7 +87,7 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     name: 'EXBoss',
     category: 'optional',
     emoji: '📣',
-    description: 'Optional Magguu import and WowUp starter pack. Import writes Magguu appearance and Magguu-named author configs per role (M+/Raid Tank, DPS, Healer). Import again replaces those Magguu configs; other EXBoss profiles stay.',
+    description: 'Optional MagguuUI import and WowUp starter pack. Import writes MagguuUI appearance and MagguuUI role configs (M+/Raid Tank, DPS, Healer). Import again replaces those MagguuUI configs; other EXBoss profiles stay.',
     url: `${CF}/exboss`,
     sortOrder: 4,
   },

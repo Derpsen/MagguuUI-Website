@@ -37,8 +37,8 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
   aligned with the current MagguuUI release: four sibling folders, EllesmereUI
   9.0.6+ (live 9.0.8), Magguu Settings / Load profiles activate-only except
   class layouts, Skinning NAMES & COLORS DualRow
-  (unit-frame | party/raid; EXBoss | keybinds), EXBoss split independent of
-  EXBoss class-color. Do not restore Ashvane.
+  (unit-frame | party/raid; class keybinds). Do not restore EXBoss split names
+  or Ashvane. Magguu no longer ships KeystoneLoot BiS.
 - After behavior changes run `npm run typecheck`, `npm run build`, `npm run verify:smoke`, and `npm test`.
 - After dependency changes also run `npm run audit:prod`.
 - Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier).

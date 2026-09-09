@@ -47,7 +47,7 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
   keybinds). Do not restore EXBoss split names. MagguuUI no longer ships
   KeystoneLoot BiS. Naming: **Magguu / MagguuUI only** in copy/docs — scrub foreign
   person/author credits; keep addon **product** names (EllesmereUI, BigWigs,
-  EXBoss, Northern Sky, Auctionator, …). Do not credit Magguu/Marco as authors of
+  EXBoss, Northern Sky, Auctionator, …). Do not credit Magguu as author of
   foreign addons.
 - After behavior changes run `npm run typecheck`, `npm run build`, `npm run verify:smoke`, and `npm test`.
 - After dependency changes also run `npm run audit:prod`.

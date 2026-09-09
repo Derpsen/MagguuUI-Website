@@ -129,6 +129,20 @@ async function verifyEndpoints() {
   }
 }
 
+async function verifyHotlinkLogos() {
+  for (const path of ['/logo.png', '/logo-300.png']) {
+    const response = await fetch(`${baseUrl}${path}`)
+    if (!response.ok) {
+      fail(`Expected ${path} to return 200, got ${response.status}`)
+    }
+    const corp = (response.headers.get('cross-origin-resource-policy') || '').toLowerCase()
+    if (corp !== 'cross-origin') {
+      fail(`Expected ${path} Cross-Origin-Resource-Policy: cross-origin, got ${corp || '(missing)'}`)
+    }
+    console.log(`[verify] ${path} -> ${response.status} CORP=${corp}`)
+  }
+}
+
 async function verifyPublicApiFlows() {
   const homeContentResponse = await fetch(`${baseUrl}/api/v1/content/home`)
   const homeContentBody = await homeContentResponse.json()
@@ -839,6 +853,7 @@ child.stderr.on('data', (chunk) => {
 try {
   await waitForServer()
   await verifyEndpoints()
+  await verifyHotlinkLogos()
   await verifyPublicApiFlows()
   await verifySyncApiFlow()
   await verifyAdminAuthFlow()

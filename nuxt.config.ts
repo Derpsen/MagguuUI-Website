@@ -19,6 +19,28 @@ const ogImageConfig = {
   ],
 }
 
+const publicSecurityHeaders = {
+  'X-Frame-Options': 'DENY',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Resource-Policy': 'same-origin',
+  'Origin-Agent-Cluster': '?1',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  'X-DNS-Prefetch-Control': 'off',
+  'X-Permitted-Cross-Domain-Policies': 'none',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  // Baseline CSP for non-HTML (JSON/API) responses. For HTML, the
+  // server/plugins/csp-nonce.ts plugin overrides this header with a
+  // per-request nonce + strict-dynamic policy.
+  'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+}
+
+const hotlinkAssetHeaders = {
+  ...publicSecurityHeaders,
+  'Cross-Origin-Resource-Policy': 'cross-origin',
+}
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
@@ -200,23 +222,10 @@ export default defineNuxtConfig({
     '/api/v1/settings': { swr: 300 },
     '/api/v1/latest-change': { swr: 60 },
     '/assets/logo.png': { redirect: '/logo.png' },
+    '/logo.png': { headers: hotlinkAssetHeaders },
+    '/logo-300.png': { headers: hotlinkAssetHeaders },
     '/**': {
-      headers: {
-        'X-Frame-Options': 'DENY',
-        'X-Content-Type-Options': 'nosniff',
-        'Referrer-Policy': 'strict-origin-when-cross-origin',
-        'Cross-Origin-Opener-Policy': 'same-origin',
-        'Cross-Origin-Resource-Policy': 'same-origin',
-        'Origin-Agent-Cluster': '?1',
-        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-        'X-DNS-Prefetch-Control': 'off',
-        'X-Permitted-Cross-Domain-Policies': 'none',
-        'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-        // Baseline CSP for non-HTML (JSON/API) responses. For HTML, the
-        // server/plugins/csp-nonce.ts plugin overrides this header with a
-        // per-request nonce + strict-dynamic policy.
-        'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
-      },
+      headers: publicSecurityHeaders,
     },
   },
 })

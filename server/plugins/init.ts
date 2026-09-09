@@ -611,6 +611,8 @@ export default defineNitroPlugin(() => {
       || currentRelease.content.includes('KeystoneLoot')
       || currentRelease.content.includes('split EXBoss names')
       || currentRelease.content.includes('Ellesmere 9.0.7')
+      || currentRelease.content.includes('bake 9.0.8')
+      || currentRelease.content.includes('Ellesmere 9.0.8')
       || currentRelease.content.includes('Gold Setup is **Install All**')
       || currentRelease.content.includes('### Setup')
       || currentRelease.content.includes('Magguu Look')

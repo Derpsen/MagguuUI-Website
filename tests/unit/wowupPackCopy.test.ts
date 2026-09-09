@@ -20,14 +20,14 @@ describe('WowUp pack copy', () => {
 
     assert.ok(CURRENT_ADDON_CHANGELOG.content.includes('**WowUp starter:** ' + STARTER + '.'))
     assert.ok(CURRENT_ADDON_CHANGELOG.content.includes('**Optional:** ' + OPTIONAL + '.'))
-    assert.equal(CURRENT_ADDON_CHANGELOG.version, 'v12.1.2')
+    assert.equal(CURRENT_ADDON_CHANGELOG.version, 'v12.1.3')
   })
 })
 
 describe('MagguuUI product facts copy', () => {
   it('locks Ellesmere live/bake, Apply Magguu profiles, Targeted Spell Bars, and no foreign author credits', () => {
-    assert.match(CURRENT_ADDON_CHANGELOG.content, /live 9\.1\.6/)
-    assert.match(CURRENT_ADDON_CHANGELOG.content, /bake still \*\*9\.0\.8\*\*/)
+    assert.match(CURRENT_ADDON_CHANGELOG.content, /live \*\*9\.1\.6\*\*/)
+    assert.match(CURRENT_ADDON_CHANGELOG.content, /2026-09-09/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Targeted Spell Bars/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /EXBoss MythicCast OFF/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Boiling Point/)

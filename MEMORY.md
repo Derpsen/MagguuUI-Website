@@ -39,6 +39,7 @@
 - **Load Profiles** activates — does not reimport bake.
 - Tools Export Enable all / Disable all and Northern Sky export sanitize are shipped.
 - Public copy naming: **Magguu / MagguuUI only** — scrub foreign person/author credits; keep product addon names. Do not credit Magguu as author of foreign addons.
+- Store paste (canonical MagguuUI `docs/store-descriptions/`): CurseForge WYSIWYG from preview HTML; Wago Markdown + forgecdn 300×300 logo; WoWI BBCode + GitHub raw `https://raw.githubusercontent.com/Derpsen/MagguuUI-Website/main/public/logo-300.png`. Never `ui.magguu.xyz` in WoWI `[img]`. `/logo.png` and `/logo-300.png` send CORP `cross-origin`; Cloudflare can cache the old `same-origin` header for hours.
 - Store/Website public changelog = **latest version only**.
 - Design: clean, clear, Ellesmere teal; little gimmick.
 

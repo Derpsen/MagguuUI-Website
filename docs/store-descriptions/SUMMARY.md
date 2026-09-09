@@ -5,8 +5,8 @@ Addon paste files live in `MagguuUI/docs/store-descriptions/`. No git tags from 
 ## Paste
 
 1. **CurseForge** — Project 1457810. Keep Description on **WYSIWYG**. Open `curseforge-preview.html` in Chrome, copy the rendered box, paste. Do not paste `.md` or `.html` source — CF prints `**` and `<p>` as text.
-2. **Wago** — Addon `5NR84pK3`. Markdown: `wago-en.md`. Visual editor: copy from `wago-preview.html`. Same text/badges as CurseForge (no 4 folders; 3840x2160). Logo in the Wago UI.
-3. **WoWInterface** — `info27061`. BBCode: `wowinterface-en.bbcode` (same copy as Wago).
+2. **Wago** — Addon `5NR84pK3`. Markdown Write: paste `wago-en.md` (forgecdn 300×300 logo + badges). Preview must render. Same body as CurseForge.
+3. **WoWInterface** — `info27061`. BBCode: `wowinterface-en.bbcode` (same copy as Wago). `[img]url[/img]` only (no width, no `[hr]`). Logo is GitHub raw `https://raw.githubusercontent.com/Derpsen/MagguuUI-Website/main/public/logo-300.png` (300×300). Do not use `ui.magguu.xyz` (CORP hides it), `wsrv.nl`, or any `&` in the image URL.
 4. **Website** — seed `defaultContent.ts` plus Admin `/home`. EN/DE drafts: `website-home-en.md` / `website-home-de.md`.
 
 ## Must appear

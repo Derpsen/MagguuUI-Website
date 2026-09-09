@@ -38,6 +38,8 @@ const publicSecurityHeaders = {
 
 const hotlinkAssetHeaders = {
   ...publicSecurityHeaders,
+  // Store listings (WoWI/Wago) hotlink these PNGs. Default CORP same-origin
+  // hides them on wowinterface.com. Keep this exception on the two logos only.
   'Cross-Origin-Resource-Policy': 'cross-origin',
 }
 

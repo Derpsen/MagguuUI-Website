@@ -49,6 +49,13 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
   person/author credits; keep addon **product** names (EllesmereUI, BigWigs,
   EXBoss, Northern Sky, Auctionator, …). Do not credit Magguu as author of
   foreign addons.
+- Store paste files live in MagguuUI `docs/store-descriptions/` (canonical).
+  CurseForge = WYSIWYG from `curseforge-preview.html`. Wago = Markdown
+  `wago-en.md` (forgecdn logo). WoWI = BBCode `wowinterface-en.bbcode` with
+  GitHub-raw `public/logo-300.png` (300×300). Do not put `ui.magguu.xyz` logos
+  in WoWI `[img]` — default CORP `same-origin` hides them. `/logo.png` and
+  `/logo-300.png` keep routeRule CORP `cross-origin` for hotlink; pages stay
+  `same-origin`.
 - After behavior changes run `npm run typecheck`, `npm run build`, `npm run verify:smoke`, and `npm test`.
 - After dependency changes also run `npm run audit:prod`.
 - Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier).

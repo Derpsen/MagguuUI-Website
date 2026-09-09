@@ -227,7 +227,7 @@ const form = reactive({
   hero: {
     title: "Your WoW Interface,",
     title2: "perfected.",
-    description: "MagguuUI is a native EllesmereUI module for WoW Retail. Install EllesmereUI and the four MagguuUI addon folders, then open /mui and run Install All.",
+    description: "MagguuUI is a native EllesmereUI module for WoW Retail. Install EllesmereUI and the four MagguuUI addon folders, then open /mui and run Apply Magguu profiles.",
   } as Record<string, string>,
   addons: {
     title: "Supported Addons",
@@ -240,13 +240,13 @@ const form = reactive({
   features: {
     feature_1_emoji: "A",
     feature_1_title: "Native Ellesmere setup",
-    feature_1_text: "Two sidebar rows: Options (Setup, Skinning, QoL) and Changelog. Gold Install All, Magguu Settings and Load profiles side by side, required and optional imports, and WowUp copy strings live on Setup.",
+    feature_1_text: "Two sidebar rows: Options (Setup, Skinning, QoL) and Changelog. Gold Apply Magguu profiles, Magguu Settings and Load profiles side by side, required and optional imports, and WowUp copy strings live on Setup.",
     feature_2_emoji: "B",
     feature_2_title: "Current Retail layouts",
     feature_2_text: "Ellesmere profile MagguuUI at scale 0.58 with a fixed tooltip. Class layouts import as Magguu - Class Spec. Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss.",
     feature_3_emoji: "C",
     feature_3_title: "Skinning and QoL included",
-    feature_3_text: "NAMES & COLORS (two columns): split unit-frame and party/raid names plus class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party/raid item level (and 2P/4P), Smart Tab, Hide Services on General, Quick Focus, and an audio device switcher.",
+    feature_3_text: "NAMES & COLORS (two columns): split unit-frame and party/raid names plus class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party/raid item level (and 2P/4P), Smart Tab, Hide Services on General, Quick Focus, an audio device switcher, Boiling Point, and Targeted Spell Bars.",
   } as Record<string, string>,
 })
 

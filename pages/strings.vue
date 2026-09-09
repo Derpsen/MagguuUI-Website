@@ -34,7 +34,7 @@
         </p>
         <p>
           <strong :class="isDark ? 'text-white' : 'text-gray-900'">You usually do not need this page.</strong>
-          Open <code>/mui</code> and run Install All from
+          Open <code>/mui</code> and run Apply Magguu profiles from
           <NuxtLink to="/guide" class="text-brand-400 hover:underline">the installation guide</NuxtLink>.
           This page is a backup if you want to import a single profile by hand, share one, or check what is shipped.
         </p>

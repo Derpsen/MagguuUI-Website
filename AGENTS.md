@@ -41,8 +41,8 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
   Cast) **ON** via Ellesmere — **EXBoss MythicCast OFF** (same feature; do not run
   both), MagguuUI_EUI keeps **Boiling Point** (no TopBar / Hearth-Picker / MagguuUI
   FPS-MS), AuraBuff count text **CENTER**, Hide Services is secret-safe, fresh
-  install **Install All** = bake + Magguu Look + companions; **Magguu Settings** =
-  overlay/QoL only (no Ellesmere reimport); **Load Profiles** activates (does not
+  install gold **Apply Magguu profiles** = bake + Magguu Settings + companions; **Magguu Settings** =
+  overlay/QoL only (no Ellesmere reimport); **Load profiles** activates (does not
   reimport bake). Skinning NAMES & COLORS DualRow (unit-frame | party/raid; class
   keybinds). Do not restore EXBoss split names. MagguuUI no longer ships
   KeystoneLoot BiS. Naming: **Magguu / MagguuUI only** in copy/docs — scrub foreign

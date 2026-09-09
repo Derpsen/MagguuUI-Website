@@ -12,7 +12,7 @@ Tone match: "Your WoW Interface, perfected." Keep copy short. Prefer seed keys i
 **description** (html-safe):
 
 ```html
-MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Install All</strong>. BigWigs and Northern Sky stay optional.
+MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>. BigWigs and Northern Sky stay optional.
 ```
 
 ## Feature cards
@@ -23,7 +23,7 @@ MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install
 **text** (html-safe):
 
 ```html
-Two sidebar rows: <strong>Options</strong> (Setup, Skinning, QoL) and <strong>Changelog</strong>. Gold <strong>Install All</strong>, Magguu Settings and Load profiles side by side, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.
+Two sidebar rows: <strong>Options</strong> (Setup, Skinning, QoL) and <strong>Changelog</strong>. Gold <strong>Apply Magguu profiles</strong>, Magguu Settings and Load profiles side by side, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.
 ```
 
 ### 2 — Current Retail layouts
@@ -41,5 +41,5 @@ Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with 
 **text** (html-safe):
 
 ```html
-Skinning is one <strong>NAMES &amp; COLORS</strong> section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level, <strong>Smart Tab</strong>, Hide Services on General, <strong>Quick Focus</strong>, and an <strong>Audio device switcher</strong> on the Ellesmere speaker.
+Skinning is one <strong>NAMES &amp; COLORS</strong> section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (and 2P/4P), <strong>Smart Tab</strong>, Hide Services on General, <strong>Quick Focus</strong>, an <strong>Audio device switcher</strong> on the Ellesmere speaker, <strong>Boiling Point</strong>, and <strong>Targeted Spell Bars</strong> via Ellesmere (leave EXBoss MythicCast off).
 ```

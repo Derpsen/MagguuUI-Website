@@ -54,7 +54,7 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Install All</strong> — delta-only Ellesmere bake at UI scale 0.58 plus Magguu Look and companions; Magguu Settings is overlay/QoL only; Load profiles activates only. Ellesmere start popup is skipped; MagguuUI Setup opens on that login.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Apply Magguu profiles</strong> — delta-only Ellesmere bake at UI scale 0.58 plus Magguu Settings and companions; Magguu Settings is overlay/QoL only; Load profiles activates only. Ellesmere start popup is skipped; MagguuUI Setup opens on that login.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
@@ -62,7 +62,7 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">WowUp copy popups</strong> — starter pack (EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore) and optional extras (including Premade Groups Filter and Auctionator) copy from Setup. Paste in WowUp. Buttons turn green when the pack addons are present. Install All writes the HUD Edit Mode layout MagguuUI once.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">WowUp copy popups</strong> — starter pack (EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore) and optional extras (including Premade Groups Filter and Auctionator) copy from Setup. Paste in WowUp. Buttons turn green when the pack addons are present. Apply Magguu profiles writes the HUD Edit Mode layout MagguuUI once.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
@@ -70,7 +70,7 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Quality of life</strong> — death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, per-spec proc-overlay hiding, party and raid item level (and 2P/4P), Smart Tab (chat channel cycling), Hide Services on General (secret-safe), Quick Focus (modifier-click to focus), the audio device switcher on the Ellesmere speaker icon, and Targeted Spell Bars via Ellesmere (leave EXBoss MythicCast off).</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Quality of life</strong> — death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, per-spec proc-overlay hiding, party and raid item level (and 2P/4P), Smart Tab (chat channel cycling), Hide Services on General (secret-safe), Quick Focus (modifier-click to focus), the audio device switcher on the Ellesmere speaker icon, Boiling Point, and Targeted Spell Bars via Ellesmere (leave EXBoss MythicCast off).</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
@@ -91,7 +91,7 @@
           copy a class layout for a friend, or just see what is currently shipped, browse the
           <NuxtLink to="/strings" class="text-brand-400 hover:underline">Strings</NuxtLink> page —
           and read the <NuxtLink to="/changelog" class="text-brand-400 hover:underline">Changelog</NuxtLink>
-          for each release. For most users, <code>/mui</code> and Install All are all you need.
+          for each release. For most users, <code>/mui</code> and Apply Magguu profiles are all you need.
         </p>
       </div>
 

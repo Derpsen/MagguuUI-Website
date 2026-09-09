@@ -127,13 +127,16 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'all four Skinning NAMES & COLORS toggles' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'split EXBoss names' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'EXBoss split does not use' },
-  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Gold <strong>Apply Magguu profiles</strong>' },
-  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Goldenes <strong>Magguu-Profile übernehmen</strong>', locale: 'de' },
+  { page: 'home', section: 'hero', key: 'description', marker: 'run <strong>Install All</strong>' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Gold <strong>Install All</strong>' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Goldenes <strong>Install All</strong>', locale: 'de' },
   { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Hide Services on General, <strong>Quick Focus</strong>, and an <strong>Audio device switcher</strong>' },
+  { page: 'home', section: 'features', key: 'feature_3_text', marker: 'and an <strong>Audio device switcher</strong> on the Ellesmere speaker, and <strong>Targeted Spell Bars</strong>' },
   { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Hide Services auf General, <strong>Quick Focus</strong> und ein <strong>Audio-Geräte-Umschalter</strong>', locale: 'de' },
-  { page: 'guide', section: 'intro', key: 'text', marker: 'run Apply Magguu profiles. Magguu Settings, Load profiles' },
-  { page: 'guide', section: 'steps', key: 'step_4_title', marker: '4. Open Setup and Apply Magguu profiles' },
-  { page: 'guide', section: 'steps', key: 'step_4', marker: '**Apply Magguu profiles** is the gold button' },
+  { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Lautsprecher und <strong>Targeted Spell Bars</strong>', locale: 'de' },
+  { page: 'guide', section: 'intro', key: 'text', marker: 'run Install All. Magguu Settings' },
+  { page: 'guide', section: 'steps', key: 'step_4_title', marker: '4. Open Setup and Install All' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: '**Install All** is the gold button' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'appearance and author configs' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'Hide Services on General, Quick Focus (modifier-click to focus), and an audio device switcher' },
 ] as const
@@ -244,14 +247,15 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 3, marker: 'all four Skinning NAMES & COLORS toggles' },
   { category: 'addons', sortOrder: 10, marker: 'Split EXBoss names' },
   { category: 'addons', sortOrder: 7, marker: 'Smart Tab (chat channel cycling)\n- Quick Focus' },
-  { category: 'general', sortOrder: 0, marker: 'run **Apply Magguu profiles**' },
-  { category: 'installation', sortOrder: 0, marker: 'run **Apply Magguu profiles** on Setup' },
-  { category: 'addons', sortOrder: 0, marker: 'What does Apply Magguu profiles configure?' },
+  { category: 'general', sortOrder: 0, marker: 'run **Install All**' },
+  { category: 'installation', sortOrder: 0, marker: 'run **Install All** on Setup' },
+  { category: 'addons', sortOrder: 0, marker: 'What does Install All configure?' },
   { category: 'addons', sortOrder: 0, marker: 'authors per role' },
-  { category: 'addons', sortOrder: 3, marker: 'What is the difference between Apply Magguu profiles and individual profiles?' },
+  { category: 'addons', sortOrder: 3, marker: 'What is the difference between Install All and individual profiles?' },
   { category: 'addons', sortOrder: 7, marker: 'Hide Services on General\n- Quick Focus' },
-  { category: 'troubleshooting', sortOrder: 0, marker: "Apply Magguu profiles didn't do anything" },
-  { category: 'troubleshooting', sortOrder: 2, marker: 're-run **Apply Magguu profiles**' },
+  { category: 'addons', sortOrder: 7, marker: 'leave EXBoss MythicCast off)\n\nSettings are stored' },
+  { category: 'troubleshooting', sortOrder: 0, marker: "Install All didn't do anything" },
+  { category: 'troubleshooting', sortOrder: 2, marker: 're-run **Install All**' },
 ] as const
 
 // Nitro's runNitroPlugins calls plugins without awaiting their promise.
@@ -607,6 +611,10 @@ export default defineNitroPlugin(() => {
       || currentRelease.content.includes('KeystoneLoot')
       || currentRelease.content.includes('split EXBoss names')
       || currentRelease.content.includes('Ellesmere 9.0.7')
+      || currentRelease.content.includes('Gold Setup is **Install All**')
+      || currentRelease.content.includes('### Setup')
+      || currentRelease.content.includes('Magguu Look')
+      || currentRelease.content.includes('TopBar, Hearth-Picker')
     ) {
       db.update(changelogs)
         .set({

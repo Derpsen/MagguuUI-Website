@@ -25,30 +25,33 @@ describe('WowUp pack copy', () => {
 })
 
 describe('MagguuUI product facts copy', () => {
-  it('locks Ellesmere live/bake, Install All, Targeted Spell Bars, and no foreign author credits', () => {
+  it('locks Ellesmere live/bake, Apply Magguu profiles, Targeted Spell Bars, and no foreign author credits', () => {
     assert.match(CURRENT_ADDON_CHANGELOG.content, /live 9\.1\.6/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /bake still \*\*9\.0\.8\*\*/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Targeted Spell Bars/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /EXBoss MythicCast OFF/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Boiling Point/)
-    assert.match(CURRENT_ADDON_CHANGELOG.content, /TopBar, Hearth-Picker, and MagguuUI FPS\/MS overlays are gone/)
+    assert.match(CURRENT_ADDON_CHANGELOG.content, /Apply Magguu profiles/)
+    assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /Install All/)
     assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /Naowh/)
     assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /authors per role/)
+    assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /### Setup/)
 
     const guideIntro = DEFAULT_GUIDE_CONTENT.find(e => e.section === 'intro' && e.key === 'text')
-    assert.ok(guideIntro?.value.includes('Install All'))
+    assert.ok(guideIntro?.value.includes('Apply Magguu profiles'))
     assert.ok(guideIntro?.value.includes('overlay/QoL only'))
 
     const step4 = DEFAULT_GUIDE_CONTENT.find(e => e.section === 'steps' && e.key === 'step_4')
-    assert.ok(step4?.value.includes('**Install All**'))
+    assert.ok(step4?.value.includes('**Apply Magguu profiles**'))
     assert.ok(step4?.value.includes('does **not** reimport the Ellesmere bake'))
     assert.ok(step4?.value.includes('does **not** reimport the bake'))
     assert.doesNotMatch(step4?.value || '', /author configs/)
+    assert.doesNotMatch(step4?.value || '', /Install All/)
 
     const feature1 = DEFAULT_HOME_CONTENT.find(e => e.key === 'feature_1_text' && e.locale === 'en')
-    assert.ok(feature1?.value.includes('Install All'))
+    assert.ok(feature1?.value.includes('Apply Magguu profiles'))
 
-    const installFaq = DEFAULT_FAQS.find(f => f.question === 'What does Install All configure?')
+    const installFaq = DEFAULT_FAQS.find(f => f.question === 'What does Apply Magguu profiles configure?')
     assert.ok(installFaq)
     assert.doesNotMatch(installFaq.answer, /authors per role/)
     assert.match(installFaq.answer, /MagguuUI role configs/)

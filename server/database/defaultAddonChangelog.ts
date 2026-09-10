@@ -5,7 +5,8 @@ export const CURRENT_ADDON_CHANGELOG = {
 
 ### What's new
 
-- Fresh Magguu bake **2026-09-09**: EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, and Waypoint UI. Use **Apply Magguu profiles**.
+- Fresh Magguu bake **2026-09-10**: EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter. Use **Apply Magguu profiles**.
+- BigWigs keystone viewer does not auto-open when Mythic+ ends.
 - MagguuUI no longer includes KeystoneLoot BiS or WowUp optional KeystoneLoot.
 - **WowUp Optional** now includes **Auctionator**. Starter unchanged.
 - **Apply Magguu profiles** enables Ellesmere **Targeted Spell Bars** (Nearby Cast). Leave **EXBoss MythicCast OFF**.
@@ -20,11 +21,9 @@ export const CURRENT_ADDON_CHANGELOG = {
 - **Skinning** is one **NAMES & COLORS** section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers. Magguu Settings turns these on; reset turns them off.
 - **QoL** includes party and raid item level (and 2P/4P) and **Boiling Point**. AuraBuff counts stay centered.
 - **Apply Magguu profiles**, **Load profiles**, and **Magguu Settings** apply MagguuUI chat channels and size (Services off General).
-- **Tools → Exports**: **Enable all** / **Disable all**.
 
 ### Bugfixes
 
-- **Northern Sky** live export no longer errors with LibSerialize \`Unhandled type: function\`.
 - Ellesmere MagguuUI import pre-checks **Window & Tooltip Skins**.
 - MagguuUI no longer ships KeystoneLoot BiS import or optional pack membership.
 - Smart Tab no longer errors when a whisper arrives in combat or an instance (secret player names).

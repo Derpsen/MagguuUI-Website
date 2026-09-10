@@ -30,14 +30,13 @@
 
 - EllesmereUI TOC min **9.0.6+**; **live 9.1.6**; MagguuUI bake still **9.0.8**.
 - Four siblings: MagguuUI / MagguuUI_Data / MagguuUI_EUI / MagguuUI_Media.
-- Ellesmere bake: **delta-only** — keep MagguuUI overlay, fonts, media, scales.
+- Posted Magguu export = **full bake** (2026-09-10-2: Ellesmere type=full, BigWigs, NSRT, EXBoss, WIM, Waypoint UI, HandyNotes, TTT, GTFO, BugSack, PGF). Magguu Settings overlay still does not reimport the bake.
 - **Targeted Spell Bars** (Ellesmere Mythic+ Nearby Cast) **ON**; **EXBoss MythicCast OFF**.
 - MagguuUI_EUI: **Boiling Point** stays; TopBar, Hearth-Picker, MagguuUI FPS/MS removed.
 - AuraBuff count text **CENTER**. Hide Services is secret-safe (do not claim unsafe).
-- Fresh install: **Apply Magguu profiles** imports bake + Magguu Settings + companions.
+- Fresh install: **Apply Magguu profiles** imports bake + Magguu Settings + companions (including dump addons).
 - **Magguu Settings** = overlay/QoL only (no Ellesmere reimport).
-- **Load Profiles** activates — does not reimport bake.
-- Tools Export Enable all / Disable all and Northern Sky export sanitize are shipped.
+- **Load profiles** activates Magguu profiles (including dump addons); does not reimport the bake except a missing dump once. Setup buttons are native share-strings only (BigWigs, Northern Sky, EXBoss).
 - Public copy naming: **Magguu / MagguuUI only** — scrub foreign person/author credits; keep product addon names. Do not credit Magguu as author of foreign addons.
 - Store paste (canonical MagguuUI `docs/store-descriptions/`): CurseForge WYSIWYG from preview HTML; Wago Markdown + forgecdn 300×300 logo; WoWI BBCode + GitHub raw `https://raw.githubusercontent.com/Derpsen/MagguuUI-Website/main/public/logo-300.png`. Never `ui.magguu.xyz` in WoWI `[img]`. `/logo.png` and `/logo-300.png` send CORP `cross-origin`; Cloudflare can cache the old `same-origin` header for hours.
 - Store/Website public changelog = **latest version only**.
@@ -47,7 +46,7 @@
 
 - Public home: clean and clear — primary CTA **Install & Setup** (`/guide`), secondary **Import Strings** (`/strings`). Little glass/motion; no hero fade-in or bounce scroll cue.
 - Brand palette (public): Ellesmere teal `#0CD29D` is **primary** via `--color-brand-*` (hover/pressed `#0AA882` / `#088F6F`). `--color-ellesmere` aliases brand-400. Backgrounds are charcoal/near-black — not navy-blue brand dominance. Old Magguu blue is demoted; admin keeps its own accent tokens (light touch only if shared tokens force it). Admin brand marks use `/logo.png` (same as public).
-- Home copy stays factual about EllesmereUI (native module, `/mui` Apply Magguu profiles, Magguu Settings overlay/QoL, Load profiles activate-only, optional BigWigs / Northern Sky, Skinning NAMES & COLORS DualRow for unit-frame and party/raid split names plus class-colored keybinds — no EXBoss split, party/raid item level, Smart Tab, Hide Services on General, Quick Focus, audio switcher, Boiling Point, Targeted Spell Bars). Seed defaults live in `server/database/defaultContent.ts` (EN + DE). Known-stale seed claims need a `LEGACY_*` marker in `server/plugins/init.ts` or `NUXT_SYNC_SEEDED_CONTENT=true`. Public pages prefer Magguu/MagguuUI naming and product addon names — no foreign person/author credits.
+- Home copy stays factual about EllesmereUI (native module, `/mui` Apply Magguu profiles, Magguu Settings overlay/QoL, Load profiles activate-only, optional companions including dump addons, Skinning NAMES & COLORS DualRow for unit-frame and party/raid split names plus class-colored keybinds — no EXBoss split, party/raid item level, Smart Tab, Hide Services on General, Quick Focus, audio switcher, Boiling Point, Targeted Spell Bars). Seed defaults live in `server/database/defaultContent.ts` (EN + DE). Known-stale seed claims need a `LEGACY_*` marker in `server/plugins/init.ts` or `NUXT_SYNC_SEEDED_CONTENT=true`. Public pages prefer Magguu/MagguuUI naming and product addon names — no foreign person/author credits.
 
 ## Important Paths
 

@@ -281,7 +281,7 @@ const { isLoggedIn } = useAuth()
 const { apiFetch } = useApi()
 usePublicPageSeo({
   title: 'Import Strings',
-  description: 'Browse EllesmereUI, BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss profiles plus Cooldown Viewer layouts and WowUp packs shipped with MagguuUI.',
+  description: 'Browse EllesmereUI, BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter profiles plus Cooldown Viewer layouts and WowUp packs shipped with MagguuUI.',
   path: '/strings',
 })
 

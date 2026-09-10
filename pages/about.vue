@@ -35,7 +35,7 @@
           <strong :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI</strong>,
           MagguuUI [Data], MagguuUI [EUI], and MagguuUI [Media]. Keep all four enabled in Interface/AddOns.
           <strong :class="isDark ? 'text-white' : 'text-gray-900'">EllesmereUI 9.0.6+</strong>
-          must be installed and enabled. BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss are optional;
+          must be installed and enabled. BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter are optional;
           MagguuUI configures them when they are installed and skips them otherwise.
         </p>
       </div>
@@ -54,7 +54,7 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Apply Magguu profiles</strong> — delta-only Ellesmere bake at UI scale 0.58 plus Magguu Settings and companions; Magguu Settings is overlay/QoL only; Load profiles activates only. Ellesmere start popup is skipped; MagguuUI Setup opens on that login.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Apply Magguu profiles</strong> — Magguu Ellesmere profile at UI scale 0.58 plus Magguu Settings and companions; Magguu Settings is overlay/QoL only; Load profiles activates Magguu profiles (including dump addons). Ellesmere start popup is skipped; MagguuUI Setup opens on that login.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />

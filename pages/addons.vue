@@ -8,7 +8,7 @@
         <span class="text-gradient">Addons</span>
       </h1>
       <p class="text-lg" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        EllesmereUI is required. MagguuUI is four sibling addons. BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss are optional Magguu imports.
+        EllesmereUI is required. MagguuUI is four sibling addons. BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter are optional Magguu imports.
       </p>
     </div>
 
@@ -27,7 +27,7 @@
           </p>
           <p class="mt-2">
             <strong :class="isDark ? 'text-white' : 'text-gray-900'">Optional Magguu imports:</strong>
-            BigWigs, Northern Sky Raid Tools, WIM, Waypoint UI, and EXBoss. Setup configures them when they are installed and skips them otherwise.
+            BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter. Apply Magguu profiles configures them when they are installed and skips them otherwise. Setup buttons are BigWigs, Northern Sky, and EXBoss.
           </p>
           <p class="mt-2">
             Copy the WowUp starter pack and optional pack from Magguu Setup (or the Strings page as a backup), then paste in WowUp. MagguuUI does not install addons itself.

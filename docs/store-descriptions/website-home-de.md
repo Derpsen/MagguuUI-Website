@@ -12,7 +12,7 @@ Ton wie EN: klar, kurz, ohne Marketing-Floskeln. Für Admin /home oder Seed `def
 **description** (html-sicher):
 
 ```html
-MagguuUI ist ein natives <strong>EllesmereUI</strong>-Modul für WoW Retail. Installiere <strong>EllesmereUI</strong> und die vier MagguuUI-Addon-Ordner, öffne <code>/mui</code> und starte <strong>Magguu-Profile übernehmen</strong>. BigWigs und Northern Sky bleiben optional.
+MagguuUI ist ein natives <strong>EllesmereUI</strong>-Modul für WoW Retail. Installiere <strong>EllesmereUI</strong> und die vier MagguuUI-Addon-Ordner, öffne <code>/mui</code> und starte <strong>Magguu-Profile übernehmen</strong>. Begleiter-Addons bleiben optional.
 ```
 
 ## Feature-Karten
@@ -32,7 +32,7 @@ Zwei Sidebar-Zeilen: <strong>Options</strong> (Setup, Skinning, QoL) und <strong
 **text** (html-sicher):
 
 ```html
-Ellesmere-Profil <strong>MagguuUI</strong> mit Scale <strong>0.58</strong> und festem Tooltip. Klassen-Layouts als <strong>Magguu - Class Spec</strong>. Optionale Profile für BigWigs, Northern Sky, WIM, Waypoint UI und EXBoss.
+Ellesmere-Profil <strong>MagguuUI</strong> mit Scale <strong>0.58</strong> und festem Tooltip. Klassen-Layouts als <strong>Magguu - Class Spec</strong>. Optionale Magguu-Profile für BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack und Premade Groups Filter.
 ```
 
 ### 3 — Skinning und QoL

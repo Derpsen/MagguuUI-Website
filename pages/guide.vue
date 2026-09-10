@@ -80,7 +80,7 @@
           <span class="text-gradient">{{ visibleTitle || 'Installation Guide' }}</span>
         </h1>
         <p class="text-lg leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-500'">
-          {{ visibleSubtitle || 'Install EllesmereUI 9.0.6+ (live 9.1.6), add the four MagguuUI addon folders, then open /mui and run Apply Magguu profiles. Magguu Settings (overlay/QoL only), Load profiles (activate only), and WowUp copy popups live on Setup. BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.' }}
+          {{ visibleSubtitle || 'Install EllesmereUI 9.0.6+ (live 9.1.6), add the four MagguuUI addon folders, then open /mui and run Apply Magguu profiles. Magguu Settings (overlay/QoL only), Load profiles (activate only), and WowUp copy popups live on Setup. Companion addons (BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter) are optional.' }}
         </p>
       </div>
 

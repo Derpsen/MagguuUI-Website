@@ -27,7 +27,7 @@ describe('WowUp pack copy', () => {
 describe('MagguuUI product facts copy', () => {
   it('locks Ellesmere live/bake, Apply Magguu profiles, Targeted Spell Bars, and no foreign author credits', () => {
     assert.match(CURRENT_ADDON_CHANGELOG.content, /live \*\*9\.1\.6\*\*/)
-    assert.match(CURRENT_ADDON_CHANGELOG.content, /2026-09-09/)
+    assert.match(CURRENT_ADDON_CHANGELOG.content, /2026-09-10/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Targeted Spell Bars/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /EXBoss MythicCast OFF/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Boiling Point/)
@@ -50,6 +50,12 @@ describe('MagguuUI product facts copy', () => {
 
     const feature1 = DEFAULT_HOME_CONTENT.find(e => e.key === 'feature_1_text' && e.locale === 'en')
     assert.ok(feature1?.value.includes('Apply Magguu profiles'))
+
+    const hero = DEFAULT_HOME_CONTENT.find(e => e.key === 'description' && e.locale === 'en')
+    assert.match(hero?.value || '', /Companion addons stay optional/)
+    const feature2 = DEFAULT_HOME_CONTENT.find(e => e.key === 'feature_2_text' && e.locale === 'en')
+    assert.match(feature2?.value || '', /HandyNotes/)
+    assert.match(feature2?.value || '', /Premade Groups Filter/)
 
     const installFaq = DEFAULT_FAQS.find(f => f.question === 'What does Apply Magguu profiles configure?')
     assert.ok(installFaq)

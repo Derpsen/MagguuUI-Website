@@ -35,7 +35,7 @@
 
             <SafeHtml class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed"
               :class="isDark ? 'text-silver-400' : 'text-gray-500'"
-              :html="content?.hero?.description || 'MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>. BigWigs and Northern Sky stay optional.'"
+              :html="content?.hero?.description || 'MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>. Companion addons stay optional.'"
             />
 
             <div class="flex flex-wrap items-center justify-center gap-4">
@@ -66,7 +66,7 @@
             :class="isDark ? 'border-white/8' : 'border-brand-100'">
             <div ref="addonsHeading" class="text-center mb-8 scroll-reveal">
               <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.addons?.title || 'Supported Addons' }}</span></h2>
-              <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'EllesmereUI is required. BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.' }}</p>
+              <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'EllesmereUI is required. BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter are optional.' }}</p>
             </div>
             <div v-if="addonNames.length" ref="addonPills" class="scroll-reveal scroll-reveal-delay-1">
               <div class="flex flex-wrap justify-center gap-3 py-1">
@@ -120,7 +120,7 @@ const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
 const siteSettings = usePublicSiteSettings()
 const homeMetaTitle = computed(() => siteSettings.value.meta_title || 'MagguuUI - Your WoW Interface, perfected.')
-const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. BigWigs and Northern Sky stay optional.')
+const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. Companion addons stay optional.')
 const homeOgImage = computed(() => siteSettings.value.og_image_url || buildPublicUrl('/logo.png'))
 const homeCanonical = buildPublicUrl('/')
 const homeSiteName = computed(() => siteSettings.value.site_name || 'MagguuUI')
@@ -261,7 +261,7 @@ const features = computed(() => [
   {
     emoji: '🔄',
     title: content.value?.features?.feature_2_title || 'Current Retail layouts',
-    text: content.value?.features?.feature_2_text || 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss.',
+    text: content.value?.features?.feature_2_text || 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter.',
   },
   {
     emoji: '🎯',

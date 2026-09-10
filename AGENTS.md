@@ -36,14 +36,17 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
 - MagguuUI public copy (home/guide/FAQ/changelog/addon metadata) must stay
   aligned with the current MagguuUI release: four sibling folders
   (MagguuUI / Data / EUI / Media), EllesmereUI TOC min **9.0.6+** (**live 9.1.6**;
-  MagguuUI bake still **9.0.8**), Ellesmere bake is **delta-only** (keep MagguuUI
-  overlay/fonts/media/scales), **Targeted Spell Bars** (Ellesmere Mythic+ Nearby
+  MagguuUI bake still **9.0.8**), posted Magguu export = **full bake**
+  (2026-09-10-2 includes dump addons), Magguu Settings overlay does not reimport
+  the bake, **Targeted Spell Bars** (Ellesmere Mythic+ Nearby
   Cast) **ON** via Ellesmere — **EXBoss MythicCast OFF** (same feature; do not run
   both), MagguuUI_EUI keeps **Boiling Point** (no TopBar / Hearth-Picker / MagguuUI
   FPS-MS), AuraBuff count text **CENTER**, Hide Services is secret-safe, fresh
-  install gold **Apply Magguu profiles** = bake + Magguu Settings + companions; **Magguu Settings** =
-  overlay/QoL only (no Ellesmere reimport); **Load profiles** activates (does not
-  reimport bake). Skinning NAMES & COLORS DualRow (unit-frame | party/raid; class
+  install gold **Apply Magguu profiles** = bake + Magguu Settings + companions
+  (including dump addons); **Magguu Settings** =
+  overlay/QoL only (no Ellesmere reimport); **Load profiles** activates Magguu
+  profiles including dump addons (does not reimport bake). Setup buttons are
+  BigWigs, Northern Sky, EXBoss. Skinning NAMES & COLORS DualRow (unit-frame | party/raid; class
   keybinds). Do not restore EXBoss split names. MagguuUI no longer ships
   KeystoneLoot BiS. Naming: **Magguu / MagguuUI only** in copy/docs — scrub foreign
   person/author credits; keep addon **product** names (EllesmereUI, BigWigs,

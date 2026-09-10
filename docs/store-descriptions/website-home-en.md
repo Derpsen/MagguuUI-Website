@@ -12,7 +12,7 @@ Tone match: "Your WoW Interface, perfected." Keep copy short. Prefer seed keys i
 **description** (html-safe):
 
 ```html
-MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>. BigWigs and Northern Sky stay optional.
+MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>. Companion addons stay optional.
 ```
 
 ## Feature cards
@@ -32,7 +32,7 @@ Two sidebar rows: <strong>Options</strong> (Setup, Skinning, QoL) and <strong>Ch
 **text** (html-safe):
 
 ```html
-Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss.
+Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter.
 ```
 
 ### 3 — Skinning and QoL

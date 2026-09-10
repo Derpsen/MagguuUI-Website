@@ -52,6 +52,11 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Cooldown layouts are pre-built for every class' },
   { page: 'home', section: 'features', key: 'feature_3_text', marker: 'AutoRoll, audio switching' },
   { page: 'home', section: 'hero', key: 'description', marker: 'Northern Sky Raid Tools stay optional' },
+  { page: 'home', section: 'hero', key: 'description', marker: 'BigWigs and Northern Sky stay optional' },
+  { page: 'home', section: 'hero', key: 'description', marker: 'BigWigs und Northern Sky bleiben optional', locale: 'de' },
+  { page: 'home', section: 'addons', key: 'subtitle', marker: 'BigWigs, LittleWigs, and Northern Sky Raid Tools are optional' },
+  { page: 'home', section: 'addons', key: 'subtitle', marker: 'BigWigs, LittleWigs und Northern Sky Raid Tools sind optional', locale: 'de' },
+  { page: 'guide', section: 'intro', key: 'text', marker: 'BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.' },
   { page: 'home', section: 'hero', key: 'description', marker: 'native EllesmereUI module for WoW Retail. Install <strong>EllesmereUI</strong> and the single' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Tooltips stay at Magguu' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'required and optional Magguu imports, and WowUp copy popups' },
@@ -106,6 +111,8 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'hero', key: 'description', marker: 'and the single <strong>MagguuUI</strong> folder' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'One sidebar row with Setup, Skinning, and QoL' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'Optional profiles for BigWigs, Northern Sky, WIM, and Waypoint UI' },
+  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'Optional profiles for BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss' },
+  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'Optionale Profile für BigWigs, Northern Sky, WIM, Waypoint UI und EXBoss', locale: 'de' },
   { page: 'guide', section: 'intro', key: 'text', marker: 'add the MagguuUI folder, then open /mui' },
   { page: 'guide', section: 'steps', key: 'step_1', marker: 'EllesmereUI 7.9.5 or newer' },
   { page: 'guide', section: 'steps', key: 'step_2', marker: 'The download is **one folder**' },
@@ -137,6 +144,10 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'intro', key: 'text', marker: 'run Install All. Magguu Settings' },
   { page: 'guide', section: 'steps', key: 'step_4_title', marker: '4. Open Setup and Install All' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: '**Install All** is the gold button' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'delta-only Ellesmere bake' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'companions (BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss)' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss' },
+  { page: 'guide', section: 'steps', key: 'step_3', marker: '**WIM**, **Waypoint UI**, and **EXBoss** — optional Magguu imports' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'appearance and author configs' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'Hide Services on General, Quick Focus (modifier-click to focus), and an audio device switcher' },
 ] as const
@@ -251,6 +262,11 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'installation', sortOrder: 0, marker: 'run **Install All** on Setup' },
   { category: 'addons', sortOrder: 0, marker: 'What does Install All configure?' },
   { category: 'addons', sortOrder: 0, marker: 'authors per role' },
+  { category: 'addons', sortOrder: 0, marker: '**Northern Sky Raid Tools**, **WIM**, **Waypoint UI**, and **EXBoss**' },
+  { category: 'addons', sortOrder: 3, marker: 'delta-only Ellesmere bake at scale 0.58' },
+  { category: 'addons', sortOrder: 3, marker: 'Optional: BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss' },
+  { category: 'general', sortOrder: 2, marker: 'Optional Magguu imports also include WIM, Waypoint UI, and EXBoss' },
+  { category: 'installation', sortOrder: 0, marker: 'Optionally install BigWigs, LittleWigs, Northern Sky, WIM, Waypoint UI, and/or EXBoss' },
   { category: 'addons', sortOrder: 3, marker: 'What is the difference between Install All and individual profiles?' },
   { category: 'addons', sortOrder: 7, marker: 'Hide Services on General\n- Quick Focus' },
   { category: 'addons', sortOrder: 7, marker: 'leave EXBoss MythicCast off)\n\nSettings are stored' },
@@ -386,6 +402,11 @@ export default defineNitroPlugin(() => {
       {
         key: 'meta_description',
         value: 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and MagguuUI, open /mui, and run the 4K setup. BigWigs and Northern Sky Raid Tools stay optional.',
+        replacement: SITE_SETTINGS_DEFAULTS.meta_description,
+      },
+      {
+        key: 'meta_description',
+        value: 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. BigWigs and Northern Sky stay optional.',
         replacement: SITE_SETTINGS_DEFAULTS.meta_description,
       },
     ] as const
@@ -617,6 +638,11 @@ export default defineNitroPlugin(() => {
       || currentRelease.content.includes('### Setup')
       || currentRelease.content.includes('Magguu Look')
       || currentRelease.content.includes('TopBar, Hearth-Picker')
+      || currentRelease.content.includes('Fresh Magguu bake **2026-09-09**')
+      || currentRelease.content.includes('**Tools → Exports**')
+      || currentRelease.content.includes('EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, and Waypoint UI')
+      || !currentRelease.content.includes('HandyNotes')
+      || !currentRelease.content.includes('keystone viewer')
     ) {
       db.update(changelogs)
         .set({

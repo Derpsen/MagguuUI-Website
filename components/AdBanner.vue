@@ -16,14 +16,11 @@ const props = defineProps<{
   fullWidth?: boolean
 }>()
 
-const { data: settings } = useFetch('/api/v1/settings')
+const settings = usePublicSiteSettings()
 
-const publisherId = computed(() => settings.value?.data?.adsense_publisher_id || '')
-const enabled = computed(() => settings.value?.data?.adsense_enabled === 'true')
-const slotId = computed(() => {
-  const key = `adsense_slot_${props.placement}` as string
-  return settings.value?.data?.[key] || ''
-})
+const publisherId = computed(() => settings.value.adsense_publisher_id || '')
+const enabled = computed(() => settings.value.adsense_enabled === 'true')
+const slotId = computed(() => settings.value[`adsense_slot_${props.placement}`] || '')
 
 const shouldShow = computed(() => enabled.value && publisherId.value && slotId.value)
 

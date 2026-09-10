@@ -11,6 +11,7 @@
 <script setup lang="ts">
 import VChart from 'vue-echarts'
 import { createChartTheme, type ChartDataPoint } from '~/utils/chartTheme'
+import '~/utils/echartsSetup'
 
 const PALETTE = ['#3b8bff', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16']
 

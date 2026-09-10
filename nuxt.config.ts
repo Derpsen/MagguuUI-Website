@@ -213,6 +213,7 @@ export default defineNuxtConfig({
         'X-Robots-Tag': 'noindex, nofollow, noarchive',
       },
     },
+    '/api/v1/catalog-summary': { swr: 120 },
     '/api/v1/profiles': { swr: 120 },
     '/api/v1/addons': { swr: 120 },
     '/api/v1/wowup': { swr: 120 },

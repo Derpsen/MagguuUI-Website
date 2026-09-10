@@ -11,6 +11,7 @@
 <script setup lang="ts">
 import VChart from 'vue-echarts'
 import { createChartTheme, type ChartDataPoint } from '~/utils/chartTheme'
+import '~/utils/echartsSetup'
 
 const props = withDefaults(defineProps<{
   data: ChartDataPoint[]

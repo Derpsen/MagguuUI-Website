@@ -4,6 +4,7 @@ const isCI = !!process.env.CI
 
 export default defineConfig({
   testDir: 'tests',
+  testMatch: /.*\.spec\.ts/,
   retries: isCI ? 1 : 0,
   workers: 2,
 

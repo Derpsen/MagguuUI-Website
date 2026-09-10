@@ -1,8 +1,8 @@
 /** Shared read models for public projections and authenticated addon sync. */
 
-import { and, asc, eq } from 'drizzle-orm'
+import { and, asc, count, desc, eq, like, sql } from 'drizzle-orm'
 import { db } from '~/server/database'
-import { characterLayouts, profiles, wowupStrings } from '~/server/database/schema'
+import { characterLayouts, changelogs, profiles, wowupStrings } from '~/server/database/schema'
 import { ELVUI_PACKED_PREFIX } from '~/server/utils/addonProfileLua'
 
 interface ReadOptions {
@@ -118,4 +118,68 @@ function isObsoletePackedElvUiDefault(row: typeof profiles.$inferSelect) {
   return row.addon.toLowerCase() === 'elvui'
     && row.profile.toLowerCase() === 'default'
     && row.string.startsWith(ELVUI_PACKED_PREFIX)
+}
+
+/** Homepage stats: names + counts without import-string blobs. */
+export function readCatalogSummary() {
+  const packedElvUiDefault = db
+    .select({ id: profiles.id })
+    .from(profiles)
+    .where(and(
+      eq(profiles.isVisible, true),
+      sql`lower(${profiles.addon}) = 'elvui'`,
+      sql`lower(${profiles.profile}) = 'default'`,
+      like(profiles.string, `${ELVUI_PACKED_PREFIX}%`),
+    ))
+    .get()
+
+  const profileRows = db
+    .select({ addon: profiles.addon, profile: profiles.profile })
+    .from(profiles)
+    .where(eq(profiles.isVisible, true))
+    .orderBy(asc(profiles.sortOrder), asc(profiles.addon), asc(profiles.profile), asc(profiles.id))
+    .all()
+
+  const projected = packedElvUiDefault
+    ? profileRows.filter(row => row.addon.toLowerCase() !== 'elvui' || row.profile.toLowerCase() !== 'default')
+    : profileRows
+
+  const addonNames: string[] = []
+  const seen = new Set<string>()
+  for (const row of projected) {
+    if (seen.has(row.addon)) continue
+    seen.add(row.addon)
+    addonNames.push(row.addon)
+  }
+
+  const layoutCount = db
+    .select({ n: count() })
+    .from(characterLayouts)
+    .where(eq(characterLayouts.isVisible, true))
+    .get()?.n ?? 0
+
+  const wowupCount = db
+    .select({ n: count() })
+    .from(wowupStrings)
+    .where(eq(wowupStrings.isVisible, true))
+    .get()?.n ?? 0
+
+  const latestChangelog = db
+    .select({ id: changelogs.id })
+    .from(changelogs)
+    .where(and(
+      eq(changelogs.isPublished, true),
+      like(changelogs.version, 'v%'),
+    ))
+    .orderBy(desc(changelogs.publishedAt))
+    .limit(1)
+    .get()
+
+  return {
+    addonNames,
+    profileCount: projected.length,
+    layoutCount: Number(layoutCount),
+    wowupCount: Number(wowupCount),
+    changelogCount: latestChangelog ? 1 : 0,
+  }
 }

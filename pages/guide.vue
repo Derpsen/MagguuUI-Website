@@ -168,7 +168,7 @@
                   <div>
                     <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-silver-500' : 'text-gray-400'">Content</label>
                     <ClientOnly>
-                      <TipTapEditor v-model="step.editableContent" placeholder="Step content..." min-height="120px" />
+                      <LazyTipTapEditor v-model="step.editableContent" placeholder="Step content..." min-height="120px" />
                       <template #fallback>
                         <div class="min-h-[120px] rounded-xl" aria-hidden="true" />
                       </template>

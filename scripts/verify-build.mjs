@@ -218,6 +218,22 @@ async function verifyPublicApiFlows() {
     fail('Public WowUp response did not include numeric meta.count')
   }
 
+  const catalogSummaryResponse = await fetch(`${baseUrl}/api/v1/catalog-summary`)
+  const catalogSummaryBody = await catalogSummaryResponse.json()
+
+  if (!catalogSummaryResponse.ok || !catalogSummaryBody?.success || typeof catalogSummaryBody?.data !== 'object') {
+    fail(`Expected catalog summary lookup to succeed, got ${catalogSummaryResponse.status}`)
+  }
+
+  const catalog = catalogSummaryBody.data
+  if (!Array.isArray(catalog?.addonNames)
+    || typeof catalog?.profileCount !== 'number'
+    || typeof catalog?.layoutCount !== 'number'
+    || typeof catalog?.wowupCount !== 'number'
+    || typeof catalog?.changelogCount !== 'number') {
+    fail('Catalog summary response missing addonNames/count fields')
+  }
+
   const publicAddonsResponse = await fetch(`${baseUrl}/api/v1/addons`)
   const publicAddonsBody = await publicAddonsResponse.json()
 
@@ -243,6 +259,7 @@ async function verifyPublicApiFlows() {
   console.log('[verify] /api/v1/profiles -> ' + publicProfilesResponse.status)
   console.log('[verify] /api/v1/layouts -> ' + publicLayoutsResponse.status)
   console.log('[verify] /api/v1/wowup -> ' + publicWowupResponse.status)
+  console.log('[verify] /api/v1/catalog-summary -> ' + catalogSummaryResponse.status)
   console.log('[verify] /api/v1/addons -> ' + publicAddonsResponse.status + ' (total: ' + addonData.total + ')')
 }
 

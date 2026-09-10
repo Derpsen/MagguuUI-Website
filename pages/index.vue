@@ -199,44 +199,21 @@ interface HomeContent {
   [k: string]: unknown
 }
 interface LatestChange { name?: string, action?: string }
-interface GroupedCount { names: string[], count: number }
-
-function countGrouped(data: unknown): GroupedCount {
-  if (!data || typeof data !== 'object') return { names: [], count: 0 }
-  const grouped = data as Record<string, unknown>
-  const names = Object.keys(grouped)
-  const count = names.reduce((total, key) => {
-    const rows = grouped[key]
-    return total + (Array.isArray(rows) ? rows.length : 0)
-  }, 0)
-  return { names, count }
-}
-
-function countList(data: unknown) {
-  return Array.isArray(data) ? data.length : 0
-}
-
-function countKeyed(data: unknown) {
-  return data && typeof data === 'object' ? Object.keys(data).length : 0
+interface CatalogSummary {
+  addonNames: string[]
+  profileCount: number
+  layoutCount: number
+  wowupCount: number
+  changelogCount: number
 }
 
 const { data: contentData } = useFetch<{ data: HomeContent }>('/api/v1/content/home')
-const { data: profileMeta } = useFetch('/api/v1/profiles', {
-  transform: (res: { data?: unknown }) => countGrouped(res?.data),
-})
-const { data: layoutCount } = useFetch('/api/v1/layouts', {
-  transform: (res: { data?: unknown }) => countList(res?.data),
-})
-const { data: wowupCount } = useFetch('/api/v1/wowup', {
-  transform: (res: { data?: unknown }) => countKeyed(res?.data),
-})
-const { data: changelogCount } = useFetch('/api/v1/changelogs', {
-  transform: (res: { data?: unknown }) => countList(res?.data),
-})
+const { data: catalogData } = useFetch<{ data: CatalogSummary }>('/api/v1/catalog-summary')
 const { data: latestChangeData } = useFetch<{ data: LatestChange | null }>('/api/v1/latest-change')
 
 const content = computed(() => contentData.value?.data)
-const addonNames = computed(() => profileMeta.value?.names ?? [])
+const catalog = computed(() => catalogData.value?.data)
+const addonNames = computed(() => catalog.value?.addonNames ?? [])
 
 // Badge text: show last changed string name
 const latestBadgeText = computed(() => {
@@ -271,17 +248,17 @@ const features = computed(() => [
 ])
 
 const totalStrings = computed(() => {
-  return (profileMeta.value?.count ?? 0) + (layoutCount.value ?? 0) + (wowupCount.value ?? 0)
+  return (catalog.value?.profileCount ?? 0) + (catalog.value?.layoutCount ?? 0) + (catalog.value?.wowupCount ?? 0)
 })
 
 const categoryCount = computed(() => {
-  let count = profileMeta.value?.names.length ?? 0
-  if ((layoutCount.value ?? 0) > 0) count++
-  if ((wowupCount.value ?? 0) > 0) count++
-  return count
+  let n = catalog.value?.addonNames.length ?? 0
+  if ((catalog.value?.layoutCount ?? 0) > 0) n++
+  if ((catalog.value?.wowupCount ?? 0) > 0) n++
+  return n
 })
 
-const updateCount = computed(() => changelogCount.value ?? 0)
+const updateCount = computed(() => catalog.value?.changelogCount ?? 0)
 
 // Animated counter — counts up from 0 to target with easeOutCubic.
 // Both SSR and initial-client render show 0 so hydration text matches; the

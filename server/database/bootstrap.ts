@@ -12,6 +12,7 @@ export const DATABASE_BOOTSTRAP_SQL = `
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
   );
   CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_addon_profile ON profiles(addon, profile);
+  CREATE INDEX IF NOT EXISTS idx_profiles_visible_sort ON profiles(is_visible, sort_order);
 
   CREATE TABLE IF NOT EXISTS wowup_strings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,6 +25,7 @@ export const DATABASE_BOOTSTRAP_SQL = `
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
   );
+  CREATE INDEX IF NOT EXISTS idx_wowup_strings_visible_sort ON wowup_strings(is_visible, sort_order);
 
   CREATE TABLE IF NOT EXISTS character_layouts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,6 +42,7 @@ export const DATABASE_BOOTSTRAP_SQL = `
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
   );
   CREATE INDEX IF NOT EXISTS idx_character_layouts_class_spec ON character_layouts(class_name, spec);
+  CREATE INDEX IF NOT EXISTS idx_character_layouts_visible_sort ON character_layouts(is_visible, sort_order);
 
   CREATE TABLE IF NOT EXISTS field_definitions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -90,6 +93,7 @@ export const DATABASE_BOOTSTRAP_SQL = `
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
   );
+  CREATE INDEX IF NOT EXISTS idx_faqs_visible_sort ON faqs(is_visible, sort_order);
 
   CREATE TABLE IF NOT EXISTS activity_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -279,6 +283,10 @@ export const SAFE_COLUMN_MIGRATIONS = [
   'CREATE INDEX IF NOT EXISTS idx_webauthn_challenges_expires_at ON webauthn_challenges(expires_at)',
   'CREATE INDEX IF NOT EXISTS idx_changelogs_published ON changelogs(is_published, published_at)',
   'CREATE INDEX IF NOT EXISTS idx_character_layouts_class_spec ON character_layouts(class_name, spec)',
+  'CREATE INDEX IF NOT EXISTS idx_profiles_visible_sort ON profiles(is_visible, sort_order)',
+  'CREATE INDEX IF NOT EXISTS idx_wowup_strings_visible_sort ON wowup_strings(is_visible, sort_order)',
+  'CREATE INDEX IF NOT EXISTS idx_character_layouts_visible_sort ON character_layouts(is_visible, sort_order)',
+  'CREATE INDEX IF NOT EXISTS idx_faqs_visible_sort ON faqs(is_visible, sort_order)',
 ] as const
 
 type SqliteBootstrapConnection = {

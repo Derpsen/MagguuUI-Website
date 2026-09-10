@@ -34,6 +34,7 @@ export const profiles = sqliteTable('profiles', {
   ...timestamps,
 }, (table) => ({
   addonProfileIdx: uniqueIndex('idx_profiles_addon_profile').on(table.addon, table.profile),
+  visibleSortIdx: index('idx_profiles_visible_sort').on(table.isVisible, table.sortOrder),
 }))
 
 // ─── WowUp Import Strings ─────────────────────────
@@ -48,7 +49,9 @@ export const wowupStrings = sqliteTable('wowup_strings', {
   isVisible: integer('is_visible', { mode: 'boolean' }).notNull().default(true),
   customFields: text('custom_fields'), // JSON
   ...timestamps,
-})
+}, (table) => ({
+  visibleSortIdx: index('idx_wowup_strings_visible_sort').on(table.isVisible, table.sortOrder),
+}))
 
 // ─── Character Layouts ─────────────────────────────
 // UI layouts per class/spec with screenshots
@@ -67,6 +70,7 @@ export const characterLayouts = sqliteTable('character_layouts', {
   ...timestamps,
 }, (table) => ({
   classSpecIdx: index('idx_character_layouts_class_spec').on(table.className, table.spec),
+  visibleSortIdx: index('idx_character_layouts_visible_sort').on(table.isVisible, table.sortOrder),
 }))
 
 // ─── Field Definitions ─────────────────────────────
@@ -131,7 +135,9 @@ export const faqs = sqliteTable('faqs', {
   sortOrder: integer('sort_order').notNull().default(0),
   isVisible: integer('is_visible', { mode: 'boolean' }).notNull().default(true),
   ...timestamps,
-})
+}, (table) => ({
+  visibleSortIdx: index('idx_faqs_visible_sort').on(table.isVisible, table.sortOrder),
+}))
 
 // ─── Activity Log ─────────────────────────────────
 // Tracks all admin actions (string changes, content edits, etc.)

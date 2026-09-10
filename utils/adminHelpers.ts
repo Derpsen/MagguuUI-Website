@@ -22,23 +22,11 @@ export function timeAgo(value: string | number | Date | null): string {
   return date.toLocaleDateString('en', { day: '2-digit', month: 'short' })
 }
 
-export function absoluteDate(value: string | number | Date | null): string {
-  const date = toDate(value)
-  if (!date) return ''
-  return date.toLocaleDateString('en', { day: '2-digit', month: 'short' })
-}
-
 export function actionIcon(action: string): string {
   if (action === 'created') return 'i-heroicons-plus-circle'
   if (action === 'updated') return 'i-heroicons-pencil-square'
   if (action === 'deleted') return 'i-heroicons-trash'
   return 'i-heroicons-information-circle'
-}
-
-export function activityTone(action: string): string {
-  if (action === 'created') return 'admin-tone-success'
-  if (action === 'deleted') return 'admin-tone-danger'
-  return 'admin-tone-brand'
 }
 
 export function entityTypeLabel(type: string): string {

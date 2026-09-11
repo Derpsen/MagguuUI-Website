@@ -249,26 +249,23 @@ export function useStringManager<T extends StringItem = StringItem>(config: Stri
     resetDrag()
     if (fromIdx === null || fromIdx === toIdx) return
 
-    const ordered = [...filteredItems]
-    const [moved] = ordered.splice(fromIdx, 1)
-    if (!moved) return
-    ordered.splice(toIdx, 0, moved)
+    const fromItem = filteredItems[fromIdx]
+    const toItem = filteredItems[toIdx]
+    if (!fromItem || !toItem) return
 
-    // Re-sort the full items array to match the new filtered order
-    const idOrder = ordered.map(item => item.id)
-    items.value = [...items.value].sort((a, b) => {
-      const aIndex = idOrder.indexOf(a.id)
-      const bIndex = idOrder.indexOf(b.id)
-      if (aIndex === -1 && bIndex === -1) return 0
-      if (aIndex === -1) return 1
-      if (bIndex === -1) return -1
-      return aIndex - bIndex
-    })
+    const full = [...items.value]
+    const fromFull = full.findIndex(item => item.id === fromItem.id)
+    const toFull = full.findIndex(item => item.id === toItem.id)
+    if (fromFull < 0 || toFull < 0) return
+    const [moved] = full.splice(fromFull, 1)
+    if (!moved) return
+    full.splice(toFull, 0, moved)
+    items.value = full
 
     try {
       await apiFetch(`${config.apiBase}/reorder`, {
         method: 'POST',
-        body: { items: ordered.map((item, idx) => ({ id: item.id, sortOrder: idx })) },
+        body: { items: full.map((item, idx) => ({ id: item.id, sortOrder: idx })) },
       })
     } catch {
       toast.add({ title: 'Error reordering', color: 'error' })

@@ -10,7 +10,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_2_title', value: 'Current Retail layouts', type: 'text', sortOrder: 3, locale: 'en' },
-  { page: 'home', section: 'features', key: 'feature_2_text', value: 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter.', type: 'html', sortOrder: 4, locale: 'en' },
+  { page: 'home', section: 'features', key: 'feature_2_text', value: 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders.', type: 'html', sortOrder: 4, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_2_icon', value: 'i-heroicons-squares-2x2', type: 'text', sortOrder: 5, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_3_title', value: 'Skinning and QoL included', type: 'text', sortOrder: 6, locale: 'en' },
@@ -21,7 +21,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'features_heading', key: 'subtitle', value: 'A 4K EllesmereUI setup with optional raid tools', type: 'text', sortOrder: 1, locale: 'en' },
 
   { page: 'home', section: 'addons', key: 'title', value: 'Supported Addons', type: 'text', sortOrder: 0, locale: 'en' },
-  { page: 'home', section: 'addons', key: 'subtitle', value: 'EllesmereUI is required. BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter are optional.', type: 'text', sortOrder: 1, locale: 'en' },
+  { page: 'home', section: 'addons', key: 'subtitle', value: 'EllesmereUI is required. BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional.', type: 'text', sortOrder: 1, locale: 'en' },
 
   { page: 'home', section: 'hero', key: 'title', value: 'Dein WoW-Interface,', type: 'text', sortOrder: 0, locale: 'de' },
   { page: 'home', section: 'hero', key: 'title2', value: 'perfektioniert.', type: 'text', sortOrder: 1, locale: 'de' },
@@ -103,7 +103,7 @@ There is no paid tier, no premium content, and no ads.`,
 - **EllesmereUI 9.0.6+** — required host UI
 - **MagguuUI** as four sibling AddOns folders: MagguuUI, MagguuUI_Data (MagguuUI [Data]), MagguuUI_EUI ([EUI]), and MagguuUI_Media ([Media]). Keep all four enabled.
 
-**BigWigs**, **LittleWigs**, and **Northern Sky Raid Tools** are optional. MagguuUI configures them when they are installed and skips them otherwise. Optional Magguu profiles also include EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter.`,
+**BigWigs**, **LittleWigs**, and **Northern Sky Raid Tools** are optional. MagguuUI configures them when they are installed and skips them otherwise. Optional Magguu profiles also include EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders.`,
     sortOrder: 2,
   },
   {
@@ -178,7 +178,7 @@ It will not load unless EllesmereUI is installed **and enabled**.`,
 - **EllesmereUI** profile \`MagguuUI\` at UI scale **0.58**
 - **BigWigs** profile and boss options, if BigWigs is present (MagguuUI accepts the BigWigs MagguuUI popup for you)
 - **Northern Sky Raid Tools** and **EXBoss** (MagguuUI appearance and MagguuUI role configs; re-import replaces MagguuUI configs), if those addons are present
-- **WIM**, **Waypoint UI**, **HandyNotes**, **Talent Tree Tweaks**, **GTFO**, **BugSack**, and **Premade Groups Filter**, if those addons are present
+- **WIM**, **Waypoint UI**, **HandyNotes**, **Talent Tree Tweaks**, **GTFO**, **BugSack**, **Premade Groups Filter**, and **Smart Reminders**, if those addons are present
 - **Cooldown Viewer** class layouts, then a reload confirm popup
 
 Per-addon MagguuUI imports live on **Setup**. Gold **Apply Magguu profiles** (bake + Magguu Settings + companions), then **Magguu Settings** (overlay/QoL only) and **Load profiles** (activate only) side by side, plus WowUp copy popups.`,
@@ -209,7 +209,7 @@ Do **not** delete \`MagguuUI_Data\`, \`MagguuUI_EUI\`, or \`MagguuUI_Media\` —
   {
     category: 'addons',
     question: 'What is the difference between Apply Magguu profiles and individual profiles?',
-    answer: `**Apply Magguu profiles** — Magguu Ellesmere profile at scale 0.58 plus Magguu Settings, then BigWigs / Northern Sky / EXBoss / WIM / Waypoint UI / HandyNotes / Talent Tree Tweaks / GTFO / BugSack / Premade Groups Filter if present, then class layouts.
+    answer: `**Apply Magguu profiles** — Magguu Ellesmere profile at scale 0.58 plus Magguu Settings, then BigWigs / Northern Sky / EXBoss / WIM / Waypoint UI / HandyNotes / Talent Tree Tweaks / GTFO / BugSack / Premade Groups Filter / Smart Reminders if present, then class layouts.
 
 **Individual profiles** — import only the piece you want from **Setup**. Required: EllesmereUI and class layouts. Optional Setup buttons: BigWigs, Northern Sky, EXBoss, Smart Reminders. Dump addons apply with Apply Magguu profiles and Load profiles.
 

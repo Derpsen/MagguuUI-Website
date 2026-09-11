@@ -17,7 +17,7 @@
         :key="tab.id"
         class="admin-segmented__button"
         :class="activeTab === tab.id ? 'admin-segmented__button--active' : ''"
-        @click="activeTab = tab.id"
+        @click="switchTab(tab.id)"
       >
         {{ tab.label }}
       </button>
@@ -458,12 +458,18 @@ const tabs: { id: TabId; label: string }[] = [
   { id: "attempts", label: "Login Attempts" },
 ]
 const route = useRoute()
+const router = useRouter()
 const validUserTabs: TabId[] = ['accounts', 'sessions', 'attempts']
 const activeTab = ref<TabId>(validUserTabs.includes(route.query.tab as TabId) ? route.query.tab as TabId : 'accounts')
 
 watch(() => route.query.tab, (tab) => {
   if (validUserTabs.includes(tab as TabId)) activeTab.value = tab as TabId
 })
+
+function switchTab(tab: TabId) {
+  activeTab.value = tab
+  router.replace({ query: { ...route.query, tab } })
+}
 
 // ─── Data ───
 const userList = ref<User[]>([])

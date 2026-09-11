@@ -23,12 +23,12 @@ export default defineEventHandler(async (event) => {
     characterLayouts: allLayouts,
     changelogs: allChangelogs,
     siteContent: allContent,
-    settings: allSettings.filter(s => !s.key.startsWith('github_')), // Don't export github tokens
+    settings: allSettings.filter(s => !/(token|secret|password)/i.test(s.key)),
   }
 
   // Set download headers
   setHeader(event, 'Content-Type', 'application/json')
-  setHeader(event, 'Content-Disposition', `attachment; filename="magguui-export-${new Date().toISOString().slice(0, 10)}.json"`)
+  setHeader(event, 'Content-Disposition', `attachment; filename="magguuui-export-${new Date().toISOString().slice(0, 10)}.json"`)
 
   return exportData
 })

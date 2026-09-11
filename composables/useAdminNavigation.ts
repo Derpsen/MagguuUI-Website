@@ -173,8 +173,8 @@ const adminSections: AdminNavSection[] = [
         label: 'Fields',
         heading: 'Custom Fields',
         icon: 'i-heroicons-adjustments-horizontal',
-        description: 'Custom metadata fields for profiles, layouts and wowup strings.',
-        hint: 'Custom fields should stay predictable: a clear label, a stable key and one type.',
+        description: 'JSON metadata keys for string import/API payloads.',
+        hint: 'Define keys here. Values travel with profile, layout and WowUp JSON import/export.',
       },
       {
         to: '/admin/system/activity',

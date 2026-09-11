@@ -66,7 +66,7 @@
             :class="isDark ? 'border-white/8' : 'border-brand-100'">
             <div ref="addonsHeading" class="text-center mb-8 scroll-reveal">
               <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.addons?.title || 'Supported Addons' }}</span></h2>
-              <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'EllesmereUI is required. BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter are optional.' }}</p>
+              <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'EllesmereUI is required. BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional.' }}</p>
             </div>
             <div v-if="addonNames.length" ref="addonPills" class="scroll-reveal scroll-reveal-delay-1">
               <div class="flex flex-wrap justify-center gap-3 py-1">

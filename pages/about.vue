@@ -35,7 +35,7 @@
           <strong :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI</strong>,
           MagguuUI [Data], MagguuUI [EUI], and MagguuUI [Media]. Keep all four enabled in Interface/AddOns.
           <strong :class="isDark ? 'text-white' : 'text-gray-900'">EllesmereUI 9.0.6+</strong>
-          must be installed and enabled. BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter are optional;
+          must be installed and enabled. BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional;
           MagguuUI configures them when they are installed and skips them otherwise.
         </p>
       </div>

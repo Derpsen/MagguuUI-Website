@@ -281,12 +281,22 @@ async function saveInline(faq: FaqItem) {
 
 // Reorder
 async function moveItem(faq: FaqItem, direction: number) {
-  const idx = items.value.indexOf(faq)
+  const visible = filteredItems.value
+  const idx = visible.findIndex(item => item.id === faq.id)
   const target = idx + direction
-  if (target < 0 || target >= items.value.length) return
+  if (idx < 0 || target < 0 || target >= visible.length) return
+  const fromId = visible[idx]?.id
+  const toId = visible[target]?.id
+  if (fromId === undefined || toId === undefined) return
 
-  const [moved] = items.value.splice(idx, 1)
-  items.value.splice(target, 0, moved)
+  const full = [...items.value]
+  const fromFull = full.findIndex(item => item.id === fromId)
+  const toFull = full.findIndex(item => item.id === toId)
+  if (fromFull < 0 || toFull < 0) return
+  const [moved] = full.splice(fromFull, 1)
+  if (!moved) return
+  full.splice(toFull, 0, moved)
+  items.value = full
 
   reordering.value = true
   try {

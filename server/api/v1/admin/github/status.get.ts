@@ -8,19 +8,22 @@ import { desc, count, eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { syncHistory, settings } from '~/server/database/schema'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const hasToken = !!config.githubToken
   const repo = config.githubRepo || 'Derpsen/MagguuUI'
+  const query = getQuery(event)
+  const syncPage = Math.max(1, Number(query.syncPage) || 1)
+  const syncLimit = Math.min(50, Math.max(1, Number(query.syncLimit) || 10))
+  const syncOffset = (syncPage - 1) * syncLimit
 
-  // Get recent syncs
+  const totalSyncs = db.select({ count: count() }).from(syncHistory).get()
+  const total = totalSyncs?.count || 0
   const recentSyncs = db.select().from(syncHistory)
     .orderBy(desc(syncHistory.createdAt))
-    .limit(20)
+    .limit(syncLimit)
+    .offset(syncOffset)
     .all()
-
-  // Get sync stats
-  const totalSyncs = db.select({ count: count() }).from(syncHistory).get()
 
   // Get stored version info
   let latestVersion: string | null = null
@@ -40,10 +43,13 @@ export default defineEventHandler(async () => {
   return apiSuccess({
     configured: hasToken,
     repo,
-    totalSyncs: totalSyncs?.count || 0,
+    totalSyncs: total,
     latestVersion,
     localVersion,
     lastCheck,
+    syncPage,
+    syncLimit,
+    syncTotalPages: Math.max(1, Math.ceil(total / syncLimit)),
     recentSyncs: recentSyncs.map(s => ({
       id: s.id,
       trigger: s.triggerSource,

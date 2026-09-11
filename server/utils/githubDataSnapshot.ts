@@ -116,7 +116,7 @@ export async function fetchAddonLuaSnapshot(
   return sources
 }
 
-/** Fetch+validate every supported Data/Classes/*.lua at one SHA. */
+/** Fetch+validate every supported MagguuUI_Data/Classes/*.lua at one SHA. */
 export async function fetchClassLuaSnapshot(
   options: GithubSnapshotFetchOptions,
 ): Promise<ClassLuaSource[]> {

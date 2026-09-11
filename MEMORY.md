@@ -4,7 +4,7 @@
 
 - Project: `MagguuUI-Website`
 - Stack: Nuxt 4 (caret ^4.4.8; lock may resolve 4.5.x), Vue 3.5, TypeScript 6, Nuxt UI 4.10, Tailwind CSS 4.3 (CSS-first), Drizzle 0.45, SQLite via `better-sqlite3` 13 (WAL, busy_timeout=5000), Node 24, nuxt-og-image 6 with Satori. Validation: Zod. Lint: Nuxt ESLint Flat Config (no separate Prettier).
-- Deployment: Docker on Unraid — image built by `.github/workflows/docker.yml` and published to GHCR; Unraid `update_container MagguuUI`. Live 2026-09-10: homepage catalog-summary + admin-only ECharts.
+- Deployment: Docker on Unraid — image built by `.github/workflows/docker.yml` and published to GHCR; Unraid `update_container MagguuUI`. Live 2026-09-11: homepage catalog-summary + admin-only ECharts. GitHub sync reads MagguuUI_Data/AddOns + Classes.
 - Repo contains the public website, admin panel, and Nitro/API backend in one app
 
 ## Agent / Buddy ops
@@ -51,6 +51,7 @@
 - Public copy naming: **Magguu / MagguuUI only** — scrub foreign person/author credits; keep product addon names. Do not credit Magguu as author of foreign addons.
 - Store paste (canonical MagguuUI `docs/store-descriptions/`): CurseForge WYSIWYG from preview HTML; Wago Markdown + forgecdn 300×300 logo; WoWI BBCode + GitHub raw `https://raw.githubusercontent.com/Derpsen/MagguuUI-Website/main/public/logo-300.png`. Never `ui.magguu.xyz` in WoWI `[img]`. `/logo.png` and `/logo-300.png` send CORP `cross-origin`; Cloudflare can cache the old `same-origin` header for hours.
 - Store/Website public changelog = **latest version only**.
+- GitHub addon/class sync paths: `MagguuUI_Data/AddOns/*.lua` and `MagguuUI_Data/Classes/*.lua` (not the retired nested `Data/` folder).
 - Design: clean, clear, Ellesmere teal; little gimmick.
 
 ## Design

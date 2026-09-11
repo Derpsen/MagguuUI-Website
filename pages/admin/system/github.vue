@@ -618,7 +618,7 @@ async function doExport() {
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement("a")
     anchor.href = url
-    anchor.download = `magguui-export-${new Date().toISOString().slice(0, 10)}.json`
+    anchor.download = `magguuui-export-${new Date().toISOString().slice(0, 10)}.json`
     document.body.appendChild(anchor)
     anchor.click()
     document.body.removeChild(anchor)

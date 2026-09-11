@@ -1,4 +1,4 @@
-/** Shared parser and DB upserts for Data/Classes/*.lua. */
+/** Shared parser and DB upserts for MagguuUI_Data/Classes/*.lua. */
 
 import { and, eq } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
@@ -24,7 +24,7 @@ export const CLASS_FILE_TO_NAME: Readonly<Record<string, string>> = {
   'Warrior.lua': 'Warrior',
 }
 
-const SAFE_CLASS_PATH_RE = /^Data\/Classes\/([A-Za-z][A-Za-z0-9_]*)\.lua$/
+const SAFE_CLASS_PATH_RE = /^MagguuUI_Data\/Classes\/([A-Za-z][A-Za-z0-9_]*)\.lua$/
 
 export interface ClassLayoutSyncChange {
   spec: string

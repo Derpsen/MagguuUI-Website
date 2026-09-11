@@ -1,12 +1,12 @@
 /**
- * Pure parser/contract for profile payloads stored in Data/AddOns/*.lua.
+ * Pure parser/contract for profile payloads stored in MagguuUI_Data/AddOns/*.lua.
  *
  * This module deliberately has no database, Nitro, or GitHub dependencies so
  * both webhook and manual sync paths use exactly the same parsing rules and the
  * contract can be covered with focused unit tests.
  */
 
-export const ADDON_REPO_DATA_ROOT = 'Data'
+export const ADDON_REPO_DATA_ROOT = 'MagguuUI_Data'
 export const ADDON_DATA_ROOT = `${ADDON_REPO_DATA_ROOT}/AddOns`
 export const MAX_IMPORT_STRING_BYTES = 5 * 1024 * 1024
 export const MAX_ADDON_LUA_SOURCE_BYTES = MAX_IMPORT_STRING_BYTES * 4 + 1024 * 1024
@@ -16,9 +16,20 @@ export const REQUIRED_ADDON_LUA_FILES = [
   'EllesmereUI.lua',
   'NorthernSkyRaidTools.lua',
 ] as const
-export const OPTIONAL_ADDON_LUA_FILES = ['WowUp.lua', 'WIM.lua', 'WaypointUI.lua'] as const
+export const OPTIONAL_ADDON_LUA_FILES = [
+  'WowUp.lua',
+  'WIM.lua',
+  'WaypointUI.lua',
+  'EXBoss.lua',
+  'HandyNotes.lua',
+  'TalentTreeTweaks.lua',
+  'GTFO.lua',
+  'BugSack.lua',
+  'PremadeGroupsFilter.lua',
+  'NaowhSmartReminders.lua',
+] as const
 
-const SAFE_ADDON_PATH_RE = /^Data\/AddOns\/([A-Za-z][A-Za-z0-9_]*)\.lua$/
+const SAFE_ADDON_PATH_RE = /^MagguuUI_Data\/AddOns\/([A-Za-z][A-Za-z0-9_]*)\.lua$/
 const LUA_IDENTIFIER_RE = /[A-Za-z0-9_]/
 const UI_SCALE_PROFILE = 'uiscale'
 const TABLE_PROFILE_NAMES: Readonly<Record<string, readonly string[]>> = {

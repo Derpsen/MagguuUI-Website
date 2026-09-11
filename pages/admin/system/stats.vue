@@ -255,7 +255,12 @@ const validTabs = tabs.map(t => t.id) as string[]
 const activeTab = ref<TabId>(validTabs.includes(route.query.tab as string) ? route.query.tab as TabId : 'overview')
 
 watch(activeTab, (tab) => {
+  if (route.query.tab === tab) return
   router.replace({ query: { ...route.query, tab } })
+})
+
+watch(() => route.query.tab, (tab) => {
+  if (validTabs.includes(tab as string)) activeTab.value = tab as TabId
 })
 
 const lastLoaded = ref<Date | null>(null)

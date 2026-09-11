@@ -9,9 +9,11 @@
  *  - type (profile|wowup|layout|addon|changelog|content|faq|user|api-key|field|setting)
  *  - dateFrom (ISO date string, e.g. "2026-01-01")
  *  - dateTo (ISO date string, e.g. "2026-02-19")
+ *  - search (matches entity name or details)
+ *  - sort (asc|desc, default desc)
  */
 
-import { desc, eq, and, count, gte, lte } from 'drizzle-orm'
+import { desc, asc, eq, and, count, gte, lte, like, or } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { activityLog } from '~/server/database/schema'
 
@@ -24,6 +26,8 @@ export default defineEventHandler(async (event) => {
   const typeFilter = query.type as string | undefined
   const dateFrom = query.dateFrom as string | undefined
   const dateTo = query.dateTo as string | undefined
+  const search = typeof query.search === 'string' ? query.search.replace(/[%_]/g, '').trim() : ''
+  const newestFirst = query.sort !== 'asc'
 
   // Mirrors the entityType union in server/utils/activityLog.ts. Anything
   // not listed here is silently dropped instead of returning unfiltered rows.
@@ -48,8 +52,13 @@ export default defineEventHandler(async (event) => {
     const toTs = Math.floor(new Date(dateTo + 'T23:59:59Z').getTime() / 1000)
     if (!isNaN(toTs)) conditions.push(lte(activityLog.createdAt, new Date(toTs * 1000)))
   }
+  if (search) {
+    const pattern = `%${search}%`
+    conditions.push(or(like(activityLog.entityName, pattern), like(activityLog.details, pattern)))
+  }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined
+  const order = newestFirst ? desc(activityLog.createdAt) : asc(activityLog.createdAt)
 
   // Get total count
   const totalResult = where
@@ -60,8 +69,8 @@ export default defineEventHandler(async (event) => {
   // Get paginated rows
   const baseQuery = db.select().from(activityLog)
   const rows = where
-    ? baseQuery.where(where).orderBy(desc(activityLog.createdAt)).limit(limit).offset(offset).all()
-    : baseQuery.orderBy(desc(activityLog.createdAt)).limit(limit).offset(offset).all()
+    ? baseQuery.where(where).orderBy(order).limit(limit).offset(offset).all()
+    : baseQuery.orderBy(order).limit(limit).offset(offset).all()
 
   return apiSuccess(
     { items: rows, total, page, totalPages: Math.ceil(total / limit) },

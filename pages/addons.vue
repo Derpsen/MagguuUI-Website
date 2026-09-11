@@ -8,7 +8,7 @@
         <span class="text-gradient">Addons</span>
       </h1>
       <p class="text-lg" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        EllesmereUI is required. MagguuUI is four sibling addons. BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter are optional Magguu imports.
+        EllesmereUI is required. MagguuUI is four sibling addons. BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional Magguu imports.
       </p>
     </div>
 

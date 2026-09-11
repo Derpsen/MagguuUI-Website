@@ -56,6 +56,7 @@ describe('MagguuUI product facts copy', () => {
     const feature2 = DEFAULT_HOME_CONTENT.find(e => e.key === 'feature_2_text' && e.locale === 'en')
     assert.match(feature2?.value || '', /HandyNotes/)
     assert.match(feature2?.value || '', /Premade Groups Filter/)
+    assert.match(feature2?.value || '', /Smart Reminders/)
 
     const installFaq = DEFAULT_FAQS.find(f => f.question === 'What does Apply Magguu profiles configure?')
     assert.ok(installFaq)

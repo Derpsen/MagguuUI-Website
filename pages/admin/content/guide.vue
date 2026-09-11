@@ -59,7 +59,7 @@
         </template>
 
         <div class="space-y-3">
-          <div v-for="(step, index) in form.steps" :key="step.id" class="guide-step-card">
+          <div v-for="(step, index) in form.steps" :key="step.id" class="guide-step-card" :data-step-id="step.id">
             <!-- Step header (always visible) -->
             <div class="flex items-center gap-3 px-4 py-3 cursor-pointer" @click="toggleStep(step.id)">
               <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold"

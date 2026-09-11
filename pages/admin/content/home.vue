@@ -231,7 +231,7 @@ const form = reactive({
   } as Record<string, string>,
   addons: {
     title: "Supported Addons",
-    subtitle: "EllesmereUI is required. BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter are optional.",
+    subtitle: "EllesmereUI is required. BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional.",
   } as Record<string, string>,
   features_heading: {
     title: "Why MagguuUI?",
@@ -243,7 +243,7 @@ const form = reactive({
     feature_1_text: "Two sidebar rows: Options (Setup, Skinning, QoL) and Changelog. Gold Apply Magguu profiles, Magguu Settings and Load profiles side by side, required and optional imports, and WowUp copy strings live on Setup.",
     feature_2_emoji: "B",
     feature_2_title: "Current Retail layouts",
-    feature_2_text: "Ellesmere profile MagguuUI at scale 0.58 with a fixed tooltip. Class layouts import as Magguu - Class Spec. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter.",
+    feature_2_text: "Ellesmere profile MagguuUI at scale 0.58 with a fixed tooltip. Class layouts import as Magguu - Class Spec. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders.",
     feature_3_emoji: "C",
     feature_3_title: "Skinning and QoL included",
     feature_3_text: "NAMES & COLORS (two columns): split unit-frame and party/raid names plus class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party/raid item level (and 2P/4P), Smart Tab, Hide Services on General, Quick Focus, an audio device switcher, Boiling Point, and Targeted Spell Bars.",

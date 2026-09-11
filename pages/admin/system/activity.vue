@@ -237,6 +237,12 @@ const typeOptions = [
   { label: "Character Layout", value: "layout" },
   { label: "Changelog", value: "changelog" },
   { label: "Content", value: "content" },
+  { label: "Addon", value: "addon" },
+  { label: "FAQ", value: "faq" },
+  { label: "User", value: "user" },
+  { label: "API Key", value: "api-key" },
+  { label: "Field", value: "field" },
+  { label: "Setting", value: "setting" },
 ]
 
 // Group items by day with relative labels

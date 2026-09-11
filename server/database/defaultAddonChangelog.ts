@@ -5,12 +5,11 @@ export const CURRENT_ADDON_CHANGELOG = {
 
 ### What's new
 
-- Fresh Magguu bake **2026-09-11**: EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders. Use **Apply Magguu profiles**. Smart Reminders also has a Setup import button.
-- WowUp starter and optional hover lists addons A–Z.
+- Fresh Magguu bake **2026-09-11**: EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders. Use **Apply Magguu profiles**.
+- **Smart Reminders** Setup import. **WowUp Optional** now includes Smart Reminders.
+- HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter apply with Apply Magguu profiles / Load profiles (no Setup button).
 - BigWigs keystone viewer does not auto-open when Mythic+ ends.
-- MagguuUI no longer includes KeystoneLoot BiS or WowUp optional KeystoneLoot.
-- **WowUp Optional** now includes **Auctionator** and **Smart Reminders**. Starter unchanged.
-- **Apply Magguu profiles** enables Ellesmere **Targeted Spell Bars** (Nearby Cast). Leave **EXBoss MythicCast OFF**.
+- WowUp starter and optional hover lists addons A–Z.
 
 ### Additional features
 
@@ -22,14 +21,8 @@ export const CURRENT_ADDON_CHANGELOG = {
 - **Skinning** is one **NAMES & COLORS** section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers. Magguu Settings turns these on; reset turns them off.
 - **QoL** includes party and raid item level (and 2P/4P) and **Boiling Point**. AuraBuff counts stay centered.
 - **Apply Magguu profiles**, **Load profiles**, and **Magguu Settings** apply MagguuUI chat channels and size (Services off General).
-
-### Bugfixes
-
-- Ellesmere MagguuUI import pre-checks **Window & Tooltip Skins**.
-- MagguuUI no longer ships KeystoneLoot BiS import or optional pack membership.
-- Smart Tab no longer errors when a whisper arrives in combat or an instance (secret player names).
-- Services chat no longer sticks on the General tab after login or \`/reload\`.
-- Aura buff reminder labels and stack counts are centered on the icons.
+- **Apply Magguu profiles** enables Ellesmere **Targeted Spell Bars** (Nearby Cast). Leave **EXBoss MythicCast OFF**.
+- Setup import buttons: BigWigs, Northern Sky, EXBoss, Smart Reminders.
 
 ### Install notes
 

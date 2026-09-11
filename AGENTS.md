@@ -59,6 +59,8 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
   in WoWI `[img]` — default CORP `same-origin` hides them. `/logo.png` and
   `/logo-300.png` keep routeRule CORP `cross-origin` for hotlink; pages stay
   `same-origin`.
+- Homepage stats/pills: `GET /api/v1/catalog-summary` only. Do not fetch `/api/v1/profiles` (or layouts/wowup/changelogs) on `/` just to count — those blobs belong on `/strings`.
+- ECharts stays admin-only (`utils/echartsSetup.ts` + `components/admin/charts`). Do not restore a global `plugins/echarts.client.ts`.
 - After behavior changes run `npm run typecheck`, `npm run build`, `npm run verify:smoke`, and `npm test`.
 - After dependency changes also run `npm run audit:prod`.
 - Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier).

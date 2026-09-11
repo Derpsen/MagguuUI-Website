@@ -3,8 +3,8 @@
 ## Overview
 
 - Project: `MagguuUI-Website`
-- Stack: Nuxt 4 (caret ^4.4.8; lock may resolve 4.5.x), Vue 3.5, TypeScript 6, Nuxt UI 4.10, Tailwind CSS 4.3 (CSS-first), Drizzle 0.45, SQLite via `better-sqlite3` 12 (WAL, busy_timeout=5000), Node 24, nuxt-og-image 6 with Satori. Validation: Zod. Lint: Nuxt ESLint Flat Config (no separate Prettier).
-- Deployment: Docker on Unraid — image built by `.github/workflows/docker.yml` and published to GHCR; Unraid pulls via *Check for Updates* → *Apply Update*
+- Stack: Nuxt 4 (caret ^4.4.8; lock may resolve 4.5.x), Vue 3.5, TypeScript 6, Nuxt UI 4.10, Tailwind CSS 4.3 (CSS-first), Drizzle 0.45, SQLite via `better-sqlite3` 13 (WAL, busy_timeout=5000), Node 24, nuxt-og-image 6 with Satori. Validation: Zod. Lint: Nuxt ESLint Flat Config (no separate Prettier).
+- Deployment: Docker on Unraid — image built by `.github/workflows/docker.yml` and published to GHCR; Unraid `update_container MagguuUI`. Live 2026-09-10: homepage catalog-summary + admin-only ECharts.
 - Repo contains the public website, admin panel, and Nitro/API backend in one app
 
 ## Agent / Buddy ops
@@ -18,6 +18,17 @@
   deploy is possible — recheck.
 - `error.vue` Home → `/` only (never `/home`).
 - CodeQL `init` and `analyze` must share one commit pin.
+
+## 2026-09-10 payload / bundle
+
+- `pages/index.vue` uses `GET /api/v1/catalog-summary` (addon names + counts, no import-string blobs). `/strings` still uses fat `/api/v1/profiles`, `/layouts`, `/wowup`.
+- No public `GET /api/v1/layouts/grouped`. Canonical grouped layouts stay `/api/v1/sync/layouts/grouped` (bearer).
+- ECharts: `utils/echartsSetup.ts` imported only by `components/admin/charts/*`. Do not restore `plugins/echarts.client.ts`.
+- `AdBanner.vue` shares `usePublicSiteSettings()` (`public-site-settings`).
+- `pages/guide.vue` uses `LazyTipTapEditor`.
+- Indexes `(is_visible, sort_order)` on profiles, wowup_strings, character_layouts, faqs (schema + bootstrap + `init.ts`).
+- Direct deps `nostics` and `nitropack` removed (Nuxt still brings nitropack).
+- Playwright `testMatch` is `*.spec.ts` so `tests/unit` is node:test only.
 
 
 ## WowUp packs (2026-09-06)

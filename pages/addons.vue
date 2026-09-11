@@ -27,7 +27,7 @@
           </p>
           <p class="mt-2">
             <strong :class="isDark ? 'text-white' : 'text-gray-900'">Optional Magguu imports:</strong>
-            BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter. Apply Magguu profiles configures them when they are installed and skips them otherwise. Setup buttons are BigWigs, Northern Sky, and EXBoss.
+            BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders. Apply Magguu profiles configures them when they are installed and skips them otherwise. Setup buttons are BigWigs, Northern Sky, EXBoss, and Smart Reminders.
           </p>
           <p class="mt-2">
             Copy the WowUp starter pack and optional pack from Magguu Setup (or the Strings page as a backup), then paste in WowUp. MagguuUI does not install addons itself.

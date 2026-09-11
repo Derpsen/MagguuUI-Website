@@ -13,6 +13,6 @@ Addon paste files live in `MagguuUI/docs/store-descriptions/`. No git tags from 
 
 - Gold button **Apply Magguu profiles** (DE: Magguu-Profile übernehmen)
 - Four sibling folders, EllesmereUI 9.0.6+
-- Dump companions (WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter) via Apply Magguu profiles / Load profiles; Setup buttons BigWigs, Northern Sky, EXBoss
+- Dump companions (WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter) via Apply Magguu profiles / Load profiles; Setup buttons BigWigs, Northern Sky, EXBoss, Smart Reminders
 - Smart Tab, Hide Services on General, Quick Focus, Audio device switcher, Boiling Point, Targeted Spell Bars (EXBoss MythicCast off)
 - No EXBoss split names, no KeystoneLoot, Magguu/MagguuUI naming only

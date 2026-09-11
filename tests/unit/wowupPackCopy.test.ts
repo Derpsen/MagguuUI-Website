@@ -20,7 +20,7 @@ describe('WowUp pack copy', () => {
 
     assert.ok(CURRENT_ADDON_CHANGELOG.content.includes('**WowUp starter:** ' + STARTER + '.'))
     assert.ok(CURRENT_ADDON_CHANGELOG.content.includes('**Optional:** ' + OPTIONAL + '.'))
-    assert.equal(CURRENT_ADDON_CHANGELOG.version, 'v12.1.3')
+    assert.equal(CURRENT_ADDON_CHANGELOG.version, 'v12.1.4')
   })
 })
 

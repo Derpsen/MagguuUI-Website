@@ -1,11 +1,12 @@
 export const CURRENT_ADDON_CHANGELOG = {
-  version: 'v12.1.3',
-  publishedAt: new Date('2026-09-09T00:00:00Z'),
+  version: 'v12.1.4',
+  publishedAt: new Date('2026-09-11T00:00:00Z'),
   content: `Ready for WoW 12.1. MagguuUI lives inside EllesmereUI. Type \`/mui\` to open it.
 
 ### What's new
 
-- Fresh Magguu bake **2026-09-11**: EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders. Use **Apply Magguu profiles**.
+- Fresh Magguu bake **2026-09-11**: EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders. Use **Apply Magguu profiles**. Smart Reminders also has a Setup import button.
+- WowUp starter and optional hover lists addons A–Z.
 - BigWigs keystone viewer does not auto-open when Mythic+ ends.
 - MagguuUI no longer includes KeystoneLoot BiS or WowUp optional KeystoneLoot.
 - **WowUp Optional** now includes **Auctionator** and **Smart Reminders**. Starter unchanged.

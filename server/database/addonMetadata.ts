@@ -146,6 +146,16 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     url: `${CF}/premade-groups-filter`,
     sortOrder: 10,
   },
+  {
+    slug: 'smart-reminders',
+    aliases: ['NaowhSmartReminders'],
+    name: 'Smart Reminders',
+    category: 'optional',
+    emoji: '⏰',
+    description: 'Optional Magguu import and WowUp optional pack. Setup import button when loaded. Apply Magguu profiles also imports the MagguuUI pack.',
+    url: `${CF}/naowh-smart-reminders`,
+    sortOrder: 11,
+  },
 ]
 
 export const RETIRED_ADDON_SLUGS = [

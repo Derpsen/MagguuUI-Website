@@ -190,6 +190,10 @@ export const RETIRED_ADDON_SLUGS = [
   'keystoneloot',
 ] as const
 
+export function isRetiredAddonSlug(slug: string): boolean {
+  return (RETIRED_ADDON_SLUGS as readonly string[]).includes(slug)
+}
+
 const BY_TOC_NAME = (() => {
   const map = new Map<string, AddonDefault>()
   for (const def of ADDON_DEFAULTS) {

@@ -4,7 +4,7 @@
       icon="i-heroicons-puzzle-piece"
       eyebrow="Data"
       title="Addon Catalogue"
-      description="Synced from MagguuUI.toc — admin overrides for emoji, description, URL or category survive the auto-sync."
+      description="Current Magguu companions. ElvUI-era rows are purged on startup. Resync never re-adds retired slugs."
     >
       <template #badge>
         <UBadge v-if="!loading" color="info" variant="subtle">{{ items.length }} total</UBadge>
@@ -26,6 +26,7 @@
 
     <div class="admin-filterbar">
       <UInput v-model="search" icon="i-heroicons-magnifying-glass" placeholder="Search addon" class="min-w-0 flex-1" />
+      <USelect v-model="stateFilter" :items="stateOptions" value-key="value" class="w-full sm:w-48" />
       <USelect v-model="categoryFilter" :items="categoryOptions" value-key="value" placeholder="All Categories" class="w-full sm:w-60" />
     </div>
 
@@ -226,6 +227,7 @@ const toast = useToast()
 const items = ref<AddonRow[]>([])
 const loading = ref(true)
 const search = ref('')
+const stateFilter = ref<'onsite' | 'all' | 'hidden' | 'unavailable'>('onsite')
 const categoryFilter = ref('')
 
 const modalOpen = ref(false)
@@ -262,10 +264,22 @@ const categoryOptions = [
   { label: 'Optional', value: 'optional' },
 ]
 
+const stateOptions = [
+  { label: 'On site', value: 'onsite' },
+  { label: 'All rows', value: 'all' },
+  { label: 'Hidden', value: 'hidden' },
+  { label: 'Unavailable', value: 'unavailable' },
+]
+
 const categoryFormOptions = categoryOptions.slice(1)
+
+const onSiteAddons = computed(() => items.value.filter(a => a.isVisible && a.isAvailable))
 
 const filteredAddons = computed(() => {
   let result = items.value
+  if (stateFilter.value === 'onsite') result = result.filter(a => a.isVisible && a.isAvailable)
+  else if (stateFilter.value === 'hidden') result = result.filter(a => !a.isVisible)
+  else if (stateFilter.value === 'unavailable') result = result.filter(a => !a.isAvailable)
   if (categoryFilter.value) result = result.filter(a => a.category === categoryFilter.value)
   if (search.value.trim()) {
     const q = search.value.toLowerCase().trim()
@@ -279,15 +293,12 @@ const filteredAddons = computed(() => {
 })
 
 const statCards = computed(() => {
-  const total = items.value.length
-  const visible = items.value.filter(a => a.isVisible && a.isAvailable).length
-  const required = items.value.filter(a => a.category === 'required').length + items.value.filter(a => a.category === 'core').length
-  const optional = items.value.filter(a => a.category === 'optional').length
+  const live = onSiteAddons.value
   return [
-    { label: 'Total', value: total, icon: 'i-heroicons-puzzle-piece', tone: 'brand' as const },
-    { label: 'On Site', value: visible, icon: 'i-heroicons-eye', tone: 'success' as const },
-    { label: 'Required + Core', value: required, icon: 'i-heroicons-bolt', tone: 'warning' as const },
-    { label: 'Optional', value: optional, icon: 'i-heroicons-plus-circle', tone: 'violet' as const },
+    { label: 'Catalogue', value: items.value.length, icon: 'i-heroicons-puzzle-piece', tone: 'brand' as const },
+    { label: 'On Site', value: live.length, icon: 'i-heroicons-eye', tone: 'success' as const },
+    { label: 'Required + Core', value: live.filter(a => a.category === 'required' || a.category === 'core').length, icon: 'i-heroicons-bolt', tone: 'warning' as const },
+    { label: 'Optional', value: live.filter(a => a.category === 'optional').length, icon: 'i-heroicons-plus-circle', tone: 'violet' as const },
   ]
 })
 

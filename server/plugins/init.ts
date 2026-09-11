@@ -12,11 +12,11 @@ import { and, eq, count } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
 import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_HOME_CONTENT, DEFAULT_SITE_CONTENT } from '~/server/database/defaultContent'
 import { CURRENT_ADDON_CHANGELOG } from '~/server/database/defaultAddonChangelog'
-import { users, siteContent, faqs, settings, changelogs, addons } from '~/server/database/schema'
+import { users, siteContent, faqs, settings, changelogs } from '~/server/database/schema'
 import { DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
 import { ensureAddonsSeeded } from '~/server/utils/syncAddons'
-import { RETIRED_ADDON_SLUGS } from '~/server/database/addonMetadata'
+
 
 type SeedContentEntry = typeof DEFAULT_SITE_CONTENT[number]
 
@@ -670,19 +670,8 @@ export default defineNitroPlugin(() => {
 
   try {
     const addonResult = ensureAddonsSeeded()
-    const retired = db.select().from(addons).all()
-      .filter(row => (RETIRED_ADDON_SLUGS as readonly string[]).includes(row.slug)
-        && (row.isAvailable || row.isVisible))
-    let retiredCount = 0
-    for (const row of retired) {
-      db.update(addons)
-        .set({ isAvailable: false, isVisible: false, updatedAt: new Date() })
-        .where(eq(addons.id, row.id))
-        .run()
-      retiredCount++
-    }
-    if (retiredCount > 0) {
-      console.log(`[Init] Hid ${retiredCount} retired addon catalogue entries`)
+    if (addonResult.unavailable > 0) {
+      console.log(`[Init] Purged ${addonResult.unavailable} retired addon catalogue entries`)
     }
     if (addonResult.inserted > 0 || addonResult.updated > 0) {
       console.log(`[Init] Addons seeded (inserted: ${addonResult.inserted}, completed metadata: ${addonResult.updated})`)

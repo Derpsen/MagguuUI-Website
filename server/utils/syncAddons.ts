@@ -13,14 +13,15 @@
  *     isVisible) intact.
  *   - Marks addons that disappeared from the .toc as `isAvailable=false`
  *     instead of deleting (admin can hide or restore later).
+ *   - Deletes RETIRED_ADDON_SLUGS rows (ElvUI-era corpses). Do not hide-and-keep.
  *   - Manual-only metadata entries (no tocName) are seeded once if missing
  *     and never marked unavailable by .toc syncs.
  */
 
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
 import { addons } from '~/server/database/schema'
-import { ADDON_DEFAULTS, RETIRED_ADDON_SLUGS, deriveSlugFromTocName, findAddonDefaultByTocName } from '~/server/database/addonMetadata'
+import { ADDON_DEFAULTS, RETIRED_ADDON_SLUGS, deriveSlugFromTocName, findAddonDefaultByTocName, isRetiredAddonSlug } from '~/server/database/addonMetadata'
 import { parseAddonToc, type TocAddonRef } from '~/server/utils/parseAddonToc'
 
 export interface SyncAddonsResult {
@@ -42,13 +43,20 @@ export function syncAddonsFromToc(tocContent: string): SyncAddonsResult {
  * Initial seed: ensures every metadata default exists in the DB even before
  * the .toc has ever been parsed (covers Blizzard EditMode + cold-start case).
  */
+function purgeRetiredAddons(): number {
+  const result = db.delete(addons)
+    .where(inArray(addons.slug, [...RETIRED_ADDON_SLUGS]))
+    .run()
+  return result.changes ?? 0
+}
+
 export function ensureAddonsSeeded(): SyncAddonsResult {
+  const unavailable = purgeRetiredAddons()
   const existing = db.select().from(addons).all()
   const bySlug = new Map(existing.map(row => [row.slug, row]))
   const now = new Date()
   let inserted = 0
   let updated = 0
-  let unavailable = 0
 
   for (const def of ADDON_DEFAULTS) {
     const row = bySlug.get(def.slug)
@@ -101,16 +109,6 @@ export function ensureAddonsSeeded(): SyncAddonsResult {
     inserted++
   }
 
-  for (const row of existing) {
-    if (!(RETIRED_ADDON_SLUGS as readonly string[]).includes(row.slug)) continue
-    if (!row.isAvailable && !row.isVisible) continue
-    db.update(addons)
-      .set({ isAvailable: false, isVisible: false, updatedAt: now })
-      .where(eq(addons.id, row.id))
-      .run()
-    unavailable++
-  }
-
   return { inserted, updated, unavailable, total: ADDON_DEFAULTS.length }
 }
 
@@ -118,7 +116,7 @@ function applyAddonSync(refs: TocAddonRef[]): SyncAddonsResult {
   const now = new Date()
   let inserted = 0
   let updated = 0
-  let unavailable = 0
+  let unavailable = purgeRetiredAddons()
 
   const existing = db.select().from(addons).all()
   const bySlug = new Map(existing.map(row => [row.slug, row]))
@@ -132,6 +130,7 @@ function applyAddonSync(refs: TocAddonRef[]): SyncAddonsResult {
   for (const ref of refs) {
     const def = findAddonDefaultByTocName(ref.tocName)
     const slug = def?.slug ?? deriveSlugFromTocName(ref.tocName)
+    if (isRetiredAddonSlug(slug)) continue
     seenSlugs.add(slug)
 
     const row = bySlug.get(slug)

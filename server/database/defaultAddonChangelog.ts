@@ -5,7 +5,7 @@ export const CURRENT_ADDON_CHANGELOG = {
 
 ### What's new
 
-- Fresh Magguu bake **2026-09-10**: EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter. Use **Apply Magguu profiles**.
+- Fresh Magguu bake **2026-09-11**: EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter. Use **Apply Magguu profiles**.
 - BigWigs keystone viewer does not auto-open when Mythic+ ends.
 - MagguuUI no longer includes KeystoneLoot BiS or WowUp optional KeystoneLoot.
 - **WowUp Optional** now includes **Auctionator**. Starter unchanged.

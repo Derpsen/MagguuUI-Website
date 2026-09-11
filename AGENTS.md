@@ -37,7 +37,7 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
   aligned with the current MagguuUI release: four sibling folders
   (MagguuUI / Data / EUI / Media), EllesmereUI TOC min **9.0.6+** (**live 9.1.6**;
   MagguuUI bake still **9.0.8**), posted Magguu export = **full bake**
-  (2026-09-10-2 includes dump addons), Magguu Settings overlay does not reimport
+  (2026-09-11 includes dump addons), Magguu Settings overlay does not reimport
   the bake, **Targeted Spell Bars** (Ellesmere Mythic+ Nearby
   Cast) **ON** via Ellesmere — **EXBoss MythicCast OFF** (same feature; do not run
   both), MagguuUI_EUI keeps **Boiling Point** (no TopBar / Hearth-Picker / MagguuUI

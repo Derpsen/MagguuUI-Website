@@ -41,7 +41,7 @@
 
 - EllesmereUI TOC min **9.0.6+**; **live 9.1.6**; MagguuUI bake still **9.0.8**.
 - Four siblings: MagguuUI / MagguuUI_Data / MagguuUI_EUI / MagguuUI_Media.
-- Posted Magguu export = **full bake** (2026-09-10-2: Ellesmere type=full, BigWigs, NSRT, EXBoss, WIM, Waypoint UI, HandyNotes, TTT, GTFO, BugSack, PGF). Magguu Settings overlay still does not reimport the bake.
+- Posted Magguu export = **full bake** (2026-09-11: Ellesmere type=full, BigWigs, NSRT, EXBoss, WIM, Waypoint UI, HandyNotes, TTT, GTFO, BugSack, PGF). Magguu Settings overlay still does not reimport the bake.
 - **Targeted Spell Bars** (Ellesmere Mythic+ Nearby Cast) **ON**; **EXBoss MythicCast OFF**.
 - MagguuUI_EUI: **Boiling Point** stays; TopBar, Hearth-Picker, MagguuUI FPS/MS removed.
 - AuraBuff count text **CENTER**. Hide Services is secret-safe (do not claim unsafe).

@@ -5,6 +5,7 @@
  * using @simplewebauthn/server. Challenges stored in DB.
  */
 
+import 'reflect-metadata'
 import type { H3Event } from 'h3'
 import {
   generateRegistrationOptions,

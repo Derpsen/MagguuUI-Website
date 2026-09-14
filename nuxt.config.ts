@@ -189,6 +189,37 @@ export default defineNuxtConfig({
     externals: {
       inline: ['@simplewebauthn/server'],
     },
+    // @peculiar/x509 2.x (via @simplewebauthn/server) is hoisted as a static
+    // import of the Nitro server chunk. Prepend the polyfill so it evaluates
+    // before tsyringe, even if plugin import order is sorted later.
+    hooks: {
+      'rollup:before'(nitro, config) {
+        if (!nitro.options) return
+        const polyfill = "import 'reflect-metadata';"
+        const prepend = async (originalBanner: unknown, chunk: unknown) => {
+          const raw = typeof originalBanner === 'function'
+            ? await originalBanner(chunk)
+            : String(originalBanner ?? '')
+          if (raw.startsWith('#!')) {
+            const nl = raw.indexOf('\n')
+            if (nl === -1) return `${raw}\n${polyfill}`
+            return `${raw.slice(0, nl + 1)}${polyfill}\n${raw.slice(nl + 1)}`
+          }
+          return `${polyfill}\n${raw}`
+        }
+        const patch = (output: { banner?: unknown }) => {
+          const originalBanner = output.banner
+          output.banner = (chunk: unknown) => prepend(originalBanner, chunk)
+        }
+        if (Array.isArray(config.output)) {
+          for (const output of config.output) patch(output)
+        } else if (config.output) {
+          patch(config.output)
+        } else {
+          config.output = { banner: `${polyfill}\n` }
+        }
+      },
+    },
   },
 
   routeRules: {

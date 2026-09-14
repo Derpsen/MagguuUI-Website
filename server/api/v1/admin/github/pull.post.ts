@@ -13,6 +13,7 @@ import {
   applyClassLuaSnapshot,
   fetchAddonLuaSnapshot,
   fetchClassLuaSnapshot,
+  summarizeGithubDataSyncResults,
   type GithubDataSyncResult,
 } from '~/server/utils/githubDataSnapshot'
 import { createSyncChangelog } from '~/server/utils/syncChangelog'
@@ -91,22 +92,25 @@ export default defineEventHandler(async (event) => {
       // Release metadata is independent from profile data and remains optional.
     }
 
-    const created = results.filter(result => result.status === 'created').length
-    const updated = results.filter(result => result.status === 'updated').length
-    const unchanged = results.filter(result => result.status === 'unchanged').length
+    const summary = summarizeGithubDataSyncResults(results)
     createSyncChangelog(results, 'pull')
 
     db.insert(syncHistory).values({
       triggerSource: 'manual-pull',
       status: 'success',
-      details: `Pull ${snapshotSha.slice(0, 12)}: ${created} created, ${updated} updated, ${unchanged} unchanged, 0 errors`,
+      details: `Pull ${snapshotSha.slice(0, 12)}: ${summary.created} created, ${summary.updated} updated, ${summary.unchanged} unchanged, ${summary.errors} errors`,
     }).run()
 
     return apiSuccess({
-      message: `Pull complete: ${created} created, ${updated} updated, ${unchanged} unchanged`,
+      message: `Pull complete: ${summary.created} created, ${summary.updated} updated, ${summary.unchanged} unchanged`,
       snapshotSha,
       results,
-      summary: { created, updated, unchanged, errors: 0 },
+      summary: {
+        created: summary.created,
+        updated: summary.updated,
+        unchanged: summary.unchanged,
+        errors: summary.errors,
+      },
       changelog: addonChangelog,
     })
   } catch (error: unknown) {

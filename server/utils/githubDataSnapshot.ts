@@ -28,6 +28,35 @@ import { fetchGitHubTextFile, listGitHubDirectoryFiles } from '~/server/utils/gi
 
 export type GithubDataSyncStatus = 'created' | 'updated' | 'unchanged'
 
+export interface GithubDataSyncSummary {
+  created: number
+  updated: number
+  unchanged: number
+  errors: number
+  imported: number
+}
+
+/**
+ * Count sync result statuses for pull + webhook history rows.
+ * Soft webhook errors use status values prefixed with `error:`.
+ */
+export function summarizeGithubDataSyncResults(
+  results: ReadonlyArray<{ status: string }>,
+): GithubDataSyncSummary {
+  let created = 0
+  let updated = 0
+  let unchanged = 0
+  let errors = 0
+  for (const result of results) {
+    if (result.status === 'created') created++
+    else if (result.status === 'updated') updated++
+    else if (result.status === 'unchanged') unchanged++
+    else if (result.status.startsWith('error:')) errors++
+  }
+  return { created, updated, unchanged, errors, imported: created + updated }
+}
+
+
 export interface GithubDataSyncResult {
   file: string
   addon: string

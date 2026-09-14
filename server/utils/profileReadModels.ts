@@ -114,7 +114,12 @@ function normalizeContractName(value: string) {
   return value.normalize('NFKC').toLowerCase().replace(/[^a-z0-9]/g, '')
 }
 
-function isObsoletePackedElvUiDefault(row: typeof profiles.$inferSelect) {
+/** True only for the retired packed ElvUI/Default website contract. */
+export function isObsoletePackedElvUiDefault(row: {
+  addon: string
+  profile: string
+  string: string
+}) {
   return row.addon.toLowerCase() === 'elvui'
     && row.profile.toLowerCase() === 'default'
     && row.string.startsWith(ELVUI_PACKED_PREFIX)
@@ -122,27 +127,23 @@ function isObsoletePackedElvUiDefault(row: typeof profiles.$inferSelect) {
 
 /** Homepage stats: names + counts without import-string blobs. */
 export function readCatalogSummary() {
-  const packedElvUiDefault = db
-    .select({ id: profiles.id })
-    .from(profiles)
-    .where(and(
-      eq(profiles.isVisible, true),
-      sql`lower(${profiles.addon}) = 'elvui'`,
-      sql`lower(${profiles.profile}) = 'default'`,
-      like(profiles.string, `${ELVUI_PACKED_PREFIX}%`),
-    ))
-    .get()
-
+  // Same obsolete-packed rule as readGroupedProfiles, expressed in SQL so we
+  // never pull import-string blobs just to filter them out.
   const profileRows = db
     .select({ addon: profiles.addon, profile: profiles.profile })
     .from(profiles)
-    .where(eq(profiles.isVisible, true))
+    .where(and(
+      eq(profiles.isVisible, true),
+      sql`NOT (
+        lower(${profiles.addon}) = 'elvui'
+        AND lower(${profiles.profile}) = 'default'
+        AND ${profiles.string} LIKE ${`${ELVUI_PACKED_PREFIX}%`}
+      )`,
+    ))
     .orderBy(asc(profiles.sortOrder), asc(profiles.addon), asc(profiles.profile), asc(profiles.id))
     .all()
 
-  const projected = packedElvUiDefault
-    ? profileRows.filter(row => row.addon.toLowerCase() !== 'elvui' || row.profile.toLowerCase() !== 'default')
-    : profileRows
+  const projected = profileRows
 
   const addonNames: string[] = []
   const seen = new Set<string>()

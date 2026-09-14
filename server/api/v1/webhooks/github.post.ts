@@ -13,8 +13,10 @@ import {
   applyClassLuaSnapshot,
   fetchAddonLuaSnapshot,
   fetchClassLuaSnapshot,
+  summarizeGithubDataSyncResults,
   type GithubDataSyncResult,
 } from '~/server/utils/githubDataSnapshot'
+import { applyPrivateApiHeaders } from '~/server/utils/privateApiHeaders'
 import {
   fetchGitHubTextFile,
   githubRepoMatches,
@@ -86,14 +88,6 @@ function collectChangedPaths(commits: PushCommit[]) {
   return paths
 }
 
-function countResults(results: SyncResult[]) {
-  const created = results.filter(result => result.status === 'created').length
-  const updated = results.filter(result => result.status === 'updated').length
-  const unchanged = results.filter(result => result.status === 'unchanged').length
-  const errors = results.filter(result => result.status.startsWith('error:')).length
-  return { created, updated, unchanged, errors, imported: created + updated }
-}
-
 async function syncAddonSnapshot(options: {
   owner: string
   repo: string
@@ -143,9 +137,7 @@ async function syncClassSnapshot(options: {
 }
 
 export default defineEventHandler(async (event) => {
-  setResponseHeader(event, 'Cache-Control', 'private, no-store, no-cache, must-revalidate')
-  setResponseHeader(event, 'Pragma', 'no-cache')
-  setResponseHeader(event, 'X-Robots-Tag', 'noindex, nofollow, noarchive')
+  applyPrivateApiHeaders(event)
 
   const config = useRuntimeConfig()
   const webhookSecret = config.githubWebhookSecret || ''
@@ -282,10 +274,10 @@ export default defineEventHandler(async (event) => {
       handled.push('class-layouts')
     }
 
-    let dataResult: ReturnType<typeof countResults> & { snapshotSha: string } | null = null
+    let dataResult: ReturnType<typeof summarizeGithubDataSyncResults> & { snapshotSha: string } | null = null
     if (addonsTouched || classesTouched) {
       createSyncChangelog(syncResults, 'webhook')
-      dataResult = { snapshotSha, ...countResults(syncResults) }
+      dataResult = { snapshotSha, ...summarizeGithubDataSyncResults(syncResults) }
       db.insert(syncHistory).values({
         triggerSource: 'webhook-push-autopull',
         status: dataResult.errors ? 'error' : 'success',

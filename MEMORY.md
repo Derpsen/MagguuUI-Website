@@ -31,11 +31,11 @@
 - Playwright `testMatch` is `*.spec.ts` so `tests/unit` is node:test only.
 
 
-## WowUp packs (2026-09-06)
+## WowUp packs (2026-09-15)
 
 - **Starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore.
-- **Optional:** BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
-- No WindTools.
+- **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
+- No WindTools. HandyNotes MapNotes is pack-only (no Magguu bake).
 
 ## MagguuUI product facts (2026-09-07)
 

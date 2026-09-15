@@ -7,6 +7,7 @@ export const CURRENT_ADDON_CHANGELOG = {
 
 - Fresh Magguu bake **2026-09-11**: EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders. Use **Apply Magguu profiles**.
 - **Smart Reminders** Setup import. **WowUp Optional** now includes Smart Reminders.
+- **WowUp Optional** adds **HandyNotes MapNotes** (pack-only; no Magguu profile bake yet).
 - HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter apply with Apply Magguu profiles / Load profiles (no Setup button).
 - BigWigs keystone viewer does not auto-open when Mythic+ ends.
 - WowUp starter and optional hover lists addons A–Z.
@@ -17,7 +18,7 @@ export const CURRENT_ADDON_CHANGELOG = {
 - Gold Setup is **Apply Magguu profiles**. Below it: **Apply Magguu Settings** and **Load profiles**. Scale \`0.58\`. Magguu Settings is overlay/QoL only (no Ellesmere reimport). Load profiles activates; it does not reimport the bake.
 - **Apply Magguu profiles** writes the HUD Edit Mode layout **MagguuUI** once.
 - Ellesmere start popup is skipped; MagguuUI Setup opens on that login.
-- **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. **Optional:** BugGrabber, BugSack, HandyNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
+- **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
 - **Skinning** is one **NAMES & COLORS** section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers. Magguu Settings turns these on; reset turns them off.
 - **QoL** includes party and raid item level (and 2P/4P) and **Boiling Point**. AuraBuff counts stay centered.
 - **Apply Magguu profiles**, **Load profiles**, and **Magguu Settings** apply MagguuUI chat channels and size (Services off General).

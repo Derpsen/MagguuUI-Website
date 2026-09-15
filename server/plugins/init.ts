@@ -122,6 +122,8 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_4', marker: '**Set scale only**' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: '**Install everything** imports the Ellesmere profile at UI scale' },
   { page: 'guide', section: 'steps', key: 'step_3', marker: 'KeystoneLoot, Auctionator' },
+  { page: 'guide', section: 'steps', key: 'step_3', marker: 'HandyNotes, MDT, Raider.IO' },
+
   { page: 'guide', section: 'steps', key: 'step_3', marker: '**KeystoneLoot**' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'KeystoneLoot' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'KeystoneLoot' },
@@ -250,6 +252,8 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'troubleshooting', sortOrder: 1, marker: 'EllesmereUI is 7.9.5 or newer' },
   { category: 'troubleshooting', sortOrder: 2, marker: 'Delete leftover MagguuUI_* folders' },
   { category: 'addons', sortOrder: 4, marker: 'KeystoneLoot, and Auctionator' },
+  { category: 'addons', sortOrder: 4, marker: 'HandyNotes, MDT, Raider.IO' },
+
   { category: 'general', sortOrder: 2, marker: 'KeystoneLoot' },
   { category: 'installation', sortOrder: 0, marker: 'KeystoneLoot' },
   { category: 'installation', sortOrder: 2, marker: 'KeystoneLoot Best in Slot' },
@@ -651,6 +655,7 @@ export default defineNitroPlugin(() => {
       || currentRelease.content.includes('**Tools → Exports**')
       || currentRelease.content.includes('EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, and Waypoint UI')
       || !currentRelease.content.includes('HandyNotes')
+      || !currentRelease.content.includes('HandyNotes MapNotes')
       || !currentRelease.content.includes('keystone viewer')
     ) {
       db.update(changelogs)

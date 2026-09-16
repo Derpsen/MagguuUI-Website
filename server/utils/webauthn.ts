@@ -360,14 +360,6 @@ export function getUserPasskeys(userId: number) {
 }
 
 /**
- * Get passkey count for a user.
- */
-export function getUserPasskeyCount(userId: number): number {
-  const result = sqlite.prepare('SELECT COUNT(*) as count FROM passkeys WHERE user_id = ?').get(userId) as CountRow | undefined
-  return result?.count || 0
-}
-
-/**
  * Rename a passkey.
  */
 export function renamePasskey(id: number, userId: number, newName: string) {

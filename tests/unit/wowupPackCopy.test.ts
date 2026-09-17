@@ -25,9 +25,8 @@ describe('WowUp pack copy', () => {
 })
 
 describe('MagguuUI product facts copy', () => {
-  it('locks Ellesmere live/bake, Apply Magguu profiles, Targeted Spell Bars, and no foreign author credits', () => {
+  it('locks Ellesmere live host, Apply Magguu profiles, Targeted Spell Bars, and no foreign author credits', () => {
     assert.match(CURRENT_ADDON_CHANGELOG.content, /live \*\*9\.1\.6\*\*/)
-    assert.match(CURRENT_ADDON_CHANGELOG.content, /2026-09-11/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Targeted Spell Bars/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /EXBoss MythicCast OFF/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Boiling Point/)
@@ -36,6 +35,8 @@ describe('MagguuUI product facts copy', () => {
     assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /Naowh/)
     assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /authors per role/)
     assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /### Setup/)
+    assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /\bbake\b/i)
+    assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /dump addon/i)
 
     const guideIntro = DEFAULT_GUIDE_CONTENT.find(e => e.section === 'intro' && e.key === 'text')
     assert.ok(guideIntro?.value.includes('Apply Magguu profiles'))
@@ -43,10 +44,11 @@ describe('MagguuUI product facts copy', () => {
 
     const step4 = DEFAULT_GUIDE_CONTENT.find(e => e.section === 'steps' && e.key === 'step_4')
     assert.ok(step4?.value.includes('**Apply Magguu profiles**'))
-    assert.ok(step4?.value.includes('does **not** reimport the Ellesmere bake'))
-    assert.ok(step4?.value.includes('does **not** reimport the bake'))
+    assert.ok(step4?.value.includes('does **not** re-import Magguu profiles'))
     assert.doesNotMatch(step4?.value || '', /author configs/)
     assert.doesNotMatch(step4?.value || '', /Install All/)
+    assert.doesNotMatch(step4?.value || '', /\bbake\b/i)
+    assert.doesNotMatch(step4?.value || '', /dump addon/i)
 
     const feature1 = DEFAULT_HOME_CONTENT.find(e => e.key === 'feature_1_text' && e.locale === 'en')
     assert.ok(feature1?.value.includes('Apply Magguu profiles'))

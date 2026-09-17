@@ -35,7 +35,8 @@
 
 - **Starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore.
 - **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
-- No WindTools. HandyNotes MapNotes is pack-only (no Magguu bake).
+- No WindTools. HandyNotes MapNotes is on WowUp Optional; Magguu settings apply with HandyNotes via Apply Magguu profiles / Load profiles.
+- Public copy (home/guide/FAQ/changelog seed) never says bake, dump, or recapture. Player language: Apply Magguu profiles / Magguu Settings / Load profiles.
 
 ## MagguuUI product facts (2026-09-07)
 
@@ -45,9 +46,9 @@
 - **Targeted Spell Bars** (Ellesmere Mythic+ Nearby Cast) **ON**; **EXBoss MythicCast OFF**.
 - MagguuUI_EUI: **Boiling Point** stays; TopBar, Hearth-Picker, MagguuUI FPS/MS removed.
 - AuraBuff count text **CENTER**. Hide Services is secret-safe (do not claim unsafe).
-- Fresh install: **Apply Magguu profiles** imports bake + Magguu Settings + companions (including dump addons).
-- **Magguu Settings** = overlay/QoL only (no Ellesmere reimport).
-- **Load profiles** activates Magguu profiles (including dump addons); does not reimport the bake except a missing dump once. Setup buttons are native share-strings only (BigWigs, Northern Sky, EXBoss, Smart Reminders).
+- Fresh install: **Apply Magguu profiles** imports Magguu profiles + Magguu Settings + companions (HandyNotes, TTT, GTFO, BugSack, PGF, Smart Reminders, …).
+- **Magguu Settings** = overlay/QoL only (no Ellesmere re-import).
+- **Load profiles** activates Magguu profiles (including HandyNotes/TTT/GTFO/BugSack/PGF); does not re-import except a missing companion once. Setup buttons are native share-strings only (BigWigs, Northern Sky, EXBoss, Smart Reminders).
 - Public copy naming: **Magguu / MagguuUI only** — scrub foreign person/author credits; keep product addon names. Do not credit Magguu as author of foreign addons.
 - Store paste (canonical MagguuUI `docs/store-descriptions/`): CurseForge WYSIWYG from preview HTML; Wago Markdown + forgecdn 300×300 logo; WoWI BBCode + GitHub raw `https://raw.githubusercontent.com/Derpsen/MagguuUI-Website/main/public/logo-300.png`. Never `ui.magguu.xyz` in WoWI `[img]`. `/logo.png` and `/logo-300.png` send CORP `cross-origin`; Cloudflare can cache the old `same-origin` header for hours.
 - Store/Website public changelog = **latest version only**.
@@ -58,7 +59,7 @@
 
 - Public home: clean and clear — primary CTA **Install & Setup** (`/guide`), secondary **Import Strings** (`/strings`). Little glass/motion; no hero fade-in or bounce scroll cue.
 - Brand palette (public): Ellesmere teal `#0CD29D` is **primary** via `--color-brand-*` (hover/pressed `#0AA882` / `#088F6F`). `--color-ellesmere` aliases brand-400. Backgrounds are charcoal/near-black — not navy-blue brand dominance. Old Magguu blue is demoted; admin keeps its own accent tokens (light touch only if shared tokens force it). Admin brand marks use `/logo.png` (same as public).
-- Home copy stays factual about EllesmereUI (native module, `/mui` Apply Magguu profiles, Magguu Settings overlay/QoL, Load profiles activate-only, optional companions including dump addons, Skinning NAMES & COLORS DualRow for unit-frame and party/raid split names plus class-colored keybinds — no EXBoss split, party/raid item level, Smart Tab, Hide Services on General, Quick Focus, audio switcher, Boiling Point, Targeted Spell Bars). Seed defaults live in `server/database/defaultContent.ts` (EN + DE). Known-stale seed claims need a `LEGACY_*` marker in `server/plugins/init.ts` or `NUXT_SYNC_SEEDED_CONTENT=true`. Public pages prefer Magguu/MagguuUI naming and product addon names — no foreign person/author credits.
+- Home copy stays factual about EllesmereUI (native module, `/mui` Apply Magguu profiles, Magguu Settings overlay/QoL, Load profiles activate-only, optional companions, Skinning NAMES & COLORS DualRow for unit-frame and party/raid split names plus class-colored keybinds — no EXBoss split, party/raid item level, Smart Tab, Hide Services on General, Quick Focus, audio switcher, Boiling Point, Targeted Spell Bars). Seed defaults live in `server/database/defaultContent.ts` (EN + DE). Known-stale seed claims need a `LEGACY_*` marker in `server/plugins/init.ts` or `NUXT_SYNC_SEEDED_CONTENT=true`. Public pages prefer Magguu/MagguuUI naming and product addon names — no foreign person/author credits. Never bake/dump/recapture on public pages.
 
 ## Important Paths
 

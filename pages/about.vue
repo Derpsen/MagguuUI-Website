@@ -54,7 +54,7 @@
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />
-            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Apply Magguu profiles</strong> — Magguu Ellesmere profile at UI scale 0.58 plus Magguu Settings and companions; Magguu Settings is overlay/QoL only; Load profiles activates Magguu profiles (including dump addons). Ellesmere start popup is skipped; MagguuUI Setup opens on that login.</span>
+            <span><strong :class="isDark ? 'text-white' : 'text-gray-900'">Apply Magguu profiles</strong> — Magguu Ellesmere profile at UI scale 0.58 plus Magguu Settings and companions; Magguu Settings is overlay/QoL only; Load profiles activates Magguu profiles (including optional companions). Ellesmere start popup is skipped; MagguuUI Setup opens on that login.</span>
           </li>
           <li class="flex items-start gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 mt-1.5 flex-shrink-0" />

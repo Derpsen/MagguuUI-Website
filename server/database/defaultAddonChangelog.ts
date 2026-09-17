@@ -5,17 +5,15 @@ export const CURRENT_ADDON_CHANGELOG = {
 
 ### What's new
 
-- Fresh Magguu bake **2026-09-11**: EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders. Use **Apply Magguu profiles**.
-- **Smart Reminders** Setup import. **WowUp Optional** now includes Smart Reminders.
-- **WowUp Optional** adds **HandyNotes MapNotes** (pack-only; no Magguu profile bake yet).
+- **Smart Reminders** can be imported from Setup. **Apply Magguu profiles** also imports it. **WowUp Optional** now includes Smart Reminders.
+- **HandyNotes MapNotes** Magguu settings apply with HandyNotes when you use **Apply Magguu profiles** or **Load profiles**. Still on WowUp Optional.
 - HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter apply with Apply Magguu profiles / Load profiles (no Setup button).
 - BigWigs keystone viewer does not auto-open when Mythic+ ends.
-- WowUp starter and optional hover lists addons A–Z.
 
 ### Additional features
 
 - MagguuUI ships as a **four-addon group** like BigWigs: **MagguuUI**, **[Data]**, **[EUI]**, and **[Media]**. Keep all four enabled. Needs **EllesmereUI 9.0.6+** (live **9.1.6**).
-- Gold Setup is **Apply Magguu profiles**. Below it: **Apply Magguu Settings** and **Load profiles**. Scale \`0.58\`. Magguu Settings is overlay/QoL only (no Ellesmere reimport). Load profiles activates; it does not reimport the bake.
+- Gold Setup is **Apply Magguu profiles**. Below it: **Apply Magguu Settings** and **Load profiles**. Scale \`0.58\`. Magguu Settings is overlay/QoL only. Load profiles switches existing Magguu profiles; it does not re-import them.
 - **Apply Magguu profiles** writes the HUD Edit Mode layout **MagguuUI** once.
 - Ellesmere start popup is skipped; MagguuUI Setup opens on that login.
 - **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.

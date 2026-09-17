@@ -149,6 +149,9 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_4_title', marker: '4. Open Setup and Install All' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: '**Install All** is the gold button' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'delta-only Ellesmere bake' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'reimport the Ellesmere bake' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'Magguu dumps via' },
+  { page: 'guide', section: 'steps', key: 'step_3', marker: 'Magguu dumps via' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'companions (BigWigs, Northern Sky, WIM, Waypoint UI, EXBoss)' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss' },
   { page: 'guide', section: 'steps', key: 'step_3', marker: '**WIM**, **Waypoint UI**, and **EXBoss** — optional Magguu imports' },
@@ -270,6 +273,11 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 0, marker: 'authors per role' },
   { category: 'addons', sortOrder: 0, marker: '**Northern Sky Raid Tools**, **WIM**, **Waypoint UI**, and **EXBoss**' },
   { category: 'addons', sortOrder: 3, marker: 'delta-only Ellesmere bake at scale 0.58' },
+  { category: 'addons', sortOrder: 3, marker: 'reimport the Ellesmere bake' },
+  { category: 'addons', sortOrder: 3, marker: 'Dump addons apply' },
+  { category: 'installation', sortOrder: 0, marker: 'bake + Magguu Settings + companions' },
+  { category: 'installation', sortOrder: 2, marker: 'does not reimport the bake' },
+  { category: 'addons', sortOrder: 0, marker: 'bake + Magguu Settings + companions' },
   { category: 'addons', sortOrder: 3, marker: 'Optional: BigWigs, Northern Sky, WIM, Waypoint UI, and EXBoss' },
   { category: 'general', sortOrder: 2, marker: 'Optional Magguu imports also include WIM, Waypoint UI, and EXBoss' },
   { category: 'installation', sortOrder: 0, marker: 'Optionally install BigWigs, LittleWigs, Northern Sky, WIM, Waypoint UI, and/or EXBoss' },
@@ -652,6 +660,10 @@ export default defineNitroPlugin(() => {
       || currentRelease.content.includes('Magguu Look')
       || currentRelease.content.includes('TopBar, Hearth-Picker')
       || currentRelease.content.includes('Fresh Magguu bake **2026-09-09**')
+      || currentRelease.content.includes('Fresh Magguu bake **2026-09-11**')
+      || currentRelease.content.includes('no Magguu profile bake yet')
+      || currentRelease.content.includes('reimport the bake')
+      || currentRelease.content.includes('dump addons')
       || currentRelease.content.includes('**Tools → Exports**')
       || currentRelease.content.includes('EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, and Waypoint UI')
       || !currentRelease.content.includes('HandyNotes')

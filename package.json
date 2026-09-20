@@ -70,6 +70,7 @@
     "typescript": "^6.0.2"
   },
   "overrides": {
+    "devalue": "5.9.4",
     "esbuild": "0.28.1",
     "fflate": "0.8.3",
     "svgo": "4.1.0"

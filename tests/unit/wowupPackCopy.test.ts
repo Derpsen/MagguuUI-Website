@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
+import { ADDON_DEFAULTS } from '../../server/database/addonMetadata'
 import { CURRENT_ADDON_CHANGELOG } from '../../server/database/defaultAddonChangelog'
 import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_HOME_CONTENT } from '../../server/database/defaultContent'
 
@@ -69,5 +70,9 @@ describe('MagguuUI product facts copy', () => {
     assert.match(qol?.answer || '', /Targeted Spell Bars/)
     assert.match(qol?.answer || '', /secret-safe/)
     assert.match(qol?.answer || '', /Boiling Point/)
+
+    for (const addon of ADDON_DEFAULTS) {
+      assert.doesNotMatch(addon.description || '', /\bdump\b/i, addon.slug)
+    }
   })
 })

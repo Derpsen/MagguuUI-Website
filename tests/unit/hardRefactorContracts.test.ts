@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import { ELVUI_PACKED_PREFIX } from '../../server/utils/addonProfileLua'
 import { summarizeGithubDataSyncResults } from '../../server/utils/githubDataSnapshot'
@@ -55,4 +58,29 @@ test('summarizeGithubDataSyncResults counts success and soft error statuses', ()
     errors: 0,
     imported: 0,
   })
+})
+
+test('admin stats does not query empty api_logs', () => {
+  const src = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), '../../server/api/v1/admin/stats/index.get.ts'),
+    'utf8',
+  )
+  assert.equal(/apiLogs|api_logs/.test(src), false)
+  assert.match(src, /totalApiCalls:\s*0/)
+  assert.match(src, /apiCallsLast7Days:\s*0/)
+  assert.match(src, /id: activityLog\.id/)
+  assert.equal(src.includes('activityLog.details'), false)
+})
+
+test('latest-change homepage query selects action fields without details JSON', () => {
+  const src = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), '../../server/api/v1/latest-change.get.ts'),
+    'utf8',
+  )
+  assert.match(src, /select\(\{\s*action: activityLog\.action,\s*entityType: activityLog\.entityType,\s*entityName: activityLog\.entityName,\s*createdAt: activityLog\.createdAt,\s*\}\)/s)
+  assert.equal(src.includes('activityLog.details'), false)
+  assert.match(src, /action: row\.action/)
+  assert.match(src, /type: row\.entityType/)
+  assert.match(src, /name: row\.entityName/)
+  assert.match(src, /createdAt: row\.createdAt/)
 })

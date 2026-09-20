@@ -10,7 +10,12 @@ import { db } from '~/server/database'
 import { activityLog } from '~/server/database/schema'
 
 export default defineEventHandler(async () => {
-  const row = db.select().from(activityLog)
+  const row = db.select({
+    action: activityLog.action,
+    entityType: activityLog.entityType,
+    entityName: activityLog.entityName,
+    createdAt: activityLog.createdAt,
+  }).from(activityLog)
     .where(inArray(activityLog.entityType, ['profile', 'wowup', 'layout']))
     .orderBy(desc(activityLog.createdAt))
     .limit(1)

@@ -9,7 +9,7 @@ import { count, sql, desc, inArray } from 'drizzle-orm'
 import { db } from '~/server/database'
 import {
   profiles, wowupStrings, characterLayouts, changelogs,
-  copyEvents, apiLogs, activityLog, users,
+  copyEvents, activityLog, users,
 } from '~/server/database/schema'
 
 export default defineEventHandler(async () => {
@@ -25,13 +25,11 @@ export default defineEventHandler(async () => {
   const layoutCount = db.select({ count: count() }).from(characterLayouts).get()
   const changelogCount = db.select({ count: count() }).from(changelogs).get()
   const copyCount = db.select({ count: count() }).from(copyEvents).get()
-  const apiLogCount = db.select({ count: count() }).from(apiLogs).get()
   const userCount = db.select({ count: count() }).from(users).get()
   const activityCount = db.select({ count: count() }).from(activityLog).get()
 
   // ─── Recent Counts (7 days) ───────────────────────
   const recentCopies = db.select({ count: count() }).from(copyEvents).where(sql`created_at > ${weekAgo}`).get()
-  const recentApiCalls = db.select({ count: count() }).from(apiLogs).where(sql`created_at > ${weekAgo}`).get()
 
   // ─── Unique Visitors (from copy_events) ───────────
   const uniqueVisitors = db.get<{ count: number }>(sql`
@@ -46,12 +44,6 @@ export default defineEventHandler(async () => {
   const dailyCopies = db.all(sql`
     SELECT date(created_at, 'unixepoch') as day, COUNT(*) as count
     FROM copy_events WHERE created_at > ${monthAgo}
-    GROUP BY day ORDER BY day ASC
-  `)
-
-  const dailyApi = db.all(sql`
-    SELECT date(created_at, 'unixepoch') as day, COUNT(*) as count
-    FROM api_logs WHERE created_at > ${monthAgo}
     GROUP BY day ORDER BY day ASC
   `)
 
@@ -95,7 +87,13 @@ export default defineEventHandler(async () => {
   })
 
   // ─── Recent Activity ──────────────────────────────
-  const recentActivity = db.select().from(activityLog)
+  const recentActivity = db.select({
+    id: activityLog.id,
+    action: activityLog.action,
+    entityType: activityLog.entityType,
+    entityName: activityLog.entityName,
+    createdAt: activityLog.createdAt,
+  }).from(activityLog)
     .orderBy(desc(activityLog.createdAt))
     .limit(10)
     .all()
@@ -107,11 +105,7 @@ export default defineEventHandler(async () => {
   `) as Array<{ string_type: string; copies: number }>
 
   // ─── Top API Endpoints (30 days) ──────────────────
-  const topEndpoints = db.all(sql`
-    SELECT endpoint, method, COUNT(*) as calls
-    FROM api_logs WHERE created_at > ${monthAgo}
-    GROUP BY endpoint, method ORDER BY calls DESC LIMIT 10
-  `) as Array<{ endpoint: string; method: string; calls: number }>
+  const topEndpoints: Array<{ endpoint: string; method: string; calls: number }> = []
 
   // ─── Weekly Trends ────────────────────────────────
   const thisWeekCopies = recentCopies?.count || 0
@@ -123,14 +117,7 @@ export default defineEventHandler(async () => {
     ? Math.round(((thisWeekCopies - lastWeekCopies.count) / lastWeekCopies.count) * 100)
     : 0
 
-  const thisWeekApi = recentApiCalls?.count || 0
-  const lastWeekApi = db.get<{ count: number }>(sql`
-    SELECT COUNT(*) as count FROM api_logs
-    WHERE created_at > ${twoWeeksAgo} AND created_at <= ${weekAgo}
-  `)
-  const apiTrend = lastWeekApi?.count
-    ? Math.round(((thisWeekApi - lastWeekApi.count) / lastWeekApi.count) * 100)
-    : 0
+  const apiTrend = 0
 
   // ─── String Health ────────────────────────────────
   const outdatedProfiles = db.get<{ count: number }>(sql`
@@ -253,16 +240,16 @@ export default defineEventHandler(async () => {
     changelogs: changelogCount?.count || 0,
     users: userCount?.count || 0,
     totalCopies: copyCount?.count || 0,
-    totalApiCalls: apiLogCount?.count || 0,
+    totalApiCalls: 0,
     totalActivities: activityCount?.count || 0,
     // Copy visitors
     uniqueVisitors: uniqueVisitors?.count || 0,
     uniqueVisitorsLast7Days: uniqueVisitorsLast7Days?.count || 0,
     copiesLast7Days: recentCopies?.count || 0,
-    apiCallsLast7Days: recentApiCalls?.count || 0,
+    apiCallsLast7Days: 0,
     // Charts
     dailyCopies,
-    dailyApi,
+    dailyApi: [] as Array<{ day: string; count: number }>,
     topCopied,
     recentActivity,
     // Extended stats

@@ -37,10 +37,12 @@ export function useAuth() {
   const sessionId = useState<number | null>('auth-session-id', () => null)
   const restoring = useState<boolean>('auth-restoring', () => false)
   const initialized = useState<boolean>('auth-initialized', () => false)
+  const sessionChecked = useState<boolean>('auth-session-checked', () => false)
 
   function setSession(payload: AuthSessionPayload) {
     user.value = payload.user ?? null
     sessionId.value = payload.sessionId ?? null
+    sessionChecked.value = true
   }
 
   function clearSession() {
@@ -64,6 +66,10 @@ export function useAuth() {
       return true
     }
 
+    if (!force && sessionChecked.value) {
+      return !!user.value
+    }
+
     restoring.value = true
 
     try {
@@ -83,6 +89,7 @@ export function useAuth() {
       return false
     } finally {
       restoring.value = false
+      sessionChecked.value = true
     }
   }
 
@@ -117,6 +124,7 @@ export function useAuth() {
     }
 
     clearSession()
+    sessionChecked.value = false
     navigateTo('/admin/login')
   }
 

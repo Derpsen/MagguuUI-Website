@@ -21,13 +21,13 @@ describe('WowUp pack copy', () => {
 
     assert.ok(CURRENT_ADDON_CHANGELOG.content.includes('**WowUp starter:** ' + STARTER + '.'))
     assert.ok(CURRENT_ADDON_CHANGELOG.content.includes('**Optional:** ' + OPTIONAL + '.'))
-    assert.equal(CURRENT_ADDON_CHANGELOG.version, 'v12.1.4')
+    assert.equal(CURRENT_ADDON_CHANGELOG.version, 'v12.1.5')
   })
 })
 
 describe('MagguuUI product facts copy', () => {
   it('locks Ellesmere live host, Apply Magguu profiles, Targeted Spell Bars, and no foreign author credits', () => {
-    assert.match(CURRENT_ADDON_CHANGELOG.content, /live \*\*9\.1\.6\*\*/)
+    assert.match(CURRENT_ADDON_CHANGELOG.content, /live \*\*9\.2\.2\*\*/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Targeted Spell Bars/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /EXBoss MythicCast OFF/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Boiling Point/)
@@ -68,8 +68,9 @@ describe('MagguuUI product facts copy', () => {
 
     const qol = DEFAULT_FAQS.find(f => f.question === 'What QoL options are included?')
     assert.match(qol?.answer || '', /Targeted Spell Bars/)
-    assert.match(qol?.answer || '', /secret-safe/)
+    assert.match(qol?.answer || '', /Smart Tab/)
     assert.match(qol?.answer || '', /Boiling Point/)
+    assert.doesNotMatch(qol?.answer || '', /Hide Services/)
 
     for (const addon of ADDON_DEFAULTS) {
       assert.doesNotMatch(addon.description || '', /\bdump\b/i, addon.slug)

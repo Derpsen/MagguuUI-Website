@@ -41,5 +41,5 @@ Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with 
 **text** (html-safe):
 
 ```html
-Skinning is one <strong>NAMES &amp; COLORS</strong> section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (and 2P/4P), <strong>Smart Tab</strong>, Hide Services on General, <strong>Quick Focus</strong>, an <strong>Audio device switcher</strong> on the Ellesmere speaker, <strong>Boiling Point</strong>, and <strong>Targeted Spell Bars</strong> via Ellesmere (leave EXBoss MythicCast off).
+Skinning is one <strong>NAMES &amp; COLORS</strong> section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (and 2P/4P), <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, an <strong>Audio device switcher</strong> on the Ellesmere speaker, <strong>Boiling Point</strong>, and <strong>Targeted Spell Bars</strong> via Ellesmere (leave EXBoss MythicCast off).
 ```

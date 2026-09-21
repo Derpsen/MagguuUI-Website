@@ -35,11 +35,11 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
   pass.
 - MagguuUI public copy (home/guide/FAQ/changelog/addon metadata) must stay
   aligned with the current MagguuUI release: four sibling folders
-  (MagguuUI / Data / EUI / Media), EllesmereUI TOC min **9.0.6+** (**live 9.1.6**),
+  (MagguuUI / Data / EUI / Media), EllesmereUI TOC min **9.0.6+** (**live 9.2.2**),
   **Targeted Spell Bars** (Ellesmere Mythic+ Nearby
   Cast) **ON** via Ellesmere — **EXBoss MythicCast OFF** (same feature; do not run
   both), MagguuUI_EUI keeps **Boiling Point** (no TopBar / Hearth-Picker / MagguuUI
-  FPS-MS), AuraBuff count text **CENTER**, Hide Services is secret-safe, fresh
+  FPS-MS), AuraBuff count text **CENTER**, Magguu does not join/leave/hide Services, fresh
   install gold **Apply Magguu profiles** then **Magguu Settings**
   (overlay/QoL only) and **Load profiles** (activates existing Magguu profiles;
   does not re-import). Setup buttons are

@@ -45,7 +45,7 @@
 - Posted Magguu export = **full bake** (2026-09-11: Ellesmere type=full, BigWigs, NSRT, EXBoss, WIM, Waypoint UI, HandyNotes, TTT, GTFO, BugSack, PGF, Smart Reminders). Magguu Settings overlay still does not reimport the bake.
 - **Targeted Spell Bars** (Ellesmere Mythic+ Nearby Cast) **ON**; **EXBoss MythicCast OFF**.
 - MagguuUI_EUI: **Boiling Point** stays; TopBar, Hearth-Picker, MagguuUI FPS/MS removed.
-- AuraBuff count text **CENTER**. Hide Services is secret-safe (do not claim unsafe).
+- AuraBuff count text **CENTER**. Magguu does not join, leave, or hide Services.
 - Fresh install: **Apply Magguu profiles** imports Magguu profiles + Magguu Settings + companions (HandyNotes, TTT, GTFO, BugSack, PGF, Smart Reminders, …).
 - **Magguu Settings** = overlay/QoL only (no Ellesmere re-import).
 - **Load profiles** activates Magguu profiles (including HandyNotes/TTT/GTFO/BugSack/PGF); does not re-import except a missing companion once. Setup buttons are native share-strings only (BigWigs, Northern Sky, EXBoss, Smart Reminders).
@@ -59,7 +59,7 @@
 
 - Public home: clean and clear — primary CTA **Install & Setup** (`/guide`), secondary **Import Strings** (`/strings`). Little glass/motion; no hero fade-in or bounce scroll cue.
 - Brand palette (public): Ellesmere teal `#0CD29D` is **primary** via `--color-brand-*` (hover/pressed `#0AA882` / `#088F6F`). `--color-ellesmere` aliases brand-400. Backgrounds are charcoal/near-black — not navy-blue brand dominance. Old Magguu blue is demoted; admin keeps its own accent tokens (light touch only if shared tokens force it). Admin brand marks use `/logo.png` (same as public).
-- Home copy stays factual about EllesmereUI (native module, `/mui` Apply Magguu profiles, Magguu Settings overlay/QoL, Load profiles activate-only, optional companions, Skinning NAMES & COLORS DualRow for unit-frame and party/raid split names plus class-colored keybinds — no EXBoss split, party/raid item level, Smart Tab, Hide Services on General, Quick Focus, audio switcher, Boiling Point, Targeted Spell Bars). Seed defaults live in `server/database/defaultContent.ts` (EN + DE). Known-stale seed claims need a `LEGACY_*` marker in `server/plugins/init.ts` or `NUXT_SYNC_SEEDED_CONTENT=true`. Public pages prefer Magguu/MagguuUI naming and product addon names — no foreign person/author credits. Never bake/dump/recapture on public pages.
+- Home copy stays factual about EllesmereUI (native module, `/mui` Apply Magguu profiles, Magguu Settings overlay/QoL, Load profiles activate-only, optional companions, Skinning NAMES & COLORS DualRow for unit-frame and party/raid split names plus class-colored keybinds — no EXBoss split, party/raid item level, Smart Tab, Quick Focus, audio switcher, Boiling Point, Targeted Spell Bars). Magguu does not join, leave, or hide Services. Seed defaults live in `server/database/defaultContent.ts` (EN + DE). Known-stale seed claims need a `LEGACY_*` marker in `server/plugins/init.ts` or `NUXT_SYNC_SEEDED_CONTENT=true`. Public pages prefer Magguu/MagguuUI naming and product addon names — no foreign person/author credits. Never bake/dump/recapture on public pages.
 
 ## Important Paths
 

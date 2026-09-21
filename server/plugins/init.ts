@@ -142,8 +142,10 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Gold <strong>Install All</strong>' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Goldenes <strong>Install All</strong>', locale: 'de' },
   { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Hide Services on General, <strong>Quick Focus</strong>, and an <strong>Audio device switcher</strong>' },
+  { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Hide Services on General (secret-safe)' },
   { page: 'home', section: 'features', key: 'feature_3_text', marker: 'and an <strong>Audio device switcher</strong> on the Ellesmere speaker, and <strong>Targeted Spell Bars</strong>' },
   { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Hide Services auf General, <strong>Quick Focus</strong> und ein <strong>Audio-Geräte-Umschalter</strong>', locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Hide Services auf General (secret-safe)', locale: 'de' },
   { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Lautsprecher und <strong>Targeted Spell Bars</strong>', locale: 'de' },
   { page: 'guide', section: 'intro', key: 'text', marker: 'run Install All. Magguu Settings' },
   { page: 'guide', section: 'steps', key: 'step_4_title', marker: '4. Open Setup and Install All' },
@@ -157,6 +159,8 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_3', marker: '**WIM**, **Waypoint UI**, and **EXBoss** — optional Magguu imports' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'appearance and author configs' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'Hide Services on General, Quick Focus (modifier-click to focus), and an audio device switcher' },
+  { page: 'guide', section: 'steps', key: 'step_5', marker: 'Hide Services on General (secret-safe)' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'chat channels and size with Services off General' },
 ] as const
 
 const LEGACY_FAQ_MARKERS = [
@@ -286,6 +290,8 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 0, marker: 'BugSack**, and **Premade Groups Filter**, if those addons are present' },
   { category: 'addons', sortOrder: 3, marker: 'GTFO / BugSack / Premade Groups Filter if present' },
   { category: 'addons', sortOrder: 7, marker: 'Hide Services on General\n- Quick Focus' },
+  { category: 'addons', sortOrder: 7, marker: 'Hide Services on General (secret-safe)' },
+  { category: 'addons', sortOrder: 3, marker: 'chat channels and size with Services off General' },
   { category: 'addons', sortOrder: 7, marker: 'leave EXBoss MythicCast off)\n\nSettings are stored' },
   { category: 'troubleshooting', sortOrder: 0, marker: "Install All didn't do anything" },
   { category: 'troubleshooting', sortOrder: 2, marker: 're-run **Install All**' },

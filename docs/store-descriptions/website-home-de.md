@@ -41,5 +41,5 @@ Ellesmere-Profil <strong>MagguuUI</strong> mit Scale <strong>0.58</strong> und f
 **text** (html-sicher):
 
 ```html
-Skinning ist eine Kategorie <strong>NAMEN &amp; FARBEN</strong> (zwei Spalten): geteilte Unit-Frame-Namen, Party-/Raid-Namen und klassenfarbige Keybind-Modifier. QoL: Death Release, Co-Tank, Stealth/Stance, Spell Alerts, Itemlevel in Party und Raid (2P/4P), <strong>Smart Tab</strong>, Hide Services auf General, <strong>Quick Focus</strong>, ein <strong>Audio-Geräte-Umschalter</strong> am Ellesmere-Lautsprecher, <strong>Boiling Point</strong> und <strong>Targeted Spell Bars</strong> über Ellesmere (EXBoss MythicCast aus).
+Skinning ist eine Kategorie <strong>NAMEN &amp; FARBEN</strong> (zwei Spalten): geteilte Unit-Frame-Namen, Party-/Raid-Namen und klassenfarbige Keybind-Modifier. QoL: Death Release, Co-Tank, Stealth/Stance, Spell Alerts, Itemlevel in Party und Raid (2P/4P), <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, ein <strong>Audio-Geräte-Umschalter</strong> am Ellesmere-Lautsprecher, <strong>Boiling Point</strong> und <strong>Targeted Spell Bars</strong> über Ellesmere (EXBoss MythicCast aus).
 ```

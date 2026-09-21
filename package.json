@@ -33,7 +33,7 @@
     "@iconify-json/simple-icons": "^1.2.93",
     "@nuxt/ui": "^4.11.1",
     "@resvg/resvg-js": "^2.6.2",
-    "@simplewebauthn/browser": "^13.2.0",
+    "@simplewebauthn/browser": "^14.0.0",
     "@simplewebauthn/server": "^14.0.2",
     "@tiptap/extension-link": "^3.31.3",
     "@tiptap/extension-placeholder": "^3.31.3",

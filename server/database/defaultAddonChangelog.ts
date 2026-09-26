@@ -1,12 +1,13 @@
 export const CURRENT_ADDON_CHANGELOG = {
-  version: 'v12.1.5',
-  publishedAt: new Date('2026-09-21T00:00:00Z'),
+  version: 'v12.1.6',
+  publishedAt: new Date('2026-09-26T00:00:00Z'),
   content: `Ready for WoW 12.1. MagguuUI lives inside EllesmereUI. Type \`/mui\` to open it.
 
 ### What's new
 
+- Updated Magguu profiles. Click gold **Apply Magguu profiles** to pick them up.
+- **Smart Reminders** import now includes trash alerts.
 - Setup splits **First install** from **Already installed**. Gold **Apply Magguu profiles** is first install. **Apply Magguu Settings** and **Load on this character** sit under Already installed and do not reinstall profiles.
-- Click gold **Apply Magguu profiles** to pick up the current Magguu profiles.
 - First-install toggle is **Include Magguu Settings** (default on). Magguu Settings later is look only.
 - **HandyNotes MapNotes** Magguu settings apply with HandyNotes when you use **Apply Magguu profiles** or **Load profiles**. Still on WowUp Optional.
 - **Raider.IO Talent Builds**: left-click a build to load it. Auto-open once per party or raid instance.

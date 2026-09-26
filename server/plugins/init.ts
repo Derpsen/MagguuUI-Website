@@ -321,7 +321,6 @@ export default defineNitroPlugin(() => {
       `CREATE INDEX IF NOT EXISTS idx_copy_events_created_at ON copy_events (created_at)`,
       `CREATE INDEX IF NOT EXISTS idx_page_views_path_created_at ON page_views (path, created_at)`,
       `CREATE INDEX IF NOT EXISTS idx_page_views_created_at ON page_views (created_at)`,
-      `CREATE INDEX IF NOT EXISTS idx_api_logs_created_at ON api_logs (created_at)`,
       `CREATE INDEX IF NOT EXISTS idx_passkeys_user_id ON passkeys (user_id)`,
       `CREATE INDEX IF NOT EXISTS idx_profiles_visible_sort ON profiles (is_visible, sort_order)`,
       `CREATE INDEX IF NOT EXISTS idx_wowup_strings_visible_sort ON wowup_strings (is_visible, sort_order)`,

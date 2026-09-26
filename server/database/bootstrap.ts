@@ -136,16 +136,6 @@ export const DATABASE_BOOTSTRAP_SQL = `
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
   );
 
-  CREATE TABLE IF NOT EXISTS api_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    endpoint TEXT NOT NULL,
-    method TEXT NOT NULL,
-    ip TEXT,
-    api_key_id INTEGER,
-    status_code INTEGER,
-    created_at INTEGER NOT NULL DEFAULT (unixepoch())
-  );
-
   CREATE TABLE IF NOT EXISTS sync_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     trigger_source TEXT NOT NULL,
@@ -275,7 +265,6 @@ export const SAFE_COLUMN_MIGRATIONS = [
   // Performance indexes added 2026-04
   'CREATE INDEX IF NOT EXISTS idx_activity_log_entity_type_created_at ON activity_log(entity_type, created_at)',
   'CREATE INDEX IF NOT EXISTS idx_activity_log_user_id_created_at ON activity_log(user_id, created_at)',
-  'CREATE INDEX IF NOT EXISTS idx_api_logs_created_at ON api_logs(created_at)',
   'CREATE INDEX IF NOT EXISTS idx_copy_events_string_type_string_id ON copy_events(string_type, string_id)',
   'CREATE INDEX IF NOT EXISTS idx_copy_events_created_at ON copy_events(created_at)',
   'CREATE INDEX IF NOT EXISTS idx_page_views_path_created_at ON page_views(path, created_at)',

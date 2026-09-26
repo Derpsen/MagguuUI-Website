@@ -280,23 +280,6 @@ export const settings = sqliteTable('settings', {
     .default(sql`(unixepoch())`),
 })
 
-// ─── API Logs ──────────────────────────────────────
-// Request logging for statistics
-
-export const apiLogs = sqliteTable('api_logs', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  endpoint: text('endpoint').notNull(),
-  method: text('method').notNull(),
-  ip: text('ip'),
-  apiKeyId: integer('api_key_id'),
-  statusCode: integer('status_code'),
-  createdAt: integer('created_at', { mode: 'timestamp' })
-    .notNull()
-    .default(sql`(unixepoch())`),
-}, (table) => ({
-  createdAtIdx: index('idx_api_logs_created_at').on(table.createdAt),
-}))
-
 // ─── Sync History ──────────────────────────────────
 // GitHub sync run log
 

@@ -146,12 +146,6 @@ export const contentBulkSchema = z.object({
   items: z.array(contentItemSchema).min(1).max(200),
 })
 
-// ─── Settings ─────────────────────────────────────
-
-export const settingsUpdateSchema = z.object({
-  settings: z.record(z.string().max(100), z.string().max(10_000)),
-})
-
 // ─── API Keys ─────────────────────────────────────
 
 export const apiKeyCreateSchema = z.object({

@@ -23,7 +23,7 @@ MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install
 **text** (html-safe):
 
 ```html
-Two sidebar rows: <strong>Options</strong> (Setup, Skinning, QoL) and <strong>Changelog</strong>. Gold <strong>Apply Magguu profiles</strong>, Magguu Settings and Load profiles side by side, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.
+Two sidebar rows: <strong>Options</strong> (Setup, Skinning, QoL) and <strong>Changelog</strong>. Gold <strong>Apply Magguu profiles</strong>, <strong>Magguu Settings</strong> (overlay/QoL only), and <strong>Load profiles</strong> (activate only) side by side, plus required/optional imports and WowUp copy strings on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.
 ```
 
 ### 2 — Current Retail layouts
@@ -32,7 +32,7 @@ Two sidebar rows: <strong>Options</strong> (Setup, Skinning, QoL) and <strong>Ch
 **text** (html-safe):
 
 ```html
-Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter.
+Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders.
 ```
 
 ### 3 — Skinning and QoL

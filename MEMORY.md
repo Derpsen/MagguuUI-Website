@@ -199,3 +199,10 @@
 - Hard reload of `/admin/login` (then ssr:false SPA shell) crashed client init with `NUXT_E1005` / `injectHead().hooks.hookOnce is not a function`.
 - Cause: `@nuxt/ui@4.9` colors plugin SPA FOUC path vs Unhead v3 `HookableCore` (Nuxt 4.5).
 - Interim fix was a local Unhead polyfill; superseded by `@nuxt/ui` 4.10 (nuxt/ui#6658). Polyfill files removed. `/admin/login` stays `ssr: true`.
+
+## 2026-09-27 autonomy
+
+- Admin-Smoke checklist documented in `AGENTS.md` (login + five #102 routes; report FAIL-only to Buddy; Homelab owns pull).
+- Merge reports must say **Actions-only** vs **App-Image** (Dependabot pin-only = no Homelab; app/Dockerfile publish = Homelab via Container-nach-CI after green docker).
+- USelect/Reka: never option-shaped `value: ""`; sentinel e.g. `"all"`. Enforced by `npm run lint` / `lint:uselect` (`scripts/check-uselect-empty-value.mjs`). `pages/admin/system/github.vue` syncFilters All → `"all"`.
+- Pack/copy product-fact deltas: update Website + MagguuBot + **Magguu-Dashboard** AGENTS (+ MEMORY where present) the same round.

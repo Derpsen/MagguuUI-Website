@@ -64,7 +64,7 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
 - ECharts stays admin-only (`utils/echartsSetup.ts` + `components/admin/charts`). Do not restore a global `plugins/echarts.client.ts`.
 - After behavior changes run `npm run typecheck`, `npm run build`, `npm run verify:smoke`, and `npm test`.
 - After dependency changes also run `npm run audit:prod`.
-- Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier).
+- Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier). `npm run lint` also runs `lint:uselect` (rejects option-shaped `value: ""`).
 - Validation uses Zod.
 
 ## WowUp packs (2026-09-15)
@@ -73,12 +73,52 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
 - **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
 - No WindTools. HandyNotes MapNotes is on WowUp Optional; Magguu settings apply with HandyNotes via Apply Magguu profiles / Load profiles.
 
+
+## Admin-Smoke checklist
+
+After Unraid app-image pull / when Buddy asks (Homelab owns container pull):
+
+1. Login `/admin/login`
+2. These five routes must be **200** (from #102):
+   - `/admin/system/activity`
+   - `/admin/strings/profiles`
+   - `/admin/strings/layouts`
+   - `/admin/data/addons`
+   - `/admin/content` (redirects to `/admin/content/home` — treat redirect-to-home as OK)
+3. Report to Buddy **only on FAIL** (or short OK if asked).
+
+## Merge reports: Actions-only vs App-Image
+
+Merge reports to Buddy must say which path applies:
+
+- **Actions-only / pin-only Dependabot** → no Homelab pull.
+- **App-Image** (Dockerfile / app code that publishes the docker image) → Homelab via Container-nach-CI after green docker publish; Stack does not double-ping Homelab.
+
+## Product-facts Diff checklist
+
+For PRs / copy / pack deltas:
+
+- Four siblings: MagguuUI / MagguuUI_Data / MagguuUI_EUI / MagguuUI_Media
+- EllesmereUI TOC min **9.0.6+**; live **9.2.9**; Magguu bake dump-based (still **9.0.8** in agent MEMORY)
+- WowUp Starter: EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore
+- Optional includes Auctionator, Smart Reminders, HandyNotes MapNotes; **no WindTools**; **no KeystoneLoot / MagguuKSL**
+- No EXBoss name-split
+- Never MagguuUI git-tag/release without Marco's explicit yes
+- Never remove/replace third-party author names
+
+When WowUp/copy product facts change, update Website + MagguuBot + **Magguu-Dashboard** `AGENTS.md` (+ `MEMORY.md` where present) the same round.
+
+## USelect / Reka
+
+Never `value: ""` on select / option items — use a sentinel (e.g. `"all"`). Enforced by `npm run lint` / `npm run lint:uselect` (`scripts/check-uselect-empty-value.mjs`). Content-store rows without `label:` (e.g. guide.vue `value: ""`) are not select options and are ignored by the check.
+
 ## Commands
 
 ```bash
 npm run dev            # dev server
-npm run lint           # Nuxt ESLint check
+npm run lint           # ESLint + USelect empty-value check
 npm run lint:fix       # auto-fix safe ESLint findings
+npm run lint:uselect    # reject option-shaped value: "" on select items
 npm run typecheck      # TypeScript check
 npm run build          # production build (.output/)
 npm run verify         # clean + build + production smoke test

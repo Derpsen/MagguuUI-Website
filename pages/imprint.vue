@@ -80,7 +80,7 @@ const siteSettings = usePublicPageSeo({
   robots: 'noindex, follow',
 })
 
-const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguui.com')
+const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguu.xyz')
 
 function openContact() {
   window.location.href = `mailto:${contactEmail.value}`

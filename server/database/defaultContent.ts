@@ -50,7 +50,7 @@ export const DEFAULT_HOME_CONTENT = [
 
 export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'intro', key: 'title', value: 'Installation Guide', locale: 'en', type: 'text', sortOrder: 0 },
-  { page: 'guide', section: 'intro', key: 'text', value: 'Install EllesmereUI 9.0.6+ (live 9.1.6), add the four MagguuUI addon folders, then open /mui and run Apply Magguu profiles. Magguu Settings (overlay/QoL only), Load profiles (activate only), and WowUp copy popups live on Setup. Companion addons (BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, Smart Reminders) are optional.', locale: 'en', type: 'text', sortOrder: 1 },
+  { page: 'guide', section: 'intro', key: 'text', value: 'Install EllesmereUI 9.0.6+ (live 9.2.9), add the four MagguuUI addon folders, then open /mui and run Apply Magguu profiles. Magguu Settings (overlay/QoL only), Load profiles (activate only), and WowUp copy popups live on Setup. Companion addons (BigWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, Smart Reminders) are optional.', locale: 'en', type: 'text', sortOrder: 1 },
 
   { page: 'guide', section: 'steps', key: 'step_1_title', value: '1. Install EllesmereUI', locale: 'en', type: 'text', sortOrder: 10 },
   { page: 'guide', section: 'steps', key: 'step_1', value: 'MagguuUI is a native EllesmereUI module. Install **EllesmereUI 9.0.6 or newer** first from CurseForge, Wago, or WoWInterface, and leave it enabled.\n\nWithout EllesmereUI, MagguuUI will not load.\n\nEllesmere\'s start popup is skipped. MagguuUI Setup opens on that login so you can run Apply Magguu profiles.', locale: 'en', type: 'markdown', sortOrder: 11 },

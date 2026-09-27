@@ -13,7 +13,7 @@ export const SITE_SETTINGS_DEFAULTS = {
   // Empty by default — leaves nuxt-og-image's per-route Satori card as the
   // canonical OG image. Admins can still pin a specific image via settings.
   og_image_url: '',
-  contact_email: 'contact@magguui.com',
+  contact_email: 'contact@magguu.xyz',
   imprint_name: '',
   imprint_street: '',
   imprint_city: '',

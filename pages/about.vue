@@ -145,7 +145,7 @@ const siteSettings = usePublicPageSeo({
   path: '/about',
 })
 
-const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguui.com')
+const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguu.xyz')
 const githubUrl = computed(() => siteSettings.value.github_url || 'https://github.com/Derpsen/MagguuUI')
 const githubIssuesUrl = computed(() => githubUrl.value.endsWith('/issues') ? githubUrl.value : `${githubUrl.value.replace(/\/$/, '')}/issues`)
 

@@ -1,5 +1,5 @@
 /**
- * Shared GitHub Data/ snapshot import for manual pull and signed webhooks.
+ * Shared GitHub MagguuUI_Data snapshot import for manual pull and signed webhooks.
  *
  * Fetch+validate stays separate from DB apply so pull can wrap addon+class
  * in one transaction while the webhook keeps soft per-snapshot error rows.
@@ -108,7 +108,7 @@ function appendWowUpResults(
   }
 }
 
-/** List, size-check, fetch, and parse-validate every Data/*.lua at one SHA. */
+/** List, size-check, fetch, and parse-validate every MagguuUI_Data/AddOns/*.lua at one SHA. */
 export async function fetchAddonLuaSnapshot(
   options: GithubSnapshotFetchOptions,
 ): Promise<AddonLuaSource[]> {

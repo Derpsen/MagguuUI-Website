@@ -94,7 +94,7 @@
           <button
             v-if="isFiltering"
             class="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
-            @click="search = ''; addonFilter = ''"
+            @click="search = ''; addonFilter = 'all'"
           >Clear filters</button>
         </div>
       </template>
@@ -221,18 +221,18 @@ const {
 setupLifecycle()
 
 // --- Page-specific: addon filter ---
-const addonFilter = ref('')
+const addonFilter = ref('all')
 
-const isFiltering = computed(() => search.value.trim() !== '' || addonFilter.value !== '')
+const isFiltering = computed(() => search.value.trim() !== '' || addonFilter.value !== 'all')
 
 const addonOptions = computed(() => {
   const addons = [...new Set(items.value.map(p => p.addon))].sort()
-  return [{ label: 'All Addons', value: '' }, ...addons.map(a => ({ label: a, value: a }))]
+  return [{ label: 'All Addons', value: 'all' }, ...addons.map(a => ({ label: a, value: a }))]
 })
 
 const filteredProfiles = computed(() => {
   let result = items.value
-  if (addonFilter.value) result = result.filter(p => p.addon === addonFilter.value)
+  if (addonFilter.value && addonFilter.value !== 'all') result = result.filter(p => p.addon === addonFilter.value)
   if (search.value) {
     const q = search.value.toLowerCase()
     result = result.filter(p => p.addon.toLowerCase().includes(q) || p.profile.toLowerCase().includes(q))

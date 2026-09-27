@@ -228,7 +228,7 @@ const items = ref<AddonRow[]>([])
 const loading = ref(true)
 const search = ref('')
 const stateFilter = ref<'onsite' | 'all' | 'hidden' | 'unavailable'>('onsite')
-const categoryFilter = ref('')
+const categoryFilter = ref('all')
 
 const modalOpen = ref(false)
 const editingItem = ref<AddonRow | null>(null)
@@ -258,7 +258,7 @@ function emptyForm(): AddonForm {
 }
 
 const categoryOptions = [
-  { label: 'All Categories', value: '' },
+  { label: 'All Categories', value: 'all' },
   { label: 'Required', value: 'required' },
   { label: 'Core', value: 'core' },
   { label: 'Optional', value: 'optional' },
@@ -280,7 +280,7 @@ const filteredAddons = computed(() => {
   if (stateFilter.value === 'onsite') result = result.filter(a => a.isVisible && a.isAvailable)
   else if (stateFilter.value === 'hidden') result = result.filter(a => !a.isVisible)
   else if (stateFilter.value === 'unavailable') result = result.filter(a => !a.isAvailable)
-  if (categoryFilter.value) result = result.filter(a => a.category === categoryFilter.value)
+  if (categoryFilter.value && categoryFilter.value !== 'all') result = result.filter(a => a.category === categoryFilter.value)
   if (search.value.trim()) {
     const q = search.value.toLowerCase().trim()
     result = result.filter(a =>

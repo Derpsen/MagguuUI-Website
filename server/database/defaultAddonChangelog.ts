@@ -15,7 +15,7 @@ export const CURRENT_ADDON_CHANGELOG = {
 
 ### Additional features
 
-- MagguuUI ships as a **four-addon group** like BigWigs: **MagguuUI**, **[Data]**, **[EUI]**, and **[Media]**. Keep all four enabled. Needs **EllesmereUI 9.0.6+** (live **9.2.2**).
+- MagguuUI ships as a **four-addon group** like BigWigs: **MagguuUI**, **[Data]**, **[EUI]**, and **[Media]**. Keep all four enabled. Needs **EllesmereUI 9.0.6+** (live **9.2.9**).
 - Gold Setup is **Apply Magguu profiles**. Below it: **Apply Magguu Settings** and **Load profiles**. Scale \`0.58\`. Magguu Settings is overlay/QoL only. Load profiles switches existing Magguu profiles; it does not re-import them.
 - **Apply Magguu profiles** writes the HUD Edit Mode layout **MagguuUI** once.
 - Ellesmere start popup is skipped; MagguuUI Setup opens on that login.

@@ -39,7 +39,7 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
   **Targeted Spell Bars** (Ellesmere Mythic+ Nearby
   Cast) **ON** via Ellesmere — **EXBoss MythicCast OFF** (same feature; do not run
   both), MagguuUI_EUI keeps **Boiling Point** (no TopBar / Hearth-Picker / MagguuUI
-  FPS-MS), AuraBuff count text **CENTER**, Hide Services is secret-safe, fresh
+  FPS-MS), AuraBuff count text **CENTER**, Magguu does not join/leave/hide Services, fresh
   install gold **Apply Magguu profiles** then **Magguu Settings**
   (overlay/QoL only) and **Load profiles** (activates existing Magguu profiles;
   does not re-import). Setup buttons are

@@ -299,14 +299,14 @@
         v-else
         icon="i-heroicons-clock"
         title="No syncs found"
-        :description="syncFilter || syncSearch ? 'No syncs match the current filter.' : 'Sync jobs will appear here once they run.'"
+        :description="syncFilter !== 'all' || syncSearch ? 'No syncs match the current filter.' : 'Sync jobs will appear here once they run.'"
       >
-        <template v-if="syncFilter || syncSearch" #actions>
+        <template v-if="syncFilter !== 'all' || syncSearch" #actions>
           <UButton
             color="neutral"
             variant="ghost"
             icon="i-heroicons-x-mark"
-            @click="syncFilter = ''; syncSearch = ''"
+            @click="syncFilter = 'all'; syncSearch = ''"
           >
             Clear filters
           </UButton>
@@ -401,7 +401,7 @@ const versionCheckDetails = ref<VersionCheckDetails | null>(null)
 const pushing = ref(false)
 const pullingProfiles = ref(false)
 const syncPage = ref(1)
-const syncFilter = ref<"" | "success" | "error" | "info">("")
+const syncFilter = ref<"all" | "success" | "error" | "info">("all")
 const syncSearch = ref("")
 const expandedSyncId = ref<number | null>(null)
 
@@ -457,7 +457,7 @@ const syncStats = computed(() => {
 })
 
 const syncFilters = computed(() => [
-  { label: "All", value: "" as const, count: syncStats.value.total },
+  { label: "All", value: "all" as const, count: syncStats.value.total },
   { label: "Success", value: "success" as const, count: syncStats.value.success },
   { label: "Error", value: "error" as const, count: syncStats.value.error },
   { label: "Info", value: "info" as const, count: syncStats.value.info },

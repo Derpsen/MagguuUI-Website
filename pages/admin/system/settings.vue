@@ -97,7 +97,7 @@
           <div class="space-y-4">
             <div class="admin-field">
               <label class="admin-field__label">Contact email</label>
-              <UInput v-model="form.contact_email" :disabled="saving" placeholder="contact@magguui.com" />
+              <UInput v-model="form.contact_email" :disabled="saving" placeholder="contact@magguu.xyz" />
             </div>
 
             <div class="admin-form-grid admin-form-grid--2">

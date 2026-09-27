@@ -467,7 +467,7 @@ function isActive(path: string): boolean {
 }
 
 function openContact() {
-  const email = siteSettings.value.contact_email || 'contact@magguui.com'
+  const email = siteSettings.value.contact_email || 'contact@magguu.xyz'
   window.location.href = `mailto:${email}`
 }
 

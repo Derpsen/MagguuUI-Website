@@ -130,7 +130,7 @@ It needs **EllesmereUI 9.0.6 or newer**. Classic and other flavors are not suppo
 
 1. Install **EllesmereUI 9.0.6+** and leave it enabled
 2. Copy all four MagguuUI folders into \`Interface/AddOns\`: MagguuUI, MagguuUI_Data, MagguuUI_EUI, MagguuUI_Media — keep them enabled
-3. Optionally install BigWigs, LittleWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and/or Premade Groups Filter
+3. Optionally install BigWigs, LittleWigs, Northern Sky, EXBoss, WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and/or Smart Reminders
 4. Log in, type \`/mui\`, and run **Apply Magguu profiles** on Setup. Use **Magguu Settings** (overlay/QoL only) and **Load profiles** (activate only) side by side, and copy WowUp packs from the same tab
 
 Ellesmere's start popup is skipped. MagguuUI Setup opens so you can run Apply Magguu profiles.

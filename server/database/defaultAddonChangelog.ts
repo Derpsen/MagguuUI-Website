@@ -5,10 +5,10 @@ export const CURRENT_ADDON_CHANGELOG = {
 
 ### What's new
 
-- Updated Magguu profiles. Click gold **Apply Magguu profiles** to pick them up.
+- Updated Magguu profiles. Use the gold **Apply Magguu profiles** button to apply them.
 - **Smart Reminders** import now includes trash alerts.
 - Setup splits **First install** from **Already installed**. Gold **Apply Magguu profiles** is first install. **Apply Magguu Settings** and **Load on this character** sit under Already installed and do not reinstall profiles.
-- First-install toggle is **Include Magguu Settings** (default on). Magguu Settings later is look only.
+- First-install toggle is **Include Magguu Settings** (default on). Afterwards, Magguu Settings is overlay and QoL only.
 - **HandyNotes MapNotes** Magguu settings apply with HandyNotes when you use **Apply Magguu profiles** or **Load profiles**. Still on WowUp Optional.
 - **Raider.IO Talent Builds**: left-click a build to load it. Auto-open once per party or raid instance.
 - Magguu chat size still applies. Magguu does not join, leave, or hide Services — you manage that channel.
@@ -31,5 +31,5 @@ export const CURRENT_ADDON_CHANGELOG = {
 - If an older MagguuUI still has Data, EUI, or Media *inside* the MagguuUI folder, delete those nested copies. Keep the sibling addons.
 - EllesmereUI 9.0.6 or newer must be installed and enabled. BigWigs, LittleWigs, Northern Sky, EXBoss, and EXCore are in the WowUp starter pack; MagguuUI still loads without them.
 - Works on WoW 12.1 and still loads on Midnight 12.0.
-- UI in every WoW client language MagguuUI ships`,
+- UI is available in every WoW client language MagguuUI ships.`,
 } as const

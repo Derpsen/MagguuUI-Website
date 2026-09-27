@@ -35,7 +35,7 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
   pass.
 - MagguuUI public copy (home/guide/FAQ/changelog/addon metadata) must stay
   aligned with the current MagguuUI release: four sibling folders
-  (MagguuUI / Data / EUI / Media), EllesmereUI TOC min **9.0.6+** (**live 9.1.6**),
+  (MagguuUI / Data / EUI / Media), EllesmereUI TOC min **9.0.6+** (**live 9.2.9**),
   **Targeted Spell Bars** (Ellesmere Mythic+ Nearby
   Cast) **ON** via Ellesmere — **EXBoss MythicCast OFF** (same feature; do not run
   both), MagguuUI_EUI keeps **Boiling Point** (no TopBar / Hearth-Picker / MagguuUI

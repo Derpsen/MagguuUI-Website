@@ -27,7 +27,7 @@ describe('WowUp pack copy', () => {
 
 describe('MagguuUI product facts copy', () => {
   it('locks Ellesmere live host, Apply Magguu profiles, Targeted Spell Bars, and no foreign author credits', () => {
-    assert.match(CURRENT_ADDON_CHANGELOG.content, /live \*\*9\.2\.2\*\*/)
+    assert.match(CURRENT_ADDON_CHANGELOG.content, /live \*\*9\.2\.9\*\*/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Targeted Spell Bars/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /EXBoss MythicCast OFF/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Boiling Point/)

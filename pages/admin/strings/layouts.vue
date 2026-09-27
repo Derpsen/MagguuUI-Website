@@ -94,7 +94,7 @@
       <template #footer>
         <div class="flex w-full flex-wrap items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
           <span>Showing {{ filtered.length }} of {{ items.length }}</span>
-          <button v-if="isFiltering" class="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200" @click="search = ''; classFilter = ''">Clear filters</button>
+          <button v-if="isFiltering" class="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200" @click="search = ''; classFilter = 'all'">Clear filters</button>
         </div>
       </template>
     </AdminPanel>
@@ -225,18 +225,18 @@ const {
 
 setupLifecycle()
 
-const classFilter = ref('')
+const classFilter = ref('all')
 
-const isFiltering = computed(() => search.value.trim() !== '' || classFilter.value !== '')
+const isFiltering = computed(() => search.value.trim() !== '' || classFilter.value !== 'all')
 
 const classOptions = computed(() => {
   const classes = [...new Set(items.value.map(i => i.className).filter((c): c is string => Boolean(c)))].sort()
-  return [{ label: 'All Classes', value: '' }, ...classes.map(c => ({ label: c, value: c }))]
+  return [{ label: 'All Classes', value: 'all' }, ...classes.map(c => ({ label: c, value: c }))]
 })
 
 const filtered = computed(() => {
   let result = items.value
-  if (classFilter.value) result = result.filter(i => i.className === classFilter.value)
+  if (classFilter.value && classFilter.value !== 'all') result = result.filter(i => i.className === classFilter.value)
   if (search.value) {
     const q = search.value.toLowerCase()
     result = result.filter(i =>

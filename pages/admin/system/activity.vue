@@ -214,24 +214,24 @@ const statCards = computed(() => [
 ])
 
 const page = ref(Number(route.query.page) || 1)
-const filterAction = ref((route.query.action as string) || "")
-const filterType = ref((route.query.type as string) || "")
+const filterAction = ref((route.query.action as string) || "all")
+const filterType = ref((route.query.type as string) || "all")
 const sortOrder = ref<"asc" | "desc">((route.query.sort as "asc" | "desc") || "desc")
 const dateFrom = ref((route.query.dateFrom as string) || "")
 const dateTo = ref((route.query.dateTo as string) || "")
 const searchQuery = ref((route.query.search as string) || "")
 
-const hasActiveFilters = computed(() => !!(filterAction.value || filterType.value || dateFrom.value || dateTo.value || searchQuery.value))
+const hasActiveFilters = computed(() => !!((filterAction.value && filterAction.value !== "all") || (filterType.value && filterType.value !== "all") || dateFrom.value || dateTo.value || searchQuery.value))
 
 const actionOptions = [
-  { label: "All actions", value: "" },
+  { label: "All actions", value: "all" },
   { label: "Created", value: "created" },
   { label: "Updated", value: "updated" },
   { label: "Deleted", value: "deleted" },
 ]
 
 const typeOptions = [
-  { label: "All types", value: "" },
+  { label: "All types", value: "all" },
   { label: "Addon Profile", value: "profile" },
   { label: "WowUp String", value: "wowup" },
   { label: "Character Layout", value: "layout" },
@@ -283,8 +283,8 @@ function toDateKey(date: Date): string {
 }
 
 function clearFilters() {
-  filterAction.value = ""
-  filterType.value = ""
+  filterAction.value = "all"
+  filterType.value = "all"
   dateFrom.value = ""
   dateTo.value = ""
   searchQuery.value = ""
@@ -362,8 +362,8 @@ const paginationRange = computed(() => {
 
 function syncQueryParams() {
   const query: Record<string, string> = {}
-  if (filterAction.value) query.action = filterAction.value
-  if (filterType.value) query.type = filterType.value
+  if (filterAction.value && filterAction.value !== "all") query.action = filterAction.value
+  if (filterType.value && filterType.value !== "all") query.type = filterType.value
   if (page.value > 1) query.page = String(page.value)
   if (sortOrder.value !== "desc") query.sort = sortOrder.value
   if (dateFrom.value) query.dateFrom = dateFrom.value
@@ -400,8 +400,8 @@ async function load() {
 
   try {
     const params = new URLSearchParams({ page: String(page.value), limit: "25", sort: sortOrder.value })
-    if (filterAction.value) params.set("action", filterAction.value)
-    if (filterType.value) params.set("type", filterType.value)
+    if (filterAction.value && filterAction.value !== "all") params.set("action", filterAction.value)
+    if (filterType.value && filterType.value !== "all") params.set("type", filterType.value)
     if (dateFrom.value) params.set("dateFrom", dateFrom.value)
     if (dateTo.value) params.set("dateTo", dateTo.value)
     if (searchQuery.value) params.set("search", searchQuery.value)

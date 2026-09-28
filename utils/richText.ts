@@ -65,11 +65,12 @@ export function plainTextPreview(source: string, maxLen = 150): string {
   const text = html
     .replace(/<[^>]*>/g, ' ')
     .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
     .replace(/&lt;/gi, '<')
     .replace(/&gt;/gi, '>')
     .replace(/&quot;/gi, '"')
     .replace(/&#39;/gi, "'")
+    // Decode &amp; last so earlier entity replacements cannot double-unescape.
+    .replace(/&amp;/gi, '&')
     .replace(/\s+/g, ' ')
     .trim()
   if (!maxLen || text.length <= maxLen) return text

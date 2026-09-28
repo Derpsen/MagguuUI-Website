@@ -48,7 +48,7 @@
     "echarts": "^6.1.0",
     "h3": "^1.13.0",
     "jsonwebtoken": "^9.0.3",
-    "marked": "^18.0.5",
+    "marked": "^18.0.14",
     "nuxt": "^4.4.8",
     "nuxt-og-image": "^6.5.2",
     "reflect-metadata": "^0.2.2",

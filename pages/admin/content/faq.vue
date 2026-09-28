@@ -75,7 +75,7 @@
                 <UBadge v-if="!faq.isVisible" color="warning" variant="subtle" size="xs">Hidden</UBadge>
               </div>
               <p class="text-sm font-medium truncate" :class="isDark ? 'text-white' : 'text-slate-900'">{{ faq.question }}</p>
-              <p v-if="expandedId !== faq.id" class="text-xs mt-0.5 line-clamp-1" :class="isDark ? 'text-white/40' : 'text-slate-400'">{{ stripHtml(faq.answer) }}</p>
+              <p v-if="expandedId !== faq.id" class="text-xs mt-0.5 line-clamp-1" :class="isDark ? 'text-white/40' : 'text-slate-400'">{{ plainTextPreview(faq.answer) }}</p>
             </div>
 
             <!-- Actions -->
@@ -235,10 +235,6 @@ const filteredItems = computed(() => {
   if (activeCategory.value === "all") return items.value
   return items.value.filter(i => i.category === activeCategory.value)
 })
-
-function stripHtml(html: string) {
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
-}
 
 // Inline edit
 function toggleExpand(id: number) {

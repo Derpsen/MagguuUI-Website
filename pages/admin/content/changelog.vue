@@ -84,7 +84,7 @@
               <p class="admin-row__title mt-1">
                 {{ item.version === "auto" ? autoTitle(item) : `Version ${item.version}` }}
               </p>
-              <p class="admin-row__meta line-clamp-1">{{ cleanPreview(item.content) }}</p>
+              <p class="admin-row__meta line-clamp-1">{{ plainTextPreview(item.content) }}</p>
             </div>
           </div>
 
@@ -367,7 +367,6 @@ watch(filteredAndSearched, () => {
 
 // Helpers
 function stripHtml(html: string) { return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() }
-function cleanPreview(html: string) { return stripHtml(html).replace(/^###?\s*/gm, "").replace(/^-\s*/gm, "").replace(/\*\*/g, "").substring(0, 150) }
 function autoTitle(item: Changelog) {
   const match = item.content?.match(/Changes\s+(\d{4}-\d{2}-\d{2})/)
   if (match) return `Changes ${new Date(match[1]).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })}`

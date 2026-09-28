@@ -109,7 +109,7 @@
         </div>
       </AdminPanel>
 
-      <AdminPanel title="Version" description="Stored local and GitHub release information." icon="i-heroicons-tag">
+      <AdminPanel title="Version" description="Local MagguuUI release vs GitHub latest." icon="i-heroicons-tag">
         <template #actions>
           <UButton
             size="sm"
@@ -126,14 +126,14 @@
 
         <div class="grid gap-4 md:grid-cols-2">
           <div class="admin-subpanel">
-            <p class="admin-row__eyebrow">Local</p>
+            <p class="admin-row__eyebrow">Local MagguuUI</p>
             <p class="mt-2 text-lg font-semibold tracking-tight text-slate-950 dark:text-white">
               {{ versionInfo.local ? `v${versionInfo.local}` : "-" }}
             </p>
           </div>
 
           <div class="admin-subpanel">
-            <p class="admin-row__eyebrow">GitHub</p>
+            <p class="admin-row__eyebrow">GitHub latest</p>
             <p class="mt-2 text-lg font-semibold tracking-tight text-slate-950 dark:text-white">
               {{ versionInfo.github ? `v${versionInfo.github}` : "-" }}
             </p>
@@ -147,7 +147,7 @@
             :class="versionInfo.isUpToDate ? 'text-emerald-500' : 'text-amber-500'"
           />
           <span class="text-sm text-slate-600 dark:text-slate-400">
-            {{ versionInfo.github ? (versionInfo.isUpToDate ? "Local version is up to date." : "A newer GitHub release is available.") : "No version information yet." }}
+            {{ versionInfo.github ? (versionInfo.isUpToDate ? "Local MagguuUI matches GitHub latest." : "GitHub has a newer release — open Actions or run Check.") : "No GitHub version yet — run Check." }}
           </span>
         </div>
 
@@ -431,14 +431,14 @@ const metrics = computed(() => [
     hint: "Total recorded sync jobs",
   },
   {
-    label: "Local Version",
+    label: "Local MagguuUI",
     value: versionInfo.value.local ? `v${versionInfo.value.local}` : "-",
     icon: "i-heroicons-tag",
     tone: "violet" as const,
-    hint: "Stored local release version",
+    hint: "Known MagguuUI release on this site",
   },
   {
-    label: "GitHub Version",
+    label: "GitHub latest",
     value: versionInfo.value.github ? `v${versionInfo.value.github}` : "-",
     icon: "i-heroicons-arrow-down-tray",
     tone: versionInfo.value.github && !versionInfo.value.isUpToDate ? "warning" as const : "success" as const,

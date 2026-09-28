@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { displayRichText, renderMarkdownToSafeHtml, sanitizeRichHtml } from '../../utils/richText'
+import { displayRichText, plainTextPreview, renderMarkdownToSafeHtml, sanitizeRichHtml } from '../../utils/richText'
 
 describe('rich text sanitization', () => {
   it('keeps the supported editorial markup', () => {
@@ -41,5 +41,13 @@ describe('rich text sanitization', () => {
 
     assert.match(html, /<strong>EllesmereUI<\/strong>/)
     assert.match(html, /<code>\/mui<\/code>/)
+  })
+
+  it('builds a plain preview without raw markdown tokens', () => {
+    const text = plainTextPreview('### Title\n\nInstall **EllesmereUI** and open `/mui`.', 80)
+
+    assert.match(text, /EllesmereUI/)
+    assert.match(text, /\/mui/)
+    assert.doesNotMatch(text, /\*\*|###/)
   })
 })

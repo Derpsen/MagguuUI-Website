@@ -7,6 +7,7 @@
 import { desc, count, eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { syncHistory, settings } from '~/server/database/schema'
+import { resolveLocalAddonVersion } from '~/server/utils/addonVersion'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -25,20 +26,16 @@ export default defineEventHandler(async (event) => {
     .offset(syncOffset)
     .all()
 
-  // Get stored version info
-  let latestVersion: string | null = null
-  let localVersion: string | null = null
-  let lastCheck: string | null = null
+  let latestVersion = null
+  let lastCheck = null
   try {
     const vRow = db.select().from(settings).where(eq(settings.key, 'github_latest_version')).get()
     latestVersion = vRow?.value || null
     const cRow = db.select().from(settings).where(eq(settings.key, 'github_last_check')).get()
     lastCheck = cRow?.value || null
-    // Try 'local_version' first (set by webhook sync), fall back to 'addon_version'
-    const lRow = db.select().from(settings).where(eq(settings.key, 'local_version')).get()
-      || db.select().from(settings).where(eq(settings.key, 'addon_version')).get()
-    localVersion = lRow?.value || null
   } catch { /* ok */ }
+
+  const localVersion = resolveLocalAddonVersion({ persistMissing: true })
 
   return apiSuccess({
     configured: hasToken,

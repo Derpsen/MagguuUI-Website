@@ -119,8 +119,11 @@ export function useAdminTabs() {
 
   // Auto-track route changes
   function trackCurrentRoute() {
-    const path = route.path
+    let path = route.path
     if (!path.startsWith('/admin') || path === '/admin/login') return
+
+    // Normalize Content root alias to Home so tabs never treat it as Dashboard.
+    if (path === '/admin/content') path = '/admin/content/home'
 
     const label = currentContext.value.heading || currentContext.value.label || path.split('/').pop() || 'Page'
     const icon = currentContext.value.icon

@@ -150,7 +150,7 @@
       />
 
       <!-- Main -->
-      <div class="transition-all duration-200" :style="{ paddingLeft: lgAndUp ? `var(--admin-sidebar-width)` : '0' }">
+      <div class="min-w-0 flex-1 transition-all duration-200" :style="{ paddingLeft: lgAndUp ? `var(--admin-sidebar-width)` : '0' }">
         <!-- Header -->
         <header
           class="sticky top-0 z-20 flex h-[50px] items-center gap-3 border-b px-4"

@@ -221,9 +221,11 @@ export function isAdminPathActive(currentPath: string, targetPath: string, exact
 export function useAdminNavigation() {
   const route = useRoute()
 
-  const currentContext = computed(() =>
-    contextItems.find(item => isAdminPathActive(route.path, item.to, item.to === '/admin')) || dashboardContext,
-  )
+  const currentContext = computed(() => {
+    // Content root redirects to home; map alias before matching so nav/dock/tabs stay on Home.
+    const path = route.path === '/admin/content' ? '/admin/content/home' : route.path
+    return contextItems.find(item => isAdminPathActive(path, item.to, item.to === '/admin')) || dashboardContext
+  })
 
   const commandItems = computed<AdminCommandItem[]>(() => [
     { group: 'Overview', ...dashboardContext },

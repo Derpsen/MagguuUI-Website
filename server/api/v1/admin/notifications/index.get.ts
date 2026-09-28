@@ -10,6 +10,7 @@ import {
   syncHistory, settings, profiles, wowupStrings,
   characterLayouts, changelogs,
 } from '~/server/database/schema'
+import { resolveLocalAddonVersion } from '~/server/utils/addonVersion'
 
 interface Notification {
   id: string
@@ -22,16 +23,15 @@ interface Notification {
 export default defineEventHandler(async () => {
   const notifications: Notification[] = []
 
-  // 1. Check for failed syncs in last 24h
+  // 1. Check recent failed syncs
   try {
-    const dayAgo = Math.floor(Date.now() / 1000) - 24 * 60 * 60
     const failedSyncs = db.select({ count: count() }).from(syncHistory)
-      .where(sql`status = 'error' AND created_at > ${dayAgo}`)
+      .where(sql`${syncHistory.status} = 'error' AND ${syncHistory.createdAt} > datetime('now', '-1 day')`)
       .get()
 
     if (failedSyncs && failedSyncs.count > 0) {
       notifications.push({
-        id: 'sync-failed',
+        id: 'failed-syncs',
         type: 'error',
         title: `${failedSyncs.count} failed sync(s)`,
         message: 'There were failed GitHub syncs in the last 24 hours.',
@@ -41,16 +41,16 @@ export default defineEventHandler(async () => {
   } catch { /* table might not exist yet */ }
 
   // 2. Check GitHub addon version vs local
-  const addonVersion = db.select().from(settings).where(eq(settings.key, 'addon_version')).get()
+  const localAddonVersion = resolveLocalAddonVersion()
   const githubVersion = db.select().from(settings).where(eq(settings.key, 'github_latest_version')).get()
 
-  if (addonVersion?.value && githubVersion?.value && addonVersion.value !== githubVersion.value) {
+  if (localAddonVersion && githubVersion?.value && localAddonVersion !== githubVersion.value) {
     notifications.push({
       id: 'version-mismatch',
       type: 'warning',
       title: 'Addon version outdated',
-      message: `Local: v${addonVersion.value} — GitHub: v${githubVersion.value}`,
-      link: '/admin/system/settings',
+      message: `Local MagguuUI: v${localAddonVersion} — GitHub latest: v${githubVersion.value}`,
+      link: '/admin/system/github',
     })
   }
 

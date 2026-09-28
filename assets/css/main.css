@@ -1495,15 +1495,19 @@ html.dark .admin-shell {
 
 .admin-segmented {
   display: inline-flex;
+  max-width: 100%;
   align-items: center;
   gap: 2px;
   padding: 3px;
   border-radius: var(--admin-radius);
   border: 1px solid var(--admin-border);
   background: var(--admin-muted-bg);
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .admin-segmented__button {
+  flex-shrink: 0;
   border-radius: calc(var(--admin-radius) - 2px);
   padding: 0.45rem 0.85rem;
   font-size: 0.8rem;

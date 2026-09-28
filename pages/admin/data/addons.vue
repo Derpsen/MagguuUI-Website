@@ -11,10 +11,19 @@
       </template>
       <template #meta>
         <span v-if="lastSyncedText" class="admin-pill">{{ lastSyncedText }}</span>
+        <UBadge v-if="syncFreshness" :color="syncFreshness.color" variant="subtle" size="xs">
+          {{ syncFreshness.label }}
+        </UBadge>
       </template>
       <template #actions>
-        <UButton color="neutral" variant="ghost" icon="i-heroicons-arrow-path" :loading="syncing" @click="resync">
-          Resync from .toc
+        <UButton
+          :color="syncFreshness?.stale ? 'warning' : 'neutral'"
+          :variant="syncFreshness?.stale ? 'subtle' : 'ghost'"
+          icon="i-heroicons-arrow-path"
+          :loading="syncing"
+          @click="resync"
+        >
+          {{ syncFreshness?.stale ? 'Resync now (stale)' : 'Resync from .toc' }}
         </UButton>
         <UButton icon="i-heroicons-plus" @click="openCreate">Manual entry</UButton>
       </template>
@@ -28,6 +37,20 @@
       <UInput v-model="search" icon="i-heroicons-magnifying-glass" placeholder="Search addon" class="min-w-0 flex-1" />
       <USelect v-model="stateFilter" :items="stateOptions" value-key="value" class="w-full sm:w-48" />
       <USelect v-model="categoryFilter" :items="categoryOptions" value-key="value" placeholder="All Categories" class="w-full sm:w-60" />
+    </div>
+
+    <div
+      v-if="!loading && syncFreshness?.stale"
+      class="admin-inline-note !border-amber-500/30 !bg-amber-500/5"
+    >
+      <UIcon name="i-heroicons-exclamation-triangle" class="h-4 w-4 shrink-0 text-amber-500" />
+      <div class="min-w-0 text-sm text-slate-600 dark:text-slate-400">
+        Catalogue sync is older than {{ STALE_SYNC_DAYS }} days.
+        <button type="button" class="ml-1 font-medium text-amber-700 underline dark:text-amber-300" :disabled="syncing" @click="resync">
+          Resync from .toc
+        </button>
+        to refresh companion metadata.
+      </div>
     </div>
 
     <AdminPanel v-if="loading" title="Addons" description="Loading the catalogue..." icon="i-heroicons-puzzle-piece">
@@ -304,13 +327,35 @@ const statCards = computed(() => {
 
 const canSubmit = computed(() => Boolean(form.value.slug.trim() && form.value.name.trim()))
 
-const lastSyncedText = computed(() => {
+const STALE_SYNC_DAYS = 14
+
+const lastSyncedMs = computed(() => {
   const stamps = items.value
     .map(a => (typeof a.lastSyncedAt === 'number' ? a.lastSyncedAt * 1000 : a.lastSyncedAt ? Date.parse(String(a.lastSyncedAt)) : 0))
     .filter(n => n > 0)
-  if (!stamps.length) return ''
-  const latest = Math.max(...stamps)
-  return `Last sync ${new Date(latest).toLocaleString()}`
+  if (!stamps.length) return null
+  return Math.max(...stamps)
+})
+
+const lastSyncedText = computed(() => {
+  if (!lastSyncedMs.value) return ''
+  return `Last sync ${new Date(lastSyncedMs.value).toLocaleString()}`
+})
+
+const syncFreshness = computed(() => {
+  if (!lastSyncedMs.value) {
+    return { label: 'Never synced', color: 'warning' as const, stale: true }
+  }
+  const ageMs = Date.now() - lastSyncedMs.value
+  const ageDays = ageMs / (1000 * 60 * 60 * 24)
+  if (ageDays >= STALE_SYNC_DAYS) {
+    return {
+      label: `Stale (${Math.floor(ageDays)}d)`,
+      color: 'warning' as const,
+      stale: true,
+    }
+  }
+  return { label: 'Fresh', color: 'success' as const, stale: false }
 })
 
 function categoryBadge(category: string) {

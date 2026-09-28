@@ -57,3 +57,21 @@ export function displayRichText(source: string, options: MarkdownRenderOptions =
   if (looksLikeHtml(source)) return sanitizeRichHtml(source)
   return renderMarkdownToSafeHtml(source, options)
 }
+
+/** Markdown/HTML to plain text for compact list previews (no raw ** / ### markers). */
+export function plainTextPreview(source: string, maxLen = 150): string {
+  if (!source) return ''
+  const html = displayRichText(source)
+  const text = html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!maxLen || text.length <= maxLen) return text
+  return text.slice(0, Math.max(0, maxLen - 1)).trimEnd() + '...'
+}

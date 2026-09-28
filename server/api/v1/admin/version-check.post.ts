@@ -9,6 +9,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { settings } from '~/server/database/schema'
 import { upsertSetting } from '~/server/utils/settings'
+import { resolveLocalAddonVersion } from '~/server/utils/addonVersion'
 
 export default defineEventHandler(async (event) => {
   // Even though the middleware authenticates this endpoint, an admin token
@@ -66,13 +67,12 @@ export default defineEventHandler(async (event) => {
     upsertSetting('github_latest_version', latestVersion)
     upsertSetting('github_last_check', new Date().toISOString())
 
-    // Get local version for comparison
-    const localVersion = db.select().from(settings).where(eq(settings.key, 'addon_version')).get()
+    const localVersion = resolveLocalAddonVersion({ persistMissing: true })
 
     return apiSuccess({
       latestVersion,
-      localVersion: localVersion?.value || null,
-      isUpToDate: localVersion?.value === latestVersion,
+      localVersion,
+      isUpToDate: localVersion === latestVersion,
       releaseName: response.name,
       publishedAt: response.published_at,
     })

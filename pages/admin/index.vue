@@ -419,17 +419,22 @@ const overviewCards = computed(() => {
     ? `${data.outdatedProfiles || 0} profiles · ${data.outdatedLayouts || 0} layouts older than 30d`
     : `${data.profiles + data.wowupStrings + data.layouts} active strings checked`
 
+  const localVer = versionData.value?.localVersion || null
+  const githubVer = versionData.value?.latestVersion || null
+
   const releaseValue = !versionData.value
     ? 'Unknown'
     : versionData.value.isUpToDate
       ? 'Current'
-      : `v${versionData.value.latestVersion}`
+      : (githubVer ? `v${githubVer}` : 'Behind')
 
   const releaseHint = !versionData.value
-    ? 'GitHub release state is currently unavailable'
+    ? 'GitHub release state unavailable — open GitHub Sync'
     : versionData.value.isUpToDate
-      ? `Local ${versionData.value.localVersion || versionData.value.latestVersion} matches GitHub`
-      : `Local ${versionData.value.localVersion || 'unknown'} is behind GitHub`
+      ? `Local MagguuUI v${localVer || githubVer} matches GitHub`
+      : !localVer
+        ? `Local unset | GitHub v${githubVer} — set local version on GitHub Sync`
+        : `Local v${localVer} behind GitHub v${githubVer} — open GitHub Sync`
 
   return [
     {
@@ -554,8 +559,8 @@ const statusSignals = computed(() => [
     value: !versionData.value
       ? 'Unavailable'
       : versionData.value.isUpToDate
-        ? 'Up to date'
-        : `Update v${versionData.value.latestVersion}`,
+        ? `Local v${versionData.value.localVersion || versionData.value.latestVersion}`
+        : `Local v${versionData.value.localVersion || '-'} | GH v${versionData.value.latestVersion}`,
     tone: versionData.value && !versionData.value.isUpToDate ? 'warning' : 'neutral',
   },
   {

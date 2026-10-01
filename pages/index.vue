@@ -74,7 +74,7 @@
                   class="addon-pill px-5 py-3 rounded-xl text-sm font-medium transition-all group inline-flex items-center gap-2"
                   :class="isDark ? 'text-silver-300 hover:text-brand-400' : 'text-gray-600 hover:text-brand-500'">
                   <span class="w-2 h-2 rounded-full accent-ellesmere-dot transition-colors" />
-                  {{ addon }}
+                  {{ profileAddonLabel(addon) }}
                   <svg aria-hidden="true" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                   </svg>
@@ -115,6 +115,7 @@
 
 <script setup lang="ts">
 import { buildPublicUrl } from '~/utils/publicSite'
+import { compareProfileAddons, profileAddonLabel } from '~/utils/profileLabels'
 
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
@@ -213,7 +214,7 @@ const { data: latestChangeData } = useFetch<{ data: LatestChange | null }>('/api
 
 const content = computed(() => contentData.value?.data)
 const catalog = computed(() => catalogData.value?.data)
-const addonNames = computed(() => catalog.value?.addonNames ?? [])
+const addonNames = computed(() => [...(catalog.value?.addonNames ?? [])].sort(compareProfileAddons))
 
 // Badge text: show last changed string name
 const latestBadgeText = computed(() => {

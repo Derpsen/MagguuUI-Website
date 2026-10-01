@@ -78,9 +78,6 @@
                 <option v-for="spec in layoutSpecs" :key="spec" :value="spec">{{ spec }}</option>
               </select>
             </div>
-            <p v-else-if="selectedClass && selectedSpec" class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-              One Cooldown Viewer layout for this class. Import applies every spec as <code>Magguu - {{ selectedClass }} Spec</code>.
-            </p>
           </Transition>
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
             <div v-if="selectedLayout" class="space-y-4 pt-1">
@@ -102,10 +99,7 @@
                   <span v-if="selectedLayout.updatedAt">{{ timeAgo(selectedLayout.updatedAt) }}</span>
                   <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono" :class="isDark ? 'bg-white/5 text-silver-600 border border-brand-400/10' : 'bg-gray-100 text-gray-400 border border-gray-200'">{{ isMac ? '⌘' : 'Ctrl' }}+C</kbd>
                 </div>
-                <span class="inline-flex items-center gap-1.5">
-                  <span class="inline-block w-1.5 h-1.5 rounded-full" :class="stringSizeColor(selectedLayout.importString?.length || 0)" />
-                  {{ stringSizeLabel(selectedLayout.importString?.length || 0) }}
-                </span>
+                <span>{{ stringSizeLabel(selectedLayout.importString?.length || 0) }}</span>
               </div>
               <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24">
                 <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
@@ -129,11 +123,11 @@
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Addon</label>
             <select v-model="selectedAddon" class="select-styled w-full px-4 py-3.5 rounded-xl text-base cursor-pointer" :class="isDark ? 'text-white' : 'text-gray-900'">
-              <option v-for="addon in profileAddons" :key="addon" :value="addon">{{ addon }}</option>
+              <option v-for="addon in profileAddons" :key="addon" :value="addon">{{ profileAddonLabel(addon) }}</option>
             </select>
           </div>
           <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1" enter-to-class="opacity-100 translate-y-0">
-            <div v-if="selectedAddon">
+            <div v-if="selectedAddon && addonProfiles.length > 1">
               <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Profile</label>
               <select v-model="selectedProfileId" class="select-styled w-full px-4 py-3.5 rounded-xl text-base cursor-pointer" :class="isDark ? 'text-white' : 'text-gray-900'">
                 <option v-for="p in addonProfiles" :key="p.id" :value="p.id">{{ p.profile }}</option>
@@ -160,10 +154,7 @@
                   <span v-if="selectedProfile.updatedAt">{{ timeAgo(selectedProfile.updatedAt) }}</span>
                   <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono" :class="isDark ? 'bg-white/5 text-silver-600 border border-brand-400/10' : 'bg-gray-100 text-gray-400 border border-gray-200'">{{ isMac ? '⌘' : 'Ctrl' }}+C</kbd>
                 </div>
-                <span class="inline-flex items-center gap-1.5">
-                  <span class="inline-block w-1.5 h-1.5 rounded-full" :class="stringSizeColor(selectedProfile.string?.length || 0)" />
-                  {{ stringSizeLabel(selectedProfile.string?.length || 0) }}
-                </span>
+                <span>{{ stringSizeLabel(selectedProfile.string?.length || 0) }}</span>
               </div>
               <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24">
                 <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
@@ -213,10 +204,7 @@
               </div>
               <div class="flex items-center justify-between text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
                 <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono" :class="isDark ? 'bg-white/5 text-silver-600 border border-brand-400/10' : 'bg-gray-100 text-gray-400 border border-gray-200'">{{ isMac ? '⌘' : 'Ctrl' }}+C</kbd>
-                <span class="inline-flex items-center gap-1.5">
-                  <span class="inline-block w-1.5 h-1.5 rounded-full" :class="stringSizeColor(selectedWowup.string?.length || 0)" />
-                  {{ stringSizeLabel(selectedWowup.string?.length || 0) }}
-                </span>
+                <span>{{ stringSizeLabel(selectedWowup.string?.length || 0) }}</span>
               </div>
               <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24">
                 <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
@@ -276,6 +264,8 @@
 </template>
 
 <script setup lang="ts">
+import { compareProfileAddons, compareProfileNames, profileAddonLabel } from '~/utils/profileLabels'
+
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
 const { apiFetch } = useApi()
@@ -297,8 +287,8 @@ const activeTab = ref((route.query.tab as string) || 'layouts')
 
 const tabSubtitle = computed(() => {
   switch (activeTab.value) {
-    case 'layouts': return 'Copy the Cooldown Viewer layout for your class.'
-    case 'profiles': return 'Copy EllesmereUI, BigWigs, Northern Sky, WIM, or Waypoint UI profile strings.'
+    case 'layouts': return 'Copy the Cooldown Viewer layout for your class. Import names every spec Magguu - Class Spec.'
+    case 'profiles': return 'Copy one Magguu profile. Apply Magguu profiles in /mui loads these when the addon is installed.'
     case 'wowup': return 'Same packs Magguu Setup copies — starter plus optional extras. EllesmereUI is still required.'
     default: return 'Choose your category and class to copy the import string.'
   }
@@ -361,10 +351,12 @@ const selectedLayout = computed(() => {
 })
 watch(() => selectedClass.value, () => { selectedSpec.value = '' ; nextTick(() => { if (layoutSpecs.value.length) selectedSpec.value = layoutSpecs.value[0] || '' }) })
 
-const profileAddons = computed(() => [...new Set(profileList.value.map(p => p.addon))].sort())
+const profileAddons = computed(() => [...new Set(profileList.value.map(p => p.addon))].sort(compareProfileAddons))
 const addonProfiles = computed(() => {
   if (!selectedAddon.value) return []
-  return profileList.value.filter(p => p.addon === selectedAddon.value)
+  return profileList.value
+    .filter(p => p.addon === selectedAddon.value)
+    .sort((a, b) => compareProfileNames(a.profile, b.profile))
 })
 const selectedProfile = computed(() => {
   if (!selectedProfileId.value) return null
@@ -425,16 +417,7 @@ function timeAgo(d: string | number | null) {
 }
 
 function stringSizeLabel(len: number): string {
-  if (len === 0) return '0 chars'
-  if (len < 500) return `${len} chars (small)`
-  if (len < 5000) return `${len} chars (medium)`
-  return `${len} chars (large)`
-}
-
-function stringSizeColor(len: number): string {
-  if (len < 500) return 'bg-green-400'
-  if (len < 5000) return 'bg-amber-400'
-  return 'bg-red-400'
+  return `${len.toLocaleString('en-US')} characters`
 }
 
 const toast = useToast()

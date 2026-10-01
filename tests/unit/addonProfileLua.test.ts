@@ -36,6 +36,7 @@ test('accepts the current Ellesmere data files and optional WowUp', () => {
   assert.deepEqual([...OPTIONAL_ADDON_LUA_FILES], [
     'WowUp.lua',
     'WIM.lua',
+    'WhisperMessenger.lua',
     'WaypointUI.lua',
     'EXBoss.lua',
     'HandyNotes.lua',

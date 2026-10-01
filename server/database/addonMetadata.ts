@@ -10,6 +10,8 @@
  * Manual-only entries (no tocName) are seeded once and never touched by the
  * .toc sync — BigWigs, Northern Sky, WIM, and Waypoint UI are the current
  * examples: they are not TOC dependencies, MagguuUI imports them when present.
+ * Whisper Messenger is the WowUp optional chat addon. WIM stays a companion
+ * import and is no longer in the WowUp pack.
  */
 
 export interface AddonDefault {
@@ -70,7 +72,16 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     name: 'WIM',
     category: 'optional',
     emoji: '💬',
-    description: 'Apply Magguu profiles and Load profiles apply Magguu WIM settings when WIM is installed (no Setup button).',
+    description: 'Apply Magguu profiles and Load profiles apply Magguu WIM settings when WIM is installed (no Setup button). Not in the WowUp pack.',
+    sortOrder: 2,
+  },
+  {
+    slug: 'whisper-messenger',
+    name: 'Whisper Messenger',
+    category: 'optional',
+    emoji: '💬',
+    description: 'Optional Magguu import and WowUp optional pack. Setup import button when loaded. Apply Magguu profiles also imports the Magguu profile.',
+    url: `${CF}/whisper-messenger`,
     sortOrder: 2,
   },
   {
@@ -177,6 +188,8 @@ export const RETIRED_ADDON_SLUGS = [
   'handynotes-mapnotes',
   'easy-experience-bar',
   'wim-elvui-skin',
+  'exwind-core',
+  'magguu-ui-data',
   'elvui-anchor',
   'buggrabber',
   'groupfinderflags',

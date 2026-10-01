@@ -161,6 +161,14 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'Hide Services on General, Quick Focus (modifier-click to focus), and an audio device switcher' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'Hide Services on General (secret-safe)' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'chat channels and size with Services off General' },
+  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'EXBoss, WIM, Waypoint UI' },
+  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'EXBoss, WIM, Waypoint UI', locale: 'de' },
+  { page: 'home', section: 'addons', key: 'subtitle', marker: 'EXBoss, WIM, Waypoint UI' },
+  { page: 'home', section: 'addons', key: 'subtitle', marker: 'EXBoss, WIM, Waypoint UI', locale: 'de' },
+  { page: 'guide', section: 'intro', key: 'text', marker: 'EXBoss, WIM, Waypoint UI' },
+  { page: 'guide', section: 'steps', key: 'step_3', marker: 'Ellesmere WIM Skin' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'EXBoss, WIM, Waypoint UI' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'Northern Sky, EXBoss, and Smart Reminders' },
 ] as const
 
 const LEGACY_FAQ_MARKERS = [
@@ -295,6 +303,12 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 7, marker: 'leave EXBoss MythicCast off)\n\nSettings are stored' },
   { category: 'troubleshooting', sortOrder: 0, marker: "Install All didn't do anything" },
   { category: 'troubleshooting', sortOrder: 2, marker: 're-run **Install All**' },
+  { category: 'general', sortOrder: 2, marker: 'EXBoss, WIM, Waypoint UI' },
+  { category: 'installation', sortOrder: 0, marker: 'EXBoss, WIM, Waypoint UI' },
+  { category: 'addons', sortOrder: 0, marker: '- **WIM**, **Waypoint UI**, **HandyNotes**' },
+  { category: 'addons', sortOrder: 3, marker: 'EXBoss / WIM / Waypoint UI' },
+  { category: 'addons', sortOrder: 3, marker: 'Northern Sky, EXBoss, Smart Reminders' },
+  { category: 'addons', sortOrder: 4, marker: 'Ellesmere WIM Skin' },
 ] as const
 
 // Nitro's runNitroPlugins calls plugins without awaiting their promise.
@@ -671,6 +685,7 @@ export default defineNitroPlugin(() => {
       || currentRelease.content.includes('dump addons')
       || currentRelease.content.includes('**Tools → Exports**')
       || currentRelease.content.includes('EllesmereUI (full), BigWigs, Northern Sky, EXBoss, WIM, and Waypoint UI')
+      || currentRelease.content.includes('Ellesmere WIM Skin')
       || !currentRelease.content.includes('HandyNotes')
       || !currentRelease.content.includes('HandyNotes MapNotes')
       || !currentRelease.content.includes('keystone viewer')

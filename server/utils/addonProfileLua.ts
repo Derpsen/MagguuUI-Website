@@ -19,6 +19,7 @@ export const REQUIRED_ADDON_LUA_FILES = [
 export const OPTIONAL_ADDON_LUA_FILES = [
   'WowUp.lua',
   'WIM.lua',
+  'WhisperMessenger.lua',
   'WaypointUI.lua',
   'EXBoss.lua',
   'HandyNotes.lua',

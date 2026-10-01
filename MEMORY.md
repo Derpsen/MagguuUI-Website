@@ -31,10 +31,11 @@
 - Playwright `testMatch` is `*.spec.ts` so `tests/unit` is node:test only.
 
 
-## WowUp packs (2026-09-15)
+## WowUp packs (2026-10-01)
 
 - **Starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore.
-- **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
+- **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, Whisper Messenger, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
+- WIM stays a companion import (no Setup button) and is not in the WowUp pack. Ellesmere WIM Skin is retired.
 - No WindTools. HandyNotes MapNotes is on WowUp Optional; Magguu settings apply with HandyNotes via Apply Magguu profiles / Load profiles.
 - Public copy (home/guide/FAQ/changelog seed) never says bake, dump, or recapture. Player language: Apply Magguu profiles / Magguu Settings / Load profiles.
 

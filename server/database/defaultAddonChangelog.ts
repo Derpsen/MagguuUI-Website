@@ -19,11 +19,11 @@ export const CURRENT_ADDON_CHANGELOG = {
 - Gold Setup is **Apply Magguu profiles**. Below it: **Apply Magguu Settings** and **Load profiles**. Scale \`0.58\`. Magguu Settings is overlay/QoL only. Load profiles switches existing Magguu profiles; it does not re-import them.
 - **Apply Magguu profiles** writes the HUD Edit Mode layout **MagguuUI** once.
 - Ellesmere start popup is skipped; MagguuUI Setup opens on that login.
-- **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, WIM, Ellesmere WIM Skin, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
+- **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, Whisper Messenger, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
 - **Skinning** is one **NAMES & COLORS** section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers. Magguu Settings turns these on; reset turns them off.
 - **QoL** includes party and raid item level (and 2P/4P) and **Boiling Point**. AuraBuff counts stay centered.
 - **Apply Magguu profiles** enables Ellesmere **Targeted Spell Bars** (Nearby Cast). Leave **EXBoss MythicCast OFF**.
-- Setup import buttons: BigWigs, Northern Sky, EXBoss, Smart Reminders.
+- Setup import buttons: BigWigs, Northern Sky, EXBoss, Whisper Messenger, Smart Reminders.
 
 ### Install notes
 

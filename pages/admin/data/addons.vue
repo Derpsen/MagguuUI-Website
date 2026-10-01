@@ -471,7 +471,11 @@ async function resync() {
     })
     await load()
   } catch (err: unknown) {
-    toast.add({ title: errorMessage(err, 'Resync failed'), color: 'error' })
+    toast.add({
+      title: 'Resync failed',
+      description: errorMessage(err, 'GitHub did not return MagguuUI.toc'),
+      color: 'error',
+    })
   } finally {
     syncing.value = false
   }

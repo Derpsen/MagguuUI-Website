@@ -22,6 +22,7 @@ export function apiSuccess<T>(data: T, meta?: Record<string, unknown>) {
 export function apiError(code: string, message: string, statusCode = 400): never {
   throw createError({
     statusCode,
+    message,
     data: {
       success: false,
       error: { code, message },

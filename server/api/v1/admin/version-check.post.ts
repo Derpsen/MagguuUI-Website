@@ -5,11 +5,9 @@
  * Compares with local addon_version setting.
  */
 
-import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
-import { settings } from '~/server/database/schema'
 import { upsertSetting } from '~/server/utils/settings'
 import { resolveLocalAddonVersion } from '~/server/utils/addonVersion'
+import { githubErrorHint, parseGitHubError, parseGitHubRepo } from '~/server/utils/github'
 
 export default defineEventHandler(async (event) => {
   // Even though the middleware authenticates this endpoint, an admin token
@@ -27,36 +25,28 @@ export default defineEventHandler(async (event) => {
     throw apiError('RATE_LIMITED', 'Too many version checks. Please wait a moment.', 429)
   }
 
-  const githubUrl = db.select().from(settings).where(eq(settings.key, 'github_url')).get()
-  const repoUrl = githubUrl?.value || 'https://github.com/Derpsen/MagguuUI'
-
-  // Extract owner/repo from URL
-  const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/)
-  if (!match) {
-    throw apiError('INVALID_URL', 'Invalid GitHub URL', 400)
+  const config = useRuntimeConfig()
+  const token = typeof config.githubToken === 'string' ? config.githubToken : ''
+  const repoRef = parseGitHubRepo(typeof config.githubRepo === 'string' ? config.githubRepo : '')
+  if (!token) {
+    throw apiError('MISSING_TOKEN', 'NUXT_GITHUB_TOKEN is not set', 400)
+  }
+  if (!repoRef) {
+    throw apiError('MISSING_REPO', 'NUXT_GITHUB_REPO is not set', 400)
   }
 
-  const owner = match[1]
-  const repo = match[2]
-  if (!owner || !repo) {
-    throw apiError('INVALID_URL', 'Invalid GitHub URL', 400)
-  }
-  // Constrain owner/repo to GitHub-legal characters so an admin-supplied URL
-  // can't smuggle path-traversal or alternate-target tokens (`..`, `@host`,
-  // percent-encoded slashes) into the api.github.com call.
-  const segmentRe = /^[a-zA-Z0-9._-]+$/
-  if (!segmentRe.test(owner) || !segmentRe.test(repo)) {
-    throw apiError('INVALID_URL', 'GitHub URL contains invalid characters', 400)
-  }
+  const { owner, repo } = repoRef
 
   try {
-    // Fetch latest release from GitHub API
+    // MagguuUI is private. releases/latest 404s without the same token the pull uses.
     const response = await $fetch<{ tag_name: string; name: string; published_at: string }>(
-      `https://api.github.com/repos/${owner}/${repo}/releases/latest`,
+      `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases/latest`,
       {
         headers: {
           Accept: 'application/vnd.github+json',
+          Authorization: `Bearer ${token}`,
           'User-Agent': 'MagguuUI-WebAdmin',
+          'X-GitHub-Api-Version': '2022-11-28',
         },
         timeout: 10000,
       }
@@ -77,7 +67,10 @@ export default defineEventHandler(async (event) => {
       publishedAt: response.published_at,
     })
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : 'GitHub API error'
+    const parsed = parseGitHubError(e)
+    const message = parsed.status === 404
+      ? `No published release for ${owner}/${repo}, or the token cannot read releases.`
+      : githubErrorHint(owner, repo, parsed.status, 'GitHub release check failed')
     throw apiError('GITHUB_ERROR', message, 502)
   }
 })

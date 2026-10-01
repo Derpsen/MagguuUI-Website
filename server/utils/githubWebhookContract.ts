@@ -16,6 +16,15 @@ export function verifyGitHubWebhookSignature(
   }
 }
 
+const WORKFLOW_RUN_ERRORS = new Set(['failure', 'timed_out', 'startup_failure', 'action_required'])
+
+/** Sync-history status for a GitHub workflow_run conclusion or, while it is running, its status. */
+export function workflowRunHistoryStatus(value: string | null | undefined): 'success' | 'error' | 'info' {
+  if (value === 'success') return 'success'
+  if (value && WORKFLOW_RUN_ERRORS.has(value)) return 'error'
+  return 'info'
+}
+
 export function classifyCanonicalPushChanges(
   changedPaths: ReadonlySet<string>,
   options: { forced: boolean, commitCount: number },

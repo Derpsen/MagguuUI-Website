@@ -27,6 +27,7 @@ import { checkRateLimit, getClientIp } from '~/server/utils/rateLimit'
 import {
   classifyCanonicalPushChanges,
   verifyGitHubWebhookSignature,
+  workflowRunHistoryStatus,
 } from '~/server/utils/githubWebhookContract'
 import { syncAddonChangelog } from '~/server/utils/syncAddonChangelog'
 import { syncAddonsFromToc } from '~/server/utils/syncAddons'
@@ -362,7 +363,7 @@ export default defineEventHandler(async (event) => {
     const name = run?.name || 'Unknown workflow'
     db.insert(syncHistory).values({
       triggerSource: 'webhook-workflow',
-      status: status === 'success' ? 'success' : 'error',
+      status: workflowRunHistoryStatus(status),
       details: `${name}: ${status}`,
     }).run()
     return apiSuccess({ event: 'workflow_run', name, status })

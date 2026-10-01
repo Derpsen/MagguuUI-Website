@@ -4,6 +4,7 @@ import test from 'node:test'
 import {
   classifyCanonicalPushChanges,
   verifyGitHubWebhookSignature,
+  workflowRunHistoryStatus,
 } from '../../server/utils/githubWebhookContract'
 
 test('verifies the exact GitHub HMAC without accepting missing or malformed signatures', () => {
@@ -15,6 +16,16 @@ test('verifies the exact GitHub HMAC without accepting missing or malformed sign
   assert.equal(verifyGitHubWebhookSignature(`${payload} `, signature, secret), false)
   assert.equal(verifyGitHubWebhookSignature(payload, null, secret), false)
   assert.equal(verifyGitHubWebhookSignature(payload, 'sha256=short', secret), false)
+})
+
+test('workflow runs only count real failures as sync errors', () => {
+  assert.equal(workflowRunHistoryStatus('success'), 'success')
+  for (const value of ['failure', 'timed_out', 'startup_failure', 'action_required']) {
+    assert.equal(workflowRunHistoryStatus(value), 'error')
+  }
+  for (const value of ['queued', 'in_progress', 'pending', 'waiting', 'requested', 'skipped', 'neutral', 'cancelled', 'stale', 'unknown', null]) {
+    assert.equal(workflowRunHistoryStatus(value), 'info')
+  }
 })
 
 test('classifies canonical paths independently', () => {

@@ -230,7 +230,9 @@ function parseProfileTable(
     throw malformed(`D.${assignment.variable} in ${descriptor.fileName} is missing a table body`)
   }
 
-  const parsed = parseArrayTable(tableBody)
+  const parsed = parseArrayTable(tableBody, {
+    skipNamedTables: descriptor.addon.toLowerCase() === 'ellesmereui',
+  })
   if (parsed.strings.length === 0) {
     throw malformed(`D.${assignment.variable} in ${descriptor.fileName} contains no profile strings`)
   }
@@ -259,7 +261,7 @@ function parseProfileTable(
   return entries
 }
 
-function parseArrayTable(body: string): { strings: string[], number?: string } {
+function parseArrayTable(body: string, options?: { skipNamedTables?: boolean }): { strings: string[], number?: string } {
   const strings: string[] = []
   let number: string | undefined
   let index = 0
@@ -294,6 +296,16 @@ function parseArrayTable(body: string): { strings: string[], number?: string } {
       if (number !== undefined) throw malformed('Addon profile table contains more than one numeric value')
       number = numberMatch[0]
       index += numberMatch[0].length
+      continue
+    }
+
+    const namedTable = options?.skipNamedTables
+      ? /^[A-Za-z_][A-Za-z0-9_]*\s*=/.exec(body.slice(index))
+      : null
+    if (namedTable) {
+      const valueStart = skipTrivia(body, index + namedTable[0].length)
+      if (body[valueStart] !== '{') throw malformed('Addon profile table contains an unsupported value')
+      index = readBalancedTable(body, valueStart).end
       continue
     }
 

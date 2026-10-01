@@ -100,6 +100,19 @@ test('parses Ellesmere, BigWigs, and NSRT array tables', () => {
     { profile: 'uiscale', string: '0.58', isVisible: false },
   ])
 
+  const withTooltip = parseAddonProfileLua(
+    'MagguuUI_Data/AddOns/EllesmereUI.lua',
+    'D.ellesmereui = {\n  "!EUI_profile",\n  0.58,\n  tooltipFixedPos = { centerX = 1035.7, centerY = -146.2 },\n}',
+  )
+  assert.deepEqual(withTooltip.entries.map(entry => ({
+    profile: entry.profile,
+    string: entry.string,
+    isVisible: entry.isVisible,
+  })), [
+    { profile: 'Default', string: '!EUI_profile', isVisible: true },
+    { profile: 'uiscale', string: '0.58', isVisible: false },
+  ])
+
   const bigwigs = parseAddonProfileLua(
     'MagguuUI_Data/AddOns/BigWigs.lua',
     'D.bigwigs = { "BW2:general", "BWB1:boss" }',

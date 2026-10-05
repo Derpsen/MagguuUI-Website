@@ -41,7 +41,7 @@
 
 ## MagguuUI product facts (2026-09-07)
 
-- EllesmereUI TOC min **9.0.6+**; **live 9.2.9**; MagguuUI bake still **9.0.8**.
+- EllesmereUI TOC min **9.0.6+**; **live 9.2.9**; Magguu bake is **dump-based**; notes track **v12.1.6**.
 - Four siblings: MagguuUI / MagguuUI_Data / MagguuUI_EUI / MagguuUI_Media.
 - Posted Magguu export = **full bake** (2026-09-11: Ellesmere type=full, BigWigs, NSRT, EXBoss, WIM, Waypoint UI, HandyNotes, TTT, GTFO, BugSack, PGF, Smart Reminders). Magguu Settings overlay still does not reimport the bake.
 - **Targeted Spell Bars** (Ellesmere Mythic+ Nearby Cast) **ON**; **EXBoss MythicCast OFF**.

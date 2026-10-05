@@ -15,7 +15,7 @@
     "preview": "nuxt preview",
     "verify:smoke": "node scripts/verify-build.mjs",
     "verify": "npm run build:clean && npm run postinstall && npm run build && npm run verify:smoke",
-    "audit:prod": "npm audit --omit=dev",
+    "audit:prod": "node scripts/audit-prod.mjs",
     "postinstall": "nuxt prepare",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",

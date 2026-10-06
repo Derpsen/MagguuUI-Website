@@ -2,7 +2,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'hero', key: 'title', value: 'Your WoW Interface,', type: 'text', sortOrder: 0, locale: 'en' },
   { page: 'home', section: 'hero', key: 'title2', value: 'perfected.', type: 'text', sortOrder: 1, locale: 'en' },
   { page: 'home', section: 'hero', key: 'subtitle', value: 'A native 4K overhaul for EllesmereUI.', type: 'text', sortOrder: 2, locale: 'en' },
-  { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>. Companion addons stay optional.', type: 'html', sortOrder: 3, locale: 'en' },
+  { page: 'home', section: 'hero', key: 'description', value: 'Native <strong>EllesmereUI</strong> module for WoW Retail. Install EllesmereUI + four MagguuUI folders, open <code>/mui</code>, run <strong>Apply Magguu profiles</strong>.', type: 'html', sortOrder: 3, locale: 'en' },
   { page: 'home', section: 'hero', key: 'badge', value: 'Ready for WoW 12.1', type: 'text', sortOrder: 4, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'Native Ellesmere setup', type: 'text', sortOrder: 0, locale: 'en' },
@@ -21,12 +21,12 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'features_heading', key: 'subtitle', value: 'A 4K EllesmereUI setup with optional raid tools', type: 'text', sortOrder: 1, locale: 'en' },
 
   { page: 'home', section: 'addons', key: 'title', value: 'Supported Addons', type: 'text', sortOrder: 0, locale: 'en' },
-  { page: 'home', section: 'addons', key: 'subtitle', value: 'EllesmereUI is required. Optional chips are Magguu imports when installed. WowUp optional chat: Whisper Messenger (not WIM).', type: 'text', sortOrder: 1, locale: 'en' },
+  { page: 'home', section: 'addons', key: 'subtitle', value: 'Grouped Required / Optional / WowUp. Chat pack: Whisper Messenger (not WIM).', type: 'text', sortOrder: 1, locale: 'en' },
 
   { page: 'home', section: 'hero', key: 'title', value: 'Dein WoW-Interface,', type: 'text', sortOrder: 0, locale: 'de' },
   { page: 'home', section: 'hero', key: 'title2', value: 'perfektioniert.', type: 'text', sortOrder: 1, locale: 'de' },
   { page: 'home', section: 'hero', key: 'subtitle', value: 'Ein natives 4K-Overhaul für EllesmereUI.', type: 'text', sortOrder: 2, locale: 'de' },
-  { page: 'home', section: 'hero', key: 'description', value: 'MagguuUI ist ein natives <strong>EllesmereUI</strong>-Modul für WoW Retail. Installiere <strong>EllesmereUI</strong> und die vier MagguuUI-Addon-Ordner, öffne <code>/mui</code> und starte <strong>Magguu-Profile übernehmen</strong>. Begleiter-Addons bleiben optional.', type: 'html', sortOrder: 3, locale: 'de' },
+  { page: 'home', section: 'hero', key: 'description', value: 'Natives <strong>EllesmereUI</strong>-Modul für WoW Retail. EllesmereUI + vier MagguuUI-Ordner, <code>/mui</code>, <strong>Magguu-Profile übernehmen</strong>.', type: 'html', sortOrder: 3, locale: 'de' },
   { page: 'home', section: 'hero', key: 'badge', value: 'Bereit für WoW 12.1', type: 'text', sortOrder: 4, locale: 'de' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'Natives Ellesmere-Setup', type: 'text', sortOrder: 0, locale: 'de' },
@@ -45,7 +45,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'features_heading', key: 'subtitle', value: 'Ein 4K-EllesmereUI-Setup mit optionalen Raid-Tools', type: 'text', sortOrder: 1, locale: 'de' },
 
   { page: 'home', section: 'addons', key: 'title', value: 'Unterstützte Addons', type: 'text', sortOrder: 0, locale: 'de' },
-  { page: 'home', section: 'addons', key: 'subtitle', value: 'EllesmereUI ist Pflicht. Optionale Chips sind Magguu-Imports bei Installation. WowUp-Optional-Chat: Whisper Messenger (nicht WIM).', type: 'text', sortOrder: 1, locale: 'de' },
+  { page: 'home', section: 'addons', key: 'subtitle', value: 'Gruppen Required / Optional / WowUp. Chat-Pack: Whisper Messenger (nicht WIM).', type: 'text', sortOrder: 1, locale: 'de' },
 ] as const
 
 export const DEFAULT_GUIDE_CONTENT = [

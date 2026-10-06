@@ -222,36 +222,20 @@
           Same packs Magguu Setup copies. Paste in WowUp — MagguuUI does not install addons. Optional chat addon is <strong :class="isDark ? 'text-white' : 'text-gray-900'">Whisper Messenger</strong> (not WIM).
         </div>
         <div v-if="wowupList.length" class="space-y-5">
-          <div class="flex flex-wrap gap-2">
-            <button
-              v-for="w in wowupList"
-              :key="w.name"
-              type="button"
-              class="addon-chip inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-semibold"
-              :class="selectedWowupName === w.name ? 'ring-2 ring-brand-400/60' : ''"
-              @click="selectedWowupName = w.name"
-            >
-              <span class="addon-chip-icon" aria-hidden="true">{{ w.name === 'Required' ? '⚡' : '➕' }}</span>
-              <span>{{ wowupLabel(w.name) }}</span>
-            </button>
-          </div>
+          <SupportedAddonsDropdown
+            :groups="wowupPackGroups"
+            :selected-key="selectedWowupName"
+            placeholder="Choose WowUp pack"
+            @select="onWowupPackSelect"
+          />
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
             <div v-if="selectedWowup" class="space-y-4 pt-1">
               <div>
-                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] mb-2.5"
-                  :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-                  {{ wowupLabel(selectedWowup.name) }}
-                </p>
-                <div class="flex flex-wrap gap-2">
-                  <span
-                    v-for="addon in selectedWowupAddons"
-                    :key="addon"
-                    class="addon-chip inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold"
-                  >
-                    <span class="addon-chip-icon" aria-hidden="true">{{ emojiForAddonName(addon) }}</span>
-                    <span>{{ displayAddonName(addon) }}</span>
-                  </span>
-                </div>
+                <p class="section-eyebrow mb-2.5">{{ wowupLabel(selectedWowup.name) }}</p>
+                <SupportedAddonsDropdown
+                  :groups="selectedWowupAddonGroups"
+                  placeholder="Addons in this pack"
+                />
               </div>
               <div class="flex gap-2">
                 <button class="flex-1 py-4 rounded-xl text-white font-semibold text-lg transition-all flex items-center justify-center gap-2"
@@ -329,7 +313,14 @@
 
 <script setup lang="ts">
 import { wowClassIcon, wowClassColor } from '~/utils/wowClassIcons'
-import { displayAddonName, emojiForAddonName, parseWowupAddonNames, wowupLabel } from '~/utils/addonChipMeta'
+import {
+  displayAddonName,
+  emojiForAddonName,
+  groupAddonChips,
+  parseWowupAddonNames,
+  wowupLabel,
+  type AddonGroupKey,
+} from '~/utils/addonChipMeta'
 import { compareProfileAddons, compareProfileNames, profileAddonLabel } from '~/utils/profileLabels'
 
 const isDark = useIsDark()
@@ -434,6 +425,48 @@ const selectedWowupAddons = computed(() => {
   if (!raw) return [] as string[]
   return parseWowupAddonNames(raw)
 })
+
+const wowupPackGroups = computed(() => {
+  const items = wowupList.value.map((w) => {
+    const kind: AddonGroupKey = w.name === 'Required' ? 'required' : 'wowup'
+    const subtitle = w.name === 'Required' ? 'Required' : 'WowUp'
+    return {
+      key: w.name,
+      name: wowupLabel(w.name),
+      emoji: w.name === 'Required' ? '⚡' : '➕',
+      kind,
+      badge: kind,
+      subtitle,
+    }
+  })
+  return groupAddonChips(items)
+})
+
+const selectedWowupAddonGroups = computed(() => {
+  const packName = selectedWowup.value?.name
+  const kind: AddonGroupKey = packName === 'Required' ? 'required' : 'wowup'
+  const subtitle = packName === 'Required' ? 'Required' : 'WowUp'
+  const items = selectedWowupAddons.value.map((raw) => {
+    const name = displayAddonName(raw)
+    const lower = name.toLowerCase()
+    const isWim = lower === 'wim' || lower.includes('wim skin')
+    const itemKind: AddonGroupKey = isWim ? 'optional' : kind
+    return {
+      key: raw,
+      name,
+      emoji: emojiForAddonName(raw),
+      kind: itemKind,
+      badge: (itemKind === 'optional' ? 'optional' : kind) as 'required' | 'optional' | 'wowup',
+      subtitle: itemKind === 'optional' ? 'Optional' : subtitle,
+    }
+  })
+  return groupAddonChips(items)
+})
+
+function onWowupPackSelect(item: { key: string }) {
+  selectedWowupName.value = item.key
+}
+
 
 // Auto-select first item in each category (respect URL params)
 watch(layoutClasses, (classes) => { if (classes.length && !selectedClass.value) selectedClass.value = classes[0] }, { immediate: true })

@@ -66,19 +66,34 @@
             :class="isDark ? 'border-white/8' : 'border-brand-100'">
             <div ref="addonsHeading" class="text-center mb-8 scroll-reveal">
               <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.addons?.title || 'Supported Addons' }}</span></h2>
-              <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'EllesmereUI is required. BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional.' }}</p>
+              <p class="text-sm sm:text-base max-w-2xl mx-auto" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'EllesmereUI is required. Optional chips are Magguu imports when installed. WowUp optional chat: Whisper Messenger (not WIM).' }}</p>
             </div>
-            <div v-if="addonNames.length" ref="addonPills" class="scroll-reveal scroll-reveal-delay-1">
-              <div class="flex flex-wrap justify-center gap-3 py-1">
-                <NuxtLink v-for="addon in addonNames" :key="addon" :to="`/strings?addon=${encodeURIComponent(addon)}`"
-                  class="addon-pill px-5 py-3 rounded-xl text-sm font-medium transition-all group inline-flex items-center gap-2"
-                  :class="isDark ? 'text-silver-300 hover:text-brand-400' : 'text-gray-600 hover:text-brand-500'">
-                  <span class="w-2 h-2 rounded-full accent-ellesmere-dot transition-colors" />
-                  {{ profileAddonLabel(addon) }}
-                  <svg aria-hidden="true" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
-                </NuxtLink>
+            <div v-if="requiredChips.length || optionalChips.length" ref="addonPills" class="scroll-reveal scroll-reveal-delay-1 space-y-6">
+              <div v-if="requiredChips.length">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-center mb-3"
+                  :class="isDark ? 'text-brand-300' : 'text-brand-700'">Required</p>
+                <div class="flex flex-wrap justify-center gap-2.5">
+                  <NuxtLink v-for="chip in requiredChips" :key="chip.key" :to="chip.href"
+                    class="addon-chip group inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/70 focus-visible:ring-offset-2"
+                    :class="isDark ? 'focus-visible:ring-offset-[#0b1118]' : 'focus-visible:ring-offset-[#eef4fb]'">
+                    <span class="addon-chip-icon" aria-hidden="true">{{ chip.emoji }}</span>
+                    <span>{{ chip.name }}</span>
+                  </NuxtLink>
+                </div>
+              </div>
+              <div v-if="optionalChips.length">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-center mb-3"
+                  :class="isDark ? 'text-silver-500' : 'text-gray-500'">Optional Magguu imports</p>
+                <div class="flex flex-wrap justify-center gap-2.5">
+                  <NuxtLink v-for="chip in optionalChips" :key="chip.key" :to="chip.href"
+                    class="addon-chip group inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/70 focus-visible:ring-offset-2"
+                    :class="isDark ? 'focus-visible:ring-offset-[#0b1118]' : 'focus-visible:ring-offset-[#eef4fb]'">
+                    <span class="addon-chip-icon" aria-hidden="true">{{ chip.emoji }}</span>
+                    <span>{{ chip.name }}</span>
+                    <span v-if="chip.badge === 'wowup'" class="addon-chip-badge addon-chip-badge--wowup">WowUp</span>
+                    <span v-else-if="chip.badge === 'import'" class="addon-chip-badge addon-chip-badge--import">Import</span>
+                  </NuxtLink>
+                </div>
               </div>
             </div>
           </div>
@@ -115,7 +130,7 @@
 
 <script setup lang="ts">
 import { buildPublicUrl } from '~/utils/publicSite'
-import { compareProfileAddons, profileAddonLabel } from '~/utils/profileLabels'
+import { profileHrefForSlug } from '~/utils/addonChipMeta'
 
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
@@ -208,13 +223,49 @@ interface CatalogSummary {
   changelogCount: number
 }
 
+interface PublicAddonChip {
+  slug: string
+  name: string
+  category: 'required' | 'core' | 'optional'
+  emoji: string | null
+}
+
+interface AddonsPayload {
+  required: PublicAddonChip[]
+  core: PublicAddonChip[]
+  optional: PublicAddonChip[]
+}
+
 const { data: contentData } = useFetch<{ data: HomeContent }>('/api/v1/content/home')
 const { data: catalogData } = useFetch<{ data: CatalogSummary }>('/api/v1/catalog-summary')
+const { data: addonsData } = useFetch<{ data: AddonsPayload }>('/api/v1/addons')
 const { data: latestChangeData } = useFetch<{ data: LatestChange | null }>('/api/v1/latest-change')
 
 const content = computed(() => contentData.value?.data)
 const catalog = computed(() => catalogData.value?.data)
-const addonNames = computed(() => [...(catalog.value?.addonNames ?? [])].sort(compareProfileAddons))
+
+function toChip(addon: PublicAddonChip, kind: 'required' | 'optional') {
+  let badge: 'wowup' | 'import' | undefined
+  if (kind === 'optional') {
+    if (addon.slug === 'wim') badge = 'import'
+    else if (addon.slug === 'whisper-messenger') badge = 'wowup'
+  }
+  return {
+    key: addon.slug,
+    name: addon.name,
+    emoji: addon.emoji || '🧩',
+    href: profileHrefForSlug(addon.slug),
+    kind,
+    badge,
+  }
+}
+
+const requiredChips = computed(() => (addonsData.value?.data?.required ?? []).map(a => toChip(a, 'required')))
+const optionalChips = computed(() => {
+  const core = addonsData.value?.data?.core ?? []
+  const optional = addonsData.value?.data?.optional ?? []
+  return [...core, ...optional].map(a => toChip(a, 'optional'))
+})
 
 // Badge text: show last changed string name
 const latestBadgeText = computed(() => {

@@ -169,6 +169,16 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_3', marker: 'Ellesmere WIM Skin' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'EXBoss, WIM, Waypoint UI' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'Northern Sky, EXBoss, and Smart Reminders' },
+  // 2026-10 guide shorten + home chips subtitle
+  { page: 'guide', section: 'intro', key: 'text', marker: 'Magguu Settings (overlay/QoL only), Load profiles (activate only), and WowUp copy popups live on Setup. Companion addons' },
+  { page: 'guide', section: 'steps', key: 'step_1', marker: "Ellesmere's start popup is skipped. MagguuUI Setup opens on that login so you can run Apply Magguu profiles." },
+  { page: 'guide', section: 'steps', key: 'step_2', marker: 'Nested-only copies inside MagguuUI are obsolete.' },
+  { page: 'guide', section: 'steps', key: 'step_3', marker: 'Whisper Messenger** — Magguu profile. Setup import button when loaded' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'Logging in on an alt asks whether to load those profiles onto that character.' },
+  { page: 'guide', section: 'steps', key: 'step_5', marker: 'TopBar, Hearth-Picker, and MagguuUI FPS/MS are not part of this build.' },
+  { page: 'guide', section: 'steps', key: 'step_6', marker: "After a successful Cooldown Viewer import MagguuUI asks you to reload via Ellesmere's confirm popup" },
+  { page: 'home', section: 'addons', key: 'subtitle', marker: 'BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional.' },
+  { page: 'home', section: 'addons', key: 'subtitle', marker: 'BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter und Smart Reminders sind optional.', locale: 'de' },
 ] as const
 
 const LEGACY_FAQ_MARKERS = [

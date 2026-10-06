@@ -81,6 +81,10 @@ html.dark body {
   background: #0b1118;
 }
 
+html.dark .public-shell {
+  background-color: #0b1118;
+}
+
 /* ─── App Shells ────────────────────────────────── */
 
 html, body, #__nuxt {
@@ -766,6 +770,7 @@ html.light .prose-custom hr { border-top-color: rgba(8, 143, 111, 0.15); }
 .guide-content a { color: #0CD29D; text-decoration: underline; }
 .guide-content a:hover { color: #45e0bb; }
 
+html.light .guide-content { color: #475569; }
 html.light .guide-content strong { color: #1e293b; }
 html.light .guide-content a { color: #0AA882; }
 html.light .guide-content a:hover { color: #088F6F; }
@@ -777,6 +782,10 @@ html.light .guide-content a:hover { color: #088F6F; }
 
 html.light body {
   background: #f0f4f8;
+}
+
+html.light .public-shell {
+  background-color: #eef4fb;
 }
 
 html.light .glass {

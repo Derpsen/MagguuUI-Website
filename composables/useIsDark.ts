@@ -5,6 +5,9 @@
  * The server renders the configured fallback (`dark`). Keep the first client
  * render on the same fallback value to avoid Vue hydration class mismatches;
  * after mount, use the resolved client-side color mode.
+ *
+ * Explicit light/dark preference (theme toggle) always wins so Vue classes stay
+ * aligned with the `html.light` / `html.dark` CSS that drives glass-card etc.
  */
 export function useIsDark() {
   const colorMode = useColorMode()
@@ -17,11 +20,23 @@ export function useIsDark() {
   }
 
   return computed(() => {
-    if (!hydrated.value) {
-      return colorMode.preference !== 'light'
-    }
+    const preference = colorMode.preference
+    if (preference === 'light') return false
+    if (preference === 'dark') return true
+
+    // preference === 'system' (or unknown): match color-mode fallback until mount
+    if (!hydrated.value) return true
 
     const value = colorMode.value
-    return value === 'dark' || (value === 'system' && colorMode.preference !== 'light')
+    if (value === 'light') return false
+    if (value === 'dark') return true
+
+    // Unresolved 'system' — trust the class color-mode already applied on <html>
+    if (import.meta.client) {
+      if (document.documentElement.classList.contains('light')) return false
+      if (document.documentElement.classList.contains('dark')) return true
+      return window.matchMedia('(prefers-color-scheme: dark)').matches
+    }
+    return true
   })
 }

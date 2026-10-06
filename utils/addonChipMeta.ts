@@ -116,3 +116,10 @@ export function parseWowupAddonNames(b64: string): string[] {
     return []
   }
 }
+
+/** Public label for WowUp pack keys (storage still uses Required / Optional). */
+export function wowupLabel(name: string): string {
+  if (name === 'Required') return 'Starter Addons'
+  if (name === 'Optional') return 'Optional Addons'
+  return name
+}

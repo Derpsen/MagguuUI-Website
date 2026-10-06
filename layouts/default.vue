@@ -51,7 +51,7 @@
             <div class="flex items-center gap-2">
               <button
                 class="public-theme-toggle inline-flex items-center justify-center w-10 h-10 rounded-full transition-all"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.08] border border-white/10 bg-white/[0.03]' : 'text-gray-600 hover:text-gray-900 hover:bg-white border border-brand-100 bg-white/90 shadow-sm'"
+                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.08] border border-white/10 bg-white/[0.03]' : 'text-slate-800 hover:text-slate-950 hover:bg-white border border-slate-300 bg-white shadow-sm'"
                 :title="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
                 :aria-label="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
                 data-color-mode-toggle
@@ -65,13 +65,13 @@
 
               <NuxtLink v-if="isLoggedIn" to="/admin"
                 class="hidden md:inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-all"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.05] border border-white/8' : 'text-gray-700 hover:text-gray-900 hover:bg-white/90 border border-brand-100 shadow-sm'">
+                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.05] border border-white/8' : 'text-slate-800 hover:text-slate-950 hover:bg-white border border-slate-300 shadow-sm'">
                 <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4" />
                 Admin
               </NuxtLink>
               <NuxtLink v-else to="/admin/login"
                 class="hidden md:inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-all"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.05] border border-white/8' : 'text-gray-700 hover:text-gray-900 hover:bg-white/90 border border-brand-100 shadow-sm'">
+                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.05] border border-white/8' : 'text-slate-800 hover:text-slate-950 hover:bg-white border border-slate-300 shadow-sm'">
                 <UIcon name="i-heroicons-lock-closed" class="w-4 h-4" />
                 Login
               </NuxtLink>
@@ -83,7 +83,7 @@
               </NuxtLink>
 
               <button class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-full transition-all"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.08] border border-white/10 bg-white/[0.03]' : 'text-gray-600 hover:text-gray-900 hover:bg-white border border-brand-100 bg-white/90 shadow-sm'"
+                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.08] border border-white/10 bg-white/[0.03]' : 'text-slate-800 hover:text-slate-950 hover:bg-white border border-slate-300 bg-white shadow-sm'"
                 :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
                 @click="mobileOpen = !mobileOpen">
                 <UIcon :name="mobileOpen ? 'i-heroicons-x-mark' : 'i-heroicons-bars-3'" class="w-5 h-5" />

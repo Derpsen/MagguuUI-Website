@@ -11,7 +11,7 @@
         :style="{ width: `var(--admin-sidebar-width)` }"
       >
         <!-- Logo -->
-        <div class="flex items-center gap-3 px-4 shrink-0" :style="{ height: '50px' }">
+        <div class="flex items-center gap-2.5 px-3 shrink-0" :style="{ height: '50px' }">
           <NuxtLink to="/admin" class="flex min-w-0 items-center gap-2.5">
             <img src="/logo.png" alt="MagguuUI" width="28" height="28" class="h-7 w-7 shrink-0">
             <span v-if="!collapsed" class="truncate text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">MagguuUI</span>
@@ -39,7 +39,7 @@
         </div>
 
         <!-- Nav -->
-        <nav class="flex-1 overflow-y-auto overflow-x-hidden py-2 px-2">
+        <nav class="flex-1 overflow-y-auto overflow-x-hidden py-1.5 px-1.5">
           <NuxtLink
             to="/admin"
             class="vben-nav-item"
@@ -52,7 +52,7 @@
             <span v-if="!collapsed" class="truncate">Dashboard</span>
           </NuxtLink>
 
-          <div v-for="section in sections" :key="section.title" class="mt-3">
+          <div v-for="section in sections" :key="section.title" class="mt-2">
             <div v-if="collapsed" class="mx-3 my-2 h-px" :class="isDark ? 'bg-white/8' : 'bg-slate-200'" />
             <button
               v-else
@@ -332,10 +332,10 @@ const searchShortcut = computed(() => isMac.value ? '⌘K' : 'Ctrl K')
 const userInitial = computed(() => (user.value?.username || 'A').charAt(0).toUpperCase())
 const pageHeading = computed(() => currentContext.value.heading || currentContext.value.label)
 const adminShellStyle = computed(() => ({
-  '--admin-sidebar-width': collapsed.value ? '3.75rem' : '14rem',
+  '--admin-sidebar-width': collapsed.value ? '3.5rem' : '12rem',
 }))
 const openSections = reactive(
-  Object.fromEntries(sections.map(section => [section.title, true])) as Record<string, boolean>,
+  Object.fromEntries(sections.map(section => [section.title, section.title !== 'System'])) as Record<string, boolean>,
 )
 
 function toggleTheme() {
@@ -379,7 +379,7 @@ function expandActiveItems() {
 }
 
 function isRouteActive(path: string, exact = false) {
-  if (path === '/admin') return route.path === '/admin'
+  if (path === '/admin' || path === '/admin/content') return route.path === path
   if (exact) return route.path === path
   return route.path === path || route.path.startsWith(`${path}/`)
 }
@@ -454,10 +454,10 @@ watch(() => route.fullPath, () => {
 .vben-nav-item {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
+  gap: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.45rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   transition: background 0.15s, color 0.15s;
   color: var(--admin-fg-muted);
@@ -492,9 +492,9 @@ html.dark .vben-nav-item--active {
 
 .vben-nav-child {
   display: block;
-  padding: 0.35rem 0.75rem;
-  border-radius: 0.375rem;
-  font-size: 0.8125rem;
+  padding: 0.28rem 0.625rem;
+  border-radius: 0.35rem;
+  font-size: 0.75rem;
   font-weight: 400;
   transition: background 0.15s, color 0.15s;
   color: var(--admin-fg-faint);

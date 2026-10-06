@@ -37,6 +37,14 @@ const adminSections: AdminNavSection[] = [
     title: 'Content',
     links: [
       {
+        to: '/admin/content',
+        label: 'Overview',
+        heading: 'Content',
+        icon: 'i-heroicons-squares-plus',
+        description: 'Jump to homepage, guide, FAQ or updates editors.',
+        hint: 'Pick a public page to edit without hunting through the sidebar.',
+      },
+      {
         to: '/admin/content/home',
         label: 'Home',
         heading: 'Homepage',
@@ -213,7 +221,8 @@ const commandActions: AdminCommandItem[] = [
 ]
 
 export function isAdminPathActive(currentPath: string, targetPath: string, exact = false): boolean {
-  if (targetPath === '/admin') return currentPath === '/admin'
+  // Content hub and dashboard are section roots — exact only, else every child lights them up.
+  if (targetPath === '/admin' || targetPath === '/admin/content') return currentPath === targetPath
   if (exact) return currentPath === targetPath
   return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`)
 }
@@ -221,9 +230,19 @@ export function isAdminPathActive(currentPath: string, targetPath: string, exact
 export function useAdminNavigation() {
   const route = useRoute()
 
+  const contentHubContext: AdminContextItem = {
+    to: '/admin/content',
+    label: 'Content',
+    heading: 'Content',
+    icon: 'i-heroicons-document-text',
+    description: 'Public page editors for home, guide, FAQ and updates.',
+    section: 'Content',
+    hint: 'Pick a page to edit — keep public copy short and factual.',
+  }
+
   const currentContext = computed(() => {
-    // Content root redirects to home; map alias before matching so nav/dock/tabs stay on Home.
-    const path = route.path === '/admin/content' ? '/admin/content/home' : route.path
+    const path = route.path
+    if (path === '/admin/content') return contentHubContext
     return contextItems.find(item => isAdminPathActive(path, item.to, item.to === '/admin')) || dashboardContext
   })
 

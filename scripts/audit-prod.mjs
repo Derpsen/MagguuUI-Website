@@ -6,6 +6,11 @@ import { spawnSync } from 'node:child_process'
 const ALLOWLIST = {
   'GHSA-vfj7-8cjw-p6xm': { pkg: 'braces', reason: 'nitropack > globby > fast-glob > micromatch; build-time only' },
   'GHSA-86w9-cpqp-85rv': { pkg: 'node-forge', reason: 'listhen (nuxt dev server certs); not in .output' },
+  // simple-git 4.x drops default export and breaks @nuxt/devtools. Build/dev only.
+  'GHSA-v5rq-49vh-5v5c': { pkg: '@simple-git/argv-parser', reason: '@nuxt/devtools > simple-git; build/dev only; 4.x breaks default import' },
+  'GHSA-x6jw-m9v5-85vh': { pkg: 'simple-git', reason: '@nuxt/devtools; build/dev only; 4.x breaks default import' },
+  'GHSA-g4wm-2vf7-vfgr': { pkg: 'simple-git', reason: '@nuxt/devtools; build/dev only; 4.x breaks default import' },
+  'GHSA-858h-whjf-mvg5': { pkg: 'simple-git', reason: '@nuxt/devtools; build/dev only; 4.x breaks default import' },
 }
 const REVIEW_BY = '2026-11-30'
 const BLOCKING = new Set(['high', 'critical'])

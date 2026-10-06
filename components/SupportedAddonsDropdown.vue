@@ -97,7 +97,7 @@ const emit = defineEmits<{ select: [item: DropdownItem] }>()
 
 const open = ref(false)
 const root = ref<HTMLElement | null>(null)
-const listId = `addon-dd-${Math.random().toString(36).slice(2, 9)}`
+const listId = `addon-dd-${useId()}`
 
 const flat = computed(() => props.groups.flatMap(g => g.items))
 const selected = computed(() => flat.value.find(i => i.key === props.selectedKey) || null)

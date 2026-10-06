@@ -1,15 +1,26 @@
 # Dependencies & build output
 .nuxt
-node_modules
 .output
+node_modules
+dist
+coverage
+.turbo
+.eslintcache
+test-results
+playwright-report
+blob-report
 
-# Runtime data (mounted as volumes)
-data
-uploads
+# Tests, CI, docs, Unraid template (not needed for image build)
+.github
+tests
+docs
+unraid
+playwright.config.ts
 
 # Version control
 .git
 .gitignore
+.gitattributes
 
 # Environment & secrets
 .env
@@ -17,6 +28,7 @@ uploads
 
 # IDE & tooling
 .claude
+.cursor
 .vscode
 .idea
 

@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1.7
 # ─── Build Stage ─────────────────────────────────
+# node:24-bookworm-slim multi-arch index digest (2026-10-06)
 ARG NODE_VERSION=24
-FROM node:${NODE_VERSION}-bookworm-slim AS build
+ARG NODE_DIGEST=sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+FROM node:${NODE_VERSION}-bookworm-slim@${NODE_DIGEST} AS build
 
 WORKDIR /app
 
@@ -31,7 +33,7 @@ COPY . .
 RUN npm run build
 
 # ─── Production Stage ────────────────────────────
-FROM node:${NODE_VERSION}-bookworm-slim
+FROM node:${NODE_VERSION}-bookworm-slim@${NODE_DIGEST}
 
 ARG VCS_REF=unknown
 ARG BUILD_DATE=unknown

@@ -141,7 +141,7 @@
                   {{ stepStage(idx) }}
                 </span>
               </div>
-              <h3 class="text-xl sm:text-2xl font-bold leading-tight mb-4"
+              <h3 class="guide-step-title text-xl sm:text-2xl font-bold leading-tight mb-4"
                 :class="isDark ? 'text-white' : 'text-gray-900'">
                 {{ step.editableTitle || `Step ${idx + 1}` }}
               </h3>
@@ -184,7 +184,7 @@
       <!-- Sidebar: simple step index + help links -->
       <aside class="space-y-4 lg:sticky lg:top-28">
         <nav class="glass-card rounded-2xl p-5 fade-in" aria-label="Guide steps">
-          <p class="text-[11px] font-semibold uppercase tracking-[0.18em] mb-3"
+          <p class="guide-toc-label text-[11px] font-semibold uppercase tracking-[0.18em] mb-3"
             :class="isDark ? 'text-silver-500' : 'text-gray-500'">
             On this page
           </p>
@@ -195,7 +195,7 @@
                 :class="isDark
                   ? 'text-silver-300 hover:text-white hover:bg-white/5'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-brand-50'">
-                <span class="inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-bold flex-shrink-0"
+                <span class="guide-jump-num inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-bold flex-shrink-0"
                   :class="isDark
                     ? 'bg-brand-400/10 text-brand-300'
                     : 'bg-brand-50 text-brand-600'">
@@ -208,7 +208,7 @@
         </nav>
 
         <div class="glass-card rounded-2xl p-5 fade-in">
-          <p class="text-[11px] font-semibold uppercase tracking-[0.18em] mb-3"
+          <p class="guide-toc-label text-[11px] font-semibold uppercase tracking-[0.18em] mb-3"
             :class="isDark ? 'text-silver-500' : 'text-gray-500'">
             After setup
           </p>

@@ -102,12 +102,14 @@
           </svg>
           <span class="text-gradient-subtle">Contact</span>
         </h2>
+        <!--email_off-->
         <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           Questions, feedback or bug reports? Send an email to
-          <button type="button" class="text-brand-400 hover:underline" @click="openContact">{{ contactEmail }}</button>
+          <a :href="`mailto:${contactEmail}`" class="text-brand-400 hover:underline">{{ contactEmail }}</a>
           or create a
           <a :href="githubIssuesUrl" target="_blank" rel="noopener noreferrer" class="text-brand-400 hover:underline">GitHub Issue</a>.
         </p>
+        <!--/email_off-->
       </div>
 
       <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">
@@ -149,7 +151,4 @@ const contactEmail = computed(() => siteSettings.value.contact_email || 'contact
 const githubUrl = computed(() => siteSettings.value.github_url || 'https://github.com/Derpsen/MagguuUI')
 const githubIssuesUrl = computed(() => githubUrl.value.endsWith('/issues') ? githubUrl.value : `${githubUrl.value.replace(/\/$/, '')}/issues`)
 
-function openContact() {
-  window.location.href = `mailto:${contactEmail.value}`
-}
 </script>

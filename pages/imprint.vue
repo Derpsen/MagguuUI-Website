@@ -34,7 +34,7 @@
             <p>{{ imprintCountry }}</p>
           </template>
           <p v-else>
-            For legal inquiries, please use the contact email below until full imprint details are configured.
+            MagguuUI is operated from Germany. For legal correspondence and operator inquiries, please use the contact email below.
           </p>
         </div>
       </div>
@@ -46,10 +46,12 @@
           </svg>
           <span class="text-gradient-subtle">Contact</span>
         </h2>
+        <!--email_off-->
         <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           Email:
-          <button type="button" class="text-brand-400 hover:underline" @click="openContact">{{ contactEmail }}</button>
+          <a :href="`mailto:${contactEmail}`" class="text-brand-400 hover:underline">{{ contactEmail }}</a>
         </p>
+        <!--/email_off-->
       </div>
 
       <div :ref="el => observe(el as HTMLElement)" class="glass-card rounded-2xl p-6 sm:p-8">
@@ -82,9 +84,6 @@ const siteSettings = usePublicPageSeo({
 
 const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguu.xyz')
 
-function openContact() {
-  window.location.href = `mailto:${contactEmail.value}`
-}
 const imprintName = computed(() => siteSettings.value.imprint_name || siteSettings.value.site_name || 'MagguuUI')
 const imprintStreet = computed(() => siteSettings.value.imprint_street || '')
 const imprintCity = computed(() => siteSettings.value.imprint_city || '')

@@ -157,13 +157,14 @@ function toggleRelease(id: number) {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 90px;
+  height: 64px;
   pointer-events: none;
 }
 .release-fade--dark {
-  background: linear-gradient(to bottom, rgba(10, 20, 40, 0), rgba(10, 20, 40, 0.95) 85%);
+  background: linear-gradient(to bottom, rgba(10, 20, 40, 0), rgba(10, 20, 40, 0.55) 70%, rgba(10, 20, 40, 0.78) 100%);
 }
 .release-fade--light {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.98) 85%);
+  /* Soft brand-tinted veil — avoid opaque white wash over body text */
+  background: linear-gradient(to bottom, rgba(248, 250, 252, 0), rgba(241, 245, 249, 0.45) 55%, rgba(236, 242, 247, 0.72) 100%);
 }
 </style>

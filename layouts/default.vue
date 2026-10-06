@@ -6,7 +6,7 @@
 <template>
   <UApp>
   <div class="public-shell min-h-screen flex flex-col transition-colors duration-300"
-    :class="isDark ? 'bg-[#0b1118] text-silver-200' : 'bg-[#eef4fb] text-gray-800'">
+    :class="isDark ? 'text-silver-200' : 'text-gray-800'">
     <div class="public-grid-overlay" />
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-full focus:bg-brand-500 focus:text-white focus:text-sm focus:font-medium">
       Skip to main content

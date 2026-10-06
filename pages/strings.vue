@@ -240,7 +240,7 @@
               <div>
                 <p class="text-[11px] font-semibold uppercase tracking-[0.18em] mb-2.5"
                   :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-                  {{ wowupLabel(selectedWowup.name) }} addons
+                  {{ wowupLabel(selectedWowup.name) }}
                 </p>
                 <div class="flex flex-wrap gap-2">
                   <span
@@ -329,7 +329,7 @@
 
 <script setup lang="ts">
 import { wowClassIcon, wowClassColor } from '~/utils/wowClassIcons'
-import { displayAddonName, emojiForAddonName, parseWowupAddonNames } from '~/utils/addonChipMeta'
+import { displayAddonName, emojiForAddonName, parseWowupAddonNames, wowupLabel } from '~/utils/addonChipMeta'
 import { compareProfileAddons, compareProfileNames, profileAddonLabel } from '~/utils/profileLabels'
 
 const isDark = useIsDark()
@@ -390,11 +390,6 @@ const wowupList = computed<FlatWowup[]>(() => {
   if (!keyed || typeof keyed !== 'object') return []
   return Object.entries(keyed).map(([name, data]) => ({ name, ...data }))
 })
-function wowupLabel(name: string): string {
-  if (name === 'Required') return 'Starter Addons'
-  if (name === 'Optional') return 'Optional Addons'
-  return name
-}
 const layoutList = computed<PublicLayout[]>(() => {
   const data = layoutData.value?.data
   return Array.isArray(data) ? data : []

@@ -67,16 +67,59 @@
         <div v-if="layoutList.length" class="space-y-5">
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Class</label>
-            <select v-model="selectedClass" class="select-styled w-full px-4 py-3.5 rounded-xl text-base cursor-pointer" :class="isDark ? 'text-white' : 'text-gray-900'">
-              <option v-for="cls in layoutClasses" :key="cls" :value="cls">{{ cls }}</option>
-            </select>
+            <div class="flex flex-wrap gap-2" role="listbox" aria-label="WoW classes">
+              <button
+                v-for="cls in layoutClasses"
+                :key="cls"
+                type="button"
+                role="option"
+                :aria-selected="selectedClass === cls"
+                class="wow-class-chip"
+                :class="selectedClass === cls ? 'is-active' : ''"
+                @click="selectedClass = cls"
+              >
+                <img
+                  v-if="wowClassIcon(cls)"
+                  :src="wowClassIcon(cls)!"
+                  :alt="''"
+                  class="wow-class-chip__icon"
+                  width="24"
+                  height="24"
+                  loading="lazy"
+                />
+                <span
+                  v-else
+                  class="wow-class-chip__icon inline-flex items-center justify-center text-[10px] font-bold"
+                  :style="{ background: wowClassColor(cls) + '33', color: wowClassColor(cls) }"
+                >{{ cls.slice(0, 2) }}</span>
+                <span>{{ cls }}</span>
+              </button>
+            </div>
           </div>
           <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1" enter-to-class="opacity-100 translate-y-0">
             <div v-if="selectedClass && layoutSpecs.length > 1">
               <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Specialization</label>
-              <select v-model="selectedSpec" class="select-styled w-full px-4 py-3.5 rounded-xl text-base cursor-pointer" :class="isDark ? 'text-white' : 'text-gray-900'">
-                <option v-for="spec in layoutSpecs" :key="spec" :value="spec">{{ spec }}</option>
-              </select>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="spec in layoutSpecs"
+                  :key="spec"
+                  type="button"
+                  class="wow-class-chip"
+                  :class="selectedSpec === spec ? 'is-active' : ''"
+                  @click="selectedSpec = spec"
+                >
+                  <img
+                    v-if="wowClassIcon(selectedClass)"
+                    :src="wowClassIcon(selectedClass)!"
+                    :alt="''"
+                    class="wow-class-chip__icon"
+                    width="24"
+                    height="24"
+                    loading="lazy"
+                  />
+                  <span>{{ selectedClass }} — {{ spec }}</span>
+                </button>
+              </div>
             </div>
           </Transition>
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
@@ -176,19 +219,40 @@
       <div v-if="activeTab === 'wowup'" role="tabpanel" id="tabpanel-wowup" aria-labelledby="tab-wowup" tabindex="0">
         <div class="mb-5 rounded-xl border px-4 py-3 text-sm leading-relaxed"
           :class="isDark ? 'border-brand-400/15 bg-brand-400/5 text-silver-400' : 'border-brand-100 bg-brand-50 text-gray-600'">
-          These are the same WowUp strings Magguu Setup copies in-game. Starter Addons is EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, and EXCore.
-          Optional Addons are extras such as BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, Whisper Messenger, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, and Smart Reminders.
-          MagguuUI itself only needs EllesmereUI plus the MagguuUI group. Paste the string in WowUp — MagguuUI does not install addons itself.
+          Same packs Magguu Setup copies. Paste in WowUp — MagguuUI does not install addons. Optional chat addon is <strong :class="isDark ? 'text-white' : 'text-gray-900'">Whisper Messenger</strong> (not WIM).
         </div>
         <div v-if="wowupList.length" class="space-y-5">
-          <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Package</label>
-            <select v-model="selectedWowupName" class="select-styled w-full px-4 py-3.5 rounded-xl text-base cursor-pointer" :class="isDark ? 'text-white' : 'text-gray-900'">
-              <option v-for="w in wowupList" :key="w.name" :value="w.name">{{ wowupLabel(w.name) }}</option>
-            </select>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="w in wowupList"
+              :key="w.name"
+              type="button"
+              class="addon-chip inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-semibold"
+              :class="selectedWowupName === w.name ? 'ring-2 ring-brand-400/60' : ''"
+              @click="selectedWowupName = w.name"
+            >
+              <span class="addon-chip-icon" aria-hidden="true">{{ w.name === 'Required' ? '⚡' : '➕' }}</span>
+              <span>{{ wowupLabel(w.name) }}</span>
+            </button>
           </div>
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
             <div v-if="selectedWowup" class="space-y-4 pt-1">
+              <div>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] mb-2.5"
+                  :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+                  {{ wowupLabel(selectedWowup.name) }} addons
+                </p>
+                <div class="flex flex-wrap gap-2">
+                  <span
+                    v-for="addon in selectedWowupAddons"
+                    :key="addon"
+                    class="addon-chip inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold"
+                  >
+                    <span class="addon-chip-icon" aria-hidden="true">{{ emojiForAddonName(addon) }}</span>
+                    <span>{{ displayAddonName(addon) }}</span>
+                  </span>
+                </div>
+              </div>
               <div class="flex gap-2">
                 <button class="flex-1 py-4 rounded-xl text-white font-semibold text-lg transition-all flex items-center justify-center gap-2"
                   :class="wowupCopied ? 'btn-gradient-green' : 'btn-gradient'" @click="copyWowup">
@@ -264,6 +328,8 @@
 </template>
 
 <script setup lang="ts">
+import { wowClassIcon, wowClassColor } from '~/utils/wowClassIcons'
+import { displayAddonName, emojiForAddonName, parseWowupAddonNames } from '~/utils/addonChipMeta'
 import { compareProfileAddons, compareProfileNames, profileAddonLabel } from '~/utils/profileLabels'
 
 const isDark = useIsDark()
@@ -287,7 +353,7 @@ const activeTab = ref((route.query.tab as string) || 'layouts')
 
 const tabSubtitle = computed(() => {
   switch (activeTab.value) {
-    case 'layouts': return 'Copy the Cooldown Viewer layout for your class. Import names every spec Magguu - Class Spec.'
+    case 'layouts': return 'Pick your class, then copy the Cooldown Viewer layout (Magguu - Class Spec).'
     case 'profiles': return 'Copy one Magguu profile. Apply Magguu profiles in /mui loads these when the addon is installed.'
     case 'wowup': return 'Same packs Magguu Setup copies — starter plus optional extras. EllesmereUI is still required.'
     default: return 'Choose your category and class to copy the import string.'
@@ -366,6 +432,12 @@ watch(() => selectedAddon.value, () => { selectedProfileId.value = addonProfiles
 const selectedWowup = computed(() => {
   if (!selectedWowupName.value) return null
   return wowupList.value.find(w => w.name === selectedWowupName.value) ?? null
+})
+
+const selectedWowupAddons = computed(() => {
+  const raw = selectedWowup.value?.string
+  if (!raw) return [] as string[]
+  return parseWowupAddonNames(raw)
 })
 
 // Auto-select first item in each category (respect URL params)

@@ -914,6 +914,122 @@ html.light .addon-pill:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 0 12px rgba(12, 210, 157, 0.05);
 }
 
+/* ─── Addon Chips (home + strings) ───────────────── */
+.addon-chip {
+  background: linear-gradient(145deg, rgba(16, 20, 26, 0.92), rgba(12, 16, 22, 0.96));
+  border: 1px solid rgba(12, 210, 157, 0.28);
+  color: #d7e0ec;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+.addon-chip:hover {
+  border-color: rgba(12, 210, 157, 0.55);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.28), 0 0 14px rgba(12, 210, 157, 0.12);
+}
+.addon-chip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: rgba(12, 210, 157, 0.12);
+  font-size: 0.85rem;
+  line-height: 1;
+}
+.addon-chip-badge {
+  margin-left: 0.15rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.addon-chip-badge--wowup {
+  background: rgba(59, 139, 255, 0.18);
+  color: #93bbff;
+  border: 1px solid rgba(59, 139, 255, 0.35);
+}
+.addon-chip-badge--import {
+  background: rgba(148, 163, 184, 0.14);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+}
+html.light .addon-chip {
+  background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(241,245,249,0.98));
+  border-color: rgba(8, 143, 111, 0.28);
+  color: #1e293b;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+html.light .addon-chip:hover {
+  border-color: rgba(8, 143, 111, 0.5);
+  color: #0f172a;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+html.light .addon-chip-icon {
+  background: rgba(8, 143, 111, 0.1);
+}
+html.light .addon-chip-badge--wowup {
+  background: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+  border-color: rgba(37, 99, 235, 0.25);
+}
+html.light .addon-chip-badge--import {
+  background: rgba(100, 116, 139, 0.1);
+  color: #475569;
+  border-color: rgba(100, 116, 139, 0.22);
+}
+
+.wow-class-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.85rem 0.55rem 0.55rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(12, 210, 157, 0.22);
+  background: rgba(12, 16, 22, 0.75);
+  color: #d7e0ec;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.wow-class-chip:hover,
+.wow-class-chip.is-active {
+  border-color: rgba(12, 210, 157, 0.5);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.wow-class-chip.is-active {
+  background: rgba(12, 210, 157, 0.12);
+  box-shadow: 0 0 0 1px rgba(12, 210, 157, 0.18);
+}
+.wow-class-chip__icon {
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 0.45rem;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
+}
+html.light .wow-class-chip {
+  background: rgba(255,255,255,0.92);
+  border-color: rgba(8, 143, 111, 0.22);
+  color: #1e293b;
+}
+html.light .wow-class-chip:hover,
+html.light .wow-class-chip.is-active {
+  border-color: rgba(8, 143, 111, 0.45);
+  color: #0f172a;
+}
+html.light .wow-class-chip.is-active {
+  background: rgba(8, 143, 111, 0.08);
+}
+
+
+
 html.light .version-badge {
   background: linear-gradient(135deg, rgba(12, 210, 157, 0.1), rgba(12, 210, 157, 0.05));
   border-color: rgba(12, 210, 157, 0.22);

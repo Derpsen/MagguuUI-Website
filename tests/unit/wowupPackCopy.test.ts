@@ -11,8 +11,11 @@ describe('WowUp pack copy', () => {
   it('keeps starter membership unchanged and adds Auctionator only to Optional', () => {
     const guideStep3 = DEFAULT_GUIDE_CONTENT.find(entry => entry.section === 'steps' && entry.key === 'step_3')
     assert.ok(guideStep3)
-    assert.ok(guideStep3.value.includes('Starter pack: ' + STARTER + '.'))
-    assert.ok(guideStep3.value.includes('Optional pack: ' + OPTIONAL + '.'))
+    assert.ok(guideStep3.value.includes('**WowUp starter:** ' + STARTER))
+    assert.ok(guideStep3.value.includes('Whisper Messenger (not WIM)'))
+    assert.match(guideStep3.value, /\*\*WowUp optional:\*\*.*Whisper Messenger/)
+    assert.match(guideStep3.value, /\*\*Magguu import if installed:\*\*.*\bWIM\b/)
+    assert.doesNotMatch(guideStep3.value, /Starter pack/)
 
     const wowupFaq = DEFAULT_FAQS.find(faq => faq.question === 'Are the WowUp strings still required?')
     assert.ok(wowupFaq)
@@ -41,11 +44,13 @@ describe('MagguuUI product facts copy', () => {
 
     const guideIntro = DEFAULT_GUIDE_CONTENT.find(e => e.section === 'intro' && e.key === 'text')
     assert.ok(guideIntro?.value.includes('Apply Magguu profiles'))
-    assert.ok(guideIntro?.value.includes('overlay/QoL only'))
+    assert.ok(guideIntro?.value.includes('Whisper Messenger (not WIM)'))
+    assert.doesNotMatch(guideIntro?.value || '', /overlay\/QoL only/)
 
     const step4 = DEFAULT_GUIDE_CONTENT.find(e => e.section === 'steps' && e.key === 'step_4')
     assert.ok(step4?.value.includes('**Apply Magguu profiles**'))
-    assert.ok(step4?.value.includes('does **not** re-import Magguu profiles'))
+    assert.ok(step4?.value.includes('overlay/QoL only'))
+    assert.ok(step4?.value.includes('does not re-import profiles'))
     assert.doesNotMatch(step4?.value || '', /author configs/)
     assert.doesNotMatch(step4?.value || '', /Install All/)
     assert.doesNotMatch(step4?.value || '', /\bbake\b/i)

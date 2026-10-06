@@ -4,6 +4,8 @@
 
 <template>
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <PublicSetupNav />
+
     <div class="text-center mb-12 fade-in heading-glow">
       <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
         <svg aria-hidden="true" class="w-8 h-8 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
@@ -48,7 +50,7 @@
 
     <div class="glass-card rounded-2xl p-6 sm:p-8 fade-in fade-in-delay-1">
       <!-- Tabs -->
-      <div class="flex flex-wrap justify-center gap-2 mb-6" role="tablist" aria-label="Import string categories">
+      <div class="strings-sticky-tabs sticky z-30 flex flex-wrap justify-center gap-2 mb-6 py-2 -mx-2 px-2 rounded-xl backdrop-blur-md" role="tablist" aria-label="Import string categories" style="top: 8.5rem;">
         <button v-for="tab in tabs" :key="tab.value"
           role="tab"
           :id="`tab-${tab.value}`"

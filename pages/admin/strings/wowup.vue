@@ -105,10 +105,13 @@
         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Name *</label>
         <UInput v-model="form.name" placeholder="e.g. Starter Addons" :disabled="saving" />
       </div>
-      <div>
-        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Import String *</label>
-        <UTextarea v-model="form.string" :rows="6" :disabled="saving" class="font-mono text-xs" placeholder="WowUp String..." />
-      </div>
+      <AdminStringDiffPreview
+        v-model="form.string"
+        :original="editingItem?.string ?? null"
+        label="Import String *"
+        placeholder="WowUp String..."
+        :disabled="saving"
+      />
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
           <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Sort Order</label>

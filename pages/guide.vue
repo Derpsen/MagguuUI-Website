@@ -72,6 +72,8 @@
       <span class="text-sm font-medium">Changes saved</span>
     </div>
 
+    <PublicSetupNav />
+
     <!-- Header -->
     <section class="mb-12 fade-in">
       <div v-if="!editMode" class="max-w-3xl mx-auto text-center heading-glow">

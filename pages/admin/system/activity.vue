@@ -26,7 +26,7 @@
 
     <AdminPanel
       title="Audit log"
-      description="Filter by action, type and date range."
+      description="Grouped by day. Expand a row for change details."
       icon="i-heroicons-clipboard-document-list"
     >
       <!-- Compact single-row filter bar -->
@@ -80,39 +80,38 @@
           </button>
 
           <!-- Compact rows (hidden when day is collapsed) -->
-          <div v-show="!isDayCollapsed(group.dateKey)" class="mt-1.5 divide-y divide-slate-200/50 dark:divide-white/5">
+          <div v-show="!isDayCollapsed(group.dateKey)" class="mt-1.5 space-y-0.5">
             <div v-for="item in group.items" :key="item.id">
               <!-- Single compact row -->
               <div
-                class="flex items-center gap-2.5 py-1.5 px-2 rounded-md transition-colors hover:bg-slate-100/60 dark:hover:bg-white/[0.02]"
+                class="admin-activity-row transition-colors hover:bg-slate-100/60 dark:hover:bg-white/[0.03]"
                 :class="item.details ? 'cursor-pointer' : ''"
                 @click="item.details && toggleDetail(item.id)"
               >
-                <!-- Action dot -->
                 <span
-                  class="h-1.5 w-1.5 shrink-0 rounded-full"
-                  :class="dotColor(item.action)"
-                />
-                <!-- Entity name -->
-                <span class="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
-                  {{ item.entityName }}
-                </span>
-                <!-- Action + type (subtle) -->
-                <span class="text-xs text-slate-500 dark:text-slate-400 truncate">
-                  {{ item.action }} &middot; {{ typeLabel(item.entityType) }}
-                  <span v-if="item.entityId" class="opacity-60">&middot; #{{ item.entityId }}</span>
-                </span>
-                <!-- Spacer + time -->
-                <span class="ml-auto shrink-0 text-xs tabular-nums text-slate-400 dark:text-slate-500">
-                  {{ formatTime(item.createdAt) }}
-                </span>
-                <!-- Expand hint if details available -->
-                <UIcon
-                  v-if="item.details"
-                  name="i-heroicons-chevron-down"
-                  class="h-3 w-3 shrink-0 text-slate-400 transition-transform duration-200"
-                  :class="expandedId === item.id ? 'rotate-180' : ''"
-                />
+                  class="admin-activity-action"
+                  :class="actionTone(item.action)"
+                >{{ item.action }}</span>
+
+                <div class="admin-activity-row__meta min-w-0">
+                  <span class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                    {{ item.entityName }}
+                  </span>
+                  <span class="admin-pill">{{ typeLabel(item.entityType) }}</span>
+                  <span v-if="item.entityId" class="text-[11px] tabular-nums text-slate-400 dark:text-slate-500">#{{ item.entityId }}</span>
+                </div>
+
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <span class="text-xs tabular-nums text-slate-400 dark:text-slate-500">
+                    {{ formatTime(item.createdAt) }}
+                  </span>
+                  <UIcon
+                    v-if="item.details"
+                    name="i-heroicons-chevron-down"
+                    class="h-3 w-3 text-slate-400 transition-transform duration-200"
+                    :class="expandedId === item.id ? 'rotate-180' : ''"
+                  />
+                </div>
               </div>
 
               <!-- Details panel (only when expanded) -->
@@ -431,11 +430,12 @@ async function loadQuickStats() {
 // are auto-imported from utils/adminHelpers.ts
 const typeLabel = entityTypeLabel
 
-function dotColor(action: string) {
-  if (action === "created") return "bg-emerald-500"
-  if (action === "updated") return "bg-blue-500"
-  if (action === "deleted") return "bg-red-500"
-  return "bg-slate-400"
+function actionTone(action: string): string {
+  const key = (action || '').toLowerCase()
+  if (key === 'created') return 'admin-activity-action--created'
+  if (key === 'updated') return 'admin-activity-action--updated'
+  if (key === 'deleted') return 'admin-activity-action--deleted'
+  return 'admin-activity-action--other'
 }
 
 function formatTime(value: string | number) {

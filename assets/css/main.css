@@ -1258,7 +1258,7 @@ html.light .btn-gradient-green {
 
   --admin-shell-gap: 0.75rem;
   --admin-content-gap: 0.75rem;
-  --admin-sidebar-width: 14rem;
+  --admin-sidebar-width: 12rem;
 
   min-height: 100vh;
   color: var(--admin-fg);
@@ -2358,3 +2358,163 @@ html.dark .admin-tone-danger {
     justify-content: flex-start;
   }
 }
+
+
+/* ─── Post-P1: public sticky setup nav + light-nav contrast ─── */
+.public-setup-nav {
+  top: 5.75rem;
+}
+@media (min-width: 1024px) {
+  .public-setup-nav {
+    top: 5.25rem;
+  }
+}
+
+html.light .public-theme-toggle {
+  color: #0f172a;
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+html.light .public-theme-toggle:hover {
+  color: #020617;
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+html.light .public-nav-shell a[href="/admin/login"],
+html.light .public-nav-shell a[href="/admin"] {
+  color: #0f172a;
+  border-color: #cbd5e1;
+  background: #ffffff;
+}
+html.light .public-nav-shell a[href="/admin/login"]:hover,
+html.light .public-nav-shell a[href="/admin"]:hover {
+  color: #020617;
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+html.light .public-setup-nav__shell {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: #cbd5e1;
+}
+
+/* Admin page header title block */
+.admin-page-header {
+  align-items: flex-start;
+}
+.admin-page-header__content {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+.admin-page-header__eyebrow {
+  margin: 0 0 0.15rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--admin-fg-faint);
+}
+.admin-page-header__title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--admin-fg);
+}
+.admin-page-header__description {
+  margin: 0.25rem 0 0;
+  max-width: 42rem;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--admin-fg-muted);
+}
+.admin-page-header__icon {
+  background: color-mix(in oklab, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
+}
+
+.admin-content-hub-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--admin-radius-lg);
+  border: 1px solid var(--admin-border);
+  background: var(--admin-card);
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.admin-content-hub-card:hover {
+  border-color: color-mix(in oklab, var(--ui-primary) 35%, var(--admin-border));
+  background: color-mix(in oklab, var(--ui-primary) 4%, var(--admin-card));
+  transform: translateY(-1px);
+}
+.admin-content-hub-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.85rem;
+  background: color-mix(in oklab, var(--ui-primary) 12%, transparent);
+  color: var(--ui-primary);
+}
+.admin-content-hub-card__label {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 650;
+  color: var(--admin-fg);
+}
+.admin-content-hub-card__hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--admin-fg-muted);
+}
+
+.admin-activity-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.65rem 0.75rem;
+  align-items: center;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.55rem;
+}
+.admin-activity-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.admin-activity-action {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.12rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.admin-activity-action--created {
+  color: #047857;
+  background: rgba(5, 150, 105, 0.12);
+}
+.admin-activity-action--updated {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
+}
+.admin-activity-action--deleted {
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.12);
+}
+.admin-activity-action--other {
+  color: var(--admin-fg-muted);
+  background: var(--admin-muted-bg);
+}
+html.dark .admin-activity-action--created { color: #6ee7b7; }
+html.dark .admin-activity-action--updated { color: #fcd34d; }
+html.dark .admin-activity-action--deleted { color: #fca5a5; }

@@ -22,8 +22,8 @@
             <!-- Badge — links to changelog, shows last change -->
             <NuxtLink to="/changelog" class="hero-badge inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium mb-10 cursor-pointer transition-colors border"
               :class="isDark
-                ? 'bg-brand-400/8 border-brand-400/15 text-brand-300'
-                : 'bg-brand-400/6 border-brand-400/15 text-brand-700'">
+                ? 'bg-brand-400/12 border-brand-400/25 text-brand-200'
+                : 'bg-brand-100/80 border-brand-300/50 text-brand-800'">
               <span class="w-1.5 h-1.5 rounded-full bg-ellesmere" aria-hidden="true" />
               <span>{{ latestBadgeText }}</span>
             </NuxtLink>

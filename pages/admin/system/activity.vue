@@ -438,13 +438,6 @@ function actionTone(action: string): string {
   return 'admin-activity-action--other'
 }
 
-function dotColor(action: string) {
-  if (action === "created") return "bg-emerald-500"
-  if (action === "updated") return "bg-blue-500"
-  if (action === "deleted") return "bg-red-500"
-  return "bg-slate-400"
-}
-
 function formatTime(value: string | number) {
   if (!value) return "-"
   const date = typeof value === "number" ? new Date(value * 1000) : new Date(value)

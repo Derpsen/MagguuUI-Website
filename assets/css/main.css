@@ -772,6 +772,7 @@ html.light .prose-custom hr { border-top-color: rgba(8, 143, 111, 0.15); }
 
 html.light .guide-content { color: #475569; }
 html.light .guide-content strong { color: #1e293b; }
+html.light .guide-content :is(h1, h2, h3, h4) { color: #0f172a; }
 html.light .guide-content a { color: #0AA882; }
 html.light .guide-content a:hover { color: #088F6F; }
 
@@ -806,6 +807,29 @@ html.light .glass-card {
   backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(12, 210, 157, 0.1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+/* Guide/Strings: force readable titles under html.light (beats leftover text-white / silver-*) */
+html.light .guide-step-title,
+html.light .guide-step h3 {
+  color: #0f172a;
+}
+html.light .strings-accordion-title {
+  color: #0f172a;
+}
+html.light .guide-toc-label {
+  color: #64748b;
+}
+html.light .guide-jump {
+  color: #475569;
+}
+html.light .guide-jump:hover {
+  color: #0f172a;
+  background: rgba(12, 210, 157, 0.06);
+}
+html.light .guide-jump .guide-jump-num {
+  background: #ecfdf5;
+  color: #0AA882;
 }
 
 html.light .public-grid-overlay::before,

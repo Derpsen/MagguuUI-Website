@@ -4,8 +4,10 @@ export interface AddonChip {
   name: string
   emoji: string
   href: string
-  kind: 'required' | 'optional'
-  badge?: 'wowup' | 'import'
+  kind: 'required' | 'optional' | 'wowup'
+  /** Subtitle / badge: Required · Optional · WowUp */
+  badge?: 'required' | 'optional' | 'wowup' | 'import'
+  subtitle?: string
 }
 
 const PROFILE_KEY_BY_SLUG: Record<string, string> = {
@@ -23,6 +25,16 @@ const PROFILE_KEY_BY_SLUG: Record<string, string> = {
   'premade-groups-filter': 'PremadeGroupsFilter',
   'smart-reminders': 'NaowhSmartReminders',
 }
+
+/** WowUp starter pack slugs (EllesmereUI also Required on the site). MagguuUI itself is not an addons-row. */
+export const WOWUP_STARTER_SLUGS = new Set([
+  'ellesmereui',
+  'bigwigs',
+  'littlewigs',
+  'northern-sky-raid-tools',
+  'exboss',
+  'excore',
+])
 
 /** Slugs in WowUp optional pack (chat = Whisper Messenger, never WIM). */
 export const WOWUP_OPTIONAL_SLUGS = new Set([
@@ -122,4 +134,49 @@ export function wowupLabel(name: string): string {
   if (name === 'Required') return 'Starter Addons'
   if (name === 'Optional') return 'Optional Addons'
   return name
+}
+
+export type AddonGroupKey = 'required' | 'optional' | 'wowup'
+
+export function isWowupPackSlug(slug: string): boolean {
+  return WOWUP_STARTER_SLUGS.has(slug) || WOWUP_OPTIONAL_SLUGS.has(slug)
+}
+
+/** Public Home/Strings group: Required / Optional (Magguu import) / WowUp. Whisper≠WIM. */
+export function addonGroupForSlug(slug: string, category: 'required' | 'core' | 'optional'): AddonGroupKey {
+  if (category === 'required' || slug === 'ellesmereui') return 'required'
+  if (isWowupPackSlug(slug)) return 'wowup'
+  return 'optional'
+}
+
+export function addonGroupSubtitle(group: AddonGroupKey): string {
+  if (group === 'required') return 'Required'
+  if (group === 'wowup') return 'WowUp'
+  return 'Optional'
+}
+
+export function groupAddonChips<T extends { key: string, kind: AddonGroupKey }>(chips: T[]): Array<{ key: AddonGroupKey, label: string, items: T[] }> {
+  const order: AddonGroupKey[] = ['required', 'optional', 'wowup']
+  const buckets: Record<AddonGroupKey, T[]> = { required: [], optional: [], wowup: [] }
+  for (const chip of chips) buckets[chip.kind].push(chip)
+  return order
+    .filter(k => buckets[k].length > 0)
+    .map(k => ({ key: k, label: addonGroupSubtitle(k), items: buckets[k] }))
+}
+
+/** First N markdown bullets from changelog body (strip bold markers). */
+export function changelogPreviewBullets(content: string, max = 3): string[] {
+  if (!content) return []
+  const out: string[] = []
+  for (const line of content.split('\n')) {
+    const m = line.match(/^\s*[-*]\s+(.+)$/)
+    if (!m) continue
+    const cleaned = m[1]
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/`([^`]+)`/g, '$1')
+      .trim()
+    if (cleaned) out.push(cleaned)
+    if (out.length >= max) break
+  }
+  return out
 }

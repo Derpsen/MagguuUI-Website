@@ -60,7 +60,9 @@ describe('MagguuUI product facts copy', () => {
     assert.ok(feature1?.value.includes('Apply Magguu profiles'))
 
     const hero = DEFAULT_HOME_CONTENT.find(e => e.key === 'description' && e.locale === 'en')
-    assert.match(hero?.value || '', /Companion addons stay optional/)
+    assert.match(hero?.value || '', /Apply Magguu profiles/)
+    assert.match(hero?.value || '', /<code>\/mui<\/code>/)
+    assert.doesNotMatch(hero?.value || '', /Companion addons stay optional/)
     const feature2 = DEFAULT_HOME_CONTENT.find(e => e.key === 'feature_2_text' && e.locale === 'en')
     assert.match(feature2?.value || '', /HandyNotes/)
     assert.match(feature2?.value || '', /Premade Groups Filter/)

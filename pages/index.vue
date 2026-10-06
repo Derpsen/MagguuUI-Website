@@ -35,7 +35,7 @@
 
             <SafeHtml class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed"
               :class="isDark ? 'text-silver-400' : 'text-gray-500'"
-              :html="content?.hero?.description || 'MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>. Companion addons stay optional.'"
+              :html="content?.hero?.description || 'Native <strong>EllesmereUI</strong> module for WoW Retail. Install EllesmereUI + four MagguuUI folders, open <code>/mui</code>, run <strong>Apply Magguu profiles</strong>.'"
             />
 
             <div class="flex flex-wrap items-center justify-center gap-4">
@@ -62,39 +62,18 @@
             </div>
           </div>
 
-          <div class="mt-12 pt-10 border-t"
+          <div class="mt-16 pt-12 border-t"
             :class="isDark ? 'border-white/8' : 'border-brand-100'">
-            <div ref="addonsHeading" class="text-center mb-8 scroll-reveal">
+            <div ref="addonsHeading" class="text-center mb-10 scroll-reveal">
+              <p class="section-eyebrow mb-3">Packs</p>
               <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.addons?.title || 'Supported Addons' }}</span></h2>
-              <p class="text-sm sm:text-base max-w-2xl mx-auto" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'EllesmereUI is required. Optional chips are Magguu imports when installed. WowUp optional chat: Whisper Messenger (not WIM).' }}</p>
+              <p class="text-sm sm:text-base max-w-2xl mx-auto" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'Grouped Required / Optional / WowUp. Chat pack: Whisper Messenger (not WIM).' }}</p>
             </div>
-            <div v-if="requiredChips.length || optionalChips.length" ref="addonPills" class="scroll-reveal scroll-reveal-delay-1 space-y-6">
-              <div v-if="requiredChips.length">
-                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-center mb-3"
-                  :class="isDark ? 'text-brand-300' : 'text-brand-700'">Required</p>
-                <div class="flex flex-wrap justify-center gap-2.5">
-                  <NuxtLink v-for="chip in requiredChips" :key="chip.key" :to="chip.href"
-                    class="addon-chip group inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/70 focus-visible:ring-offset-2"
-                    :class="isDark ? 'focus-visible:ring-offset-[#0b1118]' : 'focus-visible:ring-offset-[#eef4fb]'">
-                    <span class="addon-chip-icon" aria-hidden="true">{{ chip.emoji }}</span>
-                    <span>{{ chip.name }}</span>
-                  </NuxtLink>
-                </div>
-              </div>
-              <div v-if="optionalChips.length">
-                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-center mb-3"
-                  :class="isDark ? 'text-silver-500' : 'text-gray-500'">Optional Magguu imports</p>
-                <div class="flex flex-wrap justify-center gap-2.5">
-                  <NuxtLink v-for="chip in optionalChips" :key="chip.key" :to="chip.href"
-                    class="addon-chip group inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/70 focus-visible:ring-offset-2"
-                    :class="isDark ? 'focus-visible:ring-offset-[#0b1118]' : 'focus-visible:ring-offset-[#eef4fb]'">
-                    <span class="addon-chip-icon" aria-hidden="true">{{ chip.emoji }}</span>
-                    <span>{{ chip.name }}</span>
-                    <span v-if="chip.badge === 'wowup'" class="addon-chip-badge addon-chip-badge--wowup">WowUp</span>
-                    <span v-else-if="chip.badge === 'import'" class="addon-chip-badge addon-chip-badge--import">Import</span>
-                  </NuxtLink>
-                </div>
-              </div>
+            <div v-if="addonGroups.length" ref="addonPills" class="scroll-reveal scroll-reveal-delay-1">
+              <SupportedAddonsDropdown
+                :groups="addonGroups"
+                placeholder="Browse Required · Optional · WowUp"
+              />
             </div>
           </div>
         </div>
@@ -103,11 +82,41 @@
 
     <div class="section-divider" />
 
+    <!-- Latest changelog card -->
+    <section v-if="latestCard" aria-label="Latest release" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
+      <div class="scroll-reveal">
+        <p class="section-eyebrow text-center mb-3">Changelog</p>
+        <NuxtLink to="/changelog" class="latest-card block rounded-2xl border p-6 sm:p-7 transition-colors"
+          :class="isDark
+            ? 'bg-gradient-to-br from-brand-400/8 via-brand-400/4 to-transparent border-brand-400/20 hover:border-brand-400/40'
+            : 'bg-gradient-to-br from-brand-50 via-brand-50/40 to-white border-brand-200 hover:border-brand-300'">
+          <div class="flex flex-col sm:flex-row sm:items-start gap-5">
+            <div class="shrink-0">
+              <div class="text-[10px] uppercase tracking-[0.15em] font-semibold mb-1.5"
+                :class="isDark ? 'text-brand-300' : 'text-brand-600'">Latest</div>
+              <div class="font-mono text-2xl sm:text-3xl font-bold leading-none"
+                :class="isDark ? 'text-white' : 'text-gray-900'">{{ latestCard.version }}</div>
+              <div class="mt-2 text-xs font-medium" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ latestCard.date }}</div>
+            </div>
+            <ul class="flex-1 space-y-2 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+              <li v-for="(b, i) in latestCard.bullets" :key="i" class="flex gap-2">
+                <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-ellesmere shrink-0" aria-hidden="true" />
+                <span>{{ b }}</span>
+              </li>
+            </ul>
+          </div>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <div class="section-divider" />
+
     <!-- Features -->
-    <section aria-label="Features" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-      <div ref="featuresHeading" class="text-center mb-16 scroll-reveal">
+    <section aria-label="Features" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-28">
+      <div ref="featuresHeading" class="text-center mb-20 scroll-reveal">
+        <p class="section-eyebrow mb-3">Product</p>
         <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.features_heading?.title || 'Why MagguuUI?' }}</span></h2>
-        <p :class="isDark ? 'text-silver-500' : 'text-gray-500'" class="text-lg">{{ content?.features_heading?.subtitle || 'A 4K EllesmereUI setup with optional raid tools' }}</p>
+        <p :class="isDark ? 'text-silver-500' : 'text-gray-500'" class="text-lg max-w-2xl mx-auto">{{ content?.features_heading?.subtitle || 'A 4K EllesmereUI setup with optional raid tools' }}</p>
       </div>
       <div class="grid md:grid-cols-3 gap-6">
         <div v-for="(feat, idx) in features" :key="idx"
@@ -130,7 +139,13 @@
 
 <script setup lang="ts">
 import { buildPublicUrl } from '~/utils/publicSite'
-import { profileHrefForSlug } from '~/utils/addonChipMeta'
+import {
+  addonGroupForSlug,
+  addonGroupSubtitle,
+  changelogPreviewBullets,
+  groupAddonChips,
+  profileHrefForSlug,
+} from '~/utils/addonChipMeta'
 
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
@@ -244,12 +259,11 @@ const { data: latestChangeData } = useFetch<{ data: LatestChange | null }>('/api
 const content = computed(() => contentData.value?.data)
 const catalog = computed(() => catalogData.value?.data)
 
-function toChip(addon: PublicAddonChip, kind: 'required' | 'optional') {
-  let badge: 'wowup' | 'import' | undefined
-  if (kind === 'optional') {
-    if (addon.slug === 'wim') badge = 'import'
-    else if (addon.slug === 'whisper-messenger') badge = 'wowup'
-  }
+function toChip(addon: PublicAddonChip) {
+  const kind = addonGroupForSlug(addon.slug, addon.category)
+  const subtitle = addonGroupSubtitle(kind)
+  // Whisper Messenger = WowUp; WIM = Optional Magguu import only (never WowUp).
+  const badge = kind
   return {
     key: addon.slug,
     name: addon.name,
@@ -257,14 +271,28 @@ function toChip(addon: PublicAddonChip, kind: 'required' | 'optional') {
     href: profileHrefForSlug(addon.slug),
     kind,
     badge,
+    subtitle,
   }
 }
 
-const requiredChips = computed(() => (addonsData.value?.data?.required ?? []).map(a => toChip(a, 'required')))
-const optionalChips = computed(() => {
-  const core = addonsData.value?.data?.core ?? []
-  const optional = addonsData.value?.data?.optional ?? []
-  return [...core, ...optional].map(a => toChip(a, 'optional'))
+const allAddonChips = computed(() => {
+  const data = addonsData.value?.data
+  if (!data) return []
+  return [...(data.required ?? []), ...(data.core ?? []), ...(data.optional ?? [])].map(toChip)
+})
+
+const addonGroups = computed(() => groupAddonChips(allAddonChips.value))
+
+const { data: changelogListData } = useFetch<{ data: Array<{ version: string, content: string, publishedAt: string | number | null }> }>('/api/v1/changelogs')
+const latestCard = computed(() => {
+  const entry = changelogListData.value?.data?.[0]
+  if (!entry?.version) return null
+  const bullets = changelogPreviewBullets(entry.content || '', 3)
+  if (!bullets.length) return null
+  const date = entry.publishedAt
+    ? new Date(entry.publishedAt).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
+    : ''
+  return { version: entry.version, date, bullets }
 })
 
 // Badge text: show last changed string name

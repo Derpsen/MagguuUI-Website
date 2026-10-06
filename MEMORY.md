@@ -207,3 +207,12 @@
 - Merge reports must say **Actions-only** vs **App-Image** (Dependabot pin-only = no Homelab; app/Dockerfile publish = Homelab via Container-nach-CI after green docker).
 - USelect/Reka: never option-shaped `value: ""`; sentinel e.g. `"all"`. Enforced by `npm run lint` / `lint:uselect` (`scripts/check-uselect-empty-value.mjs`). `pages/admin/system/github.vue` syncFilters All → `"all"`.
 - Pack/copy product-fact deltas: update Website + MagguuBot + **Magguu-Dashboard** AGENTS (+ MEMORY where present) the same round.
+
+## 2026-10-06 Ops sync (Buddy Inventur)
+
+- Live Website digest `sha256:76ef22c97b84cbd6162d9aef44df0d620ab1cea8c1252daf1fadd432c8c3f60d` (OCI `sha-5c26d99` / tip `5c26d99`) — kein Re-Pull wenn live schon darauf.
+- Wave: #95 (`@simplewebauthn/browser` 14) + #117 (audit overrides/allowlist); Homelab App-Image + Admin-Smoke **6/6 PASS** auf diesem Digest.
+- Passkey: Marco live Proton Pass = PASS; Box-Desktop != Proton-Passkey -> kein FAIL.
+- Audit-Allowlist review-by **2026-11-30**: `simple-git` + `@simple-git/argv-parser` (+ `braces` / `node-forge` from #114). Overrides #117: `vue`/`@vue/server-renderer` 3.5.43, `seroval` 1.6.8, `shell-quote` 1.12.0, `source-map-js` 1.2.2.
+- Optional pack / Discord embeds = **Whisper Messenger**, nicht WIM / Ellesmere WIM Skin.
+- Prefer Done-Wave Capture skill nach App-Image-Wellen; keine neuen Specialist-Bots.

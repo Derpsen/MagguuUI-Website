@@ -8,6 +8,12 @@ strings (EllesmereUI, BigWigs, Northern Sky Raid Tools, class layouts). Live:
 image `ghcr.io/derpsen/magguuui-website` (LAN origin
 `http://192.168.178.21:3000` on `br0`). Ops notes: `MEMORY.md`.
 
+**Live ops baseline (2026-10-06):** digest
+`sha256:76ef22c97b84cbd6162d9aef44df0d620ab1cea8c1252daf1fadd432c8c3f60d`
+(OCI `sha-5c26d99` / tip `5c26d99`) — **kein Re-Pull** wenn live schon darauf.
+Wave: #95 (`@simplewebauthn/browser` 14) + #117 (audit overrides/allowlist);
+Admin-Smoke 6/6 PASS auf diesem Digest.
+
 ## Safe Working Rules
 
 - Read `MEMORY.md` and the touched module before changing behavior.
@@ -71,8 +77,23 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
 
 - **Starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore.
 - **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, Whisper Messenger, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
-- No WindTools. HandyNotes MapNotes is on WowUp Optional; Magguu settings apply with HandyNotes via Apply Magguu profiles / Load profiles.
+- **Whisper Messenger** (not WIM / Ellesmere WIM Skin) in Optional + Discord embeds. No WindTools. HandyNotes MapNotes is on WowUp Optional; Magguu settings apply with HandyNotes via Apply Magguu profiles / Load profiles.
 
+## Audit allowlist / overrides (#117, review-by **2026-11-30**)
+
+`scripts/audit-prod.mjs` ALLOWLIST (build/dev only where noted):
+- `simple-git` + `@simple-git/argv-parser` (4.x bricht `@nuxt/devtools`)
+- bestehend: `braces`, `node-forge` (from #114)
+
+`package.json` overrides (#117): `vue` / `@vue/server-renderer` **3.5.43**,
+`seroval` **1.6.8**, `shell-quote` **1.12.0**, `source-map-js` **1.2.2**.
+Routine „Magguu Audit Allowlist Review“ ~2. Nov; re-check before review-by.
+
+## Passkey / WebAuthn
+
+- Live: Marco Proton Pass = **PASS**.
+- Box-Desktop kann keine Proton-Passkeys -> **kein FAIL** (nicht als Regression werten).
+- `#95`: `@simplewebauthn/browser` **14**.
 
 ## Admin-Smoke checklist
 
@@ -86,13 +107,14 @@ After Unraid app-image pull / when Buddy asks (Homelab owns container pull):
    - `/admin/data/addons`
    - `/admin/content` (redirects to `/admin/content/home` — treat redirect-to-home as OK)
 3. Report to Buddy **only on FAIL** (or short OK if asked).
+4. Nach App-Image-Wellen: Prefer **Done-Wave Capture** skill (Buddy/PM) — kein Extra-Ping Homelab wenn Digest schon live.
 
 ## Merge reports: Actions-only vs App-Image
 
 Merge reports to Buddy must say which path applies:
 
 - **Actions-only / pin-only Dependabot** → no Homelab pull.
-- **App-Image** (Dockerfile / app code that publishes the docker image) → Homelab via Container-nach-CI after green docker publish; Stack does not double-ping Homelab.
+- **App-Image** (Dockerfile / app code that publishes the docker image) → Homelab via Container-nach-CI after green docker publish; Stack does not double-ping Homelab. Skip recreate if live already on handoff digest.
 
 ## Product-facts Diff checklist
 

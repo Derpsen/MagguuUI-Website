@@ -28,9 +28,13 @@ describe('addon groups (Whisper≠WIM)', () => {
       { key: 'ellesmereui', kind: 'required' as const },
     ])
     assert.deepEqual(groups.map(g => g.key), ['required', 'optional', 'wowup'])
-    assert.equal(groups[0].items[0].key, 'ellesmereui')
-    assert.equal(groups[1].items[0].key, 'wim')
-    assert.equal(groups[2].items[0].key, 'whisper-messenger')
+    const req0 = groups[0]?.items[0]
+    const opt0 = groups[1]?.items[0]
+    const wow0 = groups[2]?.items[0]
+    assert.ok(req0 && opt0 && wow0)
+    assert.equal(req0.key, 'ellesmereui')
+    assert.equal(opt0.key, 'wim')
+    assert.equal(wow0.key, 'whisper-messenger')
   })
 
   it('extracts three changelog bullets without bold/code markers', () => {

@@ -170,7 +170,7 @@ export function changelogPreviewBullets(content: string, max = 3): string[] {
   const out: string[] = []
   for (const line of content.split('\n')) {
     const m = line.match(/^\s*[-*]\s+(.+)$/)
-    if (!m) continue
+    if (!m?.[1]) continue
     const cleaned = m[1]
       .replace(/\*\*([^*]+)\*\*/g, '$1')
       .replace(/`([^`]+)`/g, '$1')

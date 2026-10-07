@@ -324,13 +324,14 @@ import {
   type AddonGroupKey,
 } from '~/utils/addonChipMeta'
 import { compareProfileAddons, compareProfileNames, profileAddonLabel } from '~/utils/profileLabels'
+import { initialStringsTab, queryFromStringsState, queryText } from '~/utils/stringsDeepLink'
 
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
 const { apiFetch } = useApi()
 usePublicPageSeo({
   title: 'Import Strings',
-  description: 'Browse EllesmereUI, BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders profiles plus Cooldown Viewer layouts and WowUp packs shipped with MagguuUI.',
+  description: 'Browse Magguu profiles and Cooldown Viewer layouts. WowUp chat is Whisper Messenger (not WIM). WIM stays a companion import.',
   path: '/strings',
 })
 
@@ -341,8 +342,7 @@ const inputClass = computed(() => isDark.value
 const route = useRoute()
 const router = useRouter()
 
-// Init from URL params
-const activeTab = ref((route.query.tab as string) || 'layouts')
+const activeTab = ref(initialStringsTab(route.query))
 
 const tabSubtitle = computed(() => {
   switch (activeTab.value) {
@@ -352,9 +352,9 @@ const tabSubtitle = computed(() => {
     default: return 'Choose your category and class to copy the import string.'
   }
 })
-const selectedClass = ref((route.query.class as string) || ''); const selectedSpec = ref((route.query.spec as string) || ''); const layoutCopied = ref(false)
-const selectedAddon = ref((route.query.addon as string) || ''); const selectedProfileId = ref(''); const profileCopied = ref(false)
-const selectedWowupName = ref(''); const wowupCopied = ref(false)
+const selectedClass = ref(queryText(route.query.class)); const selectedSpec = ref(queryText(route.query.spec)); const layoutCopied = ref(false)
+const selectedAddon = ref(queryText(route.query.addon)); const selectedProfileId = ref(queryText(route.query.profile)); const profileCopied = ref(false)
+const selectedWowupName = ref(queryText(route.query.pack)); const wowupCopied = ref(false)
 
 interface PublicProfile { id: number, profile: string, string: string, description?: string | null, [k: string]: unknown }
 interface PublicLayout { id: number, name?: string, className?: string | null, spec?: string | null, importString?: string, description?: string | null, [k: string]: unknown }
@@ -403,7 +403,14 @@ const selectedLayout = computed(() => {
   if (!selectedClass.value || !selectedSpec.value) return null
   return layoutList.value.find(l => l.className === selectedClass.value && l.spec === selectedSpec.value) ?? null
 })
-watch(() => selectedClass.value, () => { selectedSpec.value = '' ; nextTick(() => { if (layoutSpecs.value.length) selectedSpec.value = layoutSpecs.value[0] || '' }) })
+watch(() => selectedClass.value, (next, prev) => {
+  if (prev === undefined || next === prev) return
+  nextTick(() => {
+    const specs = layoutSpecs.value
+    if (selectedSpec.value && specs.includes(selectedSpec.value)) return
+    selectedSpec.value = specs[0] || ''
+  })
+})
 
 const profileAddons = computed(() => [...new Set(profileList.value.map(p => p.addon))].sort(compareProfileAddons))
 const addonProfiles = computed(() => {
@@ -416,7 +423,11 @@ const selectedProfile = computed(() => {
   if (!selectedProfileId.value) return null
   return profileList.value.find(p => p.id === Number(selectedProfileId.value)) ?? null
 })
-watch(() => selectedAddon.value, () => { selectedProfileId.value = addonProfiles.value[0]?.id?.toString() || '' })
+watch(() => selectedAddon.value, (addon, prev) => {
+  if (prev === undefined || addon === prev) return
+  const keep = addonProfiles.value.some(p => String(p.id) === selectedProfileId.value)
+  if (!keep) selectedProfileId.value = addonProfiles.value[0]?.id?.toString() || ''
+})
 const selectedWowup = computed(() => {
   if (!selectedWowupName.value) return null
   return wowupList.value.find(w => w.name === selectedWowupName.value) ?? null
@@ -473,29 +484,41 @@ function onWowupPackSelect(item: { key: string }) {
 // Auto-select first item in each category (respect URL params)
 watch(layoutClasses, (classes) => { if (classes.length && !selectedClass.value) selectedClass.value = classes[0] }, { immediate: true })
 watch(profileAddons, (addons) => { if (addons.length && !selectedAddon.value) selectedAddon.value = addons[0] }, { immediate: true })
-watch(wowupList, (list) => { if (list.length && !selectedWowupName.value) selectedWowupName.value = list[0].name }, { immediate: true })
+watch(profileList, (list) => {
+  const wantedId = queryText(route.query.profile)
+  if (!wantedId) return
+  const match = list.find(p => String(p.id) === wantedId)
+  if (!match) return
+  selectedProfileId.value = wantedId
+  if (selectedAddon.value !== match.addon) selectedAddon.value = match.addon
+}, { immediate: true })
+watch(wowupList, (list) => {
+  if (!list.length) return
+  const wanted = queryText(route.query.pack)
+  if (selectedWowupName.value && list.some(w => w.name === selectedWowupName.value)) return
+  selectedWowupName.value = list.some(w => w.name === wanted) ? wanted : list[0].name
+}, { immediate: true })
 
-// If ?addon= was in URL, auto-switch to profiles tab
-onMounted(() => {
-  if (route.query.addon && profileAddons.value.includes(route.query.addon as string)) {
-    activeTab.value = 'profiles'
-    selectedAddon.value = route.query.addon as string
-  }
-})
-
-// Sync state → URL
 function syncUrl() {
-  const query: Record<string, string> = {}
-  if (activeTab.value !== 'layouts') query.tab = activeTab.value
-  if (activeTab.value === 'layouts') {
-    if (selectedClass.value) query.class = selectedClass.value
-    if (selectedSpec.value) query.spec = selectedSpec.value
-  } else if (activeTab.value === 'profiles') {
-    if (selectedAddon.value) query.addon = selectedAddon.value
+  const tab = activeTab.value === 'profiles' || activeTab.value === 'wowup' ? activeTab.value : 'layouts'
+  const query = queryFromStringsState({
+    tab,
+    className: selectedClass.value,
+    spec: selectedSpec.value,
+    addon: selectedAddon.value,
+    profileId: selectedProfileId.value,
+    pack: selectedWowupName.value,
+  })
+  const current: Record<string, string> = {}
+  for (const [key, value] of Object.entries(route.query)) {
+    const text = queryText(value)
+    if (text) current[key] = text
   }
-  router.replace({ query })
+  const keys = new Set([...Object.keys(current), ...Object.keys(query)])
+  const same = [...keys].every(key => current[key] === query[key])
+  if (!same) router.replace({ query })
 }
-watch([activeTab, selectedClass, selectedSpec, selectedAddon], syncUrl)
+watch([activeTab, selectedClass, selectedSpec, selectedAddon, selectedProfileId, selectedWowupName], syncUrl)
 
 function formatDate(d: string | number | null) {
   if (!d) return ''

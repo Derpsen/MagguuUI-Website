@@ -7,8 +7,14 @@
 import { eq, asc } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { characterLayouts } from '~/server/database/schema'
+import { readPublicLayoutIndex } from '~/server/utils/profileReadModels'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler((event) => {
+  if (getQuery(event).view === 'meta') {
+    const rows = readPublicLayoutIndex()
+    return apiSuccess(rows, { count: rows.length, view: 'meta' })
+  }
+
   const rows = db
     .select()
     .from(characterLayouts)

@@ -125,6 +125,77 @@ export function isObsoletePackedElvUiDefault(row: {
     && row.string.startsWith(ELVUI_PACKED_PREFIX)
 }
 
+function visibleUnpackedProfileWhere(addon?: string) {
+  return and(
+    eq(profiles.isVisible, true),
+    addon ? eq(profiles.addon, addon) : undefined,
+    sql`NOT (
+      lower(${profiles.addon}) = 'elvui'
+      AND lower(${profiles.profile}) = 'default'
+      AND ${profiles.string} LIKE ${`${ELVUI_PACKED_PREFIX}%`}
+    )`,
+  )
+}
+
+/** Names, lengths, and a short preview. The page fetches one full string on copy. */
+export function readGroupedProfileIndex(options: { addon?: string } = {}) {
+  const rows = db.select({
+    id: profiles.id,
+    addon: profiles.addon,
+    profile: profiles.profile,
+    description: profiles.description,
+    updatedAt: profiles.updatedAt,
+    stringLength: sql<number>`length(${profiles.string})`,
+    preview: sql<string>`substr(${profiles.string}, 1, 200)`,
+  }).from(profiles)
+    .where(visibleUnpackedProfileWhere(options.addon))
+    .orderBy(asc(profiles.sortOrder), asc(profiles.addon), asc(profiles.profile), asc(profiles.id))
+    .all()
+
+  const grouped: Record<string, Array<{
+    id: number
+    profile: string
+    description: string | null
+    updatedAt: Date
+    stringLength: number
+    preview: string
+  }>> = {}
+  for (const row of rows) {
+    const addon = grouped[row.addon] ?? (grouped[row.addon] = [])
+    addon.push({
+      id: row.id,
+      profile: row.profile,
+      description: row.description,
+      updatedAt: row.updatedAt,
+      stringLength: Number(row.stringLength ?? 0),
+      preview: row.preview ?? '',
+    })
+  }
+  return { data: grouped, count: rows.length }
+}
+
+/** Class/spec list without layout blobs. The page fetches one import string on copy. */
+export function readPublicLayoutIndex() {
+  return db.select({
+    id: characterLayouts.id,
+    name: characterLayouts.name,
+    className: characterLayouts.className,
+    spec: characterLayouts.spec,
+    description: characterLayouts.description,
+    updatedAt: characterLayouts.updatedAt,
+    importLength: sql<number>`length(${characterLayouts.importString})`,
+    preview: sql<string>`substr(${characterLayouts.importString}, 1, 200)`,
+  }).from(characterLayouts)
+    .where(eq(characterLayouts.isVisible, true))
+    .orderBy(asc(characterLayouts.sortOrder), asc(characterLayouts.name))
+    .all()
+    .map(row => ({
+      ...row,
+      importLength: Number(row.importLength ?? 0),
+      preview: row.preview ?? '',
+    }))
+}
+
 /** Homepage stats: names + counts without import-string blobs. */
 export function readCatalogSummary() {
   // Same obsolete-packed rule as readGroupedProfiles, expressed in SQL so we
@@ -132,14 +203,7 @@ export function readCatalogSummary() {
   const profileRows = db
     .select({ addon: profiles.addon, profile: profiles.profile })
     .from(profiles)
-    .where(and(
-      eq(profiles.isVisible, true),
-      sql`NOT (
-        lower(${profiles.addon}) = 'elvui'
-        AND lower(${profiles.profile}) = 'default'
-        AND ${profiles.string} LIKE ${`${ELVUI_PACKED_PREFIX}%`}
-      )`,
-    ))
+    .where(visibleUnpackedProfileWhere())
     .orderBy(asc(profiles.sortOrder), asc(profiles.addon), asc(profiles.profile), asc(profiles.id))
     .all()
 

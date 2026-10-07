@@ -144,11 +144,11 @@
                   <span v-if="selectedLayout.updatedAt">{{ timeAgo(selectedLayout.updatedAt) }}</span>
                   <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono" :class="isDark ? 'bg-white/5 text-silver-600 border border-brand-400/10' : 'bg-gray-100 text-gray-400 border border-gray-200'">{{ isMac ? '⌘' : 'Ctrl' }}+C</kbd>
                 </div>
-                <span>{{ stringSizeLabel(selectedLayout.importString?.length || 0) }}</span>
+                <span>{{ stringSizeLabel(layoutSize(selectedLayout)) }}</span>
               </div>
               <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24">
                 <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
-                  {{ selectedLayout.importString?.substring(0, 200) }}{{ (selectedLayout.importString?.length || 0) > 200 ? '...' : '' }}
+                  {{ layoutPreview(selectedLayout) }}{{ layoutShowsEllipsis(selectedLayout) ? '...' : '' }}
                 </p>
               </div>
             </div>
@@ -199,11 +199,11 @@
                   <span v-if="selectedProfile.updatedAt">{{ timeAgo(selectedProfile.updatedAt) }}</span>
                   <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono" :class="isDark ? 'bg-white/5 text-silver-600 border border-brand-400/10' : 'bg-gray-100 text-gray-400 border border-gray-200'">{{ isMac ? '⌘' : 'Ctrl' }}+C</kbd>
                 </div>
-                <span>{{ stringSizeLabel(selectedProfile.string?.length || 0) }}</span>
+                <span>{{ stringSizeLabel(profileSize(selectedProfile)) }}</span>
               </div>
               <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24">
                 <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
-                  {{ selectedProfile.string?.substring(0, 200) }}{{ (selectedProfile.string?.length || 0) > 200 ? '...' : '' }}
+                  {{ profilePreview(selectedProfile) }}{{ profileShowsEllipsis(selectedProfile) ? '...' : '' }}
                 </p>
               </div>
             </div>
@@ -356,15 +356,34 @@ const selectedClass = ref(queryText(route.query.class)); const selectedSpec = re
 const selectedAddon = ref(queryText(route.query.addon)); const selectedProfileId = ref(queryText(route.query.profile)); const profileCopied = ref(false)
 const selectedWowupName = ref(queryText(route.query.pack)); const wowupCopied = ref(false)
 
-interface PublicProfile { id: number, profile: string, string: string, description?: string | null, [k: string]: unknown }
-interface PublicLayout { id: number, name?: string, className?: string | null, spec?: string | null, importString?: string, description?: string | null, [k: string]: unknown }
+interface PublicProfile {
+  id: number
+  profile: string
+  description?: string | null
+  stringLength?: number | null
+  preview?: string | null
+  [k: string]: unknown
+}
+interface PublicLayout {
+  id: number
+  name?: string
+  className?: string | null
+  spec?: string | null
+  description?: string | null
+  importLength?: number | null
+  preview?: string | null
+  [k: string]: unknown
+}
 interface PublicWowup { id: number, string: string, description?: string | null, [k: string]: unknown }
 type ProfileGroupedPublic = Record<string, PublicProfile[]>
 type WowupKeyedPublic = Record<string, PublicWowup>
 
-const { data: profileData, refresh: refreshProfiles } = useFetch<{ data: ProfileGroupedPublic }>('/api/v1/profiles')
+const { data: profileData, refresh: refreshProfiles } = useFetch<{ data: ProfileGroupedPublic }>('/api/v1/profiles?view=meta')
 const { data: wowupData, refresh: refreshWowup } = useFetch<{ data: WowupKeyedPublic }>('/api/v1/wowup')
-const { data: layoutData, refresh: refreshLayouts } = useFetch<{ data: PublicLayout[] }>('/api/v1/layouts')
+const { data: layoutData, refresh: refreshLayouts } = useFetch<{ data: PublicLayout[] }>('/api/v1/layouts?view=meta')
+
+const profileStrings = ref<Record<number, string>>({})
+const layoutStrings = ref<Record<number, string>>({})
 
 type FlatProfile = PublicProfile & { addon: string }
 
@@ -554,8 +573,8 @@ function handleCopyShortcut(e: KeyboardEvent) {
     if (editModal.value) return
 
     e.preventDefault()
-    if (activeTab.value === 'layouts' && selectedLayout.value?.importString) copyLayout()
-    else if (activeTab.value === 'profiles' && selectedProfile.value?.string) copyProfile()
+    if (activeTab.value === 'layouts' && selectedLayout.value) copyLayout()
+    else if (activeTab.value === 'profiles' && selectedProfile.value) copyProfile()
     else if (activeTab.value === 'wowup' && selectedWowup.value?.string) copyWowup()
   }
 }
@@ -575,20 +594,101 @@ function trackCopy(type: string, id: number) {
   $fetch('/api/v1/copy-event', { method: 'POST', body: { stringType: type, stringId: id } }).catch(() => {})
 }
 
+function profilePreview(row: PublicProfile | null): string {
+  if (!row) return ''
+  return (profileStrings.value[row.id] || row.preview || '').substring(0, 200)
+}
+function profileShowsEllipsis(row: PublicProfile | null): boolean {
+  if (!row) return false
+  const full = profileStrings.value[row.id]
+  if (full) return full.length > 200
+  return (row.stringLength || 0) > 200
+}
+function profileSize(row: PublicProfile | null): number {
+  if (!row) return 0
+  const full = profileStrings.value[row.id]
+  if (full) return full.length
+  return row.stringLength || 0
+}
+function layoutPreview(row: PublicLayout | null): string {
+  if (!row) return ''
+  return (layoutStrings.value[row.id] || row.preview || '').substring(0, 200)
+}
+function layoutShowsEllipsis(row: PublicLayout | null): boolean {
+  if (!row) return false
+  const full = layoutStrings.value[row.id]
+  if (full) return full.length > 200
+  return (row.importLength || 0) > 200
+}
+function layoutSize(row: PublicLayout | null): number {
+  if (!row) return 0
+  const full = layoutStrings.value[row.id]
+  if (full) return full.length
+  return row.importLength || 0
+}
+
+async function loadProfileString(id: number): Promise<string | null> {
+  const cached = profileStrings.value[id]
+  if (cached) return cached
+  try {
+    const res = await $fetch<{ data?: { string?: string } }>(`/api/v1/profiles/${id}`)
+    const text = res.data?.string
+    if (!text) return null
+    profileStrings.value = { ...profileStrings.value, [id]: text }
+    return text
+  } catch {
+    return null
+  }
+}
+async function loadLayoutString(id: number): Promise<string | null> {
+  const cached = layoutStrings.value[id]
+  if (cached) return cached
+  try {
+    const res = await $fetch<{ data?: { importString?: string } }>(`/api/v1/layouts/${id}`)
+    const text = res.data?.importString
+    if (!text) return null
+    layoutStrings.value = { ...layoutStrings.value, [id]: text }
+    return text
+  } catch {
+    return null
+  }
+}
+
+watch(selectedProfile, (row) => {
+  if (!import.meta.client || !row || profileStrings.value[row.id]) return
+  void loadProfileString(row.id)
+})
+watch(selectedLayout, (row) => {
+  if (!import.meta.client || !row || layoutStrings.value[row.id]) return
+  void loadLayoutString(row.id)
+})
+
 async function copyLayout() {
-  if (!selectedLayout.value?.importString) return
-  await doCopy(selectedLayout.value.importString)
+  const row = selectedLayout.value
+  if (!row) return
+  const text = await loadLayoutString(row.id)
+  if (!text) {
+    toast.add({ title: 'Could not copy', color: 'error' })
+    return
+  }
+  await doCopy(text)
   layoutCopied.value = true
   toast.add({ title: 'Copied!', icon: 'i-heroicons-check-circle', color: 'success', duration: 2000 })
-  trackCopy('layout', selectedLayout.value.id)
+  trackCopy('layout', row.id)
   setTimeout(() => { layoutCopied.value = false }, 2000)
 }
 async function copyProfile() {
-  if (!selectedProfile.value?.string) return
-  await doCopy(selectedProfile.value.string)
+  const row = selectedProfile.value
+  if (!row) return
+  const text = await loadProfileString(row.id)
+  if (!text) {
+    toast.add({ title: 'Could not copy', color: 'error' })
+    return
+  }
+  await doCopy(text)
   profileCopied.value = true
   toast.add({ title: 'Copied!', icon: 'i-heroicons-check-circle', color: 'success', duration: 2000 })
-  trackCopy('profile', selectedProfile.value.id)
+  trackCopy('profile', row.id)
   setTimeout(() => { profileCopied.value = false }, 2000)
 }
 async function copyWowup() {
@@ -605,21 +705,39 @@ const editModal = ref(false)
 const editSaving = ref(false)
 const editForm = reactive({ type: '' as 'profile' | 'wowup' | 'layout', id: 0, addon: '', profile: '', name: '', className: '', spec: '', string: '' })
 
-function editProfile(p: FlatProfile) { Object.assign(editForm, { type: 'profile', id: p.id, addon: p.addon, profile: p.profile, string: p.string }); editModal.value = true }
+async function editProfile(p: FlatProfile) {
+  const text = await loadProfileString(p.id)
+  if (!text) {
+    toast.add({ title: 'Could not load string', color: 'error' })
+    return
+  }
+  Object.assign(editForm, { type: 'profile', id: p.id, addon: p.addon, profile: p.profile, string: text })
+  editModal.value = true
+}
 function editWowup(w: FlatWowup) { Object.assign(editForm, { type: 'wowup', id: w.id, name: w.name, string: w.string }); editModal.value = true }
-function editLayout(l: PublicLayout) { Object.assign(editForm, { type: 'layout', id: l.id, className: l.className || '', spec: l.spec || '', string: l.importString || '' }); editModal.value = true }
+async function editLayout(l: PublicLayout) {
+  const text = await loadLayoutString(l.id)
+  if (!text) {
+    toast.add({ title: 'Could not load string', color: 'error' })
+    return
+  }
+  Object.assign(editForm, { type: 'layout', id: l.id, className: l.className || '', spec: l.spec || '', string: text })
+  editModal.value = true
+}
 
 async function saveEdit() {
   editSaving.value = true
   try {
     if (editForm.type === 'profile') {
       await apiFetch(`/api/v1/admin/profiles/${editForm.id}`, { method: 'PUT', body: { addon: editForm.addon, profile: editForm.profile, string: editForm.string } })
+      profileStrings.value = { ...profileStrings.value, [editForm.id]: editForm.string }
       await refreshProfiles()
     } else if (editForm.type === 'wowup') {
       await apiFetch(`/api/v1/admin/wowup/${editForm.id}`, { method: 'PUT', body: { name: editForm.name, string: editForm.string } })
       await refreshWowup()
     } else if (editForm.type === 'layout') {
       await apiFetch(`/api/v1/admin/layouts/${editForm.id}`, { method: 'PUT', body: { className: editForm.className, spec: editForm.spec, importString: editForm.string } })
+      layoutStrings.value = { ...layoutStrings.value, [editForm.id]: editForm.string }
       await refreshLayouts()
     }
     editModal.value = false

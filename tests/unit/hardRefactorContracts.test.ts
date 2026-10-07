@@ -72,6 +72,30 @@ test('admin stats does not query empty api_logs', () => {
   assert.equal(src.includes('activityLog.details'), false)
 })
 
+test('strings page lists profiles and layouts without import blobs', () => {
+  const root = join(dirname(fileURLToPath(import.meta.url)), '../..')
+  const page = readFileSync(join(root, 'pages/strings.vue'), 'utf8')
+  const profilesGet = readFileSync(join(root, 'server/api/v1/profiles/index.get.ts'), 'utf8')
+  const sync = readFileSync(join(root, 'server/api/v1/sync/profiles.get.ts'), 'utf8')
+  const models = readFileSync(join(root, 'server/utils/profileReadModels.ts'), 'utf8')
+  const indexStart = models.indexOf('export function readGroupedProfileIndex')
+  const indexEnd = models.indexOf('export function readPublicLayoutIndex')
+  const indexFn = models.slice(indexStart, indexEnd)
+
+  assert.match(page, /useFetch<\{ data: ProfileGroupedPublic \}>\('\/api\/v1\/profiles\?view=meta'\)/)
+  assert.match(page, /useFetch<\{ data: PublicLayout\[\] \}>\('\/api\/v1\/layouts\?view=meta'\)/)
+  assert.equal(page.includes("useFetch<{ data: ProfileGroupedPublic }>('/api/v1/profiles')"), false)
+  assert.match(page, /\/api\/v1\/profiles\/\$\{id\}/)
+  assert.match(page, /\/api\/v1\/layouts\/\$\{id\}/)
+  assert.match(profilesGet, /query\.view === 'meta'/)
+  assert.match(profilesGet, /readGroupedProfiles\(/)
+  assert.match(sync, /readGroupedProfiles\(/)
+  assert.equal(sync.includes('readGroupedProfileIndex'), false)
+  assert.equal(indexFn.includes('string: profiles.string'), false)
+  assert.match(indexFn, /length\(\$\{profiles\.string\}\)/)
+  assert.match(models, /export function readGroupedProfiles/)
+})
+
 test('latest-change homepage query selects action fields without details JSON', () => {
   const src = readFileSync(
     join(dirname(fileURLToPath(import.meta.url)), '../../server/api/v1/latest-change.get.ts'),

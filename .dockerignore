@@ -10,6 +10,10 @@ test-results
 playwright-report
 blob-report
 
+# Runtime data (mounted as volumes)
+data
+uploads
+
 # Tests, CI, docs, Unraid template (not needed for image build)
 .github
 tests

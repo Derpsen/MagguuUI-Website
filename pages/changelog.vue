@@ -27,7 +27,7 @@
     </div>
 
     <!-- Latest Release -->
-    <div v-if="latestRelease" class="mb-12 fade-in fade-in-delay-2">
+    <div v-if="latestRelease" :id="publicAnchorId('release', latestRelease.version)" class="mb-12 fade-in fade-in-delay-2">
       <div class="relative overflow-hidden rounded-2xl border p-7 sm:p-8"
         :class="isDark
           ? 'bg-gradient-to-br from-brand-400/8 via-brand-400/4 to-transparent border-brand-400/20'
@@ -105,6 +105,7 @@
 </template>
 
 <script setup lang="ts">
+import { publicAnchorId } from '~/utils/publicAnchor'
 import { renderMarkdownToSafeHtml } from '~/utils/richText'
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()

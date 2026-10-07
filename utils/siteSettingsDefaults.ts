@@ -1,5 +1,8 @@
 export const PUBLIC_SITE_ORIGIN = 'https://ui.magguu.xyz'
 
+export const WAGO_ADDON_URL = 'https://addons.wago.io/addons/5NR84pK3'
+export const WOWINTERFACE_ADDON_URL = 'https://www.wowinterface.com/downloads/info27061'
+
 export const SITE_SETTINGS_DEFAULTS = {
   site_name: 'MagguuUI',
   site_description: 'Native 4K overhaul and curated profiles for EllesmereUI',

@@ -117,6 +117,10 @@ export function profileHrefForSlug(slug: string): string {
   return key ? `/strings?addon=${encodeURIComponent(key)}` : '/addons'
 }
 
+export function wowupPackContainsWim(b64: string): boolean {
+  return parseWowupAddonNames(b64).some(name => name.trim().toLowerCase() === 'wim')
+}
+
 export function parseWowupAddonNames(b64: string): string[] {
   try {
     const raw = typeof atob === 'function'

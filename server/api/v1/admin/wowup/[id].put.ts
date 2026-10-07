@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { wowupStrings } from '~/server/database/schema'
 import { validateBody, wowupUpdateSchema } from '~/server/utils/validation'
+import { wowupPackContainsWim } from '~/utils/addonChipMeta'
 import { parseRouteId } from '~/server/utils/adminCrud'
 
 export default defineEventHandler(async (event) => {
@@ -16,6 +17,9 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody(event)
   const data = validateBody(wowupUpdateSchema, body)
+  if (data.string !== undefined && wowupPackContainsWim(data.string)) {
+    throw createError({ statusCode: 400, message: 'WowUp packs cannot include WIM. Whisper Messenger is the chat addon.' })
+  }
 
   const result = db.update(wowupStrings)
     .set({

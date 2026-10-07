@@ -244,6 +244,16 @@ export default defineNuxtConfig({
         'X-Robots-Tag': 'noindex, nofollow, noarchive',
       },
     },
+    // Public marketing HTML. Auth chrome is client-only, so the cached
+    // document is the anonymous page. Same 120s window as the content APIs.
+    '/': { swr: 120 },
+    '/guide': { swr: 120 },
+    '/faq': { swr: 120 },
+    '/changelog': { swr: 120 },
+    '/about': { swr: 120 },
+    '/addons': { swr: 120 },
+    '/imprint': { swr: 120 },
+    '/privacy': { swr: 120 },
     '/api/v1/catalog-summary': { swr: 120 },
     '/api/v1/profiles': { swr: 120 },
     '/api/v1/addons': { swr: 120 },

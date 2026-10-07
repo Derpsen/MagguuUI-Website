@@ -84,6 +84,17 @@
         <p class="text-lg leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-500'">
           {{ visibleSubtitle || 'Install EllesmereUI 9.0.6+ and the four MagguuUI folders. Open /mui and run Apply Magguu profiles. Companions stay optional — WowUp optional chat is Whisper Messenger (not WIM).' }}
         </p>
+        <nav class="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label="Download MagguuUI">
+          <a
+            v-for="item in installLinks"
+            :key="item.label"
+            :href="item.href"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors"
+            :class="isDark ? 'border-brand-400/25 text-brand-300 hover:bg-brand-400/10' : 'border-brand-200 text-brand-700 hover:bg-brand-50'"
+          >{{ item.label }}</a>
+        </nav>
       </div>
 
       <div v-else class="max-w-3xl mx-auto space-y-3">
@@ -247,14 +258,29 @@
 </template>
 
 <script setup lang="ts">
+import { SITE_SETTINGS_DEFAULTS, WAGO_ADDON_URL, WOWINTERFACE_ADDON_URL } from '~/utils/siteSettingsDefaults'
+
 const toast = useToast()
 const { apiFetch } = useApi()
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
+const siteSettings = usePublicSiteSettings()
+const installLinks = computed(() => [
+  { label: 'CurseForge', href: siteSettings.value.curseforge_url || SITE_SETTINGS_DEFAULTS.curseforge_url },
+  { label: 'Wago', href: WAGO_ADDON_URL },
+  { label: 'WoWInterface', href: WOWINTERFACE_ADDON_URL },
+])
 usePublicPageSeo({
   title: 'Installation Guide',
   description: 'Install EllesmereUI 9.0.6+ and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. Companions and WowUp packs stay optional.',
   path: '/guide',
+})
+useHead({
+  link: [
+    { rel: 'dns-prefetch', href: 'https://www.curseforge.com' },
+    { rel: 'dns-prefetch', href: 'https://addons.wago.io' },
+    { rel: 'dns-prefetch', href: 'https://www.wowinterface.com' },
+  ],
 })
 const isAdmin = computed(() => {
   if (import.meta.server) return false

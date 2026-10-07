@@ -4,7 +4,7 @@
 -->
 
 <template>
-  <div class="glass-card rounded-2xl transition-all overflow-hidden"
+  <div :id="anchorId" class="glass-card rounded-2xl transition-all overflow-hidden"
     :class="open ? 'border-brand-400/20' : 'hover:border-brand-400/15'">
     <!-- Question (clickable header) -->
     <button @click="open = !open"
@@ -41,14 +41,21 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { publicAnchorId } from '~/utils/publicAnchor'
+
+const props = defineProps<{
   question: string
   answer: string
   isDark: boolean
 }>()
 
 const uid = useId()
+const anchorId = computed(() => publicAnchorId('faq', props.question))
 const open = ref(false)
+
+onMounted(() => {
+  if (window.location.hash === `#${anchorId.value}`) open.value = true
+})
 </script>
 
 <style scoped>

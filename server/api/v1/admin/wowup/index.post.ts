@@ -5,10 +5,14 @@
 import { db } from '~/server/database'
 import { wowupStrings } from '~/server/database/schema'
 import { validateBody, wowupCreateSchema } from '~/server/utils/validation'
+import { wowupPackContainsWim } from '~/utils/addonChipMeta'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const data = validateBody(wowupCreateSchema, body)
+  if (wowupPackContainsWim(data.string)) {
+    throw createError({ statusCode: 400, message: 'WowUp packs cannot include WIM. Whisper Messenger is the chat addon.' })
+  }
 
   const result = db.insert(wowupStrings).values({
     name: data.name,

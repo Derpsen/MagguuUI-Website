@@ -42,13 +42,15 @@ WORKDIR /app
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=3000 \
-    NODE_OPTIONS=--enable-source-maps
+    NODE_OPTIONS=--enable-source-maps \
+    PUID=99 \
+    PGID=100
 
 # dumb-init forwards signals correctly to the Node process, so `docker stop`
 # triggers a clean Nitro shutdown (flushes SQLite WAL, closes sessions).
 RUN apt-get update \
   && apt-get upgrade -y --no-install-recommends \
-  && apt-get install -y --no-install-recommends dumb-init ca-certificates \
+  && apt-get install -y --no-install-recommends dumb-init gosu ca-certificates \
   && rm -rf /var/lib/apt/lists/* \
   && rm -rf /usr/local/lib/node_modules/npm \
             /usr/local/lib/node_modules/corepack \
@@ -65,16 +67,16 @@ LABEL org.opencontainers.image.title="MagguuUI Website" \
 # Copy built output (Nitro bundles node_modules into .output/server/node_modules)
 COPY --from=build /app/.output ./.output
 
-# Create data directories
+# Create data directories. The entrypoint chowns these to PUID:PGID and drops.
+# Live mounts are root-owned today; PUID=0 keeps the old root process.
 RUN mkdir -p /app/data /app/uploads
-
-# Note: Running as root for Unraid volume mount compatibility
-# (data/ and uploads/ are mounted from host with root ownership)
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-ENTRYPOINT ["dumb-init", "--"]
+ENTRYPOINT ["dumb-init", "--", "/usr/local/bin/docker-entrypoint.sh"]
 CMD ["node", ".output/server/index.mjs"]

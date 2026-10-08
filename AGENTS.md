@@ -38,7 +38,9 @@ Admin-Smoke 6/6 PASS auf diesem Digest.
 - Database: this project uses Drizzle push and startup idempotent index
   creation. Do not hand-write migration files unless the strategy changes.
 - Do not perform major dependency upgrades without a separate compatibility
-  pass.
+  pass. `types/nuxt-nitro.d.ts` restores Nitro `headers`, `swr`, and `storage`
+  on the Nuxt 4.5 config types. Do not delete it. Node 26, TypeScript 7, h3 2,
+  and satori 0.41 stay blocked without an explicit yes.
 - MagguuUI public copy (home/guide/FAQ/changelog/addon metadata) must stay
   aligned with the current MagguuUI release: four sibling folders
   (MagguuUI / Data / EUI / Media), EllesmereUI TOC min **9.0.6+** (**live 9.2.9**),
@@ -68,8 +70,7 @@ Admin-Smoke 6/6 PASS auf diesem Digest.
   `same-origin`.
 - Homepage stats/pills: `GET /api/v1/catalog-summary` only. Do not fetch `/api/v1/profiles` (or layouts/wowup/changelogs) on `/` just to count — those blobs belong on `/strings`.
 - ECharts stays admin-only (`utils/echartsSetup.ts` + `components/admin/charts`). Do not restore a global `plugins/echarts.client.ts`.
-- After behavior changes run `npm run typecheck`, `npm run build`, `npm run verify:smoke`, and `npm test`.
-- After dependency changes also run `npm run audit:prod`.
+- Gate: `npm run typecheck`, `npm run lint`, `npm run test:unit`, and `npm run build`. Add `npm run verify:smoke` and `npm test` only when a page, component, layout, or public route changed. After dependency changes also run `npm run audit:prod`.
 - Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier). `npm run lint` also runs `lint:uselect` (rejects option-shaped `value: ""`).
 - Validation uses Zod.
 
@@ -86,7 +87,8 @@ Admin-Smoke 6/6 PASS auf diesem Digest.
 - bestehend: `braces`, `node-forge` (from #114)
 
 `package.json` overrides (#117): `vue` / `@vue/server-renderer` **3.5.43**,
-`seroval` **1.6.8**, `shell-quote` **1.12.0**, `source-map-js` **1.2.2**.
+`seroval` **1.6.8**, `shell-quote` **1.12.0**, `source-map-js` **1.2.2**,
+`js-yaml` **4.3.2** (stay on 4.x; 5 is a major), `postcss-selector-parser` **7.1.6**.
 Routine „Magguu Audit Allowlist Review“ ~2. Nov; re-check before review-by.
 
 ## Passkey / WebAuthn

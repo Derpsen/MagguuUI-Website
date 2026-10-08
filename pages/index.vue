@@ -53,16 +53,18 @@
       </ol>
     </section>
 
-    <section aria-label="Screenshots" class="mt-16 space-y-8">
+    <section aria-label="Screenshots" class="mt-16">
       <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">In game</h2>
-      <ScreenshotFrame
-        src="/screenshots/hud.jpg"
-        alt="MagguuUI dungeon HUD: unit frames, cast bars, and action bars."
-        caption="HUD"
-        :width="2000"
-        :height="1125"
-      />
-      <div class="mx-auto w-full max-w-3xl">
+      <div class="mt-4">
+        <ScreenshotFrame
+          src="/screenshots/hud.jpg"
+          alt="MagguuUI dungeon HUD: unit frames, cast bars, and action bars."
+          caption="HUD"
+          :width="2000"
+          :height="1125"
+        />
+      </div>
+      <div class="mt-6 grid sm:grid-cols-2 gap-6">
         <ScreenshotFrame
           src="/screenshots/edit-mode.jpg"
           alt="Edit Mode with the Magguu frame layout."
@@ -70,14 +72,14 @@
           :width="2000"
           :height="1125"
         />
+        <ScreenshotFrame
+          src="/screenshots/setup.jpg"
+          alt="EllesmereUI MagguuUI Setup, with Apply Magguu profiles."
+          caption="Setup"
+          :width="2000"
+          :height="1125"
+        />
       </div>
-      <ScreenshotFrame
-        src="/screenshots/setup.jpg"
-        alt="EllesmereUI MagguuUI Setup, with Apply Magguu profiles."
-        caption="Setup"
-        :width="2000"
-        :height="1125"
-      />
     </section>
 
     <section aria-label="Addons and latest release" class="mt-16 grid lg:grid-cols-[minmax(0,1.25fr)_minmax(15rem,0.75fr)] gap-12 lg:gap-16 items-start">

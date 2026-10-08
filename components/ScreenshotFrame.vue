@@ -68,13 +68,20 @@ onBeforeUnmount(() => {
         >
           Close
         </button>
-        <img
-          :src="props.src"
-          :alt="props.alt"
-          :width="props.width"
-          :height="props.height"
-          class="max-h-[92vh] max-w-full object-contain"
-        />
+        <button
+          type="button"
+          class="cursor-zoom-out"
+          aria-label="Close"
+          @click="close"
+        >
+          <img
+            :src="props.src"
+            :alt="props.alt"
+            :width="props.width"
+            :height="props.height"
+            class="max-h-[92vh] max-w-full object-contain"
+          />
+        </button>
       </div>
     </Teleport>
   </figure>

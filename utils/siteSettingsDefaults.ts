@@ -5,14 +5,14 @@ export const WOWINTERFACE_ADDON_URL = 'https://www.wowinterface.com/downloads/in
 
 export const SITE_SETTINGS_DEFAULTS = {
   site_name: 'MagguuUI',
-  site_description: 'Native 4K overhaul and curated profiles for EllesmereUI',
+  site_description: 'Native overhaul for EllesmereUI. Designed for 4K.',
   curseforge_url: 'https://www.curseforge.com/wow/addons/magguuui',
   github_url: 'https://github.com/Derpsen/MagguuUI',
   discord_url: '',
   maintenance_mode: 'false',
   banner_text: '',
-  meta_title: 'MagguuUI - Your WoW Interface, perfected.',
-  meta_description: 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. Companion addons stay optional.',
+  meta_title: 'MagguuUI — Ellesmere setup',
+  meta_description: 'Native overhaul for EllesmereUI, designed for 4K. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles.',
   // Empty by default — leaves nuxt-og-image's per-route Satori card as the
   // canonical OG image. Admins can still pin a specific image via settings.
   og_image_url: '',

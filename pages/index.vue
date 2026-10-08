@@ -1,137 +1,144 @@
 <!--
-  Landing Page — premium-clean hero, factual Ellesmere copy
-  Content from API with static fallbacks
+  Home — install sheet. Content from API with static fallbacks.
 -->
 
 <template>
-  <div>
-    <!-- Hero Section — full viewport -->
-    <section aria-label="Hero" class="relative flex flex-col" style="min-height: calc(100dvh - 5rem);">
-      <!-- Admin Edit Button -->
-      <div v-if="isLoggedIn" class="absolute top-4 right-4 sm:right-8 z-10">
-        <NuxtLink to="/admin/content/home"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-          :class="isDark ? 'bg-white/5 text-silver-400 hover:text-white hover:bg-white/10 border border-brand-400/15 backdrop-blur' : 'bg-white/80 text-gray-500 hover:text-gray-900 hover:bg-white border border-gray-200 backdrop-blur'">
-          <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
-          Edit Page
-        </NuxtLink>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-20">
+    <div v-if="isLoggedIn" class="flex justify-end mb-4">
+      <NuxtLink to="/admin/content/home"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border"
+        :class="isDark ? 'text-silver-400 hover:text-white border-white/10' : 'text-gray-500 hover:text-gray-900 border-gray-200'">
+        Edit page
+      </NuxtLink>
+    </div>
+
+    <section aria-label="Hero" class="grid lg:grid-cols-[minmax(0,1.4fr)_minmax(14rem,0.7fr)] gap-10 lg:gap-16 items-start">
+      <div>
+        <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-4" :class="isDark ? 'text-brand-300' : 'text-brand-700'">
+          WoW Retail · EllesmereUI
+        </p>
+        <h1 class="text-5xl sm:text-6xl font-semibold tracking-tight leading-[0.95]" :class="isDark ? 'text-white' : 'text-gray-950'">
+          {{ content?.hero?.title || 'MagguuUI' }}
+          <span v-if="heroTitle2" class="block mt-3 text-xl sm:text-2xl font-medium tracking-normal leading-snug" :class="isDark ? 'text-silver-400' : 'text-gray-500'">{{ heroTitle2 }}</span>
+        </h1>
+        <SafeHtml class="home-hero-copy mt-6 max-w-xl text-base sm:text-lg leading-relaxed"
+          :class="isDark ? 'text-silver-300' : 'text-gray-600'"
+          :html="content?.hero?.description || 'Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Install EllesmereUI + four MagguuUI folders, open <code>/mui</code>, and run <strong>Apply Magguu profiles</strong>.'"
+        />
+        <div class="mt-8 flex flex-wrap gap-3">
+          <NuxtLink to="/guide" class="btn-gradient px-5 py-2.5 rounded-md text-white text-sm font-semibold">
+            Install &amp; Setup
+          </NuxtLink>
+          <NuxtLink to="/strings"
+            class="px-5 py-2.5 rounded-md text-sm font-semibold border"
+            :class="isDark ? 'border-white/15 text-silver-200 hover:text-white' : 'border-gray-300 text-gray-700 hover:text-gray-950'">
+            Import Strings
+          </NuxtLink>
+        </div>
       </div>
-      <div class="relative max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-4">
-        <div class="relative px-6 py-8 sm:px-10 sm:py-12 lg:px-12 lg:py-14">
-          <div class="max-w-4xl mx-auto flex flex-col items-center text-center">
-            <!-- Badge — links to changelog, shows last change -->
-            <NuxtLink to="/changelog" class="hero-badge inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium mb-10 cursor-pointer transition-colors border"
-              :class="isDark
-                ? 'bg-brand-400/12 border-brand-400/25 text-brand-200'
-                : 'bg-brand-100/80 border-brand-300/50 text-brand-800'">
-              <span class="w-1.5 h-1.5 rounded-full bg-ellesmere" aria-hidden="true" />
-              <span>{{ latestBadgeText }}</span>
-            </NuxtLink>
 
-            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.1] mb-8">
-              <span class="text-gradient">{{ content?.hero?.title || 'Your WoW Interface,' }}</span> <br />
-              <span class="text-gradient">{{ content?.hero?.title2 || 'perfected.' }}</span>
-            </h1>
+      <ol class="lg:pt-9" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+        <li class="grid grid-cols-[1.4rem_1fr] gap-3 py-3 border-b text-sm leading-relaxed" :class="isDark ? 'border-white/10 text-silver-300' : 'border-gray-200 text-gray-700'">
+          <span class="font-mono text-xs pt-0.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">1</span>
+          <span>Install EllesmereUI and the four MagguuUI folders.</span>
+        </li>
+        <li class="grid grid-cols-[1.4rem_1fr] gap-3 py-3 border-b text-sm leading-relaxed" :class="isDark ? 'border-white/10 text-silver-300' : 'border-gray-200 text-gray-700'">
+          <span class="font-mono text-xs pt-0.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">2</span>
+          <span>Open <code class="font-mono text-[0.92em]" :class="isDark ? 'text-white' : 'text-gray-950'">/mui</code>.</span>
+        </li>
+        <li class="grid grid-cols-[1.4rem_1fr] gap-3 py-3 border-b text-sm leading-relaxed" :class="isDark ? 'border-white/10 text-silver-300' : 'border-gray-200 text-gray-700'">
+          <span class="font-mono text-xs pt-0.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">3</span>
+          <span>Run <strong class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">Apply Magguu profiles</strong>.</span>
+        </li>
+      </ol>
+    </section>
 
-            <SafeHtml class="home-hero-copy text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed"
-              :class="isDark ? 'text-silver-400' : 'text-gray-500'"
-              :html="content?.hero?.description || 'Native <strong>EllesmereUI</strong> module for WoW Retail. Install EllesmereUI + four MagguuUI folders, open <code>/mui</code>, run <strong>Apply Magguu profiles</strong>.'"
-            />
+    <section aria-label="Screenshots" class="mt-16">
+      <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">In game</h2>
+      <figure class="mt-4">
+        <img
+          src="/screenshots/hud.jpg"
+          alt="MagguuUI dungeon HUD: unit frames, cast bars, and action bars."
+          width="2000"
+          height="1125"
+          class="w-full border"
+          :class="isDark ? 'border-white/10' : 'border-gray-200'"
+          loading="lazy"
+          decoding="async"
+        />
+        <figcaption class="mt-2 font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">HUD</figcaption>
+      </figure>
+      <div class="mt-6 grid sm:grid-cols-2 gap-6">
+        <figure>
+          <img
+            src="/screenshots/edit-mode.jpg"
+            alt="Edit Mode with the Magguu frame layout."
+            width="2000"
+            height="1125"
+            class="w-full border"
+            :class="isDark ? 'border-white/10' : 'border-gray-200'"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption class="mt-2 font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Edit Mode</figcaption>
+        </figure>
+        <figure>
+          <img
+            src="/screenshots/setup.jpg"
+            alt="EllesmereUI MagguuUI Setup, with Apply Magguu profiles."
+            width="2000"
+            height="1125"
+            class="w-full border"
+            :class="isDark ? 'border-white/10' : 'border-gray-200'"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption class="mt-2 font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Setup</figcaption>
+        </figure>
+      </div>
+    </section>
 
-            <div class="flex flex-wrap items-center justify-center gap-4">
-              <NuxtLink to="/guide" class="btn-gradient px-8 py-4 rounded-xl text-white font-semibold text-lg inline-flex items-center gap-2">
-                Install &amp; Setup
-              </NuxtLink>
-              <NuxtLink to="/strings"
-                class="px-8 py-4 rounded-xl font-semibold text-lg inline-flex items-center gap-2 border transition-colors"
-                :class="isDark
-                  ? 'border-brand-400/30 text-silver-300 hover:text-white hover:border-brand-400/50 bg-transparent'
-                  : 'border-brand-200 text-gray-600 hover:text-gray-900 hover:border-brand-300 bg-transparent'">
-                Import Strings
-              </NuxtLink>
-            </div>
-
-            <div class="mt-14 w-full">
-              <div class="hero-stat-divider w-full max-w-md mx-auto mb-10" />
-              <div class="flex items-center justify-center gap-16 sm:gap-24">
-                <div v-for="stat in stats" :key="stat.label" class="text-center">
-                  <div class="text-4xl sm:text-5xl font-extrabold text-gradient mb-1.5">{{ stat.value }}</div>
-                  <div class="text-sm font-medium" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ stat.label }}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-16 pt-12 border-t"
-            :class="isDark ? 'border-white/8' : 'border-brand-100'">
-            <div ref="addonsHeading" class="text-center mb-10 scroll-reveal">
-              <p class="section-eyebrow mb-3">Packs</p>
-              <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.addons?.title || 'Supported Addons' }}</span></h2>
-              <p class="text-sm sm:text-base max-w-2xl mx-auto" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'Grouped Required / Optional / WowUp. Chat pack: Whisper Messenger (not WIM).' }}</p>
-            </div>
-            <div v-if="addonGroups.length" ref="addonPills" class="scroll-reveal scroll-reveal-delay-1">
-              <SupportedAddonsDropdown
-                :groups="addonGroups"
-                placeholder="Browse Required · Optional · WowUp"
-              />
-            </div>
+    <section aria-label="Addons and latest release" class="mt-16 grid lg:grid-cols-[minmax(0,1.25fr)_minmax(15rem,0.75fr)] gap-12 lg:gap-16 items-start">
+      <div>
+        <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ content?.addons?.title || 'Supported Addons' }}</h2>
+        <p class="mt-2 text-sm max-w-xl leading-relaxed" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'Grouped Required / Optional / WowUp. Chat pack: Whisper Messenger (not WIM).' }}</p>
+        <div v-if="addonGroups.length" class="mt-6 space-y-5">
+          <div v-for="group in addonGroups" :key="group.key">
+            <p class="font-mono text-[11px] uppercase tracking-[0.14em] mb-1.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">{{ group.label }}</p>
+            <p class="text-sm leading-7" :class="isDark ? 'text-silver-300' : 'text-gray-700'">
+              <template v-for="(item, index) in group.items" :key="item.key">
+                <span v-if="index > 0" class="px-1.5" :class="isDark ? 'text-white/25' : 'text-gray-300'">·</span>
+                <NuxtLink :to="item.href" class="hover:underline underline-offset-4">{{ item.name }}</NuxtLink>
+              </template>
+            </p>
           </div>
         </div>
       </div>
-    </section>
 
-    <div class="section-divider" />
-
-    <!-- Latest changelog card -->
-    <section v-if="latestCard" aria-label="Latest release" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
-      <div class="scroll-reveal">
-        <p class="section-eyebrow text-center mb-3">Changelog</p>
-        <NuxtLink to="/changelog" class="latest-card block rounded-2xl border p-6 sm:p-7 transition-colors"
-          :class="isDark
-            ? 'bg-gradient-to-br from-brand-400/8 via-brand-400/4 to-transparent border-brand-400/20 hover:border-brand-400/40'
-            : 'bg-gradient-to-br from-brand-50 via-brand-50/40 to-white border-brand-200 hover:border-brand-300'">
-          <div class="flex flex-col sm:flex-row sm:items-start gap-5">
-            <div class="shrink-0">
-              <div class="text-[10px] uppercase tracking-[0.15em] font-semibold mb-1.5"
-                :class="isDark ? 'text-brand-300' : 'text-brand-600'">Latest</div>
-              <div class="font-mono text-2xl sm:text-3xl font-bold leading-none"
-                :class="isDark ? 'text-white' : 'text-gray-900'">{{ latestCard.version }}</div>
-              <div class="mt-2 text-xs font-medium" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ latestCard.date }}</div>
-            </div>
-            <ul class="flex-1 space-y-2 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-              <li v-for="(b, i) in latestCard.bullets" :key="i" class="flex gap-2">
-                <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-ellesmere shrink-0" aria-hidden="true" />
-                <span>{{ b }}</span>
-              </li>
-            </ul>
-          </div>
+      <div v-if="latestCard">
+        <p class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Latest</p>
+        <NuxtLink to="/changelog" class="group block mt-2">
+          <span class="font-mono text-2xl font-semibold tracking-tight" :class="isDark ? 'text-white group-hover:text-brand-200' : 'text-gray-950 group-hover:text-brand-700'">{{ latestCard.version }}</span>
+          <span v-if="latestCard.date" class="block mt-1 text-xs" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ latestCard.date }}</span>
         </NuxtLink>
+        <ul class="mt-4 space-y-2 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+          <li v-for="(bullet, index) in latestCard.bullets" :key="index">{{ bullet }}</li>
+        </ul>
       </div>
     </section>
 
-    <div class="section-divider" />
-
-    <!-- Features -->
-    <section aria-label="Features" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-28">
-      <div ref="featuresHeading" class="text-center mb-20 scroll-reveal">
-        <p class="section-eyebrow mb-3">Product</p>
-        <h2 class="text-3xl sm:text-4xl font-bold mb-4"><span class="text-gradient">{{ content?.features_heading?.title || 'Why MagguuUI?' }}</span></h2>
-        <p :class="isDark ? 'text-silver-500' : 'text-gray-500'" class="text-lg max-w-2xl mx-auto">{{ content?.features_heading?.subtitle || 'A 4K EllesmereUI setup with optional raid tools' }}</p>
-      </div>
-      <div class="grid md:grid-cols-3 gap-6">
-        <div v-for="(feat, idx) in features" :key="idx"
-          class="feature-card feature-reveal-item rounded-2xl p-8 group scroll-reveal"
-          :class="`scroll-reveal-delay-${idx + 1}`">
-          <div class="w-14 h-14 rounded-xl bg-ellesmere/10 border border-ellesmere/20 flex items-center justify-center mb-6 group-hover:bg-ellesmere/15 group-hover:border-ellesmere/30 transition-colors">
-            <span class="text-2xl">{{ feat.emoji }}</span>
-          </div>
-          <h3 class="text-lg font-semibold text-gradient-subtle mb-3">{{ feat.title }}</h3>
+    <section aria-label="Features" class="mt-16 pt-10 border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+      <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ content?.features_heading?.title || 'The module' }}</h2>
+      <p class="mt-2 text-sm max-w-xl" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.features_heading?.subtitle || 'An EllesmereUI setup with optional raid tools' }}</p>
+      <div class="mt-2" :class="isDark ? 'divide-white/10' : 'divide-gray-200'">
+        <article v-for="(feat, index) in features" :key="index" class="py-6 border-b" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+          <h3 class="text-sm font-semibold mb-2" :class="isDark ? 'text-white' : 'text-gray-950'">{{ feat.title }}</h3>
           <SafeHtml
-            class="home-feature-copy text-sm leading-relaxed"
-            :class="isDark ? 'text-silver-500' : 'text-gray-500'"
+            class="home-feature-copy text-sm leading-relaxed max-w-3xl"
+            :class="isDark ? 'text-silver-400' : 'text-gray-600'"
             :html="feat.text"
           />
-        </div>
+        </article>
       </div>
     </section>
   </div>
@@ -150,8 +157,8 @@ import {
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
 const siteSettings = usePublicSiteSettings()
-const homeMetaTitle = computed(() => siteSettings.value.meta_title || 'MagguuUI - Your WoW Interface, perfected.')
-const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. Companion addons stay optional.')
+const homeMetaTitle = computed(() => siteSettings.value.meta_title || 'MagguuUI — Ellesmere setup')
+const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'Native overhaul for EllesmereUI, designed for 4K. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles.')
 const homeOgImage = computed(() => siteSettings.value.og_image_url || buildPublicUrl('/logo.png'))
 const homeCanonical = buildPublicUrl('/')
 const homeSiteName = computed(() => siteSettings.value.site_name || 'MagguuUI')
@@ -223,19 +230,12 @@ useSeoMeta({
   twitterImage: () => homeOgImage.value,
 })
 
-// Content fetching
 interface HomeContent {
-  hero?: { badge?: string, [k: string]: unknown }
+  hero?: { badge?: string, title?: string, title2?: string, description?: string, [k: string]: unknown }
   features?: Record<string, string>
+  features_heading?: { title?: string, subtitle?: string }
+  addons?: { title?: string, subtitle?: string }
   [k: string]: unknown
-}
-interface LatestChange { name?: string, action?: string }
-interface CatalogSummary {
-  addonNames: string[]
-  profileCount: number
-  layoutCount: number
-  wowupCount: number
-  changelogCount: number
 }
 
 interface PublicAddonChip {
@@ -252,12 +252,14 @@ interface AddonsPayload {
 }
 
 const { data: contentData } = useFetch<{ data: HomeContent }>('/api/v1/content/home')
-const { data: catalogData } = useFetch<{ data: CatalogSummary }>('/api/v1/catalog-summary')
 const { data: addonsData } = useFetch<{ data: AddonsPayload }>('/api/v1/addons')
-const { data: latestChangeData } = useFetch<{ data: LatestChange | null }>('/api/v1/latest-change')
 
 const content = computed(() => contentData.value?.data)
-const catalog = computed(() => catalogData.value?.data)
+const heroTitle2 = computed(() => {
+  const raw = content.value?.hero?.title2
+  if (typeof raw !== 'string') return 'Ellesmere setup.'
+  return raw.trim()
+})
 
 function toChip(addon: PublicAddonChip) {
   const kind = addonGroupForSlug(addon.slug, addon.category)
@@ -267,7 +269,6 @@ function toChip(addon: PublicAddonChip) {
   return {
     key: addon.slug,
     name: addon.name,
-    emoji: addon.emoji || '🧩',
     href: profileHrefForSlug(addon.slug),
     kind,
     badge,
@@ -295,110 +296,21 @@ const latestCard = computed(() => {
   return { version: entry.version, date, bullets }
 })
 
-// Badge text: show last changed string name
-const latestBadgeText = computed(() => {
-  const change = latestChangeData.value?.data
-  if (change?.name) {
-    const actionMap: Record<string, string> = { created: 'New', updated: 'Updated', deleted: 'Removed' }
-    const action = actionMap[change.action || ''] || 'Updated'
-    return `${action}: ${change.name}`
-  }
-  return content.value?.hero?.badge || 'New: String updates'
-})
-
-// Features — fallbacks must mirror DEFAULT_HOME_CONTENT in
-// server/database/defaultContent.ts so the page reads the same on a fresh
-// install (CMS empty) and after seeding.
 const features = computed(() => [
   {
-    emoji: '⚡',
     title: content.value?.features?.feature_1_title || 'Native Ellesmere setup',
     text: content.value?.features?.feature_1_text || 'Two sidebar rows: Options (Setup, Skinning, QoL) and Changelog. Gold <strong>Apply Magguu profiles</strong>, Magguu Settings, Load profiles, required and optional imports, and WowUp copy strings live on Setup. Open with <code>/mui</code>. Tools via <code>/mui tools</code> or 10 clicks on the MagguuUI header.',
   },
   {
-    emoji: '🔄',
     title: content.value?.features?.feature_2_title || 'Current Retail layouts',
     text: content.value?.features?.feature_2_text || 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders.',
   },
   {
-    emoji: '🎯',
     title: content.value?.features?.feature_3_title || 'Skinning and QoL included',
     text: content.value?.features?.feature_3_text || 'Skinning is one <strong>NAMES &amp; COLORS</strong> section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (and 2P/4P), <strong>Smart Tab</strong>, Hide Services on General, <strong>Quick Focus</strong>, an <strong>Audio device switcher</strong> on the Ellesmere speaker, <strong>Boiling Point</strong>, and <strong>Targeted Spell Bars</strong> via Ellesmere (leave EXBoss MythicCast off).',
   },
 ])
 
-const totalStrings = computed(() => {
-  return (catalog.value?.profileCount ?? 0) + (catalog.value?.layoutCount ?? 0) + (catalog.value?.wowupCount ?? 0)
-})
-
-const categoryCount = computed(() => {
-  let n = catalog.value?.addonNames.length ?? 0
-  if ((catalog.value?.layoutCount ?? 0) > 0) n++
-  if ((catalog.value?.wowupCount ?? 0) > 0) n++
-  return n
-})
-
-const updateCount = computed(() => catalog.value?.changelogCount ?? 0)
-
-// Animated counter — counts up from 0 to target with easeOutCubic.
-// Both SSR and initial-client render show 0 so hydration text matches; the
-// animation only runs on the client after mount. Search engines pick up the
-// real numbers via the surrounding metadata, not these decorative chips.
-function useAnimatedCounter(target: Ref<number>, duration = 1200) {
-  const current = ref(0)
-  if (!import.meta.client) return current
-  let started = false
-  watch(target, (val) => {
-    if (val <= 0 || started) { if (val <= 0) current.value = 0; return }
-    started = true
-    const start = performance.now()
-    function step(now: number) {
-      const progress = Math.min((now - start) / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      current.value = Math.round(val * eased)
-      if (progress < 1) requestAnimationFrame(step)
-    }
-    requestAnimationFrame(step)
-  }, { immediate: true })
-  return current
-}
-
-const animatedTotal = useAnimatedCounter(totalStrings)
-const animatedCategories = useAnimatedCounter(categoryCount)
-const animatedUpdates = useAnimatedCounter(updateCount)
-
-const stats = computed(() => [
-  { value: animatedTotal.value, label: 'Import Strings' },
-  { value: animatedCategories.value, label: 'Categories' },
-  { value: animatedUpdates.value, label: 'Updates' },
-])
-
-// ─── Scroll Reveal ─────────────────────
-let homeRevealObserver: IntersectionObserver | null = null
-const featuresHeading = ref<HTMLElement | null>(null)
-const addonsHeading = ref<HTMLElement | null>(null)
-const addonPills = ref<HTMLElement | null>(null)
-onMounted(() => {
-  homeRevealObserver = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) {
-        (entry.target as HTMLElement).classList.add('scroll-revealed')
-        homeRevealObserver?.unobserve(entry.target)
-      }
-    }
-  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' })
-
-  const featureItems = document.querySelectorAll('.feature-reveal-item')
-  const targets = [featuresHeading.value, ...Array.from(featureItems), addonsHeading.value, addonPills.value]
-  for (const el of targets) {
-    if (el) homeRevealObserver.observe(el)
-  }
-})
-
-onUnmounted(() => {
-  homeRevealObserver?.disconnect()
-  homeRevealObserver = null
-})
 </script>
 
 <style scoped>
@@ -429,7 +341,7 @@ onUnmounted(() => {
   border-radius: 4px;
   font-size: 0.9em;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  background: rgba(59, 139, 255, 0.12);
+  background: color-mix(in srgb, currentColor 12%, transparent);
 }
 
 .home-hero-copy :deep(a),

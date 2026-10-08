@@ -4,14 +4,11 @@
 -->
 
 <template>
-  <div :id="anchorId" class="glass-card rounded-2xl transition-all overflow-hidden"
-    :class="open ? 'border-brand-400/20' : 'hover:border-brand-400/15'">
-    <!-- Question (clickable header) -->
+  <div :id="anchorId" class="border-b overflow-hidden" :class="isDark ? 'border-white/10' : 'border-gray-200'">
     <button @click="open = !open"
       :aria-expanded="open"
       :aria-controls="`faq-answer-${uid}`"
-      class="w-full flex items-center justify-between gap-4 px-6 sm:px-7 py-5 text-left transition-colors"
-      :class="isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50/50'">
+      class="w-full flex items-center justify-between gap-4 py-4 text-left">
       <span class="font-medium text-sm sm:text-[0.95rem] leading-snug" :class="isDark ? 'text-white' : 'text-gray-900'">
         {{ question }}
       </span>
@@ -25,8 +22,8 @@
     <!-- Answer (smooth grid-rows accordion) -->
     <div :id="`faq-answer-${uid}`" role="region" class="accordion-body" :class="open ? 'accordion-open' : ''">
       <div class="overflow-hidden">
-        <div class="px-6 sm:px-7 pb-6 pt-0">
-          <div class="border-t pt-4" :class="isDark ? 'border-brand-400/10' : 'border-gray-200'">
+        <div class="pb-5 pt-0">
+          <div>
             <SafeHtml
               class="faq-answer text-sm leading-relaxed"
               :class="isDark ? 'text-silver-300' : 'text-gray-600'"

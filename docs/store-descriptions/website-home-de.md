@@ -4,15 +4,15 @@ Ton wie EN: klar, kurz, ohne Marketing-Floskeln. Für Admin /home oder Seed `def
 
 ## Hero
 
-**title:** Dein WoW-Interface,  
-**title2:** perfektioniert.  
-**subtitle:** Ein natives 4K-Overhaul für EllesmereUI.  
+**title:** MagguuUI  
+**title2:** Ellesmere-Setup.  
+**subtitle:** Ein natives Overhaul für EllesmereUI.  
 **badge:** Bereit für WoW 12.1  
 
 **description** (html-sicher):
 
 ```html
-MagguuUI ist ein natives <strong>EllesmereUI</strong>-Modul für WoW Retail. Installiere <strong>EllesmereUI</strong> und die vier MagguuUI-Addon-Ordner, öffne <code>/mui</code> und starte <strong>Magguu-Profile übernehmen</strong>. Begleiter-Addons bleiben optional.
+Natives <strong>EllesmereUI</strong>-Modul für WoW Retail. Für 4K ausgelegt. EllesmereUI + vier MagguuUI-Ordner, <code>/mui</code> und <strong>Magguu-Profile übernehmen</strong>.
 ```
 
 ## Feature-Karten
@@ -23,7 +23,7 @@ MagguuUI ist ein natives <strong>EllesmereUI</strong>-Modul für WoW Retail. Ins
 **text** (html-sicher):
 
 ```html
-Zwei Sidebar-Zeilen: <strong>Options</strong> (Setup, Skinning, QoL) und <strong>Changelog</strong>. Goldenes <strong>Magguu-Profile übernehmen</strong>, <strong>Magguu Settings</strong> (nur Overlay/QoL) und <strong>Profile laden</strong> (nur aktivieren) nebeneinander, plus Pflicht-/optionale Imports und WowUp-Copy-Strings unter Setup. Öffnen mit <code>/mui</code>. Werkzeuge über <code>/mui tools</code> oder 10 Klicks auf den MagguuUI-Header.
+Zwei Sidebar-Zeilen: <strong>Optionen</strong> (Setup, Skinning, QoL) und <strong>Changelog</strong>. Goldenes <strong>Magguu-Profile übernehmen</strong>, <strong>Magguu Settings</strong> (nur Overlay/QoL) und <strong>Profile laden</strong> (nur aktivieren) nebeneinander, plus Pflicht-/optionale Imports und WowUp-Copy-Strings unter Setup. Öffnen mit <code>/mui</code>. Werkzeuge über <code>/mui tools</code> oder 10 Klicks auf den MagguuUI-Header.
 ```
 
 ### 2 — Aktuelle Retail-Layouts

@@ -156,6 +156,11 @@ html, body, #__nuxt {
   animation-delay: -6s;
 }
 
+.public-shell::before,
+.public-shell::after {
+  content: none;
+}
+
 .admin-shell::before {
   top: 5rem;
   left: -8rem;
@@ -2362,12 +2367,7 @@ html.dark .admin-tone-danger {
 
 /* ─── Post-P1: public sticky setup nav + light-nav contrast ─── */
 .public-setup-nav {
-  top: 5.75rem;
-}
-@media (min-width: 1024px) {
-  .public-setup-nav {
-    top: 5.25rem;
-  }
+  top: 3.5rem;
 }
 
 html.light .public-theme-toggle {

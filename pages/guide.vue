@@ -3,7 +3,7 @@
 -->
 
 <template>
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
     <!-- Admin controls: ClientOnly always renders a div (fallback + hidden when guest) -->
     <ClientOnly>
       <div
@@ -75,24 +75,24 @@
     <PublicSetupNav />
 
     <!-- Header -->
-    <section class="mb-12 fade-in">
-      <div v-if="!editMode" class="max-w-3xl mx-auto text-center heading-glow">
-        <h1 class="text-4xl sm:text-5xl font-bold leading-tight mb-4 flex items-center justify-center gap-3">
-          <UIcon name="i-heroicons-book-open" class="w-8 h-8 text-brand-400 flex-shrink-0" />
-          <span class="text-gradient">{{ visibleTitle || 'Installation Guide' }}</span>
+    <section class="mb-10">
+      <div v-if="!editMode">
+        <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Procedure</p>
+        <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight leading-[0.95] max-w-3xl" :class="isDark ? 'text-white' : 'text-gray-950'">
+          {{ visibleTitle || 'Installation Guide' }}
         </h1>
-        <p class="text-lg leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-500'">
+        <p class="mt-4 max-w-2xl text-base leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           {{ visibleSubtitle || 'Install EllesmereUI 9.0.6+ and the four MagguuUI folders. Open /mui and run Apply Magguu profiles. Companions stay optional — WowUp optional chat is Whisper Messenger (not WIM).' }}
         </p>
-        <nav class="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label="Download MagguuUI">
+        <nav class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label="Download MagguuUI">
           <a
             v-for="item in installLinks"
             :key="item.label"
             :href="item.href"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors"
-            :class="isDark ? 'border-brand-400/25 text-brand-300 hover:bg-brand-400/10' : 'border-brand-200 text-brand-700 hover:bg-brand-50'"
+            class="font-medium underline underline-offset-4"
+            :class="isDark ? 'text-white hover:text-brand-200' : 'text-gray-950 hover:text-brand-700'"
           >{{ item.label }}</a>
         </nav>
       </div>
@@ -118,6 +118,20 @@
       </div>
     </section>
 
+    <figure v-if="!editMode" class="mb-12 max-w-3xl">
+      <img
+        src="/screenshots/setup.jpg"
+        alt="EllesmereUI MagguuUI Setup, with Apply Magguu profiles."
+        width="2000"
+        height="1125"
+        class="w-full border"
+        :class="isDark ? 'border-white/10' : 'border-gray-200'"
+        loading="lazy"
+        decoding="async"
+      />
+      <figcaption class="mt-2 font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Setup, opened with /mui</figcaption>
+    </figure>
+
     <!-- Layout: steps + sidebar -->
     <div v-if="visibleSteps.length" class="grid lg:grid-cols-[minmax(0,1fr)_260px] gap-8 lg:gap-12 items-start">
       <!-- Steps -->
@@ -126,11 +140,8 @@
           v-for="(step, idx) in visibleSteps"
           :id="`step-${idx + 1}`"
           :key="step.num"
-          class="guide-step glass-card rounded-2xl p-6 sm:p-7 transition-all fade-in"
-          :style="{ animationDelay: `${idx * 50}ms`, animationFillMode: 'both' }"
-          :class="isDark
-            ? 'hover:border-brand-400/25 hover:shadow-lg hover:shadow-brand-400/5'
-            : 'hover:border-brand-200 hover:shadow-lg hover:shadow-brand-100'"
+          class="guide-step border-b py-8"
+          :class="isDark ? 'border-white/10' : 'border-gray-200'"
         >
           <div class="flex items-start gap-4 sm:gap-5">
             <!-- Step number -->
@@ -196,7 +207,7 @@
 
       <!-- Sidebar: simple step index + help links -->
       <aside class="space-y-4 lg:sticky lg:top-28">
-        <nav class="glass-card rounded-2xl p-5 fade-in" aria-label="Guide steps">
+        <nav class="border-t pt-4" :class="isDark ? 'border-white/10' : 'border-gray-200'" aria-label="Guide steps">
           <p class="guide-toc-label text-[11px] font-semibold uppercase tracking-[0.18em] mb-3"
             :class="isDark ? 'text-silver-500' : 'text-gray-500'">
             On this page
@@ -220,7 +231,7 @@
           </ol>
         </nav>
 
-        <div class="glass-card rounded-2xl p-5 fade-in">
+        <div class="border-t pt-4" :class="isDark ? 'border-white/10' : 'border-gray-200'">
           <p class="guide-toc-label text-[11px] font-semibold uppercase tracking-[0.18em] mb-3"
             :class="isDark ? 'text-silver-500' : 'text-gray-500'">
             After setup
@@ -247,7 +258,7 @@
     </div>
 
     <!-- Empty state -->
-    <div v-else class="glass-card rounded-3xl p-14 text-center fade-in">
+    <div v-else class="py-16">
       <UIcon name="i-heroicons-book-open" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700' : 'text-gray-300'" />
       <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">No guide steps available yet.</p>
       <NuxtLink v-if="isAdmin" to="/admin/content/guide" class="inline-flex items-center gap-1.5 mt-3 text-brand-400 hover:underline text-sm">

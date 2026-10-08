@@ -1,18 +1,18 @@
 # Website home — English (proposed)
 
-Tone match: "Your WoW Interface, perfected." Keep copy short. Prefer seed keys in `defaultContent.ts` or site admin /home content.
+Tone: short and factual. Prefer seed keys in `defaultContent.ts` or site admin /home content.
 
 ## Hero
 
-**title:** Your WoW Interface,  
-**title2:** perfected.  
-**subtitle:** A native 4K overhaul for EllesmereUI.  
+**title:** MagguuUI  
+**title2:** Ellesmere setup.  
+**subtitle:** A native overhaul for EllesmereUI.  
 **badge:** Ready for WoW 12.1  
 
 **description** (html-safe):
 
 ```html
-MagguuUI is a native <strong>EllesmereUI</strong> module for WoW Retail. Install <strong>EllesmereUI</strong> and the four MagguuUI addon folders, then open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>. Companion addons stay optional.
+Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Install EllesmereUI + four MagguuUI folders, open <code>/mui</code>, and run <strong>Apply Magguu profiles</strong>.
 ```
 
 ## Feature cards

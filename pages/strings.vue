@@ -3,25 +3,20 @@
 -->
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
     <PublicSetupNav />
 
-    <div class="text-center mb-12 fade-in heading-glow">
-      <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
-        <svg aria-hidden="true" class="w-8 h-8 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" />
-        </svg>
-        <span class="text-gradient">Import Strings</span>
-      </h1>
-      <p class="text-lg" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ tabSubtitle }}</p>
-    </div>
+    <header class="mb-8 grid gap-3 sm:grid-cols-[minmax(0,1fr)_16rem] sm:items-end">
+      <div>
+        <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-2" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Workbench</p>
+        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">Import Strings</h1>
+      </div>
+      <p class="text-sm leading-relaxed sm:text-right" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ tabSubtitle }}</p>
+    </header>
 
-    <details class="glass-card rounded-2xl p-5 sm:p-6 mb-6 fade-in fade-in-delay-1 group">
+    <details class="mb-8 border-b pb-4 group" :class="isDark ? 'border-white/10' : 'border-gray-200'">
       <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold list-none">
-        <span class="strings-accordion-title flex items-center gap-2" :class="isDark ? 'text-white' : 'text-gray-900'">
-          <svg aria-hidden="true" class="w-4 h-4 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
-          </svg>
+        <span class="strings-accordion-title" :class="isDark ? 'text-white' : 'text-gray-950'">
           New here? What is an import string?
         </span>
         <svg aria-hidden="true" class="w-4 h-4 transition-transform group-open:rotate-180" :class="isDark ? 'text-silver-400' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -48,19 +43,21 @@
       </div>
     </details>
 
-    <div class="glass-card rounded-2xl p-6 sm:p-8 fade-in fade-in-delay-1">
+    <div>
       <!-- Tabs -->
-      <div class="strings-sticky-tabs sticky z-30 flex flex-wrap justify-center gap-2 mb-6 py-2 -mx-2 px-2 rounded-xl backdrop-blur-md" role="tablist" aria-label="Import string categories" style="top: 8.5rem;">
+      <div class="strings-sticky-tabs sticky z-30 flex flex-wrap gap-5 mb-6 py-2 border-b backdrop-blur-md" role="tablist" aria-label="Import string categories" style="top: 6.25rem;" :class="isDark ? 'border-white/10 bg-[#0b1118]/95' : 'border-gray-200 bg-[#eef4fb]/95'">
         <button v-for="tab in tabs" :key="tab.value"
           role="tab"
           :id="`tab-${tab.value}`"
           :aria-selected="activeTab === tab.value"
           :aria-controls="`tabpanel-${tab.value}`"
-          class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
-          :class="activeTab === tab.value ? 'tab-active' : 'tab-inactive'"
+          class="flex items-center gap-2 pb-2 -mb-px border-b-2 text-sm"
+          :class="activeTab === tab.value
+            ? (isDark ? 'border-brand-300 text-white' : 'border-brand-700 text-gray-950')
+            : (isDark ? 'border-transparent text-silver-400 hover:text-white' : 'border-transparent text-gray-500 hover:text-gray-950')"
           @click="activeTab = tab.value">
           {{ tab.label }}
-          <span v-if="tab.count > 0" class="badge-count" :class="activeTab === tab.value ? 'badge-count-active' : 'badge-count-inactive'">{{ tab.count }}</span>
+          <span v-if="tab.count > 0" class="font-mono text-[11px]" :class="isDark ? 'text-silver-500' : 'text-gray-400'">{{ tab.count }}</span>
         </button>
       </div>
 

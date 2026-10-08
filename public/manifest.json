@@ -1,7 +1,7 @@
 {
   "name": "MagguuUI — WoW UI Profiles & Import Strings",
   "short_name": "MagguuUI",
-  "description": "Native 4K overhaul for EllesmereUI — profiles, class layouts, and optional raid tools.",
+  "description": "Native overhaul for EllesmereUI. Designed for 4K.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0b1118",

@@ -60,7 +60,10 @@ Admin-Smoke 6/6 PASS auf diesem Digest.
   EXBoss, Northern Sky, Auctionator, …). Do not credit Magguu as author of
   foreign addons.
 - Public copy never says bake, dump, recapture, or Tools/dev pipeline. Agent
-  MEMORY may still use bake for the MagguuUI_Data pipeline.
+  MEMORY may still use bake for the MagguuUI_Data pipeline. Name 4K only in
+  the product description (`Designed for 4K.` / `Für 4K ausgelegt.`). Do not
+  put it in titles, badges, or feature headings. Scale stays 0.58. Keep
+  foreign adaptation keys such as `Naowh 1440p`.
 - Store paste files live in MagguuUI `docs/store-descriptions/` (canonical).
   CurseForge = WYSIWYG from `curseforge-preview.html`. Wago = Markdown
   `wago-en.md` (forgecdn logo). WoWI = BBCode `wowinterface-en.bbcode` with

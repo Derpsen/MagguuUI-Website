@@ -21,6 +21,12 @@ import { ensureAddonsSeeded } from '~/server/utils/syncAddons'
 type SeedContentEntry = typeof DEFAULT_SITE_CONTENT[number]
 
 const LEGACY_CONTENT_MARKERS = [
+  { page: 'home', section: 'hero', key: 'title', marker: 'Your WoW Interface,' },
+  { page: 'home', section: 'hero', key: 'title2', marker: 'perfected.' },
+  { page: 'home', section: 'hero', key: 'title', marker: 'Dein WoW-Interface,', locale: 'de' },
+  { page: 'home', section: 'hero', key: 'title2', marker: 'perfektioniert.', locale: 'de' },
+  { page: 'home', section: 'features_heading', key: 'title', marker: 'Why MagguuUI?' },
+  { page: 'home', section: 'features_heading', key: 'title', marker: 'Warum MagguuUI?', locale: 'de' },
   { page: 'home', section: 'hero', key: 'description', marker: 'MagguuUI is an in-game addon that installs and configures ElvUI' },
   { page: 'home', section: 'hero', key: 'description', marker: 'MagguuUI is a standalone in-game installer that configures ElvUI' },
   { page: 'home', section: 'hero', key: 'description', marker: 'MagguuUI is a standalone installer for WoW Retail' },
@@ -183,6 +189,15 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_6', marker: "After a successful Cooldown Viewer import MagguuUI asks you to reload via Ellesmere's confirm popup" },
   { page: 'home', section: 'addons', key: 'subtitle', marker: 'BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional.' },
   { page: 'home', section: 'addons', key: 'subtitle', marker: 'BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter und Smart Reminders sind optional.', locale: 'de' },
+  { page: 'home', section: 'hero', key: 'subtitle', marker: 'A native 4K overhaul for EllesmereUI.' },
+  { page: 'home', section: 'hero', key: 'subtitle', marker: 'Ein natives 4K-Overhaul für EllesmereUI.', locale: 'de' },
+  { page: 'home', section: 'features_heading', key: 'subtitle', marker: 'A 4K EllesmereUI setup with optional raid tools' },
+  { page: 'home', section: 'features_heading', key: 'subtitle', marker: 'Ein 4K-EllesmereUI-Setup mit optionalen Raid-Tools', locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Zwei Sidebar-Zeilen: <strong>Options</strong>', locale: 'de' },
+  { page: 'guide', section: 'steps', key: 'step_4', marker: 'MagguuUI → Optionen → Setup' },
+  { page: 'guide', section: 'steps', key: 'step_5', marker: 'In **MagguuUI → Optionen**:' },
+  { page: 'home', section: 'hero', key: 'description', marker: 'open <code>/mui</code>, run <strong>Apply Magguu profiles</strong>' },
+  { page: 'home', section: 'hero', key: 'description', marker: '<code>/mui</code>, <strong>Magguu-Profile übernehmen</strong>', locale: 'de' },
 ] as const
 
 const LEGACY_FAQ_MARKERS = [
@@ -323,6 +338,14 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 3, marker: 'EXBoss / WIM / Waypoint UI' },
   { category: 'addons', sortOrder: 3, marker: 'Northern Sky, EXBoss, Smart Reminders' },
   { category: 'addons', sortOrder: 4, marker: 'Ellesmere WIM Skin' },
+  { category: 'general', sortOrder: 0, marker: 'native 4K overhaul and curated profile companion' },
+  { category: 'addons', sortOrder: 11, marker: 'current **4K Ellesmere profile**' },
+  { category: 'general', sortOrder: 0, marker: 'MagguuUI → Optionen' },
+  { category: 'installation', sortOrder: 1, marker: 'opens hidden Werkzeuge' },
+  { category: 'addons', sortOrder: 1, marker: 'Werkzeuge can copy a layout' },
+  { category: 'addons', sortOrder: 6, marker: 'hidden **Werkzeuge**' },
+  { category: 'addons', sortOrder: 9, marker: '/mui werkzeuge` — Werkzeuge' },
+  { category: 'troubleshooting', sortOrder: 2, marker: 'Werkzeuge stays unlocked' },
 ] as const
 
 // Nitro's runNitroPlugins calls plugins without awaiting their promise.
@@ -434,6 +457,11 @@ export default defineNitroPlugin(() => {
     }
     const legacySettingValues = [
       {
+        key: 'meta_title',
+        value: 'MagguuUI - Your WoW Interface, perfected.',
+        replacement: SITE_SETTINGS_DEFAULTS.meta_title,
+      },
+      {
         key: 'site_description',
         value: 'World of Warcraft UI Configuration',
         replacement: SITE_SETTINGS_DEFAULTS.site_description,
@@ -461,6 +489,26 @@ export default defineNitroPlugin(() => {
       {
         key: 'meta_description',
         value: 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. BigWigs and Northern Sky stay optional.',
+        replacement: SITE_SETTINGS_DEFAULTS.meta_description,
+      },
+      {
+        key: 'site_description',
+        value: 'Native 4K overhaul and curated profiles for EllesmereUI',
+        replacement: SITE_SETTINGS_DEFAULTS.site_description,
+      },
+      {
+        key: 'meta_description',
+        value: 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. Companion addons stay optional.',
+        replacement: SITE_SETTINGS_DEFAULTS.meta_description,
+      },
+      {
+        key: 'site_description',
+        value: 'Native overhaul and curated profiles for EllesmereUI',
+        replacement: SITE_SETTINGS_DEFAULTS.site_description,
+      },
+      {
+        key: 'meta_description',
+        value: 'Native overhaul for EllesmereUI. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. Companion addons stay optional.',
         replacement: SITE_SETTINGS_DEFAULTS.meta_description,
       },
     ] as const

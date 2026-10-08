@@ -1,169 +1,63 @@
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="text-center mb-12 fade-in heading-glow">
-      <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
-        <svg aria-hidden="true" class="w-8 h-8 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 6.087c0-.355.186-.676.401-.959.221-.29.349-.634.349-1.003 0-1.036-1.007-1.875-2.25-1.875s-2.25.84-2.25 1.875c0 .369.128.713.349 1.003.215.283.401.604.401.959v0a.64.64 0 01-.657.643 48.491 48.491 0 01-4.163-.3c.186 1.613.79 3.08 1.742 4.295a48.224 48.224 0 013.127.297.643.643 0 01.657.643v0c0 .355-.186.676-.401.959a2.002 2.002 0 00-.349 1.003c0 1.035 1.007 1.875 2.25 1.875s2.25-.84 2.25-1.875c0-.369-.128-.713-.349-1.003a1.733 1.733 0 01-.401-.959v0c0-.374.312-.67.657-.643a48.497 48.497 0 014.163.3c-.186-1.613-.79-3.08-1.742-4.295a48.211 48.211 0 01-3.127-.297.643.643 0 01-.657-.643v0z" />
-        </svg>
-        <span class="text-gradient">Addons</span>
-      </h1>
-      <p class="text-lg" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        EllesmereUI is required. MagguuUI is four sibling addons. Optional companions include BigWigs, Northern Sky, EXBoss, and Whisper Messenger (not WIM). WIM stays a Magguu import with no Setup button.
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
+    <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Catalog</p>
+    <h1 class="text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">Addons</h1>
+    <div class="mt-4 space-y-3 text-sm leading-relaxed max-w-2xl" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+      <p>
+        <code>EllesmereUI</code> 9.0.6+ plus four sibling folders: <code>MagguuUI</code>, <code>MagguuUI_Data</code>, <code>MagguuUI_EUI</code>, and <code>MagguuUI_Media</code>. Keep all four enabled.
+      </p>
+      <p>
+        Optional Magguu imports: BigWigs, Northern Sky, EXBoss, Whisper Messenger (not WIM), Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders. WIM applies with Apply Magguu profiles when it is installed and has no Setup button.
+      </p>
+      <p>
+        Copy the WowUp packs from Setup, or from <NuxtLink to="/strings" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">Import Strings</NuxtLink>. MagguuUI does not install addons itself.
       </p>
     </div>
 
-    <div class="glass-card rounded-2xl p-5 sm:p-6 mb-10 fade-in fade-in-delay-1">
-      <div class="flex items-start gap-3">
-        <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0"
-          :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-brand-50 text-brand-700'">
-          <svg aria-hidden="true" class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-          </svg>
-        </span>
-        <div class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-          <p>
-            <strong :class="isDark ? 'text-white' : 'text-gray-900'">What you need:</strong>
-            <code>EllesmereUI</code> 9.0.6+ installed and enabled, plus four sibling folders: <code>MagguuUI</code>, <code>MagguuUI_Data</code> (MagguuUI [Data]), <code>MagguuUI_EUI</code> ([EUI]), and <code>MagguuUI_Media</code> ([Media]). Keep all four enabled.
-          </p>
-          <p class="mt-2">
-            <strong :class="isDark ? 'text-white' : 'text-gray-900'">Optional Magguu imports:</strong>
-            BigWigs, Northern Sky, EXBoss, Whisper Messenger (not WIM), Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders. WIM applies with Apply Magguu profiles when it is installed and has no Setup button. Setup buttons are BigWigs, Northern Sky, EXBoss, Whisper Messenger, and Smart Reminders.
-          </p>
-          <p class="mt-2">
-            Copy the WowUp starter pack and optional pack from Magguu Setup (or the Strings page as a backup), then paste in WowUp. MagguuUI does not install addons itself.
-          </p>
-          <p class="mt-2">
-            MagguuUI ships like BigWigs: keep <code>MagguuUI</code>, <code>MagguuUI_Data</code>,
-            <code>MagguuUI_EUI</code>, and <code>MagguuUI_Media</code> enabled. They are required siblings, not leftovers.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <section v-if="requiredAddons.length" class="mb-12 fade-in fade-in-delay-2">
-      <div class="flex items-center gap-2 mb-5">
-        <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg"
-          :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-brand-50 text-brand-700'">
-          <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-          </svg>
-        </span>
-        <h2 class="text-xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Required</h2>
-        <span class="ml-auto text-xs font-medium px-2.5 py-1 rounded-full"
-          :class="isDark ? 'bg-brand-400/10 text-brand-300 border border-brand-400/18' : 'bg-brand-50 text-brand-700 border border-brand-200'">
-          {{ requiredAddons.length }} {{ requiredAddons.length === 1 ? 'addon' : 'addons' }}
-        </span>
-      </div>
-      <p class="text-sm mb-5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        MagguuUI will not load without this host UI.
-      </p>
-      <div class="grid sm:grid-cols-2 gap-3">
-        <component :is="addon.url ? 'a' : 'div'" v-for="addon in requiredAddons" :key="addon.slug"
-          v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
-          class="glass-card rounded-xl p-5 flex items-start gap-4 transition-all hover:scale-[1.01] group"
-          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-brand-200']">
-          <span class="inline-flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0 text-lg"
-            :class="isDark ? 'bg-brand-400/10 text-brand-300' : 'bg-brand-50 text-brand-600'">
-            {{ addon.emoji }}
-          </span>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-1">
-              <h3 class="font-semibold transition-colors" :class="[addon.url ? 'group-hover:text-brand-400' : '', isDark ? 'text-white' : 'text-gray-900']">{{ addon.name }}</h3>
-            </div>
-            <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</p>
-          </div>
-        </component>
-      </div>
+    <section v-if="requiredAddons.length" class="mt-12">
+      <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Required</h2>
+      <p class="mt-2 text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">MagguuUI will not load without this host UI.</p>
+      <ul class="mt-3 border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+        <li v-for="addon in requiredAddons" :key="addon.slug" class="border-b" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+          <component :is="addon.url ? 'a' : 'div'"
+            v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
+            class="block py-4">
+            <h3 class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ addon.name }}</h3>
+            <p class="mt-1 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</p>
+          </component>
+        </li>
+      </ul>
     </section>
 
-    <!-- Main integrations -->
-    <section v-if="coreAddons.length" class="mb-12 fade-in fade-in-delay-3">
-      <div class="flex items-center gap-2 mb-5">
-        <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg"
-          :class="isDark ? 'bg-brand-400/12 text-brand-300' : 'bg-brand-50 text-brand-700'">
-          <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-            </svg>
-        </span>
-        <h2 class="text-xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Included with MagguuUI</h2>
-        <span class="ml-auto text-xs font-medium px-2.5 py-1 rounded-full"
-          :class="isDark ? 'bg-brand-400/10 text-brand-300 border border-brand-400/18' : 'bg-brand-50 text-brand-700 border border-brand-200'">
-          {{ coreAddons.length }} addons
-        </span>
-      </div>
-      <p class="text-sm mb-5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Class layouts ship with MagguuUI. BigWigs is an optional Magguu import when installed.
-      </p>
-      <div class="grid sm:grid-cols-2 gap-3">
-        <component :is="addon.url ? 'a' : 'div'" v-for="addon in coreAddons" :key="addon.slug"
-          v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
-          class="glass-card rounded-xl p-5 flex items-start gap-4 transition-all hover:scale-[1.01] group"
-          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-brand-200']">
-          <span class="inline-flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0 text-lg"
-            :class="isDark ? 'bg-brand-400/10 text-brand-300' : 'bg-brand-50 text-brand-600'">
-            {{ addon.emoji }}
-          </span>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-1">
-              <h3 class="font-semibold transition-colors" :class="[addon.url ? 'group-hover:text-brand-400' : '', isDark ? 'text-white' : 'text-gray-900']">{{ addon.name }}</h3>
-              <svg v-if="addon.url" aria-hidden="true" class="w-3.5 h-3.5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" :class="isDark ? 'text-silver-400' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-              </svg>
-            </div>
-            <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</p>
-          </div>
-        </component>
-      </div>
+    <section v-if="coreAddons.length" class="mt-12">
+      <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Included with MagguuUI</h2>
+      <p class="mt-2 text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Class layouts ship with MagguuUI. BigWigs is an optional Magguu import when installed.</p>
+      <ul class="mt-3 border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+        <li v-for="addon in coreAddons" :key="addon.slug" class="border-b" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+          <component :is="addon.url ? 'a' : 'div'"
+            v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
+            class="block py-4">
+            <h3 class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ addon.name }}</h3>
+            <p class="mt-1 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</p>
+          </component>
+        </li>
+      </ul>
     </section>
 
-    <!-- Optional Section -->
-    <section v-if="optionalAddons.length" class="fade-in fade-in-delay-4">
-      <div class="flex items-center gap-2 mb-5">
-        <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg"
-          :class="isDark ? 'bg-emerald-500/12 text-emerald-400' : 'bg-emerald-50 text-emerald-700'">
-          <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        </span>
-        <h2 class="text-xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Optional Addons</h2>
-        <span class="ml-auto text-xs font-medium px-2.5 py-1 rounded-full"
-          :class="isDark ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'">
-          {{ optionalAddons.length }} addons
-        </span>
-      </div>
-      <p class="text-sm mb-5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        MagguuUI imports these when they are installed. Missing addons are skipped. WowUp extras such as LittleWigs live in the starter pack.
-      </p>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <component :is="addon.url ? 'a' : 'div'" v-for="addon in optionalAddons" :key="addon.slug"
-          v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
-          class="glass-card rounded-xl p-4 flex items-start gap-3 transition-all hover:scale-[1.01] group"
-          :class="[addon.url ? 'cursor-pointer' : '', isDark ? 'hover:border-brand-400/20' : 'hover:border-brand-200']">
-          <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg flex-shrink-0 text-base"
-            :class="isDark ? 'bg-white/[0.04] text-silver-400' : 'bg-gray-50 text-gray-500'">
-            {{ addon.emoji }}
-          </span>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-1.5">
-              <h3 class="text-sm font-semibold mb-0.5 transition-colors" :class="[addon.url ? 'group-hover:text-brand-400' : '', isDark ? 'text-white' : 'text-gray-900']">{{ addon.name }}</h3>
-              <svg v-if="addon.url" aria-hidden="true" class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 -mt-0.5" :class="isDark ? 'text-silver-400' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-              </svg>
-            </div>
-            <p class="text-xs leading-relaxed" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ addon.description }}</p>
-          </div>
-        </component>
-      </div>
+    <section v-if="optionalAddons.length" class="mt-12">
+      <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Optional</h2>
+      <p class="mt-2 text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Imported when installed. Missing addons are skipped. WowUp extras such as LittleWigs live in the starter pack.</p>
+      <ul class="mt-3 border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+        <li v-for="addon in optionalAddons" :key="addon.slug" class="border-b" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+          <component :is="addon.url ? 'a' : 'div'"
+            v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
+            class="block py-4">
+            <h3 class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ addon.name }}</h3>
+            <p class="mt-1 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</p>
+          </component>
+        </li>
+      </ul>
     </section>
-
-    <div class="text-center mt-12 pt-6 border-t fade-in"
-      :class="isDark ? 'border-brand-400/10' : 'border-gray-200'">
-      <p class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Ready to install? Follow the
-        <NuxtLink to="/guide" class="text-brand-400 hover:underline">Installation Guide</NuxtLink>
-        or copy profiles from <NuxtLink to="/strings" class="text-brand-400 hover:underline">Import Strings</NuxtLink>.
-      </p>
-    </div>
   </div>
 </template>
 

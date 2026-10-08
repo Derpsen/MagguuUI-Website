@@ -4,57 +4,35 @@
 -->
 
 <template>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <!-- Admin Edit Button -->
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
     <div v-if="isLoggedIn" class="flex justify-end mb-4">
       <NuxtLink to="/admin/content/faq"
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-        :class="isDark ? 'bg-white/5 text-silver-400 hover:text-white hover:bg-white/10 border border-brand-400/15 backdrop-blur' : 'bg-white/80 text-gray-500 hover:text-gray-900 hover:bg-white border border-gray-200 backdrop-blur'">
-        <UIcon name="i-heroicons-pencil-square" class="w-3.5 h-3.5" />
+        class="text-xs font-medium underline underline-offset-4"
+        :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-950'">
         Edit FAQ
       </NuxtLink>
     </div>
 
-    <!-- Header -->
-    <div class="text-center mb-14 fade-in heading-glow">
-      <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
-        <UIcon name="i-heroicons-question-mark-circle" class="w-8 h-8 text-brand-400 flex-shrink-0" />
-        <span class="text-gradient">FAQ</span>
-      </h1>
-      <p class="text-lg max-w-xl mx-auto" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Everything you need to know about setting up and using MagguuUI — from first install to fine-tuning.
-      </p>
-    </div>
+    <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Reference</p>
+    <h1 class="text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">FAQ</h1>
+    <p class="mt-3 max-w-xl text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+      Setup, profiles, and the problems that show up after the first login.
+    </p>
 
-    <!-- Section Divider -->
-    <div class="section-divider mb-10" />
-
-    <!-- FAQ Sections -->
-    <div v-if="hasFaqs" class="space-y-14">
+    <div v-if="hasFaqs" class="mt-12">
       <section
         v-for="section in sections"
         :key="section.key"
-        :ref="el => observe(el as HTMLElement)"
+        class="mb-12"
       >
         <template v-if="faqData[section.key]?.length">
-          <!-- Section Header -->
-          <div class="flex items-start gap-3.5 mb-6 px-1">
-            <span class="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-              :class="isDark ? 'bg-brand-400/10 text-brand-400' : 'bg-brand-50 text-brand-600'">
-              <UIcon :name="section.icon" class="w-4.5 h-4.5" />
-            </span>
-            <div class="flex-1">
-              <h2 class="text-base font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-900'">
-                {{ section.label }}
-              </h2>
-              <p class="text-sm mt-1 leading-relaxed" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-                {{ section.description }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Items -->
-          <div class="space-y-3">
+          <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">
+            {{ section.label }}
+          </h2>
+          <p class="mt-2 mb-2 text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+            {{ section.description }}
+          </p>
+          <div class="border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
             <FaqItem
               v-for="faq in faqData[section.key]"
               :key="faq.id"
@@ -65,37 +43,22 @@
           </div>
         </template>
       </section>
-    </div>
-
-    <!-- Loading State -->
-    <div v-if="pending && !hasFaqs" class="glass-card rounded-2xl p-16 text-center" role="status" aria-live="polite">
-      <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 mx-auto mb-3 animate-spin" :class="isDark ? 'text-silver-500' : 'text-gray-400'" />
-      <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-500'">Loading FAQ…</p>
-    </div>
-
-    <!-- Empty State -->
-    <div v-else-if="!pending && !hasFaqs" class="glass-card rounded-2xl p-16 text-center">
-      <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" />
-      <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-500'">No FAQ entries yet.</p>
-    </div>
-
-    <!-- Bottom CTA -->
-    <div v-if="hasFaqs" class="text-center mt-14 pt-6 border-t fade-in"
-      :class="isDark ? 'border-brand-400/10' : 'border-gray-200'">
-      <p class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Can't find what you're looking for? Check the
-        <NuxtLink to="/guide" class="text-brand-400 hover:underline">Installation Guide</NuxtLink>
-        or open an issue on
-        <a :href="githubIssuesUrl" target="_blank" rel="noopener noreferrer" class="text-brand-400 hover:underline">GitHub</a>.
+      <p class="text-sm border-t pt-6" :class="isDark ? 'border-white/10 text-silver-500' : 'border-gray-200 text-gray-500'">
+        Still stuck? Read the
+        <NuxtLink to="/guide" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">Installation Guide</NuxtLink>
+        or open a
+        <a :href="githubIssuesUrl" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">GitHub issue</a>.
       </p>
     </div>
+
+    <p v-if="pending && !hasFaqs" class="mt-10 text-sm" role="status" aria-live="polite" :class="isDark ? 'text-silver-400' : 'text-gray-500'">Loading FAQ…</p>
+    <p v-else-if="!pending && !hasFaqs" class="mt-10 text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-500'">No FAQ entries yet.</p>
   </div>
 </template>
 
 <script setup lang="ts">
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
-const { observe } = useScrollReveal()
 const siteSettings = usePublicPageSeo({
   title: 'FAQ',
   description: 'MagguuUI answers for EllesmereUI setup, Apply Magguu profiles, optional companion profiles, and troubleshooting.',

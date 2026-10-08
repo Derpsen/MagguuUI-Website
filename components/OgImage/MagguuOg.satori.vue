@@ -3,8 +3,8 @@ withDefaults(defineProps<{
   title?: string
   description?: string
 }>(), {
-  title: 'Your WoW Interface, perfected.',
-  description: 'Native 4K overhaul for EllesmereUI. Install EllesmereUI and MagguuUI, open /mui, and run Apply Magguu profiles.',
+  title: 'MagguuUI',
+  description: 'Native overhaul for EllesmereUI. Designed for 4K. Open /mui and run Apply Magguu profiles.',
 })
 </script>
 

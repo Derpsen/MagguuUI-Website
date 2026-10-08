@@ -4,102 +4,52 @@
 -->
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <!-- Admin Edit Button -->
-    <div v-if="isLoggedIn" class="flex justify-end mb-4 fade-in">
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
+    <div v-if="isLoggedIn" class="flex justify-end mb-4">
       <NuxtLink to="/admin/content/changelog"
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-        :class="isDark ? 'bg-white/5 text-silver-400 hover:text-white hover:bg-white/10 border border-brand-400/15' : 'bg-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-200 border border-gray-200'">
-        <UIcon name="i-heroicons-pencil-square" class="w-3.5 h-3.5" />
+        class="text-xs font-medium underline underline-offset-4"
+        :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-950'">
         Edit Changelog
       </NuxtLink>
     </div>
 
-    <!-- Header -->
-    <div class="text-center mb-10 fade-in heading-glow">
-      <h1 class="text-4xl sm:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
-        <UIcon name="i-heroicons-clock" class="w-8 h-8 text-brand-400 flex-shrink-0" />
-        <span class="text-gradient">Changelog</span>
+    <p class="font-mono text-[11px] uppercase tracking-[0.16em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Release notes</p>
+
+    <article v-if="latestRelease" :id="publicAnchorId('release', latestRelease.version)" class="mt-3">
+      <h1 class="font-mono text-4xl sm:text-5xl font-semibold tracking-tight leading-none" :class="isDark ? 'text-white' : 'text-gray-950'">
+        {{ latestRelease.version }}
       </h1>
-      <p class="text-lg max-w-xl mx-auto" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        The current MagguuUI release. Older versions are on GitHub.
+      <p class="mt-3 text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+        {{ formatDate(latestRelease.publishedAt) }}
+        <span class="px-2" :class="isDark ? 'text-white/20' : 'text-gray-300'">·</span>
+        Current release. Older versions are on GitHub.
       </p>
-    </div>
-
-    <!-- Latest Release -->
-    <div v-if="latestRelease" :id="publicAnchorId('release', latestRelease.version)" class="mb-12 fade-in fade-in-delay-2">
-      <div class="relative overflow-hidden rounded-2xl border p-7 sm:p-8"
-        :class="isDark
-          ? 'bg-gradient-to-br from-brand-400/8 via-brand-400/4 to-transparent border-brand-400/20'
-          : 'bg-gradient-to-br from-brand-50 via-brand-50/40 to-white border-brand-200'">
-        <div aria-hidden="true" class="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full blur-3xl opacity-40"
-          :class="isDark ? 'bg-brand-400/20' : 'bg-brand-300/25'" />
-
-        <div class="relative flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-7">
-          <div class="flex-shrink-0">
-            <div class="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.15em] font-semibold mb-2"
-              :class="isDark ? 'text-brand-300' : 'text-brand-600'">
-              <span class="relative flex w-2 h-2">
-                <span class="absolute inline-flex w-full h-full rounded-full animate-ping opacity-60"
-                  :class="isDark ? 'bg-brand-400' : 'bg-brand-500'" />
-                <span class="relative inline-flex w-2 h-2 rounded-full"
-                  :class="isDark ? 'bg-brand-400' : 'bg-brand-500'" />
-              </span>
-              Latest Release
-            </div>
-            <div class="font-mono text-3xl sm:text-4xl font-bold leading-none"
-              :class="isDark ? 'text-white' : 'text-gray-900'">
-              {{ latestRelease.version }}
-            </div>
-            <div class="mt-2 text-xs font-medium" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-              {{ formatDate(latestRelease.publishedAt) }}
-            </div>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="release-content relative"
-              :class="{ 'release-content--collapsed': isLongRelease(latestRelease.content) && !isReleaseExpanded(latestRelease.id) }">
-              <SafeHtml class="prose-custom text-sm" :html="renderMarkdown(latestRelease.content)" />
-              <div v-if="isLongRelease(latestRelease.content) && !isReleaseExpanded(latestRelease.id)"
-                aria-hidden="true"
-                class="release-fade"
-                :class="isDark ? 'release-fade--dark' : 'release-fade--light'" />
-            </div>
-            <div class="mt-4 flex flex-wrap items-center gap-3">
-              <button v-if="isLongRelease(latestRelease.content)"
-                class="inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
-                :class="isDark ? 'text-brand-300 hover:text-white' : 'text-brand-600 hover:text-brand-800'"
-                @click="toggleRelease(latestRelease.id)">
-                <UIcon :name="isReleaseExpanded(latestRelease.id) ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" class="w-3.5 h-3.5" />
-                {{ isReleaseExpanded(latestRelease.id) ? 'Show less' : 'Show more' }}
-              </button>
-              <span v-if="isLongRelease(latestRelease.content)" class="text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-300'">·</span>
-              <a :href="githubChangelogUrl" target="_blank" rel="noopener noreferrer"
-                class="inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
-                :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'">
-                <UIcon name="i-simple-icons-github" class="w-3.5 h-3.5" />
-                View full changelog on GitHub
-                <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-3 h-3" />
-              </a>
-            </div>
-          </div>
-        </div>
+      <div class="release-content relative mt-8"
+        :class="{ 'release-content--collapsed': isLongRelease(latestRelease.content) && !isReleaseExpanded(latestRelease.id) }">
+        <SafeHtml class="prose-custom text-sm" :html="renderMarkdown(latestRelease.content)" />
+        <div v-if="isLongRelease(latestRelease.content) && !isReleaseExpanded(latestRelease.id)"
+          aria-hidden="true"
+          class="release-fade"
+          :class="isDark ? 'release-fade--dark' : 'release-fade--light'" />
       </div>
-    </div>
+      <div class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+        <button v-if="isLongRelease(latestRelease.content)"
+          class="font-medium underline underline-offset-4"
+          :class="isDark ? 'text-white' : 'text-gray-950'"
+          @click="toggleRelease(latestRelease.id)">
+          {{ isReleaseExpanded(latestRelease.id) ? 'Show less' : 'Show more' }}
+        </button>
+        <a :href="githubChangelogUrl" target="_blank" rel="noopener noreferrer"
+          class="underline underline-offset-4"
+          :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-950'">
+          Full changelog on GitHub
+        </a>
+      </div>
+    </article>
 
-    <!-- Empty State -->
-    <div v-else class="glass-card rounded-2xl p-16 text-center">
-      <UIcon name="i-heroicons-document-text" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" />
-      <p :class="isDark ? 'text-silver-400' : 'text-gray-500'">No entries yet.</p>
-    </div>
-
-    <!-- Bottom CTA -->
-    <div class="text-center mt-14 pt-6 border-t fade-in"
-      :class="isDark ? 'border-brand-400/10' : 'border-gray-200'">
-      <p class="text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-        Ready to try the latest version? Head over to the
-        <NuxtLink to="/strings" class="text-brand-400 hover:underline">Import Strings</NuxtLink>
-        page and grab the newest profiles.
-      </p>
+    <div v-else class="mt-8">
+      <h1 class="text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">Changelog</h1>
+      <p class="mt-3 text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-500'">No entries yet.</p>
     </div>
   </div>
 </template>

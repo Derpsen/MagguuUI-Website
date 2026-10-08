@@ -50,14 +50,14 @@
           <div class="admin-form-grid admin-form-grid--2">
             <div class="admin-field">
               <label for="home-hero-title" class="admin-field__label">Heading line 1</label>
-              <UInput id="home-hero-title" v-model="form.hero.title" :disabled="saving" placeholder="Your WoW Interface," />
+              <UInput id="home-hero-title" v-model="form.hero.title" :disabled="saving" placeholder="MagguuUI" />
               <p class="admin-field__hint" :class="counterClass(form.hero.title?.length || 0, 40)">
                 {{ form.hero.title?.length || 0 }}/40
               </p>
             </div>
             <div class="admin-field">
               <label for="home-hero-title2" class="admin-field__label">Heading line 2</label>
-              <UInput id="home-hero-title2" v-model="form.hero.title2" :disabled="saving" placeholder="perfected." />
+              <UInput id="home-hero-title2" v-model="form.hero.title2" :disabled="saving" placeholder="Ellesmere setup." />
               <p class="admin-field__hint" :class="counterClass(form.hero.title2?.length || 0, 30)">
                 {{ form.hero.title2?.length || 0 }}/30
               </p>
@@ -88,7 +88,7 @@
             <p class="admin-row__eyebrow">Features section</p>
             <div class="admin-field">
               <label for="home-features-title" class="admin-field__label">Title</label>
-              <UInput id="home-features-title" v-model="form.features_heading.title" :disabled="saving" placeholder="Why MagguuUI?" />
+              <UInput id="home-features-title" v-model="form.features_heading.title" :disabled="saving" placeholder="The module" />
             </div>
             <div class="admin-field">
               <label for="home-features-subtitle" class="admin-field__label">Subtitle</label>
@@ -148,9 +148,9 @@
         <div class="admin-preview-shell text-center">
           <p class="admin-row__eyebrow">Hero</p>
           <h2 class="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-            {{ form.hero.title || "Your WoW Interface," }}
+            {{ form.hero.title || "MagguuUI" }}
             <br>
-            <span class="text-slate-500 dark:text-slate-400">{{ form.hero.title2 || "perfected." }}</span>
+            <span class="text-slate-500 dark:text-slate-400">{{ form.hero.title2 || "Ellesmere setup." }}</span>
           </h2>
           <SafeHtml
             class="prose prose-sm mx-auto mt-4 max-w-2xl dark:prose-invert"
@@ -181,7 +181,7 @@
           <div class="admin-preview-shell">
             <p class="admin-row__eyebrow">Features heading</p>
             <h3 class="mt-3 text-xl font-semibold text-slate-950 dark:text-white">
-              {{ form.features_heading.title || "Why MagguuUI?" }}
+              {{ form.features_heading.title || "The module" }}
             </h3>
             <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
               {{ form.features_heading.subtitle || "A complete setup without forced external dependencies" }}
@@ -225,17 +225,17 @@ const featureIndices = [1, 2, 3] as const
 
 const form = reactive({
   hero: {
-    title: "Your WoW Interface,",
-    title2: "perfected.",
-    description: "MagguuUI is a native EllesmereUI module for WoW Retail. Install EllesmereUI and the four MagguuUI addon folders, then open /mui and run Apply Magguu profiles.",
+    title: "MagguuUI",
+    title2: "Ellesmere setup.",
+    description: "MagguuUI is a native EllesmereUI module for WoW Retail. Designed for 4K. Install EllesmereUI and the four MagguuUI addon folders, then open /mui and run Apply Magguu profiles.",
   } as Record<string, string>,
   addons: {
     title: "Supported Addons",
     subtitle: "EllesmereUI is required. BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional.",
   } as Record<string, string>,
   features_heading: {
-    title: "Why MagguuUI?",
-    subtitle: "A 4K EllesmereUI setup with optional raid tools",
+    title: "The module",
+    subtitle: "An EllesmereUI setup with optional raid tools",
   } as Record<string, string>,
   features: {
     feature_1_emoji: "A",

@@ -1,8 +1,8 @@
 export const DEFAULT_HOME_CONTENT = [
-  { page: 'home', section: 'hero', key: 'title', value: 'Your WoW Interface,', type: 'text', sortOrder: 0, locale: 'en' },
-  { page: 'home', section: 'hero', key: 'title2', value: 'perfected.', type: 'text', sortOrder: 1, locale: 'en' },
-  { page: 'home', section: 'hero', key: 'subtitle', value: 'A native 4K overhaul for EllesmereUI.', type: 'text', sortOrder: 2, locale: 'en' },
-  { page: 'home', section: 'hero', key: 'description', value: 'Native <strong>EllesmereUI</strong> module for WoW Retail. Install EllesmereUI + four MagguuUI folders, open <code>/mui</code>, run <strong>Apply Magguu profiles</strong>.', type: 'html', sortOrder: 3, locale: 'en' },
+  { page: 'home', section: 'hero', key: 'title', value: 'MagguuUI', type: 'text', sortOrder: 0, locale: 'en' },
+  { page: 'home', section: 'hero', key: 'title2', value: 'Ellesmere setup.', type: 'text', sortOrder: 1, locale: 'en' },
+  { page: 'home', section: 'hero', key: 'subtitle', value: 'A native overhaul for EllesmereUI.', type: 'text', sortOrder: 2, locale: 'en' },
+  { page: 'home', section: 'hero', key: 'description', value: 'Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Install EllesmereUI + four MagguuUI folders, open <code>/mui</code>, and run <strong>Apply Magguu profiles</strong>.', type: 'html', sortOrder: 3, locale: 'en' },
   { page: 'home', section: 'hero', key: 'badge', value: 'Ready for WoW 12.1', type: 'text', sortOrder: 4, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'Native Ellesmere setup', type: 'text', sortOrder: 0, locale: 'en' },
@@ -17,20 +17,20 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'features', key: 'feature_3_text', value: 'Skinning is one <strong>NAMES &amp; COLORS</strong> section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers (AuraBuff counts centered). QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (and 2P/4P), <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, an <strong>Audio device switcher</strong> on the Ellesmere speaker, <strong>Boiling Point</strong>, and <strong>Targeted Spell Bars</strong> via Ellesmere (leave EXBoss MythicCast off). Magguu does not join, leave, or hide Services.', type: 'html', sortOrder: 7, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_3_icon', value: 'i-heroicons-sparkles', type: 'text', sortOrder: 8, locale: 'en' },
 
-  { page: 'home', section: 'features_heading', key: 'title', value: 'Why MagguuUI?', type: 'text', sortOrder: 0, locale: 'en' },
-  { page: 'home', section: 'features_heading', key: 'subtitle', value: 'A 4K EllesmereUI setup with optional raid tools', type: 'text', sortOrder: 1, locale: 'en' },
+  { page: 'home', section: 'features_heading', key: 'title', value: 'The module', type: 'text', sortOrder: 0, locale: 'en' },
+  { page: 'home', section: 'features_heading', key: 'subtitle', value: 'An EllesmereUI setup with optional raid tools', type: 'text', sortOrder: 1, locale: 'en' },
 
   { page: 'home', section: 'addons', key: 'title', value: 'Supported Addons', type: 'text', sortOrder: 0, locale: 'en' },
   { page: 'home', section: 'addons', key: 'subtitle', value: 'Grouped Required / Optional / WowUp. Chat pack: Whisper Messenger (not WIM).', type: 'text', sortOrder: 1, locale: 'en' },
 
-  { page: 'home', section: 'hero', key: 'title', value: 'Dein WoW-Interface,', type: 'text', sortOrder: 0, locale: 'de' },
-  { page: 'home', section: 'hero', key: 'title2', value: 'perfektioniert.', type: 'text', sortOrder: 1, locale: 'de' },
-  { page: 'home', section: 'hero', key: 'subtitle', value: 'Ein natives 4K-Overhaul für EllesmereUI.', type: 'text', sortOrder: 2, locale: 'de' },
-  { page: 'home', section: 'hero', key: 'description', value: 'Natives <strong>EllesmereUI</strong>-Modul für WoW Retail. EllesmereUI + vier MagguuUI-Ordner, <code>/mui</code>, <strong>Magguu-Profile übernehmen</strong>.', type: 'html', sortOrder: 3, locale: 'de' },
+  { page: 'home', section: 'hero', key: 'title', value: 'MagguuUI', type: 'text', sortOrder: 0, locale: 'de' },
+  { page: 'home', section: 'hero', key: 'title2', value: 'Ellesmere-Setup.', type: 'text', sortOrder: 1, locale: 'de' },
+  { page: 'home', section: 'hero', key: 'subtitle', value: 'Ein natives Overhaul für EllesmereUI.', type: 'text', sortOrder: 2, locale: 'de' },
+  { page: 'home', section: 'hero', key: 'description', value: 'Natives <strong>EllesmereUI</strong>-Modul für WoW Retail. Für 4K ausgelegt. EllesmereUI + vier MagguuUI-Ordner, <code>/mui</code> und <strong>Magguu-Profile übernehmen</strong>.', type: 'html', sortOrder: 3, locale: 'de' },
   { page: 'home', section: 'hero', key: 'badge', value: 'Bereit für WoW 12.1', type: 'text', sortOrder: 4, locale: 'de' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'Natives Ellesmere-Setup', type: 'text', sortOrder: 0, locale: 'de' },
-  { page: 'home', section: 'features', key: 'feature_1_text', value: 'Zwei Sidebar-Zeilen: <strong>Options</strong> (Setup, Skinning, QoL) und <strong>Changelog</strong>. Goldenes <strong>Magguu-Profile übernehmen</strong>, <strong>Magguu Settings</strong> (nur Overlay/QoL) und <strong>Profile laden</strong> (nur aktivieren) nebeneinander, plus Pflicht-/optionale Imports und WowUp-Copy-Strings unter Setup. Öffnen mit <code>/mui</code>. Werkzeuge über <code>/mui tools</code> oder 10 Klicks auf den MagguuUI-Header.', type: 'html', sortOrder: 1, locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_1_text', value: 'Zwei Sidebar-Zeilen: <strong>Optionen</strong> (Setup, Skinning, QoL) und <strong>Changelog</strong>. Goldenes <strong>Magguu-Profile übernehmen</strong>, <strong>Magguu Settings</strong> (nur Overlay/QoL) und <strong>Profile laden</strong> (nur aktivieren) nebeneinander, plus Pflicht-/optionale Imports und WowUp-Copy-Strings unter Setup. Öffnen mit <code>/mui</code>. Werkzeuge über <code>/mui tools</code> oder 10 Klicks auf den MagguuUI-Header.', type: 'html', sortOrder: 1, locale: 'de' },
   { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'de' },
 
   { page: 'home', section: 'features', key: 'feature_2_title', value: 'Aktuelle Retail-Layouts', type: 'text', sortOrder: 3, locale: 'de' },
@@ -41,8 +41,8 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'features', key: 'feature_3_text', value: 'Skinning ist eine Kategorie <strong>NAMEN &amp; FARBEN</strong> (zwei Spalten): geteilte Unit-Frame-Namen, Party-/Raid-Namen und klassenfarbige Keybind-Modifier (AuraBuff-Zähler zentriert). QoL: Death Release, Co-Tank, Stealth/Stance, Spell Alerts, Itemlevel in Party und Raid (2P/4P), <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, ein <strong>Audio-Geräte-Umschalter</strong> am Ellesmere-Lautsprecher, <strong>Boiling Point</strong> und <strong>Targeted Spell Bars</strong> über Ellesmere (EXBoss MythicCast aus). Magguu tritt Services nicht bei, verlässt den Kanal nicht und blendet ihn nicht aus.', type: 'html', sortOrder: 7, locale: 'de' },
   { page: 'home', section: 'features', key: 'feature_3_icon', value: 'i-heroicons-sparkles', type: 'text', sortOrder: 8, locale: 'de' },
 
-  { page: 'home', section: 'features_heading', key: 'title', value: 'Warum MagguuUI?', type: 'text', sortOrder: 0, locale: 'de' },
-  { page: 'home', section: 'features_heading', key: 'subtitle', value: 'Ein 4K-EllesmereUI-Setup mit optionalen Raid-Tools', type: 'text', sortOrder: 1, locale: 'de' },
+  { page: 'home', section: 'features_heading', key: 'title', value: 'Das Modul', type: 'text', sortOrder: 0, locale: 'de' },
+  { page: 'home', section: 'features_heading', key: 'subtitle', value: 'Ein EllesmereUI-Setup mit optionalen Raid-Tools', type: 'text', sortOrder: 1, locale: 'de' },
 
   { page: 'home', section: 'addons', key: 'title', value: 'Unterstützte Addons', type: 'text', sortOrder: 0, locale: 'de' },
   { page: 'home', section: 'addons', key: 'subtitle', value: 'Gruppen Required / Optional / WowUp. Chat-Pack: Whisper Messenger (nicht WIM).', type: 'text', sortOrder: 1, locale: 'de' },
@@ -62,10 +62,10 @@ export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'steps', key: 'step_3', value: 'Optional only — MagguuUI skips missing addons.\n\n- **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore\n- **WowUp optional:** includes Whisper Messenger (not WIM), plus BugSack, HandyNotes, MapNotes, and other extras from Setup\n- **Magguu import if installed:** WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, Smart Reminders, and more\n\nCopy packs from Magguu Setup (or Strings as backup), then paste in WowUp.', locale: 'en', type: 'markdown', sortOrder: 31 },
 
   { page: 'guide', section: 'steps', key: 'step_4_title', value: '4. Open Setup and Apply Magguu profiles', locale: 'en', type: 'text', sortOrder: 40 },
-  { page: 'guide', section: 'steps', key: 'step_4', value: 'Open MagguuUI with `/mui` (or EllesmereUI → MagguuUI → Optionen → Setup).\n\n- **Apply Magguu profiles** (gold) — fresh install: Magguu Ellesmere profile at scale `0.58`, Magguu Settings, companions if present, class layouts, HUD layout MagguuUI once\n- **Magguu Settings** — overlay/QoL only (does not re-import profiles)\n- **Load profiles** — activate Magguu profiles on this character\n- Setup import buttons: BigWigs, Northern Sky, EXBoss, Whisper Messenger, Smart Reminders\n\nWait until out of combat. Alts can load the same profiles on login.', locale: 'en', type: 'markdown', sortOrder: 41 },
+  { page: 'guide', section: 'steps', key: 'step_4', value: 'Open MagguuUI with `/mui` (or EllesmereUI → MagguuUI → Options → Setup).\n\n- **Apply Magguu profiles** (gold) — fresh install: Magguu Ellesmere profile at scale `0.58`, Magguu Settings, companions if present, class layouts, HUD layout MagguuUI once\n- **Magguu Settings** — overlay/QoL only (does not re-import profiles)\n- **Load profiles** — activate Magguu profiles on this character\n- Setup import buttons: BigWigs, Northern Sky, EXBoss, Whisper Messenger, Smart Reminders\n\nWait until out of combat. Alts can load the same profiles on login.', locale: 'en', type: 'markdown', sortOrder: 41 },
 
   { page: 'guide', section: 'steps', key: 'step_5_title', value: '5. Skinning and QoL', locale: 'en', type: 'text', sortOrder: 50 },
-  { page: 'guide', section: 'steps', key: 'step_5', value: 'In **MagguuUI → Optionen**:\n\n- **Skinning** — NAMES & COLORS: split unit-frame / party-raid names, class-colored keybinds\n- **QoL** — Death Release, Co-Tank, stealth/stance, spell alerts, party/raid item level, Smart Tab, Quick Focus, audio switcher, Boiling Point, Targeted Spell Bars (via Ellesmere; leave EXBoss MythicCast off)', locale: 'en', type: 'markdown', sortOrder: 51 },
+  { page: 'guide', section: 'steps', key: 'step_5', value: 'In **MagguuUI → Options**:\n\n- **Skinning** — NAMES & COLORS: split unit-frame / party-raid names, class-colored keybinds\n- **QoL** — Death Release, Co-Tank, stealth/stance, spell alerts, party/raid item level, Smart Tab, Quick Focus, audio switcher, Boiling Point, Targeted Spell Bars (via Ellesmere; leave EXBoss MythicCast off)', locale: 'en', type: 'markdown', sortOrder: 51 },
 
   { page: 'guide', section: 'steps', key: 'step_6_title', value: '6. Commands and tools', locale: 'en', type: 'text', sortOrder: 60 },
   { page: 'guide', section: 'steps', key: 'step_6', value: '**Commands:** `/mui` · `/mui setup` · `/mui qol` · `/mui tools` (or 10 clicks on the MagguuUI header).\n\nAfter a Cooldown Viewer import, confirm the Ellesmere reload when prompted.', locale: 'en', type: 'markdown', sortOrder: 61 },
@@ -75,9 +75,9 @@ export const DEFAULT_FAQS = [
   {
     category: 'general',
     question: 'What is MagguuUI?',
-    answer: `MagguuUI is a **native 4K overhaul and curated profile companion for EllesmereUI** on World of Warcraft Retail.
+    answer: `MagguuUI is a **native overhaul and curated profile companion for EllesmereUI** on World of Warcraft Retail.
 
-It has no standalone installer and no separate options window. Everything lives in EllesmereUI under **MagguuUI → Optionen**.
+It has no standalone installer and no separate options window. Everything lives in EllesmereUI under **MagguuUI → Options**.
 
 Install EllesmereUI plus the four MagguuUI addon folders, open \`/mui\`, and run **Apply Magguu profiles**.`,
     sortOrder: 0,
@@ -144,9 +144,9 @@ Do not delete MagguuUI_Data / EUI / Media — they are required siblings now.`,
     answer: `Any of these:
 
 - Type \`/mui\` or \`/mui setup\` in chat
-- Open EllesmereUI and choose **MagguuUI → Optionen**
+- Open EllesmereUI and choose **MagguuUI → Options**
 - \`/mui qol\` jumps to the QoL tab
-- \`/mui tools\` opens hidden Werkzeuge
+- \`/mui tools\` opens hidden Tools
 
 There is no minimap button and no separate Magguu installer window.`,
     sortOrder: 1,
@@ -191,7 +191,7 @@ Per-addon MagguuUI imports live on **Setup**. Gold **Apply Magguu profiles**, th
 
 Import applies them as \`Magguu - Class Spec\` and activates the current specialization. MagguuUI then asks you to reload so the layouts stick.
 
-Werkzeuge can copy a layout for you to paste.`,
+Tools can copy a layout for you to paste.`,
     sortOrder: 1,
   },
   {
@@ -244,7 +244,7 @@ It only affects the modifier hint text, not the icons. Turn it off on the Skinni
   {
     category: 'addons',
     question: 'Where are export tools and Discord boost?',
-    answer: `They live on hidden **Werkzeuge**.
+    answer: `They live on hidden **Tools**.
 
 Open them with \`/mui tools\` or \`/mui export\`. Click the **MagguuUI** group header ten times to unlock the sidebar row permanently. That unlock is saved on your account.`,
     sortOrder: 6,
@@ -289,7 +289,7 @@ Keep all four enabled. Nested-only Data/EUI/Media inside MagguuUI is obsolete. D
 - \`/mui setup\` — Setup
 - \`/mui qol\` — QoL
 - \`/mui profile\` — Setup
-- \`/mui tools\` / \`/mui export\` / \`/mui werkzeuge\` — Werkzeuge
+- \`/mui tools\` / \`/mui export\` / \`/mui werkzeuge\` — Tools
 
 Older installer commands are gone.`,
     sortOrder: 9,
@@ -309,7 +309,7 @@ Protected or hidden names stay unsplit and white. Magguu Settings turns these on
   {
     category: 'addons',
     question: 'Why is the UI scale 0.58?',
-    answer: `That's MagguuUI's current **4K Ellesmere profile**. **Apply Magguu profiles** and **Magguu Settings** apply \`0.58\` after Ellesmere commits the import. There is no Set-scale-only button.
+    answer: `That's MagguuUI's current Ellesmere profile. **Apply Magguu profiles** and **Magguu Settings** apply \`0.58\` after Ellesmere commits the import. There is no Set-scale-only button.
 
 You can still change scale later in EllesmereUI; MagguuUI will not keep rewriting it unless you run Apply Magguu profiles again.`,
     sortOrder: 11,
@@ -341,7 +341,7 @@ Confirm EllesmereUI and all four MagguuUI folders are enabled, EllesmereUI is 9.
     question: 'How do I reset MagguuUI and start fresh?',
     answer: `Keep MagguuUI, MagguuUI_Data, MagguuUI_EUI, and MagguuUI_Media enabled, and re-run **Apply Magguu profiles** from \`/mui\` → Setup. Nested-only copies inside MagguuUI are obsolete; use the four sibling folders.
 
-Companion settings live in the Ellesmere MagguuUI profile. Werkzeuge stays unlocked on the account after you click the MagguuUI header ten times.`,
+Companion settings live in the Ellesmere MagguuUI profile. The Tools row stays unlocked on the account after you click the MagguuUI header ten times.`,
     sortOrder: 2,
   },
   {

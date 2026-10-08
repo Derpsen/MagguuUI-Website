@@ -7,162 +7,70 @@
   <UApp>
   <div class="public-shell min-h-screen flex flex-col transition-colors duration-300"
     :class="isDark ? 'text-silver-200' : 'text-gray-800'">
-    <div class="public-grid-overlay" />
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-full focus:bg-brand-500 focus:text-white focus:text-sm focus:font-medium">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:px-3 focus:py-2 focus:bg-brand-500 focus:text-white focus:text-sm focus:font-medium">
       Skip to main content
     </a>
-    <div class="fixed inset-x-0 top-0 z-[70] h-[3px] pointer-events-none">
-      <div class="public-progress-bar" :style="{ transform: `scaleX(${scrollProgress})` }" />
-    </div>
 
-    <header class="relative sticky top-0 z-50 px-3 sm:px-5 pt-3 pb-4">
-      <div class="public-header-backdrop" />
-      <div class="relative max-w-6xl mx-auto">
-        <div class="public-nav-shell rounded-[1.45rem] px-3 sm:px-4 py-3">
-          <div class="flex items-center justify-between gap-3 lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-center">
-            <NuxtLink to="/" class="flex items-center group shrink-0">
-              <span class="public-brand-mark inline-flex items-center justify-center w-11 h-11 rounded-2xl transition-transform duration-300 group-hover:scale-[1.04]"
-                :class="isDark ? 'bg-white/[0.06]' : 'bg-white/90 shadow-sm'">
-                <img src="/logo.png" alt="MagguuUI" width="28" height="28" class="w-7 h-7" />
-              </span>
-            </NuxtLink>
+    <header class="sticky top-0 z-50 border-b backdrop-blur-md"
+      :class="isDark ? 'bg-[#0b1118]/95 border-white/10' : 'bg-[#eef4fb]/95 border-gray-200'">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-6">
+        <NuxtLink to="/" class="flex items-center gap-2 shrink-0">
+          <img src="/logo.png" alt="" width="22" height="22" class="w-[22px] h-[22px]" />
+          <span class="text-sm font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">MagguuUI</span>
+        </NuxtLink>
 
-            <div class="hidden lg:flex justify-center px-4">
-              <nav class="inline-flex items-center gap-1.5 rounded-full p-1"
-                :class="isDark ? 'bg-white/[0.03] border border-white/8' : 'bg-white/80 border border-brand-100 shadow-sm'">
-                <NuxtLink
-                  v-for="link in navLinks" :key="link.to" :to="link.to"
-                  class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-all"
-                  :class="isActive(link.to)
-                    ? isDark
-                      ? 'bg-brand-400/12 text-brand-300'
-                      : 'bg-brand-50 text-brand-700'
-                    : isDark
-                      ? 'text-silver-400 hover:text-white hover:bg-white/[0.05]'
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-white'"
-                >
-                  <span v-if="isActive(link.to)" class="public-nav-active-dot" aria-hidden="true" />
-                  <UIcon :name="link.icon" class="w-3.5 h-3.5 opacity-80" />
-                  {{ link.label }}
-                </NuxtLink>
-              </nav>
-            </div>
+        <nav class="hidden md:flex items-center gap-4 min-w-0 overflow-x-auto text-sm" aria-label="Primary">
+          <NuxtLink
+            v-for="link in navLinks" :key="link.to" :to="link.to"
+            class="shrink-0 py-1 border-b"
+            :class="isActive(link.to)
+              ? isDark
+                ? 'border-brand-300 text-white'
+                : 'border-brand-700 text-gray-950'
+              : isDark
+                ? 'border-transparent text-silver-400 hover:text-white'
+                : 'border-transparent text-gray-500 hover:text-gray-950'"
+          >
+            {{ link.label }}
+          </NuxtLink>
+        </nav>
 
-            <div class="flex items-center gap-2">
-              <button
-                class="public-theme-toggle inline-flex items-center justify-center w-10 h-10 rounded-full transition-all"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.08] border border-white/10 bg-white/[0.03]' : 'text-slate-800 hover:text-slate-950 hover:bg-white border border-slate-300 bg-white shadow-sm'"
-                :title="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
-                :aria-label="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
-                data-color-mode-toggle
-                @click="setTheme(isDark ? 'light' : 'dark')"
-              >
-                <UIcon v-if="isDark" name="i-heroicons-sun" class="w-5 h-5" />
-                <UIcon v-else name="i-heroicons-moon" class="w-5 h-5" />
-              </button>
+        <div class="ml-auto flex items-center gap-3 shrink-0">
+          <button
+            class="public-theme-toggle inline-flex items-center justify-center w-8 h-8"
+            :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-950'"
+            :title="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
+            :aria-label="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
+            data-color-mode-toggle
+            @click="setTheme(isDark ? 'light' : 'dark')"
+          >
+            <UIcon v-if="isDark" name="i-heroicons-sun" class="w-4 h-4" />
+            <UIcon v-else name="i-heroicons-moon" class="w-4 h-4" />
+          </button>
+          <NuxtLink v-if="isLoggedIn" to="/admin" class="hidden sm:inline text-sm" :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-950'">Admin</NuxtLink>
+          <NuxtLink v-else to="/admin/login" class="hidden sm:inline text-sm" :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-950'">Login</NuxtLink>
+          <NuxtLink :to="primaryAction.to" class="hidden sm:inline text-sm font-semibold" :class="isDark ? 'text-brand-300 hover:text-white' : 'text-brand-700 hover:text-brand-900'">
+            {{ primaryAction.label }}
+          </NuxtLink>
+          <button class="md:hidden inline-flex items-center justify-center w-8 h-8"
+            :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-700 hover:text-gray-950'"
+            :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
+            @click="mobileOpen = !mobileOpen">
+            <UIcon :name="mobileOpen ? 'i-heroicons-x-mark' : 'i-heroicons-bars-3'" class="w-5 h-5" />
+          </button>
+        </div>
+      </div>
 
-              <div class="hidden lg:block h-8 w-px" :class="isDark ? 'bg-white/8' : 'bg-brand-100'" />
-
-              <NuxtLink v-if="isLoggedIn" to="/admin"
-                class="hidden md:inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-all"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.05] border border-white/8' : 'text-slate-800 hover:text-slate-950 hover:bg-white border border-slate-300 shadow-sm'">
-                <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4" />
-                Admin
-              </NuxtLink>
-              <NuxtLink v-else to="/admin/login"
-                class="hidden md:inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-all"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.05] border border-white/8' : 'text-slate-800 hover:text-slate-950 hover:bg-white border border-slate-300 shadow-sm'">
-                <UIcon name="i-heroicons-lock-closed" class="w-4 h-4" />
-                Login
-              </NuxtLink>
-
-              <NuxtLink :to="primaryAction.to"
-                class="hidden lg:inline-flex items-center justify-center gap-2 btn-gradient rounded-full min-h-[2.5rem] px-4 py-2 text-sm font-semibold text-white whitespace-nowrap">
-                <UIcon :name="primaryAction.icon" class="w-4 h-4" />
-                {{ primaryAction.label }}
-              </NuxtLink>
-
-              <button class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-full transition-all"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.08] border border-white/10 bg-white/[0.03]' : 'text-slate-800 hover:text-slate-950 hover:bg-white border border-slate-300 bg-white shadow-sm'"
-                :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
-                @click="mobileOpen = !mobileOpen">
-                <UIcon :name="mobileOpen ? 'i-heroicons-x-mark' : 'i-heroicons-bars-3'" class="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          <div class="hidden md:flex lg:hidden items-center justify-between gap-3 mt-3 pt-3"
-            :class="isDark ? 'border-t border-white/8' : 'border-t border-brand-100'">
-            <nav class="flex flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap">
-              <NuxtLink
-                v-for="link in navLinks" :key="link.to" :to="link.to"
-                class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-all"
-                :class="isActive(link.to)
-                  ? isDark
-                    ? 'bg-brand-400/12 text-brand-300'
-                    : 'bg-brand-50 text-brand-700'
-                  : isDark
-                    ? 'text-silver-400 hover:text-white hover:bg-white/[0.05]'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-white'"
-              >
-                <span v-if="isActive(link.to)" class="public-nav-active-dot" aria-hidden="true" />
-                <UIcon :name="link.icon" class="w-3.5 h-3.5 opacity-80" />
-                {{ link.label }}
-              </NuxtLink>
-            </nav>
-
-            <NuxtLink :to="primaryAction.to"
-              class="inline-flex items-center justify-center gap-2 rounded-full min-h-[2.5rem] px-4 py-2 text-sm font-semibold text-white whitespace-nowrap btn-gradient">
-              <UIcon :name="primaryAction.icon" class="w-4 h-4" />
-              {{ primaryAction.label }}
-            </NuxtLink>
+      <div v-if="isLoggedIn" class="border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between gap-3 text-xs">
+          <p :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+            Logged in as <strong class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ user?.username }}</strong>
+          </p>
+          <div class="flex items-center gap-4">
+            <NuxtLink to="/admin" :class="isDark ? 'text-brand-300 hover:text-white' : 'text-brand-700 hover:text-brand-900'">Admin Panel</NuxtLink>
+            <button type="button" @click="handleLogout" :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-600 hover:text-gray-950'">Logout</button>
           </div>
         </div>
-
-        <Transition
-          enter-active-class="transition duration-200 ease-out"
-          enter-from-class="opacity-0 -translate-y-2"
-          enter-to-class="opacity-100 translate-y-0"
-          leave-active-class="transition duration-150 ease-in"
-          leave-from-class="opacity-100 translate-y-0"
-          leave-to-class="opacity-0 -translate-y-2"
-        >
-          <div
-            v-if="isLoggedIn"
-            class="mt-3 px-1 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b"
-            :class="isDark ? 'border-white/8' : 'border-brand-100'"
-          >
-            <div class="flex items-center gap-3">
-              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0"
-                :class="isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-700'">
-                <UIcon name="i-heroicons-shield-check" class="w-4.5 h-4.5" />
-              </span>
-              <div>
-                <p class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
-                  Admin session active
-                </p>
-                <p class="text-xs sm:text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-                  Logged in as <strong class="font-semibold" :class="isDark ? 'text-brand-300' : 'text-brand-700'">{{ user?.username }}</strong>
-                </p>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <NuxtLink to="/admin"
-                class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all"
-                :class="isDark ? 'text-brand-300 hover:text-white hover:bg-white/[0.05]' : 'text-brand-700 hover:text-brand-800 hover:bg-white/70'">
-                <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4" />
-                Admin Panel
-              </NuxtLink>
-              <button @click="handleLogout"
-                class="inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all"
-                :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.05]' : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'">
-                <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </Transition>
       </div>
     </header>
 
@@ -181,40 +89,26 @@
           @click="mobileOpen = false"
         />
 
-        <div ref="mobileMenuPanel" class="absolute inset-x-3 top-[5.4rem]">
+        <div ref="mobileMenuPanel" class="absolute inset-x-3 top-16">
           <div class="public-nav-shell rounded-[1.6rem] p-4 shadow-2xl">
-            <div class="flex justify-end mb-4">
-              <NuxtLink :to="primaryAction.to"
-                class="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold text-white whitespace-nowrap btn-gradient"
-                @click="mobileOpen = false">
-                <UIcon :name="primaryAction.icon" class="w-3.5 h-3.5" />
-                {{ primaryAction.label }}
-              </NuxtLink>
-            </div>
-
-            <div class="grid gap-2">
+            <div class="grid">
               <NuxtLink v-for="link in navLinks" :key="link.to" :to="link.to"
-                class="public-quick-card flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium whitespace-nowrap"
+                class="py-2.5 text-sm border-b"
                 :class="isActive(link.to)
                   ? isDark
-                    ? 'text-white border-brand-400/25'
-                    : 'text-gray-900 border-brand-200'
+                    ? 'text-white border-white/10'
+                    : 'text-gray-950 border-gray-200'
                   : isDark
-                    ? 'text-silver-300'
-                    : 'text-gray-600'"
+                    ? 'text-silver-300 border-white/10'
+                    : 'text-gray-600 border-gray-200'"
                 @click="mobileOpen = false">
-                <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0"
-                  :class="isActive(link.to)
-                    ? isDark
-                      ? 'bg-brand-400/14 text-brand-300'
-                      : 'bg-brand-50 text-brand-600'
-                    : isDark
-                      ? 'bg-white/[0.05] text-silver-400'
-                      : 'bg-white text-gray-500 border border-brand-100'">
-                  <UIcon :name="link.icon" class="w-4 h-4" />
-                </span>
-                <span class="flex-1">{{ link.label }}</span>
-                <UIcon name="i-heroicons-arrow-right" class="w-4 h-4 opacity-60" />
+                {{ link.label }}
+              </NuxtLink>
+              <NuxtLink :to="primaryAction.to"
+                class="py-2.5 text-sm font-semibold"
+                :class="isDark ? 'text-brand-300' : 'text-brand-700'"
+                @click="mobileOpen = false">
+                {{ primaryAction.label }}
               </NuxtLink>
             </div>
 
@@ -302,23 +196,13 @@
 
     <footer class="mt-16 px-4 sm:px-6 lg:px-8 pb-8">
       <div class="max-w-5xl mx-auto">
-        <div class="surface-panel rounded-2xl overflow-hidden">
-          <!-- Brand strip -->
-          <div class="relative px-6 py-6 sm:py-7 text-center"
-            :class="isDark ? 'bg-gradient-to-r from-brand-950/60 via-brand-900/40 to-brand-950/60' : 'bg-gradient-to-r from-brand-50 via-brand-100/60 to-brand-50'">
-            <div class="public-footer-brand-accent absolute inset-x-8 top-0" aria-hidden="true" />
-            <div class="flex items-center justify-center gap-3 mb-2">
-              <img src="/logo.png" alt="MagguuUI" width="24" height="24" loading="lazy" class="w-6 h-6" />
-              <span class="text-lg font-bold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-900'">{{ siteName }}</span>
-            </div>
-            <p class="text-xs max-w-md mx-auto" :class="isDark ? 'text-silver-400' : 'text-gray-500'">
-              Your WoW interface, perfected.
-            </p>
+        <div class="border-t pt-8" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+          <div class="flex items-baseline justify-between gap-4 mb-4">
+            <p class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ siteName }}</p>
+            <p class="text-xs" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Ellesmere setup for WoW Retail.</p>
           </div>
-
-          <!-- Links + bottom -->
-          <div class="px-5 py-4 sm:px-6">
-            <div class="flex flex-wrap items-center justify-center gap-x-1 gap-y-1 text-[13px]">
+          <div>
+            <div class="flex flex-wrap items-center gap-x-1 gap-y-1 text-[13px]">
               <template v-for="(link, i) in footerLinks" :key="link.label">
                 <span v-if="i > 0" class="mx-1 text-[10px]" :class="isDark ? 'text-white/15' : 'text-gray-300'">&bull;</span>
                 <NuxtLink v-if="link.to" :to="link.to" class="px-1.5 py-0.5 rounded-md transition-colors"
@@ -370,7 +254,7 @@
 
     <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-4" enter-to-class="opacity-100 translate-y-0"
       leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-4">
-        <button v-if="showBackToTop" class="fixed bottom-6 right-6 z-40 inline-flex items-center justify-center w-12 h-12 rounded-full text-white btn-gradient shadow-xl" aria-label="Back to top" @click="scrollToTop">
+        <button v-if="showBackToTop" class="fixed bottom-6 right-6 z-40 inline-flex items-center justify-center w-10 h-10 border text-sm" :class="isDark ? 'border-white/15 bg-brand-950 text-white' : 'border-gray-300 bg-white text-gray-950'" aria-label="Back to top" @click="scrollToTop">
           <UIcon name="i-heroicons-arrow-up" class="w-5 h-5" />
         </button>
     </Transition>
@@ -384,7 +268,6 @@ const route = useRoute()
 const mobileOpen = ref(false)
 const mobileMenuPanel = ref<HTMLElement | null>(null)
 const showBackToTop = ref(false)
-const scrollProgress = ref(0)
 const { user, isLoggedIn, logout } = useAuth()
 const isDark = useIsDark()
 const siteSettings = usePublicSiteSettings()
@@ -470,10 +353,7 @@ const contactMailto = computed(() => `mailto:${contactEmail.value}`)
 
 function handleWindowScroll() {
   if (!import.meta.client) return
-  const scrollY = window.scrollY
-  const maxScroll = document.documentElement.scrollHeight - window.innerHeight
-  showBackToTop.value = scrollY > 400
-  scrollProgress.value = maxScroll > 0 ? Math.min(scrollY / maxScroll, 1) : 0
+  showBackToTop.value = window.scrollY > 400
 }
 
 function scrollToTop() {

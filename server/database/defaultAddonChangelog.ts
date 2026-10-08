@@ -74,3 +74,25 @@ export const PREVIOUS_ADDON_CHANGELOGS = [
 - **Apply Magguu profiles** turns on **Targeted Spell Bars**.`,
   },
 ] as const
+
+const PUBLISHED_CHANGELOG_REPLACEMENTS = [
+  [' Leave **EXBoss MythicCast OFF**.', ''],
+  [' Leave **EXBoss MythicCast off**.', ''],
+  [' Leave EXBoss MythicCast OFF.', ''],
+  [' Leave EXBoss MythicCast off.', ''],
+  [' (via Ellesmere; leave EXBoss MythicCast off)', ''],
+  [' (leave EXBoss MythicCast off)', ''],
+  ['it does not reimport the bake', 'it does not re-import profiles'],
+  [
+    'Bundled MagguuUI profiles recaptured from MagguuUI Tools (bake 9.0.8 on Ellesmere live 9.1.6; Northern Sky and EXBoss).',
+    'Bundled MagguuUI profiles include Northern Sky and EXBoss.',
+  ],
+] as const
+
+export function scrubPublishedChangelog(text: string): string {
+  let next = text
+  for (const [from, to] of PUBLISHED_CHANGELOG_REPLACEMENTS) {
+    next = next.split(from).join(to)
+  }
+  return next
+}

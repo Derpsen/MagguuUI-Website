@@ -11,7 +11,7 @@ import bcrypt from 'bcrypt'
 import { and, eq, count } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
 import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_HOME_CONTENT, DEFAULT_SITE_CONTENT } from '~/server/database/defaultContent'
-import { CURRENT_ADDON_CHANGELOG, PREVIOUS_ADDON_CHANGELOGS } from '~/server/database/defaultAddonChangelog'
+import { CURRENT_ADDON_CHANGELOG, PREVIOUS_ADDON_CHANGELOGS, scrubPublishedChangelog } from '~/server/database/defaultAddonChangelog'
 import { users, siteContent, faqs, settings, changelogs } from '~/server/database/schema'
 import { DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
@@ -823,6 +823,18 @@ export default defineNitroPlugin(() => {
           .run()
         console.log(`[Init] Updated addon changelog ${entry.version}`)
       }
+    }
+
+    const publishedNotes = db.select().from(changelogs).all()
+    for (const note of publishedNotes) {
+      const content = scrubPublishedChangelog(note.content)
+      const contentEn = note.contentEn == null ? null : scrubPublishedChangelog(note.contentEn)
+      if (content === note.content && contentEn === note.contentEn) continue
+      db.update(changelogs)
+        .set({ content, contentEn, updatedAt: new Date() })
+        .where(eq(changelogs.id, note.id))
+        .run()
+      console.log(`[Init] Scrubbed public changelog ${note.version}`)
     }
   } catch (err) {
     console.error('[Init] Current addon changelog seed failed:', err)

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { ADDON_DEFAULTS } from '../../server/database/addonMetadata'
-import { CURRENT_ADDON_CHANGELOG } from '../../server/database/defaultAddonChangelog'
+import { CURRENT_ADDON_CHANGELOG, scrubPublishedChangelog } from '../../server/database/defaultAddonChangelog'
 import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_HOME_CONTENT } from '../../server/database/defaultContent'
 
 const STARTER = 'EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore'
@@ -41,6 +41,11 @@ describe('MagguuUI product facts copy', () => {
     assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /### Setup/)
     assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /\bbake\b/i)
     assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /dump addon/i)
+    const older = '**Apply Magguu profiles** enables Ellesmere **Targeted Spell Bars** (Nearby Cast) with Magguu texture. Leave **EXBoss MythicCast OFF**.\n- it does not reimport the bake.\n- Bundled MagguuUI profiles recaptured from MagguuUI Tools (bake 9.0.8 on Ellesmere live 9.1.6; Northern Sky and EXBoss).'
+    const scrubbed = scrubPublishedChangelog(older)
+    assert.doesNotMatch(scrubbed, /MythicCast|recapture|\bbake\b/i)
+    assert.match(scrubbed, /Targeted Spell Bars/)
+    assert.equal(scrubPublishedChangelog(scrubbed), scrubbed)
 
     const guideIntro = DEFAULT_GUIDE_CONTENT.find(e => e.section === 'intro' && e.key === 'text')
     assert.ok(guideIntro?.value.includes('Apply Magguu profiles'))

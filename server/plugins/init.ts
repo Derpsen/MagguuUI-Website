@@ -11,7 +11,7 @@ import bcrypt from 'bcrypt'
 import { and, eq, count } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
 import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_HOME_CONTENT, DEFAULT_SITE_CONTENT } from '~/server/database/defaultContent'
-import { CURRENT_ADDON_CHANGELOG } from '~/server/database/defaultAddonChangelog'
+import { CURRENT_ADDON_CHANGELOG, PREVIOUS_ADDON_CHANGELOGS } from '~/server/database/defaultAddonChangelog'
 import { users, siteContent, faqs, settings, changelogs } from '~/server/database/schema'
 import { DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
@@ -66,6 +66,16 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'addons', key: 'subtitle', marker: 'Optionale Chips sind Magguu-Imports', locale: 'de' },
   { page: 'home', section: 'addons', key: 'subtitle', marker: 'BigWigs, LittleWigs, and Northern Sky Raid Tools are optional' },
   { page: 'home', section: 'addons', key: 'subtitle', marker: 'BigWigs, LittleWigs und Northern Sky Raid Tools sind optional', locale: 'de' },
+  { page: 'home', section: 'addons', key: 'subtitle', marker: 'Chat pack:' },
+  { page: 'home', section: 'addons', key: 'subtitle', marker: 'Chat-Pack:', locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Two sidebar rows:' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Zwei Sidebar-Zeilen:', locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'Optional Magguu profiles for BigWigs' },
+  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'Optionale Magguu-Profile für BigWigs', locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Skinning is one' },
+  { page: 'home', section: 'features', key: 'feature_3_text', marker: 'Skinning ist eine Kategorie', locale: 'de' },
+  { page: 'guide', section: 'intro', key: 'text', marker: 'WowUp optional chat is' },
+  { page: 'guide', section: 'steps', key: 'step_3', marker: 'includes Whisper Messenger (not WIM)' },
   { page: 'guide', section: 'intro', key: 'text', marker: 'BigWigs, LittleWigs, and Northern Sky Raid Tools are optional.' },
   { page: 'home', section: 'hero', key: 'description', marker: 'native EllesmereUI module for WoW Retail. Install <strong>EllesmereUI</strong> and the single' },
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Tooltips stay at Magguu' },
@@ -94,7 +104,6 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_1', marker: 'will not work without it' },
   { page: 'guide', section: 'steps', key: 'step_1', marker: 'MagguuUI` and `MagguuUI_Data' },
   { page: 'guide', section: 'steps', key: 'step_1', marker: 'from CurseForge, Wago, or WoWInterface.\n\nWithout EllesmereUI' },
-  { page: 'guide', section: 'steps', key: 'step_2_title', marker: '2. Install MagguuUI' },
   { page: 'guide', section: 'steps', key: 'step_2_title', marker: '2. Add the addons you want' },
   { page: 'guide', section: 'steps', key: 'step_2', marker: 'Get MagguuUI from any of these sources:' },
   { page: 'guide', section: 'steps', key: 'step_2', marker: 'MagguuUI runs on its own. Install only the supported addons' },
@@ -187,6 +196,7 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'Logging in on an alt asks whether to load those profiles onto that character.' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'TopBar, Hearth-Picker, and MagguuUI FPS/MS are not part of this build.' },
   { page: 'guide', section: 'steps', key: 'step_6', marker: "After a successful Cooldown Viewer import MagguuUI asks you to reload via Ellesmere's confirm popup" },
+  { page: 'home', section: 'addons', key: 'subtitle', marker: 'BigWigs and Northern Sky Raid Tools are optional.' },
   { page: 'home', section: 'addons', key: 'subtitle', marker: 'BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional.' },
   { page: 'home', section: 'addons', key: 'subtitle', marker: 'BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter und Smart Reminders sind optional.', locale: 'de' },
   { page: 'home', section: 'hero', key: 'subtitle', marker: 'A native 4K overhaul for EllesmereUI.' },
@@ -198,6 +208,11 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'In **MagguuUI → Optionen**:' },
   { page: 'home', section: 'hero', key: 'description', marker: 'open <code>/mui</code>, run <strong>Apply Magguu profiles</strong>' },
   { page: 'home', section: 'hero', key: 'description', marker: '<code>/mui</code>, <strong>Magguu-Profile übernehmen</strong>', locale: 'de' },
+  { page: 'home', section: 'hero', key: 'description', marker: 'four MagguuUI folders' },
+  { page: 'home', section: 'hero', key: 'description', marker: 'vier MagguuUI-Ordner', locale: 'de' },
+  { page: 'guide', section: 'intro', key: 'text', marker: 'four MagguuUI folders' },
+  { page: 'guide', section: 'steps', key: 'step_2', marker: 'Copy all four folders' },
+  { page: 'guide', section: 'steps', key: 'step_5', marker: 'leave EXBoss MythicCast off' },
 ] as const
 
 const LEGACY_FAQ_MARKERS = [
@@ -346,6 +361,15 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 6, marker: 'hidden **Werkzeuge**' },
   { category: 'addons', sortOrder: 9, marker: '/mui werkzeuge` — Werkzeuge' },
   { category: 'troubleshooting', sortOrder: 2, marker: 'Werkzeuge stays unlocked' },
+  { category: 'general', sortOrder: 0, marker: 'four MagguuUI addon folders' },
+  { category: 'general', sortOrder: 2, marker: 'four sibling AddOns folders' },
+  { category: 'installation', sortOrder: 0, marker: 'Copy all four MagguuUI folders' },
+  { category: 'addons', sortOrder: 2, marker: 'BigWigs-style group' },
+  { category: 'addons', sortOrder: 4, marker: 'four MagguuUI addon folders' },
+  { category: 'addons', sortOrder: 8, marker: 'four sibling addons' },
+  { category: 'troubleshooting', sortOrder: 0, marker: 'All four MagguuUI folders are enabled' },
+  { category: 'troubleshooting', sortOrder: 1, marker: 'all four MagguuUI folders' },
+  { category: 'troubleshooting', sortOrder: 2, marker: 'four sibling folders' },
 ] as const
 
 // Nitro's runNitroPlugins calls plugins without awaiting their promise.
@@ -509,6 +533,11 @@ export default defineNitroPlugin(() => {
       {
         key: 'meta_description',
         value: 'Native overhaul for EllesmereUI. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. Companion addons stay optional.',
+        replacement: SITE_SETTINGS_DEFAULTS.meta_description,
+      },
+      {
+        key: 'meta_description',
+        value: 'Native overhaul for EllesmereUI, designed for 4K. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles.',
         replacement: SITE_SETTINGS_DEFAULTS.meta_description,
       },
     ] as const
@@ -762,6 +791,38 @@ export default defineNitroPlugin(() => {
         .where(eq(changelogs.id, currentRelease.id))
         .run()
       console.log(`[Init] Updated current addon changelog ${CURRENT_ADDON_CHANGELOG.version}`)
+    }
+
+    for (const entry of PREVIOUS_ADDON_CHANGELOGS) {
+      const older = db.select().from(changelogs)
+        .where(eq(changelogs.version, entry.version))
+        .get()
+      if (!older) {
+        db.insert(changelogs).values({
+          version: entry.version,
+          content: entry.content,
+          contentEn: entry.content,
+          isPublished: true,
+          publishedAt: entry.publishedAt,
+        }).run()
+        console.log(`[Init] Added addon changelog ${entry.version}`)
+      } else if (
+        older.content.includes('leave EXBoss MythicCast')
+        || older.content.includes('Leave **EXBoss MythicCast')
+        || older.content.includes('Leave EXBoss MythicCast')
+      ) {
+        db.update(changelogs)
+          .set({
+            content: entry.content,
+            contentEn: entry.content,
+            publishedAt: entry.publishedAt,
+            isPublished: true,
+            updatedAt: new Date(),
+          })
+          .where(eq(changelogs.id, older.id))
+          .run()
+        console.log(`[Init] Updated addon changelog ${entry.version}`)
+      }
     }
   } catch (err) {
     console.error('[Init] Current addon changelog seed failed:', err)

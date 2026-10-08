@@ -12,7 +12,7 @@ Tone: short and factual. Prefer seed keys in `defaultContent.ts` or site admin /
 **description** (html-safe):
 
 ```html
-Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Install EllesmereUI + four MagguuUI folders, open <code>/mui</code>, and run <strong>Apply Magguu profiles</strong>.
+Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface, open <code>/mui</code>, and run <strong>Apply Magguu profiles</strong>.
 ```
 
 ## Feature cards
@@ -41,5 +41,5 @@ Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with 
 **text** (html-safe):
 
 ```html
-Skinning is one <strong>NAMES &amp; COLORS</strong> section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (and 2P/4P), <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, an <strong>Audio device switcher</strong> on the Ellesmere speaker, <strong>Boiling Point</strong>, and <strong>Targeted Spell Bars</strong> via Ellesmere (leave EXBoss MythicCast off).
+<strong>Names &amp; colors</strong> — split unit, party, and raid names; class-colored keybind modifiers. <strong>QoL</strong> — Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (2P/4P), <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, audio device switcher, <strong>Boiling Point</strong>, <strong>Targeted Spell Bars</strong>. Services stay untouched.
 ```

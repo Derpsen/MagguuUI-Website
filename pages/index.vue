@@ -23,7 +23,7 @@
         </h1>
         <SafeHtml class="home-hero-copy mt-6 max-w-xl text-base sm:text-lg leading-relaxed"
           :class="isDark ? 'text-silver-300' : 'text-gray-600'"
-          :html="content?.hero?.description || 'Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Install EllesmereUI + four MagguuUI folders, open <code>/mui</code>, and run <strong>Apply Magguu profiles</strong>.'"
+          :html="content?.hero?.description || 'Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface, open <code>/mui</code>, and run <strong>Apply Magguu profiles</strong>.'"
         />
         <div class="mt-8 flex flex-wrap gap-3">
           <NuxtLink to="/guide" class="btn-gradient px-5 py-2.5 rounded-md text-white text-sm font-semibold">
@@ -40,7 +40,7 @@
       <ol class="lg:pt-9" :class="isDark ? 'border-white/10' : 'border-gray-200'">
         <li class="grid grid-cols-[1.4rem_1fr] gap-3 py-3 border-b text-sm leading-relaxed" :class="isDark ? 'border-white/10 text-silver-300' : 'border-gray-200 text-gray-700'">
           <span class="font-mono text-xs pt-0.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">1</span>
-          <span>Install EllesmereUI and the four MagguuUI folders.</span>
+          <span>Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface.</span>
         </li>
         <li class="grid grid-cols-[1.4rem_1fr] gap-3 py-3 border-b text-sm leading-relaxed" :class="isDark ? 'border-white/10 text-silver-300' : 'border-gray-200 text-gray-700'">
           <span class="font-mono text-xs pt-0.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">2</span>
@@ -53,55 +53,37 @@
       </ol>
     </section>
 
-    <section aria-label="Screenshots" class="mt-16">
+    <section aria-label="Screenshots" class="mt-16 space-y-8">
       <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">In game</h2>
-      <figure class="mt-4">
-        <img
-          src="/screenshots/hud.jpg"
-          alt="MagguuUI dungeon HUD: unit frames, cast bars, and action bars."
-          width="2000"
-          height="1125"
-          class="w-full border"
-          :class="isDark ? 'border-white/10' : 'border-gray-200'"
-          loading="lazy"
-          decoding="async"
+      <ScreenshotFrame
+        src="/screenshots/hud.jpg"
+        alt="MagguuUI dungeon HUD: unit frames, cast bars, and action bars."
+        caption="HUD"
+        :width="2000"
+        :height="1125"
+      />
+      <div class="mx-auto w-full max-w-3xl">
+        <ScreenshotFrame
+          src="/screenshots/edit-mode.jpg"
+          alt="Edit Mode with the Magguu frame layout."
+          caption="Edit Mode"
+          :width="2000"
+          :height="1125"
         />
-        <figcaption class="mt-2 font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">HUD</figcaption>
-      </figure>
-      <div class="mt-6 grid sm:grid-cols-2 gap-6">
-        <figure>
-          <img
-            src="/screenshots/edit-mode.jpg"
-            alt="Edit Mode with the Magguu frame layout."
-            width="2000"
-            height="1125"
-            class="w-full border"
-            :class="isDark ? 'border-white/10' : 'border-gray-200'"
-            loading="lazy"
-            decoding="async"
-          />
-          <figcaption class="mt-2 font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Edit Mode</figcaption>
-        </figure>
-        <figure>
-          <img
-            src="/screenshots/setup.jpg"
-            alt="EllesmereUI MagguuUI Setup, with Apply Magguu profiles."
-            width="2000"
-            height="1125"
-            class="w-full border"
-            :class="isDark ? 'border-white/10' : 'border-gray-200'"
-            loading="lazy"
-            decoding="async"
-          />
-          <figcaption class="mt-2 font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Setup</figcaption>
-        </figure>
       </div>
+      <ScreenshotFrame
+        src="/screenshots/setup.jpg"
+        alt="EllesmereUI MagguuUI Setup, with Apply Magguu profiles."
+        caption="Setup"
+        :width="2000"
+        :height="1125"
+      />
     </section>
 
     <section aria-label="Addons and latest release" class="mt-16 grid lg:grid-cols-[minmax(0,1.25fr)_minmax(15rem,0.75fr)] gap-12 lg:gap-16 items-start">
       <div>
         <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ content?.addons?.title || 'Supported Addons' }}</h2>
-        <p class="mt-2 text-sm max-w-xl leading-relaxed" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'Grouped Required / Optional / WowUp. Chat pack: Whisper Messenger (not WIM).' }}</p>
+        <p class="mt-2 text-sm max-w-xl leading-relaxed" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'EllesmereUI is required. Everything else is optional.' }}</p>
         <div v-if="addonGroups.length" class="mt-6 space-y-5">
           <div v-for="group in addonGroups" :key="group.key">
             <p class="font-mono text-[11px] uppercase tracking-[0.14em] mb-1.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">{{ group.label }}</p>
@@ -158,7 +140,7 @@ const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
 const siteSettings = usePublicSiteSettings()
 const homeMetaTitle = computed(() => siteSettings.value.meta_title || 'MagguuUI — Ellesmere setup')
-const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'Native overhaul for EllesmereUI, designed for 4K. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles.')
+const homeMetaDescription = computed(() => siteSettings.value.meta_description || 'Native overhaul for EllesmereUI, designed for 4K. Download EllesmereUI and MagguuUI from CurseForge, open /mui, and run Apply Magguu profiles.')
 const homeOgImage = computed(() => siteSettings.value.og_image_url || buildPublicUrl('/logo.png'))
 const homeCanonical = buildPublicUrl('/')
 const homeSiteName = computed(() => siteSettings.value.site_name || 'MagguuUI')
@@ -307,7 +289,7 @@ const features = computed(() => [
   },
   {
     title: content.value?.features?.feature_3_title || 'Skinning and QoL included',
-    text: content.value?.features?.feature_3_text || 'Skinning is one <strong>NAMES &amp; COLORS</strong> section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (and 2P/4P), <strong>Smart Tab</strong>, Hide Services on General, <strong>Quick Focus</strong>, an <strong>Audio device switcher</strong> on the Ellesmere speaker, <strong>Boiling Point</strong>, and <strong>Targeted Spell Bars</strong> via Ellesmere (leave EXBoss MythicCast off).',
+    text: content.value?.features?.feature_3_text || '<ul><li><strong>Names &amp; colors</strong> — split unit, party, and raid names; class-colored keybind modifiers</li><li><strong>QoL</strong> — Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (2P/4P)</li><li><strong>Smart Tab</strong>, <strong>Quick Focus</strong>, audio device switcher, <strong>Boiling Point</strong>, <strong>Targeted Spell Bars</strong></li><li>Services stay untouched</li></ul>',
   },
 ])
 

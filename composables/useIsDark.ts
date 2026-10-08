@@ -1,7 +1,7 @@
 /**
  * Single source of truth for public/admin dark-mode classes.
  *
- * With `colorMode.preference: 'system'`, SSR cannot know the user's OS theme.
+ * Default preference is `dark`. SSR and the first client paint stay on that fallback.
  * The server renders the configured fallback (`dark`). Keep the first client
  * render on the same fallback value to avoid Vue hydration class mismatches;
  * after mount, use the resolved client-side color mode.

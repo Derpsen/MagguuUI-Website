@@ -33,8 +33,8 @@ Admin-Smoke 6/6 PASS auf diesem Digest.
   default slot.
 - Tailwind v4: there is no `tailwind.config.ts`. Keep theme configuration in
   `assets/css/main.css` via `@theme`. Do not add a Tailwind config file.
-- Color mode: default follows the OS via `colorMode.preference: 'system'`.
-  Do not hardcode `dark` as the preference.
+- Color mode: public default is dark via `colorMode.preference: 'dark'`.
+  An explicit light choice stays. Do not follow the OS unless the visitor picks light.
 - Database: this project uses Drizzle push and startup idempotent index
   creation. Do not hand-write migration files unless the strategy changes.
 - Do not perform major dependency upgrades without a separate compatibility
@@ -42,11 +42,12 @@ Admin-Smoke 6/6 PASS auf diesem Digest.
   on the Nuxt 4.5 config types. Do not delete it. Node 26, TypeScript 7, h3 2,
   and satori 0.41 stay blocked without an explicit yes.
 - MagguuUI public copy (home/guide/FAQ/changelog/addon metadata) must stay
-  aligned with the current MagguuUI release: four sibling folders
-  (MagguuUI / Data / EUI / Media), EllesmereUI TOC min **9.0.6+** (**live 9.2.9**),
-  **Targeted Spell Bars** (Ellesmere Mythic+ Nearby
-  Cast) **ON** via Ellesmere — **EXBoss MythicCast OFF** (same feature; do not run
-  both), MagguuUI_EUI keeps **Boiling Point** (no TopBar / Hearth-Picker / MagguuUI
+  aligned with the current MagguuUI release. Tell players to download
+  EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface. Do not tell
+  them to copy folders, and do not tell them to turn a feature off.
+  EllesmereUI TOC min **9.0.6+** (**live 9.2.9**).
+  **Targeted Spell Bars** stays a feature name without an off-switch lecture.
+  MagguuUI_EUI keeps **Boiling Point** (no TopBar / Hearth-Picker / MagguuUI
   FPS-MS), AuraBuff count text **CENTER**, Magguu does not join/leave/hide Services, fresh
   install gold **Apply Magguu profiles** then **Magguu Settings**
   (overlay/QoL only) and **Load profiles** (activates existing Magguu profiles;

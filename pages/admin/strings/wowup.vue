@@ -4,7 +4,7 @@
       icon="i-heroicons-arrow-down-tray"
       eyebrow="Data"
       title="WowUp Strings"
-      description="Starter and optional WowUp packs shipped with MagguuUI. Copy them from Setup in-game; this page is a backup. MagguuUI itself only needs EllesmereUI plus the four MagguuUI addon folders."
+      description="Starter and optional WowUp packs shipped with MagguuUI. Copy them from Setup in-game; this page is a backup. Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface."
     >
       <template #badge>
         <UBadge v-if="!loading && isFiltering" color="warning" variant="subtle">{{ filtered.length }} results</UBadge>

@@ -146,10 +146,9 @@ export function isWowupPackSlug(slug: string): boolean {
   return WOWUP_STARTER_SLUGS.has(slug) || WOWUP_OPTIONAL_SLUGS.has(slug)
 }
 
-/** Public Home/Strings group: Required / Optional (Magguu import) / WowUp. Whisper≠WIM. */
+/** Public home list: EllesmereUI is required. Every other addon is optional. */
 export function addonGroupForSlug(slug: string, category: 'required' | 'core' | 'optional'): AddonGroupKey {
   if (category === 'required' || slug === 'ellesmereui') return 'required'
-  if (isWowupPackSlug(slug)) return 'wowup'
   return 'optional'
 }
 

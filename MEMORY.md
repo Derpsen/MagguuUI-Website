@@ -44,7 +44,7 @@
 - EllesmereUI TOC min **9.0.6+**; **live 9.2.9**; Magguu bake is **dump-based**; notes track **v12.1.6**.
 - Four siblings: MagguuUI / MagguuUI_Data / MagguuUI_EUI / MagguuUI_Media.
 - Posted Magguu export = **full bake** (2026-09-11: Ellesmere type=full, BigWigs, NSRT, EXBoss, WIM, Waypoint UI, HandyNotes, TTT, GTFO, BugSack, PGF, Smart Reminders). Magguu Settings overlay still does not reimport the bake.
-- **Targeted Spell Bars** (Ellesmere Mythic+ Nearby Cast) **ON**; **EXBoss MythicCast OFF**.
+- **Targeted Spell Bars** is a public feature name. Public pages do not tell players to turn EXBoss MythicCast off.
 - MagguuUI_EUI: **Boiling Point** stays; TopBar, Hearth-Picker, MagguuUI FPS/MS removed.
 - AuraBuff count text **CENTER**. Magguu does not join, leave, or hide Services.
 - Fresh install: **Apply Magguu profiles** imports Magguu profiles + Magguu Settings + companions (HandyNotes, TTT, GTFO, BugSack, PGF, Smart Reminders, …).

@@ -12,7 +12,7 @@ Ton wie EN: klar, kurz, ohne Marketing-Floskeln. Für Admin /home oder Seed `def
 **description** (html-sicher):
 
 ```html
-Natives <strong>EllesmereUI</strong>-Modul für WoW Retail. Für 4K ausgelegt. EllesmereUI + vier MagguuUI-Ordner, <code>/mui</code> und <strong>Magguu-Profile übernehmen</strong>.
+Natives <strong>EllesmereUI</strong>-Modul für WoW Retail. Für 4K ausgelegt. EllesmereUI und MagguuUI bei CurseForge, Wago oder WoWInterface laden, <code>/mui</code> öffnen und <strong>Magguu-Profile übernehmen</strong>.
 ```
 
 ## Feature-Karten
@@ -41,5 +41,5 @@ Ellesmere-Profil <strong>MagguuUI</strong> mit Scale <strong>0.58</strong> und f
 **text** (html-sicher):
 
 ```html
-Skinning ist eine Kategorie <strong>NAMEN &amp; FARBEN</strong> (zwei Spalten): geteilte Unit-Frame-Namen, Party-/Raid-Namen und klassenfarbige Keybind-Modifier. QoL: Death Release, Co-Tank, Stealth/Stance, Spell Alerts, Itemlevel in Party und Raid (2P/4P), <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, ein <strong>Audio-Geräte-Umschalter</strong> am Ellesmere-Lautsprecher, <strong>Boiling Point</strong> und <strong>Targeted Spell Bars</strong> über Ellesmere (EXBoss MythicCast aus).
+<strong>Namen &amp; Farben</strong> — geteilte Unit-, Party- und Raid-Namen; klassenfarbige Keybind-Modifier. <strong>QoL</strong> — Death Release, Co-Tank, Stealth/Stance, Spell Alerts, Itemlevel in Party und Raid (2P/4P), <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, Audio-Umschalter, <strong>Boiling Point</strong>, <strong>Targeted Spell Bars</strong>. Services bleiben unangetastet.
 ```

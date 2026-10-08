@@ -218,7 +218,7 @@
       <div v-if="activeTab === 'wowup'" role="tabpanel" id="tabpanel-wowup" aria-labelledby="tab-wowup" tabindex="0">
         <div class="mb-5 rounded-xl border px-4 py-3 text-sm leading-relaxed"
           :class="isDark ? 'border-brand-400/15 bg-brand-400/5 text-silver-400' : 'border-brand-100 bg-brand-50 text-gray-600'">
-          Same packs Magguu Setup copies. Paste in WowUp — MagguuUI does not install addons. Optional chat addon is <strong :class="isDark ? 'text-white' : 'text-gray-900'">Whisper Messenger</strong> (not WIM).
+          Same packs Magguu Setup copies. Paste in WowUp. MagguuUI does not install addons.
         </div>
         <div v-if="wowupList.length" class="space-y-5">
           <SupportedAddonsDropdown
@@ -328,7 +328,7 @@ const { isLoggedIn } = useAuth()
 const { apiFetch } = useApi()
 usePublicPageSeo({
   title: 'Import Strings',
-  description: 'Browse Magguu profiles and Cooldown Viewer layouts. WowUp chat is Whisper Messenger (not WIM). WIM stays a companion import.',
+  description: 'Browse Magguu profiles and Cooldown Viewer layouts. Paste the WowUp packs from Setup.',
   path: '/strings',
 })
 

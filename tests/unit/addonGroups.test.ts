@@ -9,32 +9,27 @@ import {
   WOWUP_STARTER_SLUGS,
 } from '../../utils/addonChipMeta'
 
-describe('addon groups (Whisper≠WIM)', () => {
-  it('puts EllesmereUI in Required and Whisper Messenger in WowUp, never WIM in WowUp', () => {
+describe('addon groups', () => {
+  it('puts EllesmereUI in Required and every other addon in Optional', () => {
     assert.equal(addonGroupForSlug('ellesmereui', 'required'), 'required')
-    assert.equal(addonGroupForSlug('whisper-messenger', 'optional'), 'wowup')
+    assert.equal(addonGroupForSlug('whisper-messenger', 'optional'), 'optional')
+    assert.equal(addonGroupForSlug('wim', 'optional'), 'optional')
+    assert.equal(addonGroupForSlug('bigwigs', 'core'), 'optional')
     assert.ok(WOWUP_OPTIONAL_SLUGS.has('whisper-messenger'))
     assert.equal(isWowupPackSlug('wim'), false)
-    assert.equal(addonGroupForSlug('wim', 'optional'), 'optional')
     assert.ok(WOWUP_STARTER_SLUGS.has('exboss'))
     assert.ok(WOWUP_STARTER_SLUGS.has('bigwigs'))
-    assert.equal(addonGroupForSlug('bigwigs', 'core'), 'wowup')
   })
 
-  it('groups chips as Required → Optional → WowUp', () => {
+  it('groups chips as Required then Optional', () => {
     const groups = groupAddonChips([
       { key: 'wim', kind: 'optional' as const },
-      { key: 'whisper-messenger', kind: 'wowup' as const },
+      { key: 'whisper-messenger', kind: 'optional' as const },
       { key: 'ellesmereui', kind: 'required' as const },
     ])
-    assert.deepEqual(groups.map(g => g.key), ['required', 'optional', 'wowup'])
-    const req0 = groups[0]?.items[0]
-    const opt0 = groups[1]?.items[0]
-    const wow0 = groups[2]?.items[0]
-    assert.ok(req0 && opt0 && wow0)
-    assert.equal(req0.key, 'ellesmereui')
-    assert.equal(opt0.key, 'wim')
-    assert.equal(wow0.key, 'whisper-messenger')
+    assert.deepEqual(groups.map(g => g.key), ['required', 'optional'])
+    assert.equal(groups[0]?.items[0]?.key, 'ellesmereui')
+    assert.deepEqual(groups[1]?.items.map(item => item.key), ['wim', 'whisper-messenger'])
   })
 
   it('extracts three changelog bullets without bold/code markers', () => {

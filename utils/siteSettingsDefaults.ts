@@ -12,7 +12,7 @@ export const SITE_SETTINGS_DEFAULTS = {
   maintenance_mode: 'false',
   banner_text: '',
   meta_title: 'MagguuUI — Ellesmere setup',
-  meta_description: 'Native overhaul for EllesmereUI, designed for 4K. Install EllesmereUI and the four MagguuUI folders, open /mui, and run Apply Magguu profiles.',
+  meta_description: 'Native overhaul for EllesmereUI, designed for 4K. Download EllesmereUI and MagguuUI from CurseForge, open /mui, and run Apply Magguu profiles.',
   // Empty by default — leaves nuxt-og-image's per-route Satori card as the
   // canonical OG image. Admins can still pin a specific image via settings.
   og_image_url: '',

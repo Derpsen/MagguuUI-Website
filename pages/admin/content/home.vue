@@ -227,11 +227,11 @@ const form = reactive({
   hero: {
     title: "MagguuUI",
     title2: "Ellesmere setup.",
-    description: "MagguuUI is a native EllesmereUI module for WoW Retail. Designed for 4K. Install EllesmereUI and the four MagguuUI addon folders, then open /mui and run Apply Magguu profiles.",
+    description: "MagguuUI is a native EllesmereUI module for WoW Retail. Designed for 4K. Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface, then open /mui and run Apply Magguu profiles.",
   } as Record<string, string>,
   addons: {
     title: "Supported Addons",
-    subtitle: "EllesmereUI is required. BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional.",
+    subtitle: "EllesmereUI is required. Everything else is optional.",
   } as Record<string, string>,
   features_heading: {
     title: "The module",
@@ -246,7 +246,7 @@ const form = reactive({
     feature_2_text: "Ellesmere profile MagguuUI at scale 0.58 with a fixed tooltip. Class layouts import as Magguu - Class Spec. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders.",
     feature_3_emoji: "C",
     feature_3_title: "Skinning and QoL included",
-    feature_3_text: "NAMES & COLORS (two columns): split unit-frame and party/raid names plus class-colored keybind modifiers. QoL covers Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party/raid item level (and 2P/4P), Smart Tab, Hide Services on General, Quick Focus, an audio device switcher, Boiling Point, and Targeted Spell Bars.",
+    feature_3_text: "Names and colors, QoL, Smart Tab, Quick Focus, audio device switcher, Boiling Point, and Targeted Spell Bars. Services stay untouched.",
   } as Record<string, string>,
 })
 

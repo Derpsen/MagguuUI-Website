@@ -1,9 +1,8 @@
 /**
  * GET /api/v1/changelogs?locale=de|en
  *
- * Public feed: the latest published MagguuUI version only.
- * Full history stays on GitHub CHANGELOG.md and in admin (/api/v1/admin/changelogs).
- * Query limit/offset are accepted for compatibility but ignored.
+ * Public feed: published MagguuUI versions, newest first.
+ * GitHub CHANGELOG.md stays the full archive. Query limit/offset are ignored.
  */
 
 import { and, desc, eq, like } from 'drizzle-orm'
@@ -19,20 +18,18 @@ export default defineEventHandler(async (event) => {
     like(changelogs.version, 'v%'),
   )
 
-  const latest = db
+  const rows = db
     .select()
     .from(changelogs)
     .where(where)
     .orderBy(desc(changelogs.publishedAt))
-    .limit(1)
-    .get()
+    .limit(24)
+    .all()
 
-  const mapped = latest
-    ? [{
-        ...latest,
-        content: locale === 'en' && latest.contentEn ? latest.contentEn : latest.content,
-      }]
-    : []
+  const mapped = rows.map(row => ({
+    ...row,
+    content: locale === 'en' && row.contentEn ? row.contentEn : row.content,
+  }))
 
-  return apiSuccess(mapped, { count: mapped.length, total: mapped.length, limit: 1, offset: 0 })
+  return apiSuccess(mapped, { count: mapped.length, total: mapped.length, limit: 24, offset: 0 })
 })

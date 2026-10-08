@@ -12,9 +12,8 @@ describe('WowUp pack copy', () => {
     const guideStep3 = DEFAULT_GUIDE_CONTENT.find(entry => entry.section === 'steps' && entry.key === 'step_3')
     assert.ok(guideStep3)
     assert.ok(guideStep3.value.includes('**WowUp starter:** ' + STARTER))
-    assert.ok(guideStep3.value.includes('Whisper Messenger (not WIM)'))
     assert.match(guideStep3.value, /\*\*WowUp optional:\*\*.*Whisper Messenger/)
-    assert.match(guideStep3.value, /\*\*Magguu import if installed:\*\*.*\bWIM\b/)
+    assert.doesNotMatch(guideStep3.value, /\(not WIM\)/)
     assert.doesNotMatch(guideStep3.value, /Starter pack/)
 
     const wowupFaq = DEFAULT_FAQS.find(faq => faq.question === 'Are the WowUp strings still required?')
@@ -32,7 +31,8 @@ describe('MagguuUI product facts copy', () => {
   it('locks Ellesmere live host, Apply Magguu profiles, Targeted Spell Bars, and no foreign author credits', () => {
     assert.match(CURRENT_ADDON_CHANGELOG.content, /live \*\*9\.2\.9\*\*/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Targeted Spell Bars/)
-    assert.match(CURRENT_ADDON_CHANGELOG.content, /EXBoss MythicCast OFF/)
+    assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /MythicCast/)
+    assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /four-addon group/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Boiling Point/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Apply Magguu profiles/)
     assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /Install All/)
@@ -44,7 +44,10 @@ describe('MagguuUI product facts copy', () => {
 
     const guideIntro = DEFAULT_GUIDE_CONTENT.find(e => e.section === 'intro' && e.key === 'text')
     assert.ok(guideIntro?.value.includes('Apply Magguu profiles'))
-    assert.ok(guideIntro?.value.includes('Whisper Messenger (not WIM)'))
+    assert.ok(guideIntro?.value.includes('Everything except EllesmereUI is optional'))
+    assert.doesNotMatch(guideIntro?.value || '', /\(not WIM\)/)
+    assert.match(guideIntro?.value || '', /CurseForge/)
+    assert.doesNotMatch(guideIntro?.value || '', /four MagguuUI folders/)
     assert.doesNotMatch(guideIntro?.value || '', /overlay\/QoL only/)
 
     const step4 = DEFAULT_GUIDE_CONTENT.find(e => e.section === 'steps' && e.key === 'step_4')
@@ -82,6 +85,7 @@ describe('MagguuUI product facts copy', () => {
     assert.match(qol?.answer || '', /Smart Tab/)
     assert.match(qol?.answer || '', /Boiling Point/)
     assert.doesNotMatch(qol?.answer || '', /Hide Services/)
+    assert.doesNotMatch(qol?.answer || '', /MythicCast/)
 
     for (const addon of ADDON_DEFAULTS) {
       assert.doesNotMatch(addon.description || '', /\bdump\b/i, addon.slug)

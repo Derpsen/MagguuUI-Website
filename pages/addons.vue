@@ -1,60 +1,43 @@
 <template>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
     <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Catalog</p>
     <h1 class="text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">Addons</h1>
     <div class="mt-4 space-y-3 text-sm leading-relaxed max-w-2xl" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
       <p>
-        <code>EllesmereUI</code> 9.0.6+ plus four sibling folders: <code>MagguuUI</code>, <code>MagguuUI_Data</code>, <code>MagguuUI_EUI</code>, and <code>MagguuUI_Media</code>. Keep all four enabled.
+        EllesmereUI is required. Download it and MagguuUI from CurseForge, Wago, or WoWInterface. Everything else is optional.
       </p>
       <p>
-        Optional Magguu imports: BigWigs, Northern Sky, EXBoss, Whisper Messenger (not WIM), Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders. WIM applies with Apply Magguu profiles when it is installed and has no Setup button.
-      </p>
-      <p>
-        Copy the WowUp packs from Setup, or from <NuxtLink to="/strings" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">Import Strings</NuxtLink>. MagguuUI does not install addons itself.
+        MagguuUI applies a profile when that addon is installed and skips it otherwise.
+        Copy WowUp lists from Setup, or from <NuxtLink to="/strings" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">Import Strings</NuxtLink>.
       </p>
     </div>
 
-    <section v-if="requiredAddons.length" class="mt-12">
-      <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Required</h2>
-      <p class="mt-2 text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">MagguuUI will not load without this host UI.</p>
-      <ul class="mt-3 border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
-        <li v-for="addon in requiredAddons" :key="addon.slug" class="border-b" :class="isDark ? 'border-white/10' : 'border-gray-200'">
-          <component :is="addon.url ? 'a' : 'div'"
-            v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
-            class="block py-4">
-            <h3 class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ addon.name }}</h3>
-            <p class="mt-1 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</p>
-          </component>
-        </li>
-      </ul>
-    </section>
-
-    <section v-if="coreAddons.length" class="mt-12">
-      <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Included with MagguuUI</h2>
-      <p class="mt-2 text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Class layouts ship with MagguuUI. BigWigs is an optional Magguu import when installed.</p>
-      <ul class="mt-3 border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
-        <li v-for="addon in coreAddons" :key="addon.slug" class="border-b" :class="isDark ? 'border-white/10' : 'border-gray-200'">
-          <component :is="addon.url ? 'a' : 'div'"
-            v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
-            class="block py-4">
-            <h3 class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ addon.name }}</h3>
-            <p class="mt-1 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</p>
-          </component>
-        </li>
-      </ul>
-    </section>
-
-    <section v-if="optionalAddons.length" class="mt-12">
-      <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Optional</h2>
-      <p class="mt-2 text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Imported when installed. Missing addons are skipped. WowUp extras such as LittleWigs live in the starter pack.</p>
-      <ul class="mt-3 border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
-        <li v-for="addon in optionalAddons" :key="addon.slug" class="border-b" :class="isDark ? 'border-white/10' : 'border-gray-200'">
-          <component :is="addon.url ? 'a' : 'div'"
-            v-bind="addon.url ? { href: addon.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
-            class="block py-4">
-            <h3 class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ addon.name }}</h3>
-            <p class="mt-1 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</p>
-          </component>
+    <section v-for="group in groups" :key="group.key" class="mt-12">
+      <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">{{ group.label }}</h2>
+      <p class="mt-2 text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ group.hint }}</p>
+      <ul class="mt-4 grid sm:grid-cols-2 gap-3">
+        <li v-for="addon in group.items" :key="addon.slug">
+          <a
+            :href="addon.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex h-full gap-3 border p-4"
+            :class="isDark ? 'border-white/10 hover:border-white/25' : 'border-gray-200 hover:border-gray-400'"
+          >
+            <img
+              v-if="iconFor(addon.slug)"
+              :src="iconFor(addon.slug)"
+              :alt="''"
+              width="48"
+              height="48"
+              class="h-12 w-12 shrink-0 object-contain"
+            />
+            <span v-else class="flex h-12 w-12 shrink-0 items-center justify-center text-2xl" aria-hidden="true">{{ addon.emoji }}</span>
+            <span class="min-w-0">
+              <span class="block text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ addon.name }}</span>
+              <span class="mt-1 block text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</span>
+            </span>
+          </a>
         </li>
       </ul>
     </section>
@@ -62,11 +45,13 @@
 </template>
 
 <script setup lang="ts">
+import { ADDON_ICONS } from '~/utils/addonIcons'
+
 const isDark = useIsDark()
 
 usePublicPageSeo({
   title: 'Addons',
-  description: 'See the addons MagguuUI needs and the optional raid tools it can configure.',
+  description: 'EllesmereUI is required. Every other addon MagguuUI can set up is optional, with a link to its CurseForge page.',
   path: '/addons',
 })
 
@@ -76,6 +61,7 @@ interface Addon {
   emoji: string | null
   description: string | null
   url: string | null
+  sortOrder?: number
 }
 
 interface AddonsResponse {
@@ -86,7 +72,30 @@ interface AddonsResponse {
 }
 
 const { data } = useFetch<{ data: AddonsResponse }>('/api/v1/addons')
-const requiredAddons = computed<Addon[]>(() => data.value?.data?.required ?? [])
-const coreAddons = computed<Addon[]>(() => data.value?.data?.core ?? [])
-const optionalAddons = computed<Addon[]>(() => data.value?.data?.optional ?? [])
+
+function iconFor(slug: string): string | undefined {
+  return ADDON_ICONS[slug]
+}
+
+const groups = computed(() => {
+  const payload = data.value?.data
+  const required = payload?.required ?? []
+  const optional = [...(payload?.core ?? []), ...(payload?.optional ?? [])]
+    .filter(addon => addon.url)
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.name.localeCompare(b.name))
+  return [
+    required.length ? {
+      key: 'required',
+      label: 'Required',
+      hint: 'MagguuUI does not load without EllesmereUI.',
+      items: required.filter(addon => addon.url),
+    } : null,
+    optional.length ? {
+      key: 'optional',
+      label: 'Optional',
+      hint: 'Install the ones you want. Missing addons are skipped.',
+      items: optional,
+    } : null,
+  ].filter((group): group is { key: string, label: string, hint: string, items: Addon[] } => group !== null)
+})
 </script>

@@ -16,12 +16,11 @@
         Everything lives in EllesmereUI under MagguuUI → Options.
       </p>
       <p class="mt-3 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-        The download is four sibling folders:
-        <strong :class="isDark ? 'text-white' : 'text-gray-900'">MagguuUI</strong>,
-        MagguuUI [Data], MagguuUI [EUI], and MagguuUI [Media]. Keep all four enabled in Interface/AddOns.
+        Download
         <strong :class="isDark ? 'text-white' : 'text-gray-900'">EllesmereUI 9.0.6+</strong>
-        must be installed and enabled. BigWigs, Northern Sky, EXBoss, Whisper Messenger (not WIM), Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional. WIM is a Magguu import when it is installed, with no Setup button.
-        MagguuUI configures them when they are installed and skips them otherwise.
+        and MagguuUI from CurseForge, Wago, or WoWInterface, and leave them enabled.
+        BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional.
+        MagguuUI sets them up when they are installed and skips them otherwise.
       </p>
     </section>
 
@@ -50,7 +49,7 @@
         </div>
         <div>
           <dt class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">Quality of life</dt>
-          <dd class="mt-1">Death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, per-spec proc-overlay hiding, party and raid item level (and 2P/4P), Smart Tab, Hide Services on General, Quick Focus, the audio device switcher on the Ellesmere speaker icon, Boiling Point, and Targeted Spell Bars via Ellesmere (leave EXBoss MythicCast off).</dd>
+          <dd class="mt-1">Death-release protection, co-tank frame and debuffs, stealth and stance reminders, spell-alert opacity, per-spec proc-overlay hiding, party and raid item level (and 2P/4P), Smart Tab, Quick Focus, the audio device switcher, Boiling Point, and Targeted Spell Bars. Services stay untouched.</dd>
         </div>
         <div>
           <dt class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">Hidden Tools</dt>

@@ -82,7 +82,7 @@
           {{ visibleTitle || 'Installation Guide' }}
         </h1>
         <p class="mt-4 max-w-2xl text-base leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-          {{ visibleSubtitle || 'Install EllesmereUI 9.0.6+ and the four MagguuUI folders. Open /mui and run Apply Magguu profiles. Companions stay optional — WowUp optional chat is Whisper Messenger (not WIM).' }}
+          {{ visibleSubtitle || 'Download EllesmereUI 9.0.6+ and MagguuUI from CurseForge, Wago, or WoWInterface. Open /mui and run Apply Magguu profiles. Everything except EllesmereUI is optional.' }}
         </p>
         <nav class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label="Download MagguuUI">
           <a
@@ -118,19 +118,15 @@
       </div>
     </section>
 
-    <figure v-if="!editMode" class="mb-12 max-w-3xl">
-      <img
+    <div v-if="!editMode" class="mb-12 mx-auto max-w-3xl">
+      <ScreenshotFrame
         src="/screenshots/setup.jpg"
         alt="EllesmereUI MagguuUI Setup, with Apply Magguu profiles."
-        width="2000"
-        height="1125"
-        class="w-full border"
-        :class="isDark ? 'border-white/10' : 'border-gray-200'"
-        loading="lazy"
-        decoding="async"
+        caption="Setup, opened with /mui"
+        :width="2000"
+        :height="1125"
       />
-      <figcaption class="mt-2 font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Setup, opened with /mui</figcaption>
-    </figure>
+    </div>
 
     <!-- Layout: steps + sidebar -->
     <div v-if="visibleSteps.length" class="grid lg:grid-cols-[minmax(0,1fr)_260px] gap-8 lg:gap-12 items-start">
@@ -283,7 +279,7 @@ const installLinks = computed(() => [
 ])
 usePublicPageSeo({
   title: 'Installation Guide',
-  description: 'Install EllesmereUI 9.0.6+ and the four MagguuUI folders, open /mui, and run Apply Magguu profiles. Companions and WowUp packs stay optional.',
+  description: 'Download EllesmereUI 9.0.6+ and MagguuUI from CurseForge, Wago, or WoWInterface, open /mui, and run Apply Magguu profiles.',
   path: '/guide',
 })
 useHead({

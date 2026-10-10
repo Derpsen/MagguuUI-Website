@@ -16,7 +16,7 @@ export function normalizeAddonVersion(version: string | null | undefined): strin
 }
 
 /** Known MagguuUI release shipped with this website (from defaultAddonChangelog). */
-export const KNOWN_ADDON_VERSION = normalizeAddonVersion(CURRENT_ADDON_CHANGELOG.version) || '12.1.6'
+export const KNOWN_ADDON_VERSION = normalizeAddonVersion(CURRENT_ADDON_CHANGELOG.version) || '12.1.7'
 
 /**
  * Read local MagguuUI version from settings (local_version -> addon_version -> known product version).

@@ -15,6 +15,7 @@ import { CURRENT_ADDON_CHANGELOG, PREVIOUS_ADDON_CHANGELOGS, scrubPublishedChang
 import { users, siteContent, faqs, settings, changelogs } from '~/server/database/schema'
 import { DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
+import { purgeRetiredAddonProfiles } from '~/server/utils/addonProfileSync'
 import { ensureAddonsSeeded } from '~/server/utils/syncAddons'
 
 
@@ -180,7 +181,9 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'Hide Services on General, Quick Focus (modifier-click to focus), and an audio device switcher' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'Hide Services on General (secret-safe)' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'chat channels and size with Services off General' },
+  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'EXBoss, WIM, Whisper Messenger' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'EXBoss, WIM, Waypoint UI' },
+  { page: 'home', section: 'features', key: 'feature_2_text', marker: 'EXBoss, WIM, Whisper Messenger', locale: 'de' },
   { page: 'home', section: 'features', key: 'feature_2_text', marker: 'EXBoss, WIM, Waypoint UI', locale: 'de' },
   { page: 'home', section: 'addons', key: 'subtitle', marker: 'EXBoss, WIM, Waypoint UI' },
   { page: 'home', section: 'addons', key: 'subtitle', marker: 'EXBoss, WIM, Waypoint UI', locale: 'de' },
@@ -349,6 +352,11 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'troubleshooting', sortOrder: 2, marker: 're-run **Install All**' },
   { category: 'general', sortOrder: 2, marker: 'EXBoss, WIM, Waypoint UI' },
   { category: 'installation', sortOrder: 0, marker: 'EXBoss, WIM, Waypoint UI' },
+  { category: 'general', sortOrder: 2, marker: 'EXBoss, WIM, Whisper Messenger' },
+  { category: 'installation', sortOrder: 0, marker: 'EXBoss, WIM, Whisper Messenger' },
+  { category: 'addons', sortOrder: 0, marker: '**Whisper Messenger**, **WIM**' },
+  { category: 'addons', sortOrder: 3, marker: '/ WIM / Whisper Messenger' },
+  { category: 'addons', sortOrder: 3, marker: 'Smart Reminders. WIM, Waypoint UI' },
   { category: 'addons', sortOrder: 0, marker: '- **WIM**, **Waypoint UI**, **HandyNotes**' },
   { category: 'addons', sortOrder: 3, marker: 'EXBoss / WIM / Waypoint UI' },
   { category: 'addons', sortOrder: 3, marker: 'Northern Sky, EXBoss, Smart Reminders' },
@@ -841,6 +849,10 @@ export default defineNitroPlugin(() => {
   }
 
   try {
+    const retiredProfiles = purgeRetiredAddonProfiles()
+    if (retiredProfiles > 0) {
+      console.log(`[Init] Purged ${retiredProfiles} retired addon profiles`)
+    }
     const addonResult = ensureAddonsSeeded()
     if (addonResult.unavailable > 0) {
       console.log(`[Init] Purged ${addonResult.unavailable} retired addon catalogue entries`)

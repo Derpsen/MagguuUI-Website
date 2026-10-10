@@ -16,7 +16,6 @@ const PROFILE_KEY_BY_SLUG: Record<string, string> = {
   'northern-sky-raid-tools': 'NorthernSkyRaidTools',
   exboss: 'EXBoss',
   'whisper-messenger': 'WhisperMessenger',
-  wim: 'WIM',
   waypointui: 'WaypointUI',
   handynotes: 'HandyNotes',
   'talent-tree-tweaks': 'TalentTreeTweaks',

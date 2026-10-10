@@ -10,7 +10,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_2_title', value: 'Current Retail layouts', type: 'text', sortOrder: 3, locale: 'en' },
-  { page: 'home', section: 'features', key: 'feature_2_text', value: '<ul><li>Ellesmere profile <strong>MagguuUI</strong>, scale <strong>0.58</strong></li><li>Class layouts as <strong>Magguu - Class Spec</strong></li><li>BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI</li><li>HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, Smart Reminders</li></ul>', type: 'html', sortOrder: 4, locale: 'en' },
+  { page: 'home', section: 'features', key: 'feature_2_text', value: '<ul><li>Ellesmere profile <strong>MagguuUI</strong>, scale <strong>0.58</strong></li><li>Class layouts as <strong>Magguu - Class Spec</strong></li><li>BigWigs, Northern Sky, EXBoss, Whisper Messenger, Waypoint UI</li><li>HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, Smart Reminders</li></ul>', type: 'html', sortOrder: 4, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_2_icon', value: 'i-heroicons-squares-2x2', type: 'text', sortOrder: 5, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_3_title', value: 'Skinning and QoL included', type: 'text', sortOrder: 6, locale: 'en' },
@@ -34,7 +34,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'de' },
 
   { page: 'home', section: 'features', key: 'feature_2_title', value: 'Aktuelle Retail-Layouts', type: 'text', sortOrder: 3, locale: 'de' },
-  { page: 'home', section: 'features', key: 'feature_2_text', value: '<ul><li>Ellesmere-Profil <strong>MagguuUI</strong>, Scale <strong>0.58</strong></li><li>Klassen-Layouts als <strong>Magguu - Class Spec</strong></li><li>BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI</li><li>HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, Smart Reminders</li></ul>', type: 'html', sortOrder: 4, locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_2_text', value: '<ul><li>Ellesmere-Profil <strong>MagguuUI</strong>, Scale <strong>0.58</strong></li><li>Klassen-Layouts als <strong>Magguu - Class Spec</strong></li><li>BigWigs, Northern Sky, EXBoss, Whisper Messenger, Waypoint UI</li><li>HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, Smart Reminders</li></ul>', type: 'html', sortOrder: 4, locale: 'de' },
   { page: 'home', section: 'features', key: 'feature_2_icon', value: 'i-heroicons-squares-2x2', type: 'text', sortOrder: 5, locale: 'de' },
 
   { page: 'home', section: 'features', key: 'feature_3_title', value: 'Skinning und QoL inklusive', type: 'text', sortOrder: 6, locale: 'de' },
@@ -103,7 +103,7 @@ There is no paid tier, no premium content, and no ads.`,
 - **EllesmereUI 9.0.6+** — required host UI
 - **MagguuUI**, from CurseForge, Wago, or WoWInterface. Leave it enabled.
 
-**BigWigs**, **LittleWigs**, and **Northern Sky Raid Tools** are optional. MagguuUI configures them when they are installed and skips them otherwise. Optional Magguu profiles also include EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders.`,
+**BigWigs**, **LittleWigs**, and **Northern Sky Raid Tools** are optional. MagguuUI configures them when they are installed and skips them otherwise. Optional Magguu profiles also include EXBoss, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders.`,
     sortOrder: 2,
   },
   {
@@ -130,7 +130,7 @@ It needs **EllesmereUI 9.0.6 or newer**. Classic and other flavors are not suppo
 
 1. Install **EllesmereUI 9.0.6+** and leave it enabled
 2. Install **MagguuUI** from CurseForge, Wago, or WoWInterface and leave it enabled
-3. Optionally install BigWigs, LittleWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and/or Smart Reminders
+3. Optionally install BigWigs, LittleWigs, Northern Sky, EXBoss, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and/or Smart Reminders
 4. Log in, type \`/mui\`, and run **Apply Magguu profiles** on Setup. Use **Magguu Settings** (overlay/QoL only) and **Load profiles** (activate only) side by side, and copy WowUp packs from the same tab
 
 Ellesmere's start popup is skipped. MagguuUI Setup opens so you can run Apply Magguu profiles.
@@ -178,7 +178,7 @@ It will not load unless EllesmereUI is installed **and enabled**.`,
 - **EllesmereUI** profile \`MagguuUI\` at UI scale **0.58**
 - **BigWigs** profile and boss options, if BigWigs is present (MagguuUI accepts the BigWigs MagguuUI popup for you)
 - **Northern Sky Raid Tools** and **EXBoss** (MagguuUI appearance and MagguuUI role configs; re-import replaces MagguuUI configs), if those addons are present
-- **Whisper Messenger**, **WIM**, **Waypoint UI**, **HandyNotes**, **Talent Tree Tweaks**, **GTFO**, **BugSack**, **Premade Groups Filter**, and **Smart Reminders**, if those addons are present
+- **Whisper Messenger**, **Waypoint UI**, **HandyNotes**, **Talent Tree Tweaks**, **GTFO**, **BugSack**, **Premade Groups Filter**, and **Smart Reminders**, if those addons are present
 - **Cooldown Viewer** class layouts, then a reload confirm popup
 
 Per-addon MagguuUI imports live on **Setup**. Gold **Apply Magguu profiles**, then **Magguu Settings** (overlay/QoL only) and **Load profiles** (activate only) side by side, plus WowUp copy popups.`,
@@ -207,9 +207,9 @@ Tools can copy a layout for you to paste.`,
   {
     category: 'addons',
     question: 'What is the difference between Apply Magguu profiles and individual profiles?',
-    answer: `**Apply Magguu profiles** — Magguu Ellesmere profile at scale 0.58 plus Magguu Settings, then BigWigs / Northern Sky / EXBoss / WIM / Whisper Messenger / Waypoint UI / HandyNotes / Talent Tree Tweaks / GTFO / BugSack / Premade Groups Filter / Smart Reminders if present, then class layouts.
+    answer: `**Apply Magguu profiles** — Magguu Ellesmere profile at scale 0.58 plus Magguu Settings, then BigWigs / Northern Sky / EXBoss / Whisper Messenger / Waypoint UI / HandyNotes / Talent Tree Tweaks / GTFO / BugSack / Premade Groups Filter / Smart Reminders if present, then class layouts.
 
-**Individual profiles** — import only the piece you want from **Setup**. Required: EllesmereUI and class layouts. Optional Setup buttons: BigWigs, Northern Sky, EXBoss, Whisper Messenger, Smart Reminders. WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter apply with Apply Magguu profiles and Load profiles.
+**Individual profiles** — import only the piece you want from **Setup**. Required: EllesmereUI and class layouts. Optional Setup buttons: BigWigs, Northern Sky, EXBoss, Whisper Messenger, Smart Reminders. Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, and Premade Groups Filter apply with Apply Magguu profiles and Load profiles.
 
 **Magguu Settings** applies MagguuUI overlay/QoL only (fonts, class colors, Giant options panel, Skinning NAMES & COLORS toggles, MagguuUI chat size, MagguuUI extras, fixed tooltip). It does **not** re-import Magguu profiles. **Magguu Settings** and **Load profiles** sit side by side below Apply Magguu profiles. Scale \`0.58\` comes with Apply Magguu profiles / Magguu Settings; Magguu Settings does not re-import Ellesmere — there is no Set-scale-only button. **Load profiles** activates MagguuUI profiles and does not re-import them (class layouts still install per character).
 

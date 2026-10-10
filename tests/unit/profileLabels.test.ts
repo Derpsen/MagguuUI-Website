@@ -9,7 +9,6 @@ const EXPECTED: Record<string, string> = {
   NorthernSkyRaidTools: 'Northern Sky',
   EXBoss: 'EXBoss',
   WhisperMessenger: 'Whisper Messenger',
-  WIM: 'WIM',
   WaypointUI: 'Waypoint UI',
   HandyNotes: 'HandyNotes',
   TalentTreeTweaks: 'Talent Tree Tweaks',

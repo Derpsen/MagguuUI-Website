@@ -248,7 +248,7 @@ const heroTitle2 = computed(() => {
 function toChip(addon: PublicAddonChip) {
   const kind = addonGroupForSlug(addon.slug, addon.category)
   const subtitle = addonGroupSubtitle(kind)
-  // Whisper Messenger = WowUp; WIM = Optional Magguu import only (never WowUp).
+  // Whisper Messenger is the whisper addon. WIM is retired.
   const badge = kind
   return {
     key: addon.slug,
@@ -287,7 +287,7 @@ const features = computed(() => [
   },
   {
     title: content.value?.features?.feature_2_title || 'Current Retail layouts',
-    text: content.value?.features?.feature_2_text || 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders.',
+    text: content.value?.features?.feature_2_text || 'Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with a fixed tooltip. Class layouts import as <strong>Magguu - Class Spec</strong>. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders.',
   },
   {
     title: content.value?.features?.feature_3_title || 'Skinning and QoL included',

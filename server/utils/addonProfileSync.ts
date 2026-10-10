@@ -15,6 +15,12 @@ import {
   type ParsedAddonProfileEntry,
 } from '~/server/utils/addonProfileLua'
 
+/** Drop profiles for addons Magguu no longer ships. WIM was replaced by Whisper Messenger. */
+export function purgeRetiredAddonProfiles(): number {
+  const result = db.delete(profiles).where(eq(profiles.addon, 'WIM')).run()
+  return result.changes ?? 0
+}
+
 export type AddonProfileSyncStatus = 'created' | 'updated' | 'unchanged'
 
 export interface AddonProfileSyncChange {

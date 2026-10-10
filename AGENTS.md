@@ -82,7 +82,7 @@ Admin-Smoke 6/6 PASS auf diesem Digest.
 
 - **Starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore.
 - **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, Whisper Messenger, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
-- **Whisper Messenger** (not WIM / Ellesmere WIM Skin) in Optional + Discord embeds. No WindTools. HandyNotes MapNotes is on WowUp Optional; Magguu settings apply with HandyNotes via Apply Magguu profiles / Load profiles.
+- **Whisper Messenger** is the whisper addon (Optional + Discord embeds). WIM is retired: no catalog card, no profile row, no WowUp pack. Ellesmere WIM Skin stays retired. No WindTools. HandyNotes MapNotes is on WowUp Optional; Magguu settings apply with HandyNotes via Apply Magguu profiles / Load profiles.
 
 ## Audit allowlist / overrides (#117, review-by **2026-11-30**)
 

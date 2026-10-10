@@ -10,8 +10,10 @@ import {
   MAX_ADDON_LUA_SOURCE_BYTES,
   assertCompleteAddonLuaSnapshot,
   parseSafeAddonLuaPath,
+  RETIRED_ADDON_LUA_FILES,
 } from '~/server/utils/addonProfileLua'
 import {
+  purgeRetiredAddonProfiles,
   syncAddonProfileFile,
   syncWowUpFile,
   validateAddonProfileFile,
@@ -120,8 +122,9 @@ export async function fetchAddonLuaSnapshot(
     token: options.token,
     maxEntries: options.maxEntries,
   })
+  const retired = new Set<string>(RETIRED_ADDON_LUA_FILES)
   const luaFiles = files
-    .filter(file => file.name.endsWith('.lua'))
+    .filter(file => file.name.endsWith('.lua') && !retired.has(file.name))
     .sort((a, b) => a.path.localeCompare(b.path))
   assertCompleteAddonLuaSnapshot(luaFiles.map(file => file.name))
 
@@ -175,6 +178,7 @@ export function applyAddonLuaSnapshot(
   sources: AddonLuaSource[],
   results: GithubDataSyncResult[],
 ): void {
+  purgeRetiredAddonProfiles()
   for (const source of sources) {
     if (source.isWowUp) {
       appendWowUpResults(results, source.path, syncWowUpFile(source.path, source.content))

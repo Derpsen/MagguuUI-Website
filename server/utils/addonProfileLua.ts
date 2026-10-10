@@ -18,7 +18,6 @@ export const REQUIRED_ADDON_LUA_FILES = [
 ] as const
 export const OPTIONAL_ADDON_LUA_FILES = [
   'WowUp.lua',
-  'WIM.lua',
   'WhisperMessenger.lua',
   'WaypointUI.lua',
   'EXBoss.lua',
@@ -28,6 +27,11 @@ export const OPTIONAL_ADDON_LUA_FILES = [
   'BugSack.lua',
   'PremadeGroupsFilter.lua',
   'NaowhSmartReminders.lua',
+] as const
+
+/** Still accepted in an old GitHub snapshot, never imported. */
+export const RETIRED_ADDON_LUA_FILES = [
+  'WIM.lua',
 ] as const
 
 const SAFE_ADDON_PATH_RE = /^MagguuUI_Data\/AddOns\/([A-Za-z][A-Za-z0-9_]*)\.lua$/
@@ -122,7 +126,11 @@ export function assertCompleteAddonLuaSnapshot(fileNames: Iterable<string>) {
       `Addon data snapshot is missing: ${missing.join(', ')}`,
     )
   }
-  const supported = new Set<string>([...REQUIRED_ADDON_LUA_FILES, ...OPTIONAL_ADDON_LUA_FILES])
+  const supported = new Set<string>([
+    ...REQUIRED_ADDON_LUA_FILES,
+    ...OPTIONAL_ADDON_LUA_FILES,
+    ...RETIRED_ADDON_LUA_FILES,
+  ])
   const unexpected = [...available].filter(fileName => !supported.has(fileName)).sort()
   if (unexpected.length) {
     throw new AddonProfileLuaError(

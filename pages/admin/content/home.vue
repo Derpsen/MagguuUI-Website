@@ -243,7 +243,7 @@ const form = reactive({
     feature_1_text: "Two sidebar rows: Options (Setup, Skinning, QoL) and Changelog. Gold Apply Magguu profiles, Magguu Settings and Load profiles side by side, required and optional imports, and WowUp copy strings live on Setup.",
     feature_2_emoji: "B",
     feature_2_title: "Current Retail layouts",
-    feature_2_text: "Ellesmere profile MagguuUI at scale 0.58 with a fixed tooltip. Class layouts import as Magguu - Class Spec. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders.",
+    feature_2_text: "Ellesmere profile MagguuUI at scale 0.58 with a fixed tooltip. Class layouts import as Magguu - Class Spec. Optional Magguu profiles for BigWigs, Northern Sky, EXBoss, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders.",
     feature_3_emoji: "C",
     feature_3_title: "Skinning and QoL included",
     feature_3_text: "Names and colors, QoL, Smart Tab, Quick Focus, audio device switcher, Boiling Point, and Targeted Spell Bars. Services stay untouched.",

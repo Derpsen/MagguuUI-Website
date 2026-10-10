@@ -5,7 +5,6 @@ const PROFILE_ADDON_LABELS: Record<string, string> = {
   NorthernSkyRaidTools: 'Northern Sky',
   EXBoss: 'EXBoss',
   WhisperMessenger: 'Whisper Messenger',
-  WIM: 'WIM',
   WaypointUI: 'Waypoint UI',
   HandyNotes: 'HandyNotes',
   TalentTreeTweaks: 'Talent Tree Tweaks',

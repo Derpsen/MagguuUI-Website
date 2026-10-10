@@ -45,7 +45,7 @@
 
     <div>
       <!-- Tabs -->
-      <div class="strings-sticky-tabs sticky z-30 flex flex-wrap gap-5 mb-6 py-2 border-b backdrop-blur-md" role="tablist" aria-label="Import string categories" style="top: 6.25rem;" :class="isDark ? 'border-white/10 bg-[#0b1118]/95' : 'border-gray-200 bg-[#eef4fb]/95'">
+      <div class="strings-sticky-tabs sticky z-30 flex flex-wrap justify-center gap-5 mb-6 py-2 border-b backdrop-blur-md" role="tablist" aria-label="Import string categories" style="top: 6.25rem;" :class="isDark ? 'border-white/10 bg-[#0b1118]/95' : 'border-gray-200 bg-[#eef4fb]/95'">
         <button v-for="tab in tabs" :key="tab.value"
           role="tab"
           :id="`tab-${tab.value}`"
@@ -63,10 +63,10 @@
 
       <!-- ═══ Cooldown Layouts ═══ -->
       <div v-if="activeTab === 'layouts'" role="tabpanel" id="tabpanel-layouts" aria-labelledby="tab-layouts" tabindex="0">
-        <div v-if="layoutList.length" class="space-y-5">
+        <div v-if="layoutList.length" class="mx-auto w-full max-w-3xl space-y-5">
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Class</label>
-            <div class="flex flex-wrap gap-2" role="listbox" aria-label="WoW classes">
+            <label class="block text-center text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Class</label>
+            <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="WoW classes">
               <button
                 v-for="cls in layoutClasses"
                 :key="cls"
@@ -96,29 +96,34 @@
             </div>
           </div>
           <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1" enter-to-class="opacity-100 translate-y-0">
-            <div v-if="selectedClass && layoutSpecs.length > 1">
-              <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Specialization</label>
-              <div class="flex flex-wrap gap-2">
+            <div v-if="selectedClass && layoutSpecs.length">
+              <label class="block text-center text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Specialization</label>
+              <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="Specializations">
                 <button
                   v-for="spec in layoutSpecs"
                   :key="spec"
                   type="button"
+                  role="option"
+                  :aria-selected="selectedSpec === spec"
                   class="wow-class-chip"
                   :class="selectedSpec === spec ? 'is-active' : ''"
                   @click="selectedSpec = spec"
                 >
                   <img
-                    v-if="wowClassIcon(selectedClass)"
-                    :src="wowClassIcon(selectedClass)!"
-                    :alt="''"
+                    v-if="wowSpecIcon(selectedClass, spec)"
+                    :src="wowSpecIcon(selectedClass, spec)!"
+                    alt=""
                     class="wow-class-chip__icon"
                     width="24"
                     height="24"
                     loading="lazy"
                   />
-                  <span>{{ selectedClass }} — {{ spec }}</span>
+                  <span>{{ spec }}</span>
                 </button>
               </div>
+              <p v-if="layoutSharesSpecs" class="mt-2.5 text-center text-xs" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+                This string imports {{ sharedSpecList }}.
+              </p>
             </div>
           </Transition>
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
@@ -161,19 +166,51 @@
 
       <!-- ═══ Addon Profiles ═══ -->
       <div v-if="activeTab === 'profiles'" role="tabpanel" id="tabpanel-profiles" aria-labelledby="tab-profiles" tabindex="0">
-        <div v-if="profileList.length" class="space-y-5">
+        <div v-if="profileList.length" class="mx-auto w-full max-w-3xl space-y-5">
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Addon</label>
-            <select v-model="selectedAddon" class="select-styled w-full px-4 py-3.5 rounded-xl text-base cursor-pointer" :class="isDark ? 'text-white' : 'text-gray-900'">
-              <option v-for="addon in profileAddons" :key="addon" :value="addon">{{ profileAddonLabel(addon) }}</option>
-            </select>
+            <label class="block text-center text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Addon</label>
+            <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="Addon profiles">
+              <button
+                v-for="addon in profileAddons"
+                :key="addon"
+                type="button"
+                role="option"
+                :aria-selected="selectedAddon === addon"
+                class="wow-class-chip"
+                :class="selectedAddon === addon ? 'is-active' : ''"
+                @click="selectedAddon = addon"
+              >
+                <img
+                  v-if="addonIconForName(addon)"
+                  :src="addonIconForName(addon)"
+                  alt=""
+                  class="wow-class-chip__icon"
+                  width="24"
+                  height="24"
+                  loading="lazy"
+                />
+                <span v-else class="wow-class-chip__icon inline-flex items-center justify-center text-sm" aria-hidden="true">{{ emojiForAddonName(profileAddonLabel(addon)) }}</span>
+                <span>{{ profileAddonLabel(addon) }}</span>
+              </button>
+            </div>
           </div>
           <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1" enter-to-class="opacity-100 translate-y-0">
             <div v-if="selectedAddon && addonProfiles.length > 1">
-              <label class="block text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Profile</label>
-              <select v-model="selectedProfileId" class="select-styled w-full px-4 py-3.5 rounded-xl text-base cursor-pointer" :class="isDark ? 'text-white' : 'text-gray-900'">
-                <option v-for="p in addonProfiles" :key="p.id" :value="p.id">{{ p.profile }}</option>
-              </select>
+              <label class="block text-center text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Profile</label>
+              <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="Profiles">
+                <button
+                  v-for="p in addonProfiles"
+                  :key="p.id"
+                  type="button"
+                  role="option"
+                  :aria-selected="selectedProfileId === String(p.id)"
+                  class="wow-class-chip"
+                  :class="selectedProfileId === String(p.id) ? 'is-active' : ''"
+                  @click="selectedProfileId = String(p.id)"
+                >
+                  <span>{{ p.profile }}</span>
+                </button>
+              </div>
             </div>
           </Transition>
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
@@ -216,25 +253,52 @@
 
       <!-- ═══ WowUp ═══ -->
       <div v-if="activeTab === 'wowup'" role="tabpanel" id="tabpanel-wowup" aria-labelledby="tab-wowup" tabindex="0">
-        <div class="mb-5 rounded-xl border px-4 py-3 text-sm leading-relaxed"
+        <div class="mx-auto mb-5 w-full max-w-3xl rounded-xl border px-4 py-3 text-sm leading-relaxed"
           :class="isDark ? 'border-brand-400/15 bg-brand-400/5 text-silver-400' : 'border-brand-100 bg-brand-50 text-gray-600'">
           Same packs Magguu Setup copies. Paste in WowUp. MagguuUI does not install addons.
         </div>
-        <div v-if="wowupList.length" class="space-y-5">
-          <SupportedAddonsDropdown
-            :groups="wowupPackGroups"
-            :selected-key="selectedWowupName"
-            placeholder="Choose WowUp pack"
-            @select="onWowupPackSelect"
-          />
+        <div v-if="wowupList.length" class="mx-auto w-full max-w-3xl space-y-5">
+          <div>
+            <label class="block text-center text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Package</label>
+            <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="WowUp packages">
+              <button
+                v-for="pack in wowupPacks"
+                :key="pack.name"
+                type="button"
+                role="option"
+                :aria-selected="selectedWowupName === pack.name"
+                class="wow-class-chip"
+                :class="selectedWowupName === pack.name ? 'is-active' : ''"
+                @click="selectedWowupName = pack.name"
+              >
+                <img src="/addon-icons/magguuui.png" alt="" class="wow-class-chip__icon" width="24" height="24" />
+                <span>{{ wowupLabel(pack.name) }}</span>
+              </button>
+            </div>
+          </div>
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
             <div v-if="selectedWowup" class="space-y-4 pt-1">
               <div>
-                <p class="section-eyebrow mb-2.5">{{ wowupLabel(selectedWowup.name) }}</p>
-                <SupportedAddonsDropdown
-                  :groups="selectedWowupAddonGroups"
-                  placeholder="Addons in this pack"
-                />
+                <p class="section-eyebrow mb-2.5 text-center">Addons</p>
+                <div class="flex flex-wrap justify-center gap-2">
+                  <span
+                    v-for="raw in selectedWowupAddons"
+                    :key="raw"
+                    class="wow-class-chip"
+                  >
+                    <img
+                      v-if="addonIconForName(raw)"
+                      :src="addonIconForName(raw)"
+                      alt=""
+                      class="wow-class-chip__icon"
+                      width="24"
+                      height="24"
+                      loading="lazy"
+                    />
+                    <span v-else class="wow-class-chip__icon inline-flex items-center justify-center text-sm" aria-hidden="true">{{ emojiForAddonName(raw) }}</span>
+                    <span>{{ displayAddonName(raw) }}</span>
+                  </span>
+                </div>
               </div>
               <div class="flex gap-2">
                 <button class="flex-1 py-4 rounded-xl text-white font-semibold text-lg transition-all flex items-center justify-center gap-2"
@@ -311,14 +375,14 @@
 </template>
 
 <script setup lang="ts">
+import { addonIconForName } from '~/utils/addonIcons'
 import { wowClassIcon, wowClassColor } from '~/utils/wowClassIcons'
+import { layoutSpecChoices, SHARED_LAYOUT_SPEC, wowSpecIcon } from '~/utils/wowSpecs'
 import {
   displayAddonName,
   emojiForAddonName,
-  groupAddonChips,
   parseWowupAddonNames,
   wowupLabel,
-  type AddonGroupKey,
 } from '~/utils/addonChipMeta'
 import { compareProfileAddons, compareProfileNames, profileAddonLabel } from '~/utils/profileLabels'
 import { initialStringsTab, queryFromStringsState, queryText } from '~/utils/stringsDeepLink'
@@ -343,7 +407,7 @@ const activeTab = ref(initialStringsTab(route.query))
 
 const tabSubtitle = computed(() => {
   switch (activeTab.value) {
-    case 'layouts': return 'Pick your class, then copy the Cooldown Viewer layout (Magguu - Class Spec).'
+    case 'layouts': return 'Pick your class and spec, then copy the Cooldown Viewer layout.'
     case 'profiles': return 'Copy one Magguu profile. Apply Magguu profiles in /mui loads these when the addon is installed.'
     case 'wowup': return 'Same packs Magguu Setup copies — starter plus optional extras. EllesmereUI is still required.'
     default: return 'Choose your category and class to copy the import string.'
@@ -413,19 +477,35 @@ const tabs = computed(() => [
 const layoutClasses = computed(() => [...new Set(layoutList.value.map(l => l.className).filter((c): c is string => Boolean(c)))].sort())
 const layoutSpecs = computed(() => {
   if (!selectedClass.value) return []
-  return [...new Set(layoutList.value.filter(l => l.className === selectedClass.value).map(l => l.spec).filter((s): s is string => Boolean(s)))].sort()
+  const stored = layoutList.value
+    .filter(l => l.className === selectedClass.value)
+    .map(l => l.spec)
+  return layoutSpecChoices(selectedClass.value, stored)
 })
 const selectedLayout = computed(() => {
   if (!selectedClass.value || !selectedSpec.value) return null
-  return layoutList.value.find(l => l.className === selectedClass.value && l.spec === selectedSpec.value) ?? null
+  const rows = layoutList.value.filter(l => l.className === selectedClass.value)
+  return rows.find(l => l.spec === selectedSpec.value)
+    ?? rows.find(l => l.spec === SHARED_LAYOUT_SPEC || !l.spec)
+    ?? null
 })
-watch(() => selectedClass.value, (next, prev) => {
-  if (prev === undefined || next === prev) return
-  nextTick(() => {
-    const specs = layoutSpecs.value
-    if (selectedSpec.value && specs.includes(selectedSpec.value)) return
-    selectedSpec.value = specs[0] || ''
-  })
+const layoutSharesSpecs = computed(() => {
+  const row = selectedLayout.value
+  if (!row || layoutSpecs.value.length < 2) return false
+  return row.spec !== selectedSpec.value
+})
+const sharedSpecList = computed(() => formatSpecList(layoutSpecs.value))
+
+function formatSpecList(specs: string[]): string {
+  if (specs.length <= 1) return specs[0] || ''
+  if (specs.length === 2) return `${specs[0]} and ${specs[1]}`
+  return `${specs.slice(0, -1).join(', ')}, and ${specs[specs.length - 1]}`
+}
+watch([selectedClass, layoutList], () => {
+  const specs = layoutSpecs.value
+  if (!selectedClass.value || !specs.length) return
+  if (selectedSpec.value && specs.includes(selectedSpec.value)) return
+  selectedSpec.value = specs[0] || ''
 })
 
 const profileAddons = computed(() => [...new Set(profileList.value.map(p => p.addon))].sort(compareProfileAddons))
@@ -455,46 +535,14 @@ const selectedWowupAddons = computed(() => {
   return parseWowupAddonNames(raw)
 })
 
-const wowupPackGroups = computed(() => {
-  const items = wowupList.value.map((w) => {
-    const kind: AddonGroupKey = w.name === 'Required' ? 'required' : 'wowup'
-    const subtitle = w.name === 'Required' ? 'Required' : 'WowUp'
-    return {
-      key: w.name,
-      name: wowupLabel(w.name),
-      emoji: w.name === 'Required' ? '⚡' : '➕',
-      kind,
-      badge: kind,
-      subtitle,
-    }
+const wowupPacks = computed(() => {
+  return [...wowupList.value].sort((a, b) => {
+    if (a.name === b.name) return 0
+    if (a.name === 'Required') return -1
+    if (b.name === 'Required') return 1
+    return a.name.localeCompare(b.name)
   })
-  return groupAddonChips(items)
 })
-
-const selectedWowupAddonGroups = computed(() => {
-  const packName = selectedWowup.value?.name
-  const kind: AddonGroupKey = packName === 'Required' ? 'required' : 'wowup'
-  const subtitle = packName === 'Required' ? 'Required' : 'WowUp'
-  const items = selectedWowupAddons.value.map((raw) => {
-    const name = displayAddonName(raw)
-    const lower = name.toLowerCase()
-    const isWim = lower === 'wim' || lower.includes('wim skin')
-    const itemKind: AddonGroupKey = isWim ? 'optional' : kind
-    return {
-      key: raw,
-      name,
-      emoji: emojiForAddonName(raw),
-      kind: itemKind,
-      badge: (itemKind === 'optional' ? 'optional' : kind) as 'required' | 'optional' | 'wowup',
-      subtitle: itemKind === 'optional' ? 'Optional' : subtitle,
-    }
-  })
-  return groupAddonChips(items)
-})
-
-function onWowupPackSelect(item: { key: string }) {
-  selectedWowupName.value = item.key
-}
 
 
 // Auto-select first item in each category (respect URL params)

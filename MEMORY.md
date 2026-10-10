@@ -35,7 +35,7 @@
 
 - **Starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore.
 - **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, Whisper Messenger, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
-- WIM stays a companion import (no Setup button) and is not in the WowUp pack. Ellesmere WIM Skin is retired.
+- WIM is retired. Do not seed slug `wim`, upsert addon `WIM`, or ship `WIM.lua`. Whisper Messenger is the whisper addon and stays in the WowUp optional pack. Ellesmere WIM Skin is retired.
 - No WindTools. HandyNotes MapNotes is on WowUp Optional; Magguu settings apply with HandyNotes via Apply Magguu profiles / Load profiles.
 - Public copy (home/guide/FAQ/changelog seed) never says bake, dump, or recapture. Player language: Apply Magguu profiles / Magguu Settings / Load profiles.
 

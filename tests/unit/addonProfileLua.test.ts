@@ -32,10 +32,10 @@ test('accepts the current Ellesmere data files and optional WowUp', () => {
   assert.doesNotThrow(() => assertCompleteAddonLuaSnapshot([
     ...REQUIRED_ADDON_LUA_FILES,
     ...OPTIONAL_ADDON_LUA_FILES,
+    'WIM.lua',
   ]))
   assert.deepEqual([...OPTIONAL_ADDON_LUA_FILES], [
     'WowUp.lua',
-    'WIM.lua',
     'WhisperMessenger.lua',
     'WaypointUI.lua',
     'EXBoss.lua',
@@ -127,13 +127,6 @@ test('parses Ellesmere, BigWigs, and NSRT array tables', () => {
   assert.deepEqual(nsrt.entries.map(entry => [entry.profile, entry.string]), [
     ['Default', 'profile-string'],
   ])
-
-  const wim = parseAddonProfileLua(
-    'MagguuUI_Data/AddOns/WIM.lua',
-    'D.wim = [===[{font="Expressway"}]===]',
-  )
-  assert.equal(wim.format, 'single')
-  assert.equal(wim.entries[0]?.string, '{font="Expressway"}')
 
   const waypoint = parseAddonProfileLua(
     'MagguuUI_Data/AddOns/WaypointUI.lua',

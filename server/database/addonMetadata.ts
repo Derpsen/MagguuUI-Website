@@ -8,10 +8,9 @@
  *   still shows up on the site.
  *
  * Manual-only entries (no tocName) are seeded once and never touched by the
- * .toc sync — BigWigs, Northern Sky, WIM, and Waypoint UI are the current
+ * .toc sync — BigWigs, Northern Sky, and Waypoint UI are the current
  * examples: they are not TOC dependencies, MagguuUI imports them when present.
- * Whisper Messenger is the WowUp optional chat addon. WIM stays a companion
- * import and is no longer in the WowUp pack.
+ * Whisper Messenger is the whisper addon. WIM is retired.
  */
 
 export interface AddonDefault {
@@ -46,7 +45,7 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     category: 'core',
     emoji: '⏱️',
     description: 'Optional boss timers. MagguuUI applies its BigWigs profile when BigWigs is installed.',
-    url: `${CF}/big-wigs`,
+    url: `${CF}/bigwigs`,
     sortOrder: 1,
   },
   {
@@ -55,7 +54,7 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     category: 'optional',
     emoji: '⏱️',
     description: 'Optional dungeon timers for BigWigs. Listed with the WowUp starter addons in Setup.',
-    url: `${CF}/little-wigs`,
+    url: `${CF}/littlewigs`,
     sortOrder: 1,
   },
   {
@@ -66,15 +65,6 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     description: 'Optional raid notes. MagguuUI applies its profile when Northern Sky is installed.',
     url: `${CF}/northern-sky-raid-tools`,
     sortOrder: 0,
-  },
-  {
-    slug: 'wim',
-    name: 'WIM',
-    category: 'optional',
-    emoji: '💬',
-    description: 'Optional whisper windows. MagguuUI applies its WIM settings when WIM is installed.',
-    url: `${CF}/wim-3`,
-    sortOrder: 2,
   },
   {
     slug: 'whisper-messenger',
@@ -166,7 +156,7 @@ export const ADDON_DEFAULTS: AddonDefault[] = [
     category: 'optional',
     emoji: '⏰',
     description: 'Optional combat reminders. MagguuUI applies its pack when Smart Reminders is installed.',
-    url: `${CF}/naowh-smart-reminders`,
+    url: `${CF}/naowhsmartreminders`,
     sortOrder: 11,
   },
 ]
@@ -187,6 +177,7 @@ export const RETIRED_ADDON_SLUGS = [
   'minimalist-cooldown-edge',
   'elvui-windtools',
   'exwindtools',
+  'wim',
   'handynotes-mapnotes',
   'easy-experience-bar',
   'wim-elvui-skin',

@@ -19,7 +19,7 @@
         Download
         <strong :class="isDark ? 'text-white' : 'text-gray-900'">EllesmereUI 9.0.6+</strong>
         and MagguuUI from CurseForge, Wago, or WoWInterface, and leave them enabled.
-        BigWigs, Northern Sky, EXBoss, WIM, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional.
+        BigWigs, Northern Sky, EXBoss, Whisper Messenger, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, and Smart Reminders are optional.
         MagguuUI sets them up when they are installed and skips them otherwise.
       </p>
     </section>

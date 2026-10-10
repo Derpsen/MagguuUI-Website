@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { ADDON_DEFAULTS } from '../../server/database/addonMetadata'
+import { ADDON_ICONS, addonIconForName } from '../../utils/addonIcons'
 import { CURRENT_ADDON_CHANGELOG, scrubPublishedChangelog } from '../../server/database/defaultAddonChangelog'
 import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_HOME_CONTENT } from '../../server/database/defaultContent'
 
@@ -94,6 +95,18 @@ describe('MagguuUI product facts copy', () => {
 
     for (const addon of ADDON_DEFAULTS) {
       assert.doesNotMatch(addon.description || '', /\bdump\b/i, addon.slug)
+      assert.ok(ADDON_ICONS[addon.slug], `${addon.slug} needs a CurseForge icon`)
     }
+    const bySlug = Object.fromEntries(ADDON_DEFAULTS.map(addon => [addon.slug, addon.url]))
+    assert.equal(bySlug.bigwigs, 'https://www.curseforge.com/wow/addons/bigwigs')
+    assert.equal(bySlug.littlewigs, 'https://www.curseforge.com/wow/addons/littlewigs')
+    assert.equal(bySlug.wim, undefined)
+    assert.equal(bySlug['whisper-messenger'], 'https://www.curseforge.com/wow/addons/whisper-messenger')
+    assert.equal(bySlug['smart-reminders'], 'https://www.curseforge.com/wow/addons/naowhsmartreminders')
+    assert.doesNotMatch(feature2?.value || '', /\bWIM\b/)
+    assert.equal(addonIconForName('Mythic Dungeon Tools - MDT'), '/addon-icons/mdt.png')
+    assert.equal(addonIconForName('HandyNotes: MapNotes'), '/addon-icons/mapnotes.png')
+    assert.equal(addonIconForName('Naowh Smart Reminders'), '/addon-icons/smart-reminders.png')
+    assert.equal(addonIconForName('BugGrabber'), undefined)
   })
 })

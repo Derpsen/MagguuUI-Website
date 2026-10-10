@@ -13,6 +13,6 @@ Addon paste files live in `MagguuUI/docs/store-descriptions/`. No git tags from 
 
 - Gold button **Apply Magguu profiles** (DE: Magguu-Profile übernehmen)
 - Four sibling folders, EllesmereUI 9.0.6+ (live 9.2.9)
-- Companion profiles (WIM, Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, Smart Reminders) via Apply Magguu profiles / Load profiles; Setup buttons BigWigs, Northern Sky, EXBoss, Whisper Messenger, Smart Reminders
+- Companion profiles (Waypoint UI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack, Premade Groups Filter, Smart Reminders) via Apply Magguu profiles / Load profiles; Setup buttons BigWigs, Northern Sky, EXBoss, Whisper Messenger, Smart Reminders. Whisper Messenger replaced WIM.
 - Smart Tab, Quick Focus, Audio device switcher, Boiling Point, Targeted Spell Bars
 - No EXBoss split names, no KeystoneLoot, Magguu/MagguuUI naming only

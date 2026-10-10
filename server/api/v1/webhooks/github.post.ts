@@ -1,7 +1,7 @@
 /**
  * Signed GitHub webhook integration for the configured AddOn repository.
- * Push imports are bound to refs/heads/main and every file is fetched from
- * the immutable `after` commit so concurrent pushes cannot mix snapshots.
+ * Push imports are bound to refs/heads/main. Bodies come from the immutable
+ * `after` commit so concurrent pushes cannot mix snapshots.
  */
 
 import { db, sqlite } from '~/server/database'
@@ -94,6 +94,7 @@ async function syncAddonSnapshot(options: {
   repo: string
   ref: string
   token?: string
+  paths?: ReadonlySet<string>
 }) {
   const results: SyncResult[] = []
   try {
@@ -118,6 +119,7 @@ async function syncClassSnapshot(options: {
   repo: string
   ref: string
   token?: string
+  paths?: ReadonlySet<string>
 }) {
   const results: SyncResult[] = []
   try {
@@ -252,9 +254,10 @@ export default defineEventHandler(async (event) => {
     }
 
     const changedPaths = collectChangedPaths(commits)
-    // GitHub may omit the per-commit list for force pushes or very unusual
-    // ref updates. Conservatively refresh every canonical input in that case.
+    // Force pushes, an empty commit list, and a list capped at 20 omit paths.
+    // Those refresh every canonical input. A shorter list fetches only its paths.
     const {
+      requireFullRefresh,
       addonsTouched,
       classesTouched,
       tocTouched,
@@ -265,13 +268,14 @@ export default defineEventHandler(async (event) => {
     })
     const handled: string[] = []
     const syncResults: SyncResult[] = []
+    const snapshotPaths = requireFullRefresh ? undefined : changedPaths
 
     if (addonsTouched) {
-      syncResults.push(...await syncAddonSnapshot({ ...github, ref: snapshotSha }))
+      syncResults.push(...await syncAddonSnapshot({ ...github, ref: snapshotSha, paths: snapshotPaths }))
       handled.push('addon-profiles')
     }
     if (classesTouched) {
-      syncResults.push(...await syncClassSnapshot({ ...github, ref: snapshotSha }))
+      syncResults.push(...await syncClassSnapshot({ ...github, ref: snapshotSha, paths: snapshotPaths }))
       handled.push('class-layouts')
     }
 

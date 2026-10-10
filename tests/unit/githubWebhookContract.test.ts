@@ -43,16 +43,33 @@ test('classifies canonical paths independently', () => {
   })
 })
 
-test('force pushes and missing commit lists conservatively refresh every canonical input', () => {
+test('force pushes, missing commit lists, and capped commit lists refresh every canonical input', () => {
   for (const options of [
     { forced: true, commitCount: 2 },
     { forced: false, commitCount: 0 },
+    { forced: false, commitCount: 20 },
+    { forced: false, commitCount: 21 },
   ]) {
-    const classified = classifyCanonicalPushChanges(new Set(), options)
+    const classified = classifyCanonicalPushChanges(
+      new Set(['MagguuUI_Data/AddOns/BigWigs.lua']),
+      options,
+    )
     assert.equal(classified.requireFullRefresh, true)
     assert.equal(classified.addonsTouched, true)
     assert.equal(classified.classesTouched, true)
     assert.equal(classified.tocTouched, true)
     assert.equal(classified.changelogTouched, true)
   }
+})
+
+test('nineteen listed commits stay a partial path refresh', () => {
+  const classified = classifyCanonicalPushChanges(
+    new Set(['MagguuUI_Data/AddOns/BigWigs.lua']),
+    { forced: false, commitCount: 19 },
+  )
+  assert.equal(classified.requireFullRefresh, false)
+  assert.equal(classified.addonsTouched, true)
+  assert.equal(classified.classesTouched, false)
+  assert.equal(classified.tocTouched, false)
+  assert.equal(classified.changelogTouched, false)
 })

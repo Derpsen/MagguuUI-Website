@@ -15,7 +15,7 @@
       :class="isDark ? 'bg-[#0b1118]/95 border-white/10' : 'bg-[#eef4fb]/95 border-gray-200'">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-6">
         <NuxtLink to="/" class="flex items-center gap-2 shrink-0">
-          <img src="/logo.png" alt="" width="22" height="22" class="w-[22px] h-[22px]" />
+          <img src="/favicon-32.png" alt="" width="22" height="22" class="w-[22px] h-[22px]" />
           <span class="text-sm font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">MagguuUI</span>
         </NuxtLink>
 

@@ -84,6 +84,11 @@ export interface GithubSnapshotFetchOptions {
   token?: string
   /** Directory listing cap; pull defaults to github.ts (256), webhook uses 128. */
   maxEntries?: number
+  /**
+   * Push paths whose bodies to fetch. Unset fetches every body (manual pull,
+   * forced push, empty commit list, or a list GitHub may have capped at 20).
+   */
+  paths?: ReadonlySet<string>
 }
 
 function appendAddonResults(
@@ -110,7 +115,7 @@ function appendWowUpResults(
   }
 }
 
-/** List, size-check, fetch, and parse-validate every MagguuUI_Data/AddOns/*.lua at one SHA. */
+/** List and size-check MagguuUI_Data/AddOns/*.lua at one SHA, then fetch those bodies. */
 export async function fetchAddonLuaSnapshot(
   options: GithubSnapshotFetchOptions,
 ): Promise<AddonLuaSource[]> {
@@ -134,6 +139,7 @@ export async function fetchAddonLuaSnapshot(
     if (file.size > MAX_ADDON_LUA_SOURCE_BYTES) {
       throw new Error(`${file.path} exceeds the ${MAX_ADDON_LUA_SOURCE_BYTES}-byte safety limit`)
     }
+    if (options.paths && !options.paths.has(file.path)) continue
     const content = await fetchGitHubTextFile({
       owner: options.owner,
       repo: options.repo,
@@ -148,13 +154,14 @@ export async function fetchAddonLuaSnapshot(
   return sources
 }
 
-/** Fetch+validate every supported MagguuUI_Data/Classes/*.lua at one SHA. */
+/** Fetch and validate MagguuUI_Data/Classes/*.lua at one SHA. */
 export async function fetchClassLuaSnapshot(
   options: GithubSnapshotFetchOptions,
 ): Promise<ClassLuaSource[]> {
   const sources: ClassLuaSource[] = []
   for (const [fileName, className] of Object.entries(CLASS_FILE_TO_NAME)) {
     const path = `${CLASS_DATA_ROOT}/${fileName}`
+    if (options.paths && !options.paths.has(path)) continue
     parseSafeClassLuaPath(path)
     const content = await fetchGitHubTextFile({
       owner: options.owner,

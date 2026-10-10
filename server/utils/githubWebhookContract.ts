@@ -29,7 +29,7 @@ export function classifyCanonicalPushChanges(
   changedPaths: ReadonlySet<string>,
   options: { forced: boolean, commitCount: number },
 ) {
-  const requireFullRefresh = options.forced || options.commitCount === 0
+  const requireFullRefresh = options.forced || options.commitCount === 0 || options.commitCount >= 20
   return {
     requireFullRefresh,
     addonsTouched: requireFullRefresh || [...changedPaths].some(path => path.startsWith(`${ADDON_DATA_ROOT}/`)),

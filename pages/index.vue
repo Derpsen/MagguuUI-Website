@@ -91,8 +91,8 @@
             <p class="font-mono text-[11px] uppercase tracking-[0.14em] mb-1.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">{{ group.label }}</p>
             <p class="text-sm leading-7" :class="isDark ? 'text-silver-300' : 'text-gray-700'">
               <template v-for="(item, index) in group.items" :key="item.key">
-                <span v-if="index > 0" class="px-1.5" :class="isDark ? 'text-white/25' : 'text-gray-300'">·</span>
-                <NuxtLink :to="item.href" class="hover:underline underline-offset-4">{{ item.name }}</NuxtLink>
+                <span v-if="index > 0" class="px-1.5" :class="isDark ? 'text-white/25' : 'text-gray-300'">·</span><wbr>
+                <NuxtLink :to="item.href" class="whitespace-nowrap hover:underline underline-offset-4">{{ item.name }}</NuxtLink>
               </template>
             </p>
           </div>
@@ -140,7 +140,7 @@
             <p class="font-mono text-[11px] uppercase tracking-[0.14em] mb-1.5" :class="accentClasses(feat.meta.accent).label">Optional profiles</p>
             <ul class="text-sm leading-7" :class="isDark ? 'text-silver-300' : 'text-gray-700'" aria-label="Optional Magguu profiles">
               <li v-for="(addon, aIndex) in feat.addons" :key="addon.name" class="inline">
-                <span v-if="aIndex > 0" class="px-1.5" :class="isDark ? 'text-white/25' : 'text-gray-300'" aria-hidden="true">·</span>{{ addon.name }}
+                <span v-if="aIndex > 0" class="px-1.5" :class="isDark ? 'text-white/25' : 'text-gray-300'" aria-hidden="true">·</span><wbr><span class="whitespace-nowrap">{{ addon.name }}</span>
               </li>
             </ul>
           </div>

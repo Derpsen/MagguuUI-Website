@@ -151,8 +151,9 @@ const editor = useEditor({
   ],
   editorProps: {
     attributes: {
-      class: 'prose prose-sm max-w-none focus:outline-none',
-      style: `min-height: ${props.minHeight || '200px'}; padding: 1rem;`,
+      'class': 'prose prose-sm max-w-none focus:outline-none',
+      'aria-label': props.placeholder || 'Rich text editor',
+      'style': `min-height: ${props.minHeight || '200px'}; padding: 1rem;`,
     },
   },
   onUpdate: ({ editor }) => {
@@ -203,11 +204,11 @@ onBeforeUnmount(() => { editor.value?.destroy() })
   color: hsl(0 0% 95%);
 }
 .dark .tiptap-content .ProseMirror a {
-  color: hsl(212 100% 60%);
+  color: var(--color-brand-300);
 }
 .dark .tiptap-content .ProseMirror code {
   background: hsl(0 0% 100% / 0.08);
-  color: hsl(212 80% 72%);
+  color: #e0e6ee;
   padding: 0.15em 0.3em;
   border-radius: 4px;
   font-size: 0.85em;
@@ -240,11 +241,11 @@ onBeforeUnmount(() => { editor.value?.destroy() })
   color: #111827;
 }
 .light .tiptap-content .ProseMirror a {
-  color: #2563EB;
+  color: var(--color-brand-700);
 }
 .light .tiptap-content .ProseMirror code {
   background: #f3f4f6;
-  color: #6366f1;
+  color: #1f2937;
   padding: 0.15em 0.3em;
   border-radius: 4px;
   font-size: 0.85em;

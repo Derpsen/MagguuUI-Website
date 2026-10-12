@@ -87,9 +87,9 @@ defineEmits<{
           </td>
           <td class="text-right">
             <div class="flex items-center justify-end gap-1">
-              <UButton icon="i-heroicons-pencil-square" variant="ghost" color="neutral" size="xs" @click="$emit('edit', item)" />
-              <UButton icon="i-heroicons-clipboard-document" variant="ghost" color="neutral" size="xs" @click="$emit('copy', item)" />
-              <UButton icon="i-heroicons-trash" variant="ghost" color="error" size="xs" @click="$emit('delete', item)" />
+              <UButton icon="i-heroicons-pencil-square" variant="ghost" color="neutral" size="xs" :aria-label="`Edit ${item.name ?? `entry ${item.id}`}`" @click="$emit('edit', item)" />
+              <UButton icon="i-heroicons-clipboard-document" variant="ghost" color="neutral" size="xs" :aria-label="`Copy ${item.name ?? `entry ${item.id}`}`" @click="$emit('copy', item)" />
+              <UButton icon="i-heroicons-trash" variant="ghost" color="error" size="xs" :aria-label="`Delete ${item.name ?? `entry ${item.id}`}`" @click="$emit('delete', item)" />
             </div>
           </td>
         </tr>

@@ -85,6 +85,7 @@
                 <p class="admin-switch-row__description">Shows a maintenance banner on the public site.</p>
               </div>
               <USwitch
+                aria-label="Maintenance mode"
                 :model-value="form.maintenance_mode === 'true'"
                 :disabled="saving"
                 @update:model-value="form.maintenance_mode = $event ? 'true' : 'false'"
@@ -157,17 +158,17 @@
           <div class="space-y-4">
             <div class="admin-field">
               <label class="admin-field__label">Session timeout</label>
-              <USelect v-model="form.session_timeout_hours" :items="sessionTimeoutOptions" value-key="value" :disabled="saving" />
+              <USelect v-model="form.session_timeout_hours" aria-label="Session timeout" :items="sessionTimeoutOptions" value-key="value" :disabled="saving" />
             </div>
 
             <div class="admin-field">
               <label class="admin-field__label">Max login attempts</label>
-              <USelect v-model="form.max_login_attempts" :items="loginAttemptOptions" value-key="value" :disabled="saving" />
+              <USelect v-model="form.max_login_attempts" aria-label="Max login attempts" :items="loginAttemptOptions" value-key="value" :disabled="saving" />
             </div>
 
             <div class="admin-field">
               <label class="admin-field__label">Lockout duration</label>
-              <USelect v-model="form.lockout_duration_minutes" :items="lockoutOptions" value-key="value" :disabled="saving" />
+              <USelect v-model="form.lockout_duration_minutes" aria-label="Lockout duration" :items="lockoutOptions" value-key="value" :disabled="saving" />
             </div>
 
             <div class="admin-inline-note">
@@ -187,6 +188,7 @@
                 <p class="admin-switch-row__description">Anonymous traffic collection for analytics.</p>
               </div>
               <USwitch
+                aria-label="Page view tracking"
                 :model-value="form.tracking_pageviews_enabled === 'true'"
                 :disabled="saving"
                 @update:model-value="form.tracking_pageviews_enabled = $event ? 'true' : 'false'"
@@ -199,6 +201,7 @@
                 <p class="admin-switch-row__description">Tracks string copy events for demand signals.</p>
               </div>
               <USwitch
+                aria-label="Copy tracking"
                 :model-value="form.tracking_copyevents_enabled === 'true'"
                 :disabled="saving"
                 @update:model-value="form.tracking_copyevents_enabled = $event ? 'true' : 'false'"
@@ -218,6 +221,7 @@
                 <p class="admin-switch-row__description">Show Google AdSense ads on public pages.</p>
               </div>
               <USwitch
+                aria-label="Enable ads"
                 :model-value="form.adsense_enabled === 'true'"
                 :disabled="saving"
                 @update:model-value="form.adsense_enabled = $event ? 'true' : 'false'"
@@ -267,7 +271,7 @@
         <AdminPanel title="Retention" description="How long operational data is kept." icon="i-heroicons-archive-box">
           <div class="admin-field">
             <label class="admin-field__label">Data retention</label>
-            <USelect v-model="form.data_retention_days" :items="retentionOptions" value-key="value" :disabled="saving" />
+            <USelect v-model="form.data_retention_days" aria-label="Data retention" :items="retentionOptions" value-key="value" :disabled="saving" />
           </div>
         </AdminPanel>
 

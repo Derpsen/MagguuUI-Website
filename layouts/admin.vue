@@ -6,7 +6,7 @@
         class="fixed inset-y-0 left-0 z-40 flex flex-col border-r transition-all duration-200"
         :class="[
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-          isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-[hsl(240,5.9%,90%)]',
+          isDark ? 'bg-[#0b1118] border-white/10' : 'bg-white border-[#dbe3ec]',
         ]"
         :style="{ width: `var(--admin-sidebar-width)` }"
       >
@@ -19,7 +19,7 @@
           <button
             v-if="!collapsed"
             class="ml-auto p-1 rounded-sm transition-colors shrink-0"
-            :class="isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.06]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'"
+            :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.06]' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
             title="Collapse sidebar"
             aria-label="Collapse sidebar"
             @click="collapsed = !collapsed"
@@ -29,7 +29,7 @@
           <button
             v-else
             class="mx-auto p-1 rounded-sm transition-colors"
-            :class="isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.06]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'"
+            :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.06]' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
             title="Expand sidebar"
             aria-label="Expand sidebar"
             @click="collapsed = !collapsed"
@@ -56,8 +56,8 @@
             <div v-if="collapsed" class="mx-3 my-2 h-px" :class="isDark ? 'bg-white/8' : 'bg-slate-200'" />
             <button
               v-else
-              class="flex w-full items-center justify-between px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest transition-colors"
-              :class="isDark ? 'text-white/40 hover:text-white/60' : 'text-slate-400 hover:text-slate-600'"
+              class="flex w-full items-center justify-between px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] transition-colors"
+              :class="isDark ? 'text-brand-300 hover:text-brand-200' : 'text-brand-700 hover:text-brand-800'"
               :aria-expanded="openSections[section.title] ? 'true' : 'false'"
               @click="toggleSection(section.title)"
             >
@@ -125,16 +125,16 @@
         <div class="shrink-0 border-t px-3 py-3" :class="isDark ? 'border-white/8' : 'border-slate-200'">
           <div class="flex items-center gap-2" :class="collapsed ? 'flex-col' : ''">
             <div class="flex min-w-0 items-center gap-2" :class="collapsed ? 'justify-center' : 'flex-1'">
-              <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold bg-primary/15 text-primary">
+              <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold border border-current text-primary">
                 {{ userInitial }}
               </span>
               <span v-if="!collapsed" class="truncate text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ user?.username || 'Admin' }}</span>
             </div>
             <div class="flex items-center gap-1">
-              <button class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-white/40 hover:text-white hover:bg-white/[0.06]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'" :title="isDark ? 'Light mode' : 'Dark mode'" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
+              <button class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.06]' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" :title="isDark ? 'Light mode' : 'Dark mode'" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
                 <UIcon :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'" class="h-4 w-4" />
               </button>
-              <button class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-white/40 hover:text-white hover:bg-white/[0.06]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'" title="Logout" aria-label="Logout" @click="handleLogout">
+              <button class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.06]' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" title="Logout" aria-label="Logout" @click="handleLogout">
                 <UIcon name="i-heroicons-arrow-right-on-rectangle" class="h-4 w-4" />
               </button>
             </div>
@@ -154,7 +154,7 @@
         <!-- Header -->
         <header
           class="sticky top-0 z-20 flex h-[50px] items-center gap-3 border-b px-4"
-          :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-[hsl(240,5.9%,90%)]'"
+          :class="isDark ? 'bg-[#0b1118] border-white/10' : 'bg-white border-[#dbe3ec]'"
         >
           <button class="p-1.5 rounded-md lg:hidden" :class="isDark ? 'text-white/60 hover:text-white hover:bg-white/[0.06]' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'" :aria-label="sidebarOpen ? 'Close menu' : 'Open menu'" @click="sidebarOpen = !sidebarOpen">
             <UIcon name="i-heroicons-bars-3" class="h-5 w-5" />
@@ -162,14 +162,14 @@
 
           <!-- Breadcrumbs -->
           <nav class="flex items-center gap-1.5 text-sm min-w-0">
-            <NuxtLink to="/admin" class="shrink-0 transition-colors text-primary hover:opacity-80">
+            <NuxtLink to="/admin" class="shrink-0 transition-colors text-primary hover:opacity-80" aria-label="Dashboard">
               <UIcon name="i-heroicons-squares-2x2" class="h-4 w-4" />
             </NuxtLink>
             <Transition name="breadcrumb-slide" mode="out-in">
               <div :key="route.path" class="flex items-center gap-1.5 min-w-0">
                 <template v-if="currentContext.section">
                   <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0" :class="isDark ? 'text-white/30' : 'text-slate-300'" />
-                  <span class="shrink-0" :class="isDark ? 'text-white/50' : 'text-slate-400'">{{ currentContext.section }}</span>
+                  <span class="shrink-0" :class="isDark ? 'text-silver-400' : 'text-slate-600'">{{ currentContext.section }}</span>
                 </template>
                 <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0" :class="isDark ? 'text-white/30' : 'text-slate-300'" />
                 <span class="truncate font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ pageHeading }}</span>
@@ -184,9 +184,9 @@
               @click="cmdPalette?.open()"
             >
               <UIcon name="i-heroicons-magnifying-glass" class="h-4 w-4" />
-              <span class="text-xs ml-1 hidden lg:inline" :class="isDark ? 'text-white/40' : 'text-slate-400'">Search</span>
+              <span class="text-xs ml-1 hidden lg:inline" :class="isDark ? 'text-silver-400' : 'text-slate-600'">Search</span>
               <kbd class="hidden lg:inline-flex ml-2 h-5 items-center rounded border px-1.5 text-[10px] font-medium"
-                :class="isDark ? 'border-white/10 text-white/30' : 'border-slate-200 text-slate-400'">
+                :class="isDark ? 'border-white/10 text-silver-400' : 'border-slate-200 text-slate-600'">
                 {{ searchShortcut }}
               </kbd>
             </button>
@@ -220,7 +220,7 @@
                 >
                   <div class="flex items-center justify-between px-4 py-3 border-b" :class="isDark ? 'border-white/8' : 'border-slate-100'">
                     <h2 class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">Notifications</h2>
-                    <span v-if="notifCount > 0" class="text-xs font-medium" :class="isDark ? 'text-white/40' : 'text-slate-400'">{{ notifCount }} active</span>
+                    <span v-if="notifCount > 0" class="text-xs font-medium" :class="isDark ? 'text-silver-400' : 'text-slate-600'">{{ notifCount }} active</span>
                   </div>
 
                   <div v-if="notifItems.length" class="max-h-72 overflow-y-auto py-1">
@@ -241,7 +241,7 @@
                         <p v-else class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ item.title }}</p>
                         <p class="mt-0.5 text-xs" :class="isDark ? 'text-white/40' : 'text-slate-500'">{{ item.message }}</p>
                       </div>
-                      <button class="mt-0.5 p-1 rounded-md shrink-0 transition-colors" :class="isDark ? 'text-white/30 hover:text-white hover:bg-white/[0.06]' : 'text-slate-300 hover:text-slate-600 hover:bg-slate-100'" @click="notifDismiss(item.id)">
+                      <button class="mt-0.5 p-1 rounded-md shrink-0 transition-colors" :class="isDark ? 'text-white/30 hover:text-white hover:bg-white/[0.06]' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'" aria-label="Dismiss notification" @click="notifDismiss(item.id)">
                         <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
                       </button>
                     </div>
@@ -249,7 +249,7 @@
 
                   <div v-else class="py-8 text-center">
                     <UIcon name="i-heroicons-bell-slash" class="h-6 w-6 mx-auto mb-1.5" :class="isDark ? 'text-white/20' : 'text-slate-300'" />
-                    <p class="text-xs" :class="isDark ? 'text-white/30' : 'text-slate-400'">No notifications</p>
+                    <p class="text-xs" :class="isDark ? 'text-silver-400' : 'text-slate-600'">No notifications</p>
                   </div>
                 </div>
               </Transition>
@@ -277,7 +277,7 @@
         <AdminTabBar />
 
         <!-- Content -->
-        <main class="min-h-[calc(100vh-88px)] p-4" :class="isDark ? 'bg-[hsl(220,13.06%,9%)]' : 'bg-[hsl(216,20%,95.5%)]'">
+        <main class="admin-main min-h-[calc(100vh-88px)] px-6 py-6" :class="isDark ? 'bg-[#0b1118]' : 'bg-[#eef4fb]'">
           <div :key="route.fullPath" class="mx-auto max-w-[1600px]">
             <slot />
           </div>
@@ -456,7 +456,7 @@ watch(() => route.fullPath, () => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.375rem 0.625rem;
-  border-radius: 0.45rem;
+  border-radius: 0.375rem;
   font-size: 0.8125rem;
   font-weight: 500;
   transition: background 0.15s, color 0.15s;
@@ -467,14 +467,12 @@ watch(() => route.fullPath, () => {
   color: var(--admin-fg);
 }
 .vben-nav-item--active {
-  background: color-mix(in oklab, var(--ui-primary) 12%, transparent);
-  color: var(--ui-primary);
+  background: transparent;
+  color: var(--admin-card-fg);
   font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--admin-label);
 }
-html.dark .vben-nav-item--active {
-  background: color-mix(in oklab, var(--ui-primary) 18%, transparent);
-  color: var(--ui-primary);
-}
+.vben-nav-item--active :deep(.iconify) { color: var(--admin-label); }
 
 .vben-header-btn {
   display: inline-flex;

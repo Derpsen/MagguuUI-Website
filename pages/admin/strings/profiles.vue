@@ -35,7 +35,7 @@
 
     <div class="admin-filterbar">
       <UInput v-model="search" icon="i-heroicons-magnifying-glass" placeholder="Search addon or profile" class="min-w-0 flex-1" />
-      <USelect v-model="addonFilter" :items="addonOptions" value-key="value" placeholder="All Addons" class="w-full sm:w-60" />
+      <USelect v-model="addonFilter" :items="addonOptions" value-key="value" placeholder="All Addons" class="w-full sm:w-60" aria-label="Filter by addon" />
     </div>
 
     <div v-if="selected.size" class="admin-bulkbar">

@@ -35,7 +35,7 @@
 
     <div class="admin-filterbar">
       <UInput v-model="search" icon="i-heroicons-magnifying-glass" placeholder="Search name, class, spec or description" class="min-w-0 flex-1" />
-      <USelect v-model="classFilter" :items="classOptions" value-key="value" placeholder="All Classes" class="w-full sm:w-60" />
+      <USelect v-model="classFilter" :items="classOptions" value-key="value" placeholder="All Classes" class="w-full sm:w-60" aria-label="Filter by class" />
     </div>
 
     <div v-if="selected.size" class="admin-bulkbar">

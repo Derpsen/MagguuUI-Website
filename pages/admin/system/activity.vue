@@ -32,10 +32,10 @@
       <!-- Compact single-row filter bar -->
       <div class="admin-filterbar">
         <UInput v-model="searchQuery" placeholder="Search..." icon="i-heroicons-magnifying-glass" class="w-full sm:w-44" />
-        <USelect v-model="filterAction" :items="actionOptions" value-key="value" placeholder="All actions" class="w-28" />
-        <USelect v-model="filterType" :items="typeOptions" value-key="value" placeholder="All types" class="w-36" />
-        <UInput v-model="dateFrom" type="date" class="w-34" />
-        <UInput v-model="dateTo" type="date" class="w-34" />
+        <USelect v-model="filterAction" :items="actionOptions" value-key="value" placeholder="All actions" class="w-28" aria-label="Filter by action" />
+        <USelect v-model="filterType" :items="typeOptions" value-key="value" placeholder="All types" class="w-36" aria-label="Filter by type" />
+        <UInput v-model="dateFrom" type="date" class="w-34" aria-label="From date" />
+        <UInput v-model="dateTo" type="date" class="w-34" aria-label="To date" />
 
         <div class="flex items-center gap-1.5 sm:ml-auto">
           <UButton

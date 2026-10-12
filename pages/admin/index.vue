@@ -58,6 +58,7 @@
               color="neutral"
               variant="ghost"
               icon="i-heroicons-arrow-path"
+              aria-label="Refresh dashboard"
               :loading="refreshing"
               @click="refreshAll"
             />

@@ -18,7 +18,7 @@ defineEmits<{
       <div class="p-6 space-y-5">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold text-slate-950 dark:text-white">{{ title }}</h3>
-          <UButton icon="i-heroicons-x-mark" variant="ghost" color="neutral" size="xs" @click="$emit('update:open', false)" />
+          <UButton icon="i-heroicons-x-mark" variant="ghost" color="neutral" size="xs" aria-label="Close" @click="$emit('update:open', false)" />
         </div>
 
         <div v-if="error" class="text-sm text-red-500">{{ error }}</div>

@@ -2470,3 +2470,346 @@ html.light .public-setup-nav__shell {
 html.dark .admin-activity-action--created { color: #6ee7b7; }
 html.dark .admin-activity-action--updated { color: #fcd34d; }
 html.dark .admin-activity-action--deleted { color: #fca5a5; }
+
+/* ═══════════════════════════════════════════════════
+   ADMIN — plain style aligned with the public site
+   Same palette, green mono mini-labels as section headings, sections split
+   by hairline dividers. No cards, icon tiles, pills, gradients or glow.
+   Overrides the older admin rules above (same selectors, later in the file).
+   ═══════════════════════════════════════════════════ */
+
+.admin-shell,
+.admin-login {
+  --admin-bg: #ffffff;
+  --admin-bg-deep: #eef4fb;
+  --admin-fg: #111827;
+  --admin-fg-muted: #4b5563;
+  --admin-fg-faint: #5b6474;
+  --admin-card: transparent;
+  --admin-card-fg: #030712;
+  --admin-border: #dbe3ec;
+  --admin-border-strong: #c3cdd9;
+  --admin-input-bg: #ffffff;
+  --admin-sidebar: #ffffff;
+  --admin-header: #ffffff;
+  --admin-accent: var(--color-brand-700);
+  --admin-accent-hover: var(--color-brand-800);
+  --admin-muted-bg: #f3f6fa;
+  --admin-accent-bg: #f3f6fa;
+  --admin-accent-bg-hover: #e8eef5;
+  --admin-shadow: none;
+  --admin-shadow-float: 0 8px 24px rgb(15 23 42 / 0.12);
+  --admin-radius: 0.375rem;
+  --admin-radius-sm: 0.25rem;
+  --admin-radius-lg: 0.375rem;
+  --admin-label: var(--color-brand-700);
+  /* Solid buttons: darker brand step so white text clears 4.5:1. */
+  --ui-primary: var(--ui-color-primary-700);
+  --ui-text-dimmed: #5b6474;
+  --ui-text-muted: #4b5563;
+}
+
+html.dark .admin-shell,
+html.dark .admin-login {
+  --admin-bg: #0b1118;
+  --admin-bg-deep: #0b1118;
+  --admin-fg: #e0e6ee;
+  --admin-fg-muted: #a7b3c2;
+  --admin-fg-faint: #8b9bb0;
+  --admin-card: transparent;
+  --admin-card-fg: #ffffff;
+  --admin-border: rgb(255 255 255 / 0.1);
+  --admin-border-strong: rgb(255 255 255 / 0.16);
+  --admin-input-bg: rgb(255 255 255 / 0.04);
+  --admin-sidebar: #0b1118;
+  --admin-header: #0b1118;
+  --admin-accent: var(--color-brand-300);
+  --admin-accent-hover: var(--color-brand-200);
+  --admin-muted-bg: rgb(255 255 255 / 0.04);
+  --admin-accent-bg: rgb(255 255 255 / 0.05);
+  --admin-accent-bg-hover: rgb(255 255 255 / 0.07);
+  --admin-shadow: none;
+  --admin-shadow-float: 0 8px 24px rgb(0 0 0 / 0.4);
+  --admin-label: var(--color-brand-300);
+  --ui-primary: var(--ui-color-primary-400);
+  --ui-text-dimmed: #8b9bb0;
+  --ui-text-muted: #a7b3c2;
+  --ui-bg: #0b1118;
+  --ui-bg-elevated: #121a24;
+  --ui-border: rgb(255 255 255 / 0.1);
+  --ui-border-accented: rgb(255 255 255 / 0.16);
+}
+
+.admin-shell { background: var(--admin-bg-deep); }
+html.dark .admin-shell { background: var(--admin-bg); }
+.admin-shell::before,
+.admin-shell::after,
+.admin-grid-overlay,
+.admin-grid-overlay::before { display: none !important; }
+
+/* Sections instead of cards */
+.admin-shell .admin-panel,
+.admin-shell .admin-metric-card,
+.admin-shell .admin-kpi-tile,
+.admin-shell .admin-subpanel,
+.admin-shell .admin-preview-shell,
+.admin-shell .admin-table-shell,
+.admin-shell .admin-content-hub-card,
+.admin-shell .admin-inline-note,
+.admin-shell .surface-panel,
+.admin-shell .glass,
+.admin-shell .glass-card {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.admin-shell .admin-panel {
+  overflow: visible;
+  border-top: 1px solid var(--admin-border);
+}
+.admin-shell .admin-panel__header { padding: 1.25rem 0 0; }
+.admin-shell .admin-panel__body { padding: 1rem 0 1.25rem; }
+.admin-shell .admin-panel__footer { padding: 0 0 1rem; }
+.admin-shell .admin-dashboard-module--drop .admin-panel {
+  box-shadow: none;
+  border-top-color: var(--admin-label);
+}
+
+/* Green mini-label headings (public: font-mono 11px, uppercase, 0.14em) */
+.admin-shell .admin-panel__title,
+.admin-shell .admin-metric-card__label,
+.admin-shell .admin-kpi-tile__label,
+.admin-shell .admin-page-header__eyebrow,
+.admin-shell .admin-row__eyebrow,
+.admin-shell .admin-content-hub-card__label,
+.admin-shell .section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--admin-label);
+}
+.admin-shell .admin-page-header__title {
+  font-size: 1.875rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--admin-card-fg);
+}
+.admin-shell .admin-page-header__description,
+.admin-shell .admin-panel__description,
+.admin-shell .admin-metric-card__hint,
+.admin-shell .admin-content-hub-card__hint,
+.admin-shell .admin-empty-state__description { color: var(--admin-fg-muted); }
+
+/* No icon tiles */
+.admin-shell .admin-panel__icon,
+.admin-shell .admin-page-header__icon,
+.admin-shell .admin-metric-card__icon,
+.admin-shell .admin-empty-state__icon,
+.admin-shell .admin-content-hub-card__icon { display: none; }
+
+/* Metric / KPI blocks: plain figures split by dividers */
+.admin-shell .admin-metric-card {
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--admin-border);
+  transform: none;
+}
+.admin-shell .admin-metric-card:hover,
+.admin-shell .admin-metric-card--interactive:hover,
+.admin-shell .admin-kpi-tile:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--admin-border);
+}
+.admin-shell .admin-metric-card--interactive:hover .admin-metric-card__value { text-decoration: underline; text-underline-offset: 4px; }
+.admin-shell .admin-metric-card__value { color: var(--admin-card-fg); }
+
+/* Content hub links: plain rows */
+.admin-shell .admin-content-hub-card {
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--admin-border);
+}
+.admin-shell .admin-content-hub-card:hover .admin-content-hub-card__hint { color: var(--admin-fg); }
+
+/* Rows, tables, status lists */
+.admin-shell .admin-row,
+.admin-shell .admin-status-row,
+.admin-shell .admin-activity-row,
+.admin-shell .admin-switch-row {
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+.admin-shell .admin-table thead th {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--admin-label);
+  background: transparent;
+}
+.admin-shell .admin-table tbody tr:hover { background: var(--admin-accent-bg); }
+
+/* Pills, chips and badges: plain text, no colour fills */
+.admin-shell .admin-pill,
+.admin-shell .admin-context-chip,
+.admin-shell .admin-module-hint,
+.admin-shell .admin-user-chip {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  color: var(--admin-fg-muted);
+  letter-spacing: normal;
+  text-transform: none;
+  font-weight: 500;
+}
+.admin-shell .admin-pill--success { color: var(--color-brand-700); }
+.admin-shell .admin-pill--warning { color: #92400e; }
+html.dark .admin-shell .admin-pill--success { color: var(--color-brand-300); }
+html.dark .admin-shell .admin-pill--warning { color: #fcd34d; }
+
+/* Segmented control: underline tabs like the public strings tabs */
+.admin-shell .admin-segmented {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--admin-border);
+  border-radius: 0;
+  padding: 0;
+  gap: 1rem;
+  box-shadow: none;
+}
+.admin-shell .admin-segmented__button {
+  border-radius: 0;
+  padding: 0.35rem 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--admin-fg-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.admin-shell .admin-segmented__button--active {
+  background: transparent;
+  box-shadow: none;
+  color: var(--admin-card-fg);
+  border-bottom-color: var(--admin-label);
+}
+
+/* Empty states: one quiet line */
+.admin-shell .admin-empty-state { padding: 1.5rem 0; text-align: left; align-items: flex-start; }
+.admin-shell .admin-empty-state__title { font-size: 0.95rem; font-weight: 600; color: var(--admin-fg); }
+
+/* Buttons: no gradients, glow or lift; squared like the public site */
+.admin-shell .btn-gradient,
+.admin-shell .btn-gradient-green,
+.admin-shell .btn-primary {
+  background: var(--ui-primary);
+  box-shadow: none;
+  transform: none;
+}
+.admin-shell [data-slot="base"] { box-shadow: none; }
+.admin-shell .text-gradient,
+.admin-shell .text-gradient-subtle {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: var(--admin-card-fg);
+}
+
+/* Save bar and floating panels: flat surface with a hairline */
+.admin-shell .admin-savebar__content,
+html.light .admin-shell .admin-savebar__content {
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius);
+  box-shadow: var(--admin-shadow-float);
+  backdrop-filter: none;
+}
+
+/* Muted text clears 4.5:1 on both backgrounds */
+.admin-shell .text-slate-400,
+.admin-shell .text-gray-400 { color: #5b6474; }
+html.dark .admin-shell .text-slate-400,
+html.dark .admin-shell .text-slate-500,
+html.dark .admin-shell .text-gray-500 { color: #8b9bb0; }
+.admin-shell .text-slate-500,
+.admin-shell .text-gray-500 { color: #4b5563; }
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell *,
+  .admin-login * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Inline-styled page blocks (rounded + bordered divs in admin pages) become
+   plain sections: top hairline only, no fill, no radius, no shadow. */
+.admin-main :is(div, section, a, article):is(.rounded-lg, .rounded-xl, .rounded-2xl).border {
+  background: transparent !important;
+  border-width: 1px 0 0 0 !important;
+  border-color: var(--admin-border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.admin-main a:is(.rounded-lg, .rounded-xl, .rounded-2xl).border:hover p:first-child { text-decoration: underline; text-underline-offset: 4px; }
+
+/* Icon-only tiles (square div/span holding just an icon) are dropped. */
+.admin-main :is(div, span):is(.h-8, .h-9, .h-10, .h-11, .h-12, .h-14):is(.rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-full).justify-center:has(> .iconify:only-child) {
+  display: none !important;
+}
+
+/* Coloured pills (rounded-full spans with a fill) read as plain text. */
+.admin-main span.rounded-full[class*="bg-"]:not([class*="h-1"]):not([class*="h-2"]):not([class*="w-1"]):not([class*="w-2"]) {
+  background: transparent !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  box-shadow: none !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+
+/* Nuxt UI status colours: darker steps in light mode so badge text clears 4.5:1 */
+.admin-shell {
+  --ui-success: var(--ui-color-success-800);
+  --ui-info: var(--ui-color-info-800);
+  --ui-warning: var(--ui-color-warning-800);
+  --ui-error: var(--ui-color-error-800);
+}
+html.dark .admin-shell {
+  --ui-success: var(--ui-color-success-400);
+  --ui-info: var(--ui-color-info-400);
+  --ui-warning: var(--ui-color-warning-400);
+  --ui-error: var(--ui-color-error-400);
+}
+
+/* Low-opacity text tokens raised to AA on #0b1118 / light background */
+html.dark .admin-shell :is(.text-white\/20, .text-white\/25, .text-white\/30, .text-white\/35, .text-white\/40, .text-white\/45, .text-white\/50) { color: #8b9bb0; }
+html.dark .admin-shell :is(.text-white\/55, .text-white\/60, .text-white\/70) { color: #a7b3c2; }
+.admin-shell :is(.text-emerald-500, .text-emerald-600) { color: #047857; }
+.admin-shell :is(.text-amber-500, .text-amber-600) { color: #92400e; }
+.admin-shell :is(.text-blue-500, .text-blue-600) { color: #1d4ed8; }
+.admin-shell :is(.text-red-500) { color: #b91c1c; }
+html.dark .admin-shell :is(.text-emerald-500, .text-emerald-600) { color: #34d399; }
+html.dark .admin-shell :is(.text-amber-500, .text-amber-600) { color: #fbbf24; }
+html.dark .admin-shell :is(.text-blue-500, .text-blue-600) { color: #93c5fd; }
+html.dark .admin-shell :is(.text-red-500) { color: #f87171; }
+.admin-shell .prose :where(code) { color: #1f2937; }
+html.dark .admin-shell .prose :where(code) { color: #e0e6ee; }
+
+/* Inline section titles in admin pages read as green mini-labels too */
+.admin-main :is(h2, h3).text-sm.font-semibold {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--admin-label) !important;
+}

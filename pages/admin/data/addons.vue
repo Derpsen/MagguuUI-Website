@@ -35,8 +35,8 @@
 
     <div class="admin-filterbar">
       <UInput v-model="search" icon="i-heroicons-magnifying-glass" placeholder="Search addon" class="min-w-0 flex-1" />
-      <USelect v-model="stateFilter" :items="stateOptions" value-key="value" class="w-full sm:w-48" />
-      <USelect v-model="categoryFilter" :items="categoryOptions" value-key="value" placeholder="All Categories" class="w-full sm:w-60" />
+      <USelect v-model="stateFilter" :items="stateOptions" value-key="value" class="w-full sm:w-48" aria-label="Filter by state" />
+      <USelect v-model="categoryFilter" :items="categoryOptions" value-key="value" placeholder="All Categories" class="w-full sm:w-60" aria-label="Filter by category" />
     </div>
 
     <div
@@ -106,9 +106,9 @@
               </td>
               <td class="text-right">
                 <div class="inline-flex items-center gap-1">
-                  <UButton size="xs" variant="ghost" color="neutral" :icon="addon.isVisible ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'" @click="toggleVisibility(addon)" />
-                  <UButton size="xs" variant="ghost" color="neutral" icon="i-heroicons-pencil-square" @click="openEdit(addon)" />
-                  <UButton size="xs" variant="ghost" color="error" icon="i-heroicons-trash" @click="confirmDelete(addon)" />
+                  <UButton size="xs" variant="ghost" color="neutral" :icon="addon.isVisible ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'" :aria-label="addon.isVisible ? `Hide ${addon.name}` : `Show ${addon.name}`" @click="toggleVisibility(addon)" />
+                  <UButton size="xs" variant="ghost" color="neutral" icon="i-heroicons-pencil-square" :aria-label="`Edit ${addon.name}`" @click="openEdit(addon)" />
+                  <UButton size="xs" variant="ghost" color="error" icon="i-heroicons-trash" :aria-label="`Delete ${addon.name}`" @click="confirmDelete(addon)" />
                 </div>
               </td>
             </tr>

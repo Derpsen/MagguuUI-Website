@@ -27,7 +27,7 @@ onUnmounted(() => {
 <template>
   <div
     class="flex h-[38px] min-w-0 items-center border-b"
-    :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-[hsl(240,5.9%,90%)]'"
+    :class="isDark ? 'bg-[#0b1118] border-white/10' : 'bg-white border-[#dbe3ec]'"
   >
     <!-- Scrollable tabs; min-w-0 so overflow works inside admin shell at ~1024px -->
     <div class="min-w-0 flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide">
@@ -40,11 +40,11 @@ onUnmounted(() => {
           :class="[
             isActive(tab.path)
               ? isDark
-                ? 'bg-[hsl(220,13.06%,9%)] text-white border-[hsl(240,3.7%,22%)]'
-                : 'bg-[hsl(216,20%,95.5%)] text-slate-900 border-[hsl(240,5.9%,90%)]'
+                ? 'text-white border-white/10'
+                : 'text-slate-900 border-[#dbe3ec]'
               : isDark
-                ? 'text-white/50 hover:text-white/80 border-[hsl(240,3.7%,22%)] hover:bg-white/[0.03]'
-                : 'text-slate-500 hover:text-slate-700 border-[hsl(240,5.9%,90%)] hover:bg-slate-50',
+                ? 'text-silver-300 hover:text-white border-white/10'
+                : 'text-slate-600 hover:text-slate-900 border-[#dbe3ec]',
           ]"
           @contextmenu="onContextMenu($event, tab.path)"
         >
@@ -63,8 +63,9 @@ onUnmounted(() => {
 
           <button
             v-if="!tab.pinned"
-            class="ml-0.5 rounded p-0.5 opacity-0 transition-all group-hover:opacity-100"
-            :class="isDark ? 'hover:bg-white/10 text-white/40 hover:text-white' : 'hover:bg-slate-200 text-slate-400 hover:text-slate-700'"
+            class="ml-0.5 rounded p-0.5 opacity-0 transition-all group-hover:opacity-100 focus-visible:opacity-100"
+            :class="isDark ? 'hover:bg-white/10 text-silver-300 hover:text-white' : 'hover:bg-slate-200 text-slate-600 hover:text-slate-900'"
+            :aria-label="`Close tab ${tab.label}`"
             @click.prevent.stop="closeTab(tab.path)"
           >
             <UIcon name="i-heroicons-x-mark" class="h-3 w-3" />
@@ -76,8 +77,9 @@ onUnmounted(() => {
     <button
       v-if="tabs.some(t => !t.pinned)"
       class="shrink-0 flex items-center gap-1 px-2.5 h-full text-[12px] transition-colors border-l"
-      :class="isDark ? 'text-white/35 hover:text-white/70 border-[hsl(240,3.7%,22%)]' : 'text-slate-400 hover:text-slate-600 border-[hsl(240,5.9%,90%)]'"
+      :class="isDark ? 'text-silver-300 hover:text-white border-white/10' : 'text-slate-600 hover:text-slate-900 border-[#dbe3ec]'"
       title="Close all tabs"
+      aria-label="Close all tabs"
       @click="closeAllTabs()"
     >
       <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />

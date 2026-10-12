@@ -39,6 +39,7 @@
     "@resvg/resvg-js": "^2.6.2",
     "@simplewebauthn/browser": "^14.0.0",
     "@simplewebauthn/server": "^14.0.2",
+    "@takumi-rs/core": "^2.15.1",
     "@tiptap/extension-link": "^3.31.4",
     "@tiptap/extension-placeholder": "^3.31.4",
     "@tiptap/extension-text-align": "^3.31.4",

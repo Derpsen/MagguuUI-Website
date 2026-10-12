@@ -85,3 +85,27 @@ test('color-mode toggle flips html class between light and dark', async ({ page 
   expect(afterMode).toBeDefined()
   expect(afterMode).not.toEqual(beforeMode)
 })
+
+test('/imprint shows contact button and separate disclaimer', async ({ page }) => {
+  await visitWithoutConsoleErrors(page, '/imprint')
+  const contact = page.getByTestId('legal-contact')
+  await expect(contact).toBeVisible()
+  await expect(contact).toHaveAttribute('href', /^mailto:/)
+  const disclaimer = page.getByTestId('legal-disclaimer')
+  await expect(disclaimer.getByRole('heading', { name: 'Disclaimer' })).toBeVisible()
+  await expect(disclaimer).toContainText('not officially affiliated')
+})
+
+test('home module cards show copyable /mui badges', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await visitWithoutConsoleErrors(page, '/')
+  const features = page.getByRole('region', { name: 'Features' })
+  await expect(features.locator('article')).toHaveCount(3)
+  const badge = features.getByRole('button', { name: 'Copy /mui tools' })
+  await badge.scrollIntoViewIfNeeded()
+  await badge.click()
+  await expect(badge).toHaveAttribute('data-copied', 'true')
+  await expect(page.getByText('Copied /mui tools', { exact: true })).toBeVisible()
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('/mui tools')
+  await expect(features.getByRole('list', { name: 'Optional Magguu profiles' }).getByText('Whisper Messenger')).toBeVisible()
+})

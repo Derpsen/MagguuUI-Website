@@ -1139,6 +1139,23 @@ html.light .btn-gradient-green {
   background: linear-gradient(135deg, #059669, #10b981);
 }
 
+/* ─── Scroll reveal (CSS scroll-driven, no JS) ── */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+  }
+}
+
+/* Transform only: fading opacity would fail contrast checks mid-reveal. */
+@keyframes reveal-in {
+  from { transform: translateY(32px) scale(0.98); }
+  to { transform: none; }
+}
+
 /* ─── Reduced Motion (Accessibility) ──────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -1146,6 +1163,12 @@ html.light .btn-gradient-green {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
 

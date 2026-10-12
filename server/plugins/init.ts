@@ -539,6 +539,11 @@ export default defineNitroPlugin(() => {
         replacement: SITE_SETTINGS_DEFAULTS.meta_description,
       },
       {
+        key: 'meta_description',
+        value: 'Native overhaul for EllesmereUI, designed for 4K. Download EllesmereUI and MagguuUI from CurseForge, open /mui, and run Apply Magguu profiles.',
+        replacement: SITE_SETTINGS_DEFAULTS.meta_description,
+      },
+      {
         key: 'site_description',
         value: 'Native overhaul and curated profiles for EllesmereUI',
         replacement: SITE_SETTINGS_DEFAULTS.site_description,

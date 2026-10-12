@@ -8,11 +8,19 @@ strings (EllesmereUI, BigWigs, Northern Sky Raid Tools, class layouts). Live:
 image `ghcr.io/derpsen/magguuui-website` (LAN origin
 `http://192.168.178.21:3000` on `br0`). Ops notes: `MEMORY.md`.
 
-**Live ops baseline (2026-10-06):** digest
-`sha256:76ef22c97b84cbd6162d9aef44df0d620ab1cea8c1252daf1fadd432c8c3f60d`
-(OCI `sha-5c26d99` / tip `5c26d99`) — **kein Re-Pull** wenn live schon darauf.
-Wave: #95 (`@simplewebauthn/browser` 14) + #117 (audit overrides/allowlist);
-Admin-Smoke 6/6 PASS auf diesem Digest.
+**Live ops baseline (2026-10-12):** live image OCI `sha-1febf58` (#144 clean
+module section + legal notice, #146 nowrap, #147 green mini-label headings).
+#148 (color-mode reload test) is test-only, so no pull. #149 (two-tone names
+wording) merged to main 2026-10-12 21:18 Berlin and needs the next app-image
+pull. Light-mode hydration fix: `useIsDark` stays dark until mount. The older
+2026-10-06 baseline (`sha-5c26d99`) is superseded.
+
+## Grok Bot helpers and rooms (2026-10-12)
+
+Helpers were renamed 2026-10-12; their IDs did not change. Webcraft owns **MagguuUI-Website only**. Botsmith owns MagguuBot + Magguu-Dashboard. Luaforge owns the MagguuUI addon Lua. Sentinel reviews PRs. Launchpad does releases (Tag-Gate). Homebase does Unraid. Captain does the Notion projects. Buddy is the front door. Old names were Stack Fixer, Bot Fixer, Addon Fixer, Reviewer, Release Helfer, Homelab Helfer and Projects Manager.
+Rooms: Addon HQ (MagguuUI), Web Studio (this repo), Bot Lab, Dashboard Deck, Homebase Ops.
+**Direct-change rule:** Buddy makes small Website design/text changes directly (own PR, green CI, squash-merge, one pull). Bigger work goes to Webcraft.
+Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain structured text with small green mini-label headings.
 
 ## Safe Working Rules
 
@@ -112,7 +120,7 @@ Routine „Magguu Audit Allowlist Review“ ~2. Nov; re-check before review-by.
 
 ## Admin-Smoke checklist
 
-After Unraid app-image pull / when Buddy asks (Homelab owns container pull):
+After Unraid app-image pull / when Buddy asks (Homebase owns container pull):
 
 1. Login `/admin/login`
 2. These five routes must be **200** (from #102):
@@ -122,14 +130,14 @@ After Unraid app-image pull / when Buddy asks (Homelab owns container pull):
    - `/admin/data/addons`
    - `/admin/content` (redirects to `/admin/content/home` — treat redirect-to-home as OK)
 3. Report to Buddy **only on FAIL** (or short OK if asked).
-4. Nach App-Image-Wellen: Prefer **Done-Wave Capture** skill (Buddy/PM) — kein Extra-Ping Homelab wenn Digest schon live.
+4. Nach App-Image-Wellen: Prefer **Done-Wave Capture** skill (Buddy/PM) — kein Extra-Ping Homebase wenn Digest schon live.
 
 ## Merge reports: Actions-only vs App-Image
 
 Merge reports to Buddy must say which path applies:
 
-- **Actions-only / pin-only Dependabot** → no Homelab pull.
-- **App-Image** (Dockerfile / app code that publishes the docker image) → Homelab via Container-nach-CI after green docker publish; Stack does not double-ping Homelab. Skip recreate if live already on handoff digest.
+- **Actions-only / pin-only Dependabot** → no Homebase pull.
+- **App-Image** (Dockerfile / app code that publishes the docker image) → Homebase via Container-nach-CI after green docker publish; Webcraft/Buddy do not double-ping Homebase. Skip recreate if live already on handoff digest.
 
 ## Product-facts Diff checklist
 
@@ -172,7 +180,7 @@ npm run db:seed        # seed default data
 
 ## Git / publish (Buddy hub)
 
-- **Grok Bot helpers (Stack Fixer, etc.) under Buddy:** Standing autonomy. For clear in-scope Website work (bugs, redesign, copy, logos, deps), commit, push, and merge to main **without asking Marco** and without waiting for a go-ahead. Never force-push. Never publish unrelated dirty WIP. Report only to Buddy (short German + links). Marco only reads Buddy — do not ask him for permission in this chat.
+- **Grok Bot helpers (Webcraft, etc.) under Buddy:** Standing autonomy. For clear in-scope Website work (bugs, redesign, copy, logos, deps), commit, push, and merge to main **without asking Marco** and without waiting for a go-ahead. Never force-push. Never publish unrelated dirty WIP. Report only to Buddy (short German + links). Marco only reads Buddy — do not ask him for permission in this chat.
 - Tags and releases still need an explicit release ask via Buddy.
 - Manual human Cursor sessions (Marco himself): do not commit/push/tag unless he asks.
 

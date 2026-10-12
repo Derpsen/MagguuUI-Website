@@ -203,15 +203,15 @@
 
 ## 2026-09-27 autonomy
 
-- Admin-Smoke checklist documented in `AGENTS.md` (login + five #102 routes; report FAIL-only to Buddy; Homelab owns pull).
-- Merge reports must say **Actions-only** vs **App-Image** (Dependabot pin-only = no Homelab; app/Dockerfile publish = Homelab via Container-nach-CI after green docker).
+- Admin-Smoke checklist documented in `AGENTS.md` (login + five #102 routes; report FAIL-only to Buddy; Homebase owns pull).
+- Merge reports must say **Actions-only** vs **App-Image** (Dependabot pin-only = no Homebase; app/Dockerfile publish = Homebase via Container-nach-CI after green docker).
 - USelect/Reka: never option-shaped `value: ""`; sentinel e.g. `"all"`. Enforced by `npm run lint` / `lint:uselect` (`scripts/check-uselect-empty-value.mjs`). `pages/admin/system/github.vue` syncFilters All → `"all"`.
 - Pack/copy product-fact deltas: update Website + MagguuBot + **Magguu-Dashboard** AGENTS (+ MEMORY where present) the same round.
 
 ## 2026-10-06 Ops sync (Buddy Inventur)
 
 - Live Website digest `sha256:76ef22c97b84cbd6162d9aef44df0d620ab1cea8c1252daf1fadd432c8c3f60d` (OCI `sha-5c26d99` / tip `5c26d99`) — kein Re-Pull wenn live schon darauf.
-- Wave: #95 (`@simplewebauthn/browser` 14) + #117 (audit overrides/allowlist); Homelab App-Image + Admin-Smoke **6/6 PASS** auf diesem Digest.
+- Wave: #95 (`@simplewebauthn/browser` 14) + #117 (audit overrides/allowlist); Homebase App-Image + Admin-Smoke **6/6 PASS** auf diesem Digest.
 - Passkey: Marco live Proton Pass = PASS; Box-Desktop != Proton-Passkey -> kein FAIL.
 - Audit-Allowlist review-by **2026-11-30**: `simple-git` + `@simple-git/argv-parser` (+ `braces` / `node-forge` from #114). Overrides #117: `vue`/`@vue/server-renderer` 3.5.43, `seroval` 1.6.8, `shell-quote` 1.12.0, `source-map-js` 1.2.2.
 - Optional pack / Discord embeds = **Whisper Messenger**, nicht WIM / Ellesmere WIM Skin.
@@ -227,3 +227,12 @@
 - satori: locked at `^0.34.1` (nuxt-og-image 6 peer `>=0.33.5`). 0.x minors are breaking for Satori layout/CSS, so 0.41+ is a locked major like Node 26, TS 7, h3 2. Dependabot **#130** (0.34.1 → 0.44.3) stays open and untouched: no merge, no close, until a separate OG-image compatibility pass.
 - CSP: HTML policy comes from `server/plugins/csp-nonce.ts` (render:html + beforeResponse, rebuilt from the cached nonce on SWR hits). routeRules no longer set a CSP. `experimental.payloadExtraction: false` keeps SWR HTML and payload from the same render. Init clears `nitro:routes` cache on boot.
 - Contact email renders client-side (`components/ContactEmail.vue`, footer mailto after mount) so Cloudflare Email Obfuscation has nothing to rewrite.
+
+## 2026-10-12 Docs/Bots-Sync
+
+- Helpers renamed (IDs unchanged): Webcraft = Website only; Botsmith = MagguuBot + Magguu-Dashboard; Luaforge = addon Lua; Sentinel = review; Launchpad = releases/Tag-Gate; Homebase = Unraid; Captain = Notion; Buddy = front door. Rooms: Addon HQ, Web Studio, Bot Lab, Dashboard Deck, Homebase Ops.
+- Buddy makes small design/text changes directly (own PR, green CI, squash, one pull); bigger work goes to Webcraft.
+- Live `sha-1febf58` (#144, #146, #147). #148 is test-only (no pull). #149 two-tone wording merged to main and is waiting for the next pull. `useIsDark` stays dark until mount (light-mode hydration fix).
+- Legal notice: "free, non-commercial project operated from Switzerland" + `contact@magguu.xyz`; no name, no address. Plain structured text with small green mini-label headings; no cards, icon boxes or flashy buttons.
+- Addon live v12.1.7. "Split names" options are becoming "Two-tone unit-frame names" / "Two-tone party and raid names" (MagguuUI PR #30; `SPLIT_NAMES` keys unchanged): half the name in the default color, half in the class color.
+- Unchanged: WIM is removed and Whisper Messenger is used; "Apply Magguu profiles"; Node 26 needs Marco's yes; locked TS 7, h3 2, satori 0.41; uid 99 + Cosign; `engines.node >=24.17`; no tags without Marco's yes; never remove third-party author names.

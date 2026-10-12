@@ -6,6 +6,10 @@ import sanitize from 'sanitize-html'
  * sanitize-html re-escapes text; decode those escapes again (`&amp;` last)
  * so callers get plain text for inputs/text bindings.
  */
+/**
+ * Returns PLAIN TEXT only (entities decoded, so `<`/`>` may reappear).
+ * NEVER render the result with `v-html` — use `{{ }}` or `:value` only.
+ */
 export function stripHtml(value: string): string {
   if (!value) return ''
   return sanitize(value, { allowedTags: [], allowedAttributes: {}, disallowedTagsMode: 'discard' })

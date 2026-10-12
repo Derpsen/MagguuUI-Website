@@ -1,3 +1,4 @@
+import { stripHtml } from './plainText'
 import { addonIconForName } from './addonIcons'
 import { displayAddonName, emojiForAddonName } from './addonChipMeta'
 
@@ -74,7 +75,7 @@ export function splitFeatureAddons(html: string): { html: string, addons: Featur
     return ''
   })
   if (!addons.length) {
-    const m = src.replace(/<[^>]+>/g, '').match(/profiles for ([^.]+)\./i)
+    const m = stripHtml(src).match(/profiles for ([^.]+)\./i)
     if (m?.[1]) splitNames(m[1]).forEach(push)
   }
   return { html: out, addons }

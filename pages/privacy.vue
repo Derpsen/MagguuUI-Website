@@ -12,7 +12,7 @@
         <h3 class="mt-3 font-medium" :class="isDark ? 'text-silver-200' : 'text-gray-800'">General Information</h3>
         <p class="mt-1">The following information provides a simple overview of what happens to your personal data when you visit this website.</p>
         <h3 class="mt-3 font-medium" :class="isDark ? 'text-silver-200' : 'text-gray-800'">Data Collection on This Website</h3>
-        <p class="mt-1">Data processing on this website is carried out by the website operator. Contact details can be found in the <NuxtLink to="/imprint" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">Imprint</NuxtLink>.</p>
+        <p class="mt-1">Data processing on this website is carried out by the website operator. Contact details can be found in the <NuxtLink to="/imprint" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">Legal notice</NuxtLink>.</p>
       </section>
 
       <section class="border-t pt-8" :class="isDark ? 'border-white/10' : 'border-gray-200'">
@@ -29,7 +29,7 @@
         <h3 class="mt-3 font-medium" :class="isDark ? 'text-silver-200' : 'text-gray-800'">Data Protection</h3>
         <p class="mt-1">The operator of this site takes the protection of your personal data very seriously. We treat your personal data confidentially and in accordance with the statutory data protection regulations and this privacy policy.</p>
         <h3 class="mt-3 font-medium" :class="isDark ? 'text-silver-200' : 'text-gray-800'">Responsible Party</h3>
-        <p class="mt-1">The responsible party for data processing on this website can be found in the <NuxtLink to="/imprint" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">Imprint</NuxtLink>.</p>
+        <p class="mt-1">The responsible party for data processing on this website can be found in the <NuxtLink to="/imprint" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">Legal notice</NuxtLink>.</p>
       </section>
 
       <section class="border-t pt-8" :class="isDark ? 'border-white/10' : 'border-gray-200'">

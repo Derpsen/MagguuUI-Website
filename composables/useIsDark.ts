@@ -6,8 +6,12 @@
  * render on the same fallback value to avoid Vue hydration class mismatches;
  * after mount, use the resolved client-side color mode.
  *
- * Explicit light/dark preference (theme toggle) always wins so Vue classes stay
- * aligned with the `html.light` / `html.dark` CSS that drives glass-card etc.
+ * This also applies to an explicit `light` preference: color-mode stores it in
+ * localStorage, so the server cannot know it and renders dark classes. If the
+ * client returned `false` during hydration, Vue would keep the SSR (dark) class
+ * attributes in production (class mismatches are not patched), leaving dark-mode
+ * text colors on a light page after reload. So: fallback until mounted, then the
+ * real preference re-renders reactively.
  */
 export function useIsDark() {
   const colorMode = useColorMode()
@@ -20,12 +24,12 @@ export function useIsDark() {
   }
 
   return computed(() => {
+    // Match the SSR fallback (dark) until mount for every preference.
+    if (!hydrated.value) return true
+
     const preference = colorMode.preference
     if (preference === 'light') return false
     if (preference === 'dark') return true
-
-    // preference === 'system' (or unknown): match color-mode fallback until mount
-    if (!hydrated.value) return true
 
     const value = colorMode.value
     if (value === 'light') return false

@@ -93,33 +93,11 @@
           </div>
         </AdminPanel>
 
-        <AdminPanel title="Legal & Contact" description="Imprint details and contact information." icon="i-heroicons-identification">
+        <AdminPanel title="Legal & Contact" description="Contact information for the legal notice." icon="i-heroicons-identification">
           <div class="space-y-4">
             <div class="admin-field">
               <label class="admin-field__label">Contact email</label>
               <UInput v-model="form.contact_email" :disabled="saving" placeholder="contact@magguu.xyz" />
-            </div>
-
-            <div class="admin-form-grid admin-form-grid--2">
-              <div class="admin-field">
-                <label class="admin-field__label">Imprint name</label>
-                <UInput v-model="form.imprint_name" :disabled="saving" placeholder="Your legal name" />
-              </div>
-
-              <div class="admin-field">
-                <label class="admin-field__label">Country</label>
-                <UInput v-model="form.imprint_country" :disabled="saving" placeholder="Germany" />
-              </div>
-            </div>
-
-            <div class="admin-field">
-              <label class="admin-field__label">Street</label>
-              <UInput v-model="form.imprint_street" :disabled="saving" placeholder="Street and house number" />
-            </div>
-
-            <div class="admin-field">
-              <label class="admin-field__label">City / postal code</label>
-              <UInput v-model="form.imprint_city" :disabled="saving" placeholder="12345 City" />
             </div>
           </div>
         </AdminPanel>

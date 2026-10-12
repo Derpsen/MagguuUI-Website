@@ -114,33 +114,36 @@
     <section aria-label="Features" class="reveal mt-16 pt-10 border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
       <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ content?.features_heading?.title || 'The module' }}</h2>
       <p class="mt-2 text-sm max-w-xl" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ content?.features_heading?.subtitle || 'An EllesmereUI setup with optional raid tools' }}</p>
-      <div class="mt-8 grid gap-10 lg:grid-cols-3 lg:gap-12">
+      <div class="mt-6 grid gap-10 lg:gap-12 lg:grid-cols-3">
         <article
           v-for="(feat, index) in features"
           :key="index"
-          class="feature-item flex flex-col"
-          :data-accent="feat.meta.accent"
+          class="module-col flex flex-col"
+          data-testid="module-card"
         >
-          <div class="flex items-center gap-2.5">
-            <UIcon :name="feat.meta.icon" class="size-5 shrink-0" :class="accentClasses(feat.meta.accent).icon" aria-hidden="true" />
-            <h3 class="text-base font-semibold leading-snug" :class="isDark ? 'text-white' : 'text-gray-950'">{{ feat.title }}</h3>
-          </div>
+          <h3 class="text-sm font-semibold leading-snug" :class="isDark ? 'text-white' : 'text-gray-950'">{{ feat.title }}</h3>
           <SafeHtml
-            class="home-feature-copy mt-3 text-sm leading-relaxed"
+            class="home-feature-copy mt-2 text-sm leading-relaxed"
             :class="isDark ? 'text-silver-300' : 'text-gray-700'"
             :html="feat.text"
           />
           <div v-if="feat.commands.length" class="mt-5">
-            <p class="font-mono text-[11px] uppercase tracking-[0.14em] mb-1.5" :class="accentClasses(feat.meta.accent).label">Commands</p>
-            <div class="flex flex-wrap gap-x-3 gap-y-1">
+            <p class="font-mono text-[11px] uppercase tracking-[0.14em] mb-1.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Commands</p>
+            <div class="flex flex-wrap gap-2">
               <CopyBadge v-for="cmd in feat.commands" :key="cmd" :command="cmd" />
             </div>
           </div>
           <div v-if="feat.addons.length" class="mt-5">
-            <p class="font-mono text-[11px] uppercase tracking-[0.14em] mb-1.5" :class="accentClasses(feat.meta.accent).label">Optional profiles</p>
-            <ul class="text-sm leading-7" :class="isDark ? 'text-silver-300' : 'text-gray-700'" aria-label="Optional Magguu profiles">
-              <li v-for="(addon, aIndex) in feat.addons" :key="addon.name" class="inline">
-                <span v-if="aIndex > 0" class="px-1.5" :class="isDark ? 'text-white/25' : 'text-gray-300'" aria-hidden="true">·</span>{{ addon.name }}
+            <p class="font-mono text-[11px] uppercase tracking-[0.14em] mb-1.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Optional profiles</p>
+            <ul class="flex flex-wrap gap-x-3 gap-y-1.5 text-sm" :class="isDark ? 'text-silver-300' : 'text-gray-700'" aria-label="Optional Magguu profiles">
+              <li
+                v-for="addon in feat.addons"
+                :key="addon.name"
+                class="inline-flex items-center gap-1.5"
+              >
+                <img v-if="addon.icon" :src="addon.icon" alt="" width="48" height="48" loading="lazy" decoding="async" class="size-5 rounded object-cover">
+                <span v-else class="inline-flex size-5 items-center justify-center text-[12px]" aria-hidden="true">{{ addon.emoji }}</span>
+                {{ addon.name }}
               </li>
             </ul>
           </div>
@@ -159,8 +162,7 @@ import {
   groupAddonChips,
   profileHrefForSlug,
 } from '~/utils/addonChipMeta'
-import { extractMuiCommands, featureCardMeta, splitFeatureAddons } from '~/utils/featureCardMeta'
-import type { FeatureAccent } from '~/utils/featureCardMeta'
+import { extractMuiCommands, splitFeatureAddons } from '~/utils/featureCardMeta'
 
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
@@ -323,42 +325,21 @@ const featureCopy = computed(() => [
   },
 ])
 
-const features = computed(() => featureCopy.value.map((feat, index) => {
+const features = computed(() => featureCopy.value.map((feat) => {
   const { html, addons } = splitFeatureAddons(feat.text)
   return {
     title: feat.title,
     text: html,
-    meta: featureCardMeta(index),
     commands: extractMuiCommands(feat.text),
     addons,
   }
 }))
 
-function accentClasses(accent: FeatureAccent) {
-  const dark = isDark.value
-  if (accent === 'gold') {
-    return {
-      icon: dark ? 'text-amber-300' : 'text-amber-700',
-      label: dark ? 'text-amber-300' : 'text-amber-800',
-    }
-  }
-  if (accent === 'sky') {
-    return {
-      icon: dark ? 'text-sky-300' : 'text-sky-700',
-      label: dark ? 'text-sky-300' : 'text-sky-800',
-    }
-  }
-  return {
-    icon: dark ? 'text-violet-300' : 'text-violet-700',
-    label: dark ? 'text-violet-300' : 'text-violet-800',
-  }
-}
-
 </script>
 
 <style scoped>
-.feature-item {
-  /* Offscreen on load: skip render work until near the viewport. */
+.module-col {
+  /* Offscreen on load: skip render work (and lazy chip images) until near the viewport. */
   content-visibility: auto;
   contain-intrinsic-size: auto 22rem;
 }

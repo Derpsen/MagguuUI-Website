@@ -153,7 +153,7 @@
           <span>Page {{ page }} of {{ totalPages }}</span>
 
           <div class="flex items-center gap-1.5">
-            <UButton size="xs" variant="ghost" color="neutral" icon="i-heroicons-chevron-left" :disabled="page <= 1" @click="page--" />
+            <UButton size="xs" variant="ghost" color="neutral" icon="i-heroicons-chevron-left" aria-label="Previous page" :disabled="page <= 1" @click="page--" />
             <template v-for="entry in paginationRange" :key="entry">
               <UButton
                 v-if="entry !== '...'"
@@ -166,7 +166,7 @@
               </UButton>
               <span v-else class="px-1 text-xs">...</span>
             </template>
-            <UButton size="xs" variant="ghost" color="neutral" icon="i-heroicons-chevron-right" :disabled="page >= totalPages" @click="page++" />
+            <UButton size="xs" variant="ghost" color="neutral" icon="i-heroicons-chevron-right" aria-label="Next page" :disabled="page >= totalPages" @click="page++" />
           </div>
         </div>
       </template>

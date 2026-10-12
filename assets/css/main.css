@@ -2813,3 +2813,23 @@ html.dark .admin-shell .prose :where(code) { color: #e0e6ee; }
   text-transform: uppercase;
   color: var(--admin-label) !important;
 }
+
+/* Activity action labels: plain mono text, AA on the light background */
+.admin-shell .admin-activity-action {
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+}
+.admin-shell .admin-activity-action--updated { color: #92400e; }
+html.dark .admin-shell .admin-activity-action--updated { color: #fcd34d; }
+
+.admin-shell :is(.admin-switch-row, .admin-row, .admin-status-row) {
+  border-width: 1px 0 0 0;
+  border-color: var(--admin-border);
+  border-radius: 0;
+  padding-left: 0;
+  padding-right: 0;
+}

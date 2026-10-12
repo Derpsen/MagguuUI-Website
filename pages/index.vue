@@ -121,12 +121,12 @@
           class="feature-item flex flex-col"
           :data-accent="feat.meta.accent"
         >
-          <div class="flex items-center gap-2.5">
-            <UIcon :name="feat.meta.icon" class="size-5 shrink-0" :class="accentClasses(feat.meta.accent).icon" aria-hidden="true" />
-            <h3 class="text-base font-semibold leading-snug" :class="isDark ? 'text-white' : 'text-gray-950'">{{ feat.title }}</h3>
+          <div class="flex items-center gap-2 h-5">
+            <UIcon :name="feat.meta.icon" class="size-4 shrink-0" :class="accentClasses(feat.meta.accent).label" aria-hidden="true" />
+            <h3 class="font-mono text-[11px] uppercase tracking-[0.14em] leading-4" :class="accentClasses(feat.meta.accent).label">{{ feat.title }}</h3>
           </div>
           <SafeHtml
-            class="home-feature-copy mt-3 text-sm leading-relaxed"
+            class="home-feature-copy mt-2 text-sm leading-relaxed"
             :class="isDark ? 'text-silver-300' : 'text-gray-700'"
             :html="feat.text"
           />
@@ -334,24 +334,9 @@ const features = computed(() => featureCopy.value.map((feat, index) => {
   }
 }))
 
-function accentClasses(accent: FeatureAccent) {
-  const dark = isDark.value
-  if (accent === 'gold') {
-    return {
-      icon: dark ? 'text-amber-300' : 'text-amber-700',
-      label: dark ? 'text-amber-300' : 'text-amber-800',
-    }
-  }
-  if (accent === 'sky') {
-    return {
-      icon: dark ? 'text-sky-300' : 'text-sky-700',
-      label: dark ? 'text-sky-300' : 'text-sky-800',
-    }
-  }
-  return {
-    icon: dark ? 'text-violet-300' : 'text-violet-700',
-    label: dark ? 'text-violet-300' : 'text-violet-800',
-  }
+// All module labels and icons share the brand accent (same as Supported Addons labels).
+function accentClasses(_accent: FeatureAccent) {
+  return { label: isDark.value ? 'text-brand-300' : 'text-brand-700' }
 }
 
 </script>
@@ -400,16 +385,30 @@ function accentClasses(accent: FeatureAccent) {
   text-underline-offset: 0.18em;
 }
 
-.home-feature-copy :deep(ul),
-.home-feature-copy :deep(ol),
 .home-hero-copy :deep(ul),
 .home-hero-copy :deep(ol) {
   margin: 0.6em 0 0;
   padding-left: 1.25em;
 }
 
-.home-feature-copy :deep(li),
 .home-hero-copy :deep(li) {
   margin-top: 0.2em;
+}
+
+/* Module columns: flush with the heading, identical rhythm in all three. */
+.home-feature-copy :deep(ul),
+.home-feature-copy :deep(ol) {
+  margin: 0.4em 0 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.home-feature-copy :deep(:is(ul, ol):first-child) {
+  margin-top: 0;
+}
+
+.home-feature-copy :deep(li + li),
+.home-feature-copy :deep(p + p) {
+  margin-top: 0.4em;
 }
 </style>

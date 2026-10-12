@@ -58,7 +58,7 @@
     "sanitize-html": "^2.17.7",
     "satori": "^0.34.1",
     "tailwindcss": "^4.3.2",
-    "vue-echarts": "^8.3.0",
+    "vue-echarts": "^8.3.2",
     "zod": "^4.6.5"
   },
   "devDependencies": {

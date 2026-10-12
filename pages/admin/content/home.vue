@@ -67,6 +67,14 @@
             <label for="home-hero-description" class="admin-field__label">Subtitle</label>
             <TipTapEditor id="home-hero-description" v-model="form.hero.description" placeholder="Short description..." min-height="80px" />
           </div>
+          <div class="admin-field">
+            <label for="home-hero-eyebrow" class="admin-field__label">Eyebrow label</label>
+            <UInput id="home-hero-eyebrow" v-model="form.hero.eyebrow" :disabled="saving" data-testid="home-hero-eyebrow" :placeholder="HOME_HERO_EXTRA_DEFAULTS.eyebrow" />
+          </div>
+          <div v-for="n in [1, 2, 3]" :key="`step-${n}`" class="admin-field">
+            <label :for="`home-hero-step-${n}`" class="admin-field__label">Install step {{ n }}</label>
+            <TipTapEditor :id="`home-hero-step-${n}`" v-model="form.hero[`step_${n}`]" placeholder="Step text..." min-height="48px" />
+          </div>
         </div>
       </AdminPanel>
 
@@ -209,6 +217,7 @@
 </template>
 
 <script setup lang="ts">
+import { HOME_HERO_EXTRA_DEFAULTS } from "~/utils/pageCopyDefaults"
 
 definePageMeta({ layout: "admin" })
 
@@ -227,6 +236,7 @@ const form = reactive({
   hero: {
     title: "MagguuUI",
     title2: "Ellesmere setup.",
+    ...HOME_HERO_EXTRA_DEFAULTS,
     description: "MagguuUI is a native EllesmereUI module for WoW Retail. Designed for 4K. Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface, then open /mui and run Apply Magguu profiles.",
   } as Record<string, string>,
   addons: {

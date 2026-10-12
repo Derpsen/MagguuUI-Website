@@ -58,5 +58,11 @@ const cards = [
     hint: 'Public release notes',
     icon: 'i-heroicons-document-text',
   },
+  {
+    to: '/admin/content/pages',
+    label: 'Pages',
+    hint: 'About, Legal notice and Privacy',
+    icon: 'i-heroicons-document-duplicate',
+  },
 ]
 </script>

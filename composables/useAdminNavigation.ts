@@ -76,6 +76,14 @@ const adminSections: AdminNavSection[] = [
         description: 'Release notes and public update history.',
         hint: 'Publish release notes, keep drafts tidy and archive older updates without noise.',
       },
+      {
+        to: '/admin/content/pages',
+        label: 'Pages',
+        heading: 'Pages',
+        icon: 'i-heroicons-document-duplicate',
+        description: 'About, Legal notice and Privacy text.',
+        hint: 'Empty fields fall back to the built-in default text.',
+      },
     ],
   },
   {

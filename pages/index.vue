@@ -15,7 +15,7 @@
     <section aria-label="Hero" class="grid lg:grid-cols-[minmax(0,1.4fr)_minmax(14rem,0.7fr)] gap-10 lg:gap-16 items-start">
       <div>
         <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-4" :class="isDark ? 'text-brand-300' : 'text-brand-700'">
-          WoW Retail · EllesmereUI
+          {{ heroEyebrow }}
         </p>
         <h1 class="text-5xl sm:text-6xl font-semibold tracking-tight leading-[0.95]" :class="isDark ? 'text-white' : 'text-gray-950'">
           {{ content?.hero?.title || 'MagguuUI' }}
@@ -37,18 +37,10 @@
         </div>
       </div>
 
-      <ol class="lg:pt-9" :class="isDark ? 'border-white/10' : 'border-gray-200'">
-        <li class="grid grid-cols-[1.4rem_1fr] gap-3 py-3 border-b text-sm leading-relaxed" :class="isDark ? 'border-white/10 text-silver-300' : 'border-gray-200 text-gray-700'">
-          <span class="font-mono text-xs pt-0.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">1</span>
-          <span>Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface.</span>
-        </li>
-        <li class="grid grid-cols-[1.4rem_1fr] gap-3 py-3 border-b text-sm leading-relaxed" :class="isDark ? 'border-white/10 text-silver-300' : 'border-gray-200 text-gray-700'">
-          <span class="font-mono text-xs pt-0.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">2</span>
-          <span>Open <code class="font-mono text-[0.92em]" :class="isDark ? 'text-white' : 'text-gray-950'">/mui</code>.</span>
-        </li>
-        <li class="grid grid-cols-[1.4rem_1fr] gap-3 py-3 border-b text-sm leading-relaxed" :class="isDark ? 'border-white/10 text-silver-300' : 'border-gray-200 text-gray-700'">
-          <span class="font-mono text-xs pt-0.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">3</span>
-          <span>Run <strong class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">Apply Magguu profiles</strong>.</span>
+      <ol class="lg:pt-9" :class="isDark ? 'border-white/10' : 'border-gray-200'" data-testid="home-hero-steps">
+        <li v-for="(step, index) in heroSteps" :key="index" class="grid grid-cols-[1.4rem_1fr] gap-3 py-3 border-b text-sm leading-relaxed" :class="isDark ? 'border-white/10 text-silver-300' : 'border-gray-200 text-gray-700'">
+          <span class="font-mono text-xs pt-0.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">{{ index + 1 }}</span>
+          <SafeHtml class="home-hero-step" :class="isDark ? 'home-hero-step--dark' : ''" :html="step" />
         </li>
       </ol>
     </section>
@@ -161,6 +153,7 @@ import {
 } from '~/utils/addonChipMeta'
 import { extractMuiCommands, featureCardMeta, splitFeatureAddons } from '~/utils/featureCardMeta'
 import type { FeatureAccent } from '~/utils/featureCardMeta'
+import { HOME_HERO_EXTRA_DEFAULTS } from '~/utils/pageCopyDefaults'
 
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
@@ -267,6 +260,12 @@ const { data: contentData } = useFetch<{ data: HomeContent }>('/api/v1/content/h
 const { data: addonsData } = useFetch<{ data: AddonsPayload }>('/api/v1/addons')
 
 const content = computed(() => contentData.value?.data)
+const heroEyebrow = computed(() => (content.value?.hero?.eyebrow as string | undefined)?.trim() || HOME_HERO_EXTRA_DEFAULTS.eyebrow)
+const heroSteps = computed(() => ([1, 2, 3] as const).map((n) => {
+  const key = `step_${n}` as const
+  const stored = content.value?.hero?.[key]
+  return typeof stored === 'string' && stored.trim() ? stored : HOME_HERO_EXTRA_DEFAULTS[key]
+}))
 const heroTitle2 = computed(() => {
   const raw = content.value?.hero?.title2
   if (typeof raw !== 'string') return 'Ellesmere setup.'
@@ -411,4 +410,11 @@ function accentClasses(_accent: FeatureAccent) {
 .home-feature-copy :deep(p + p) {
   margin-top: 0.4em;
 }
+
+/* Editable hero steps: same look as the former inline code/strong classes. */
+.home-hero-step :deep(code) { font-family: var(--font-mono); font-size: 0.92em; color: #030712; }
+.home-hero-step :deep(strong) { font-weight: 600; color: #030712; }
+.home-hero-step--dark :deep(code),
+.home-hero-step--dark :deep(strong) { color: #fff; }
+.home-hero-step :deep(p) { display: inline; }
 </style>

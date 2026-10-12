@@ -296,10 +296,6 @@ const isAdmin = computed(() => {
 
 interface GuideLocale { [k: string]: unknown }
 interface GuidePayload { en?: GuideLocale, de?: GuideLocale, [k: string]: unknown }
-function stripHtml(str: string): string {
-  return str.replace(/<[^>]*>/g, '').trim()
-}
-
 interface EditableStep {
   num: number
   editableTitle: string

@@ -373,7 +373,7 @@ const STEP_META = [
   { label: 'Install', icon: 'i-heroicons-arrow-down-tray' },
   { label: 'Launch', icon: 'i-heroicons-play' },
   { label: 'Apply', icon: 'i-heroicons-sparkles' },
-  { label: 'Alt Sync', icon: 'i-heroicons-users' },
+  { label: 'Skinning & QoL', icon: 'i-heroicons-paint-brush' },
   { label: 'Finish', icon: 'i-heroicons-check-badge' },
 ] as const
 

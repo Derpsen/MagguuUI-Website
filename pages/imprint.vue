@@ -27,7 +27,7 @@
       <!--email_off-->
       <p class="mt-3 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
         Email:
-        <a :href="`mailto:${contactEmail}`" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">{{ contactEmail }}</a>
+        <ContactEmail :address="contactEmail" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'" />
       </p>
       <!--/email_off-->
     </section>

@@ -12,7 +12,7 @@
       <p class="mt-3 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
         MagguuUI is a native overhaul for
         <strong :class="isDark ? 'text-white' : 'text-gray-900'">EllesmereUI</strong>
-        on World of Warcraft Retail. Designed for 4K. It has no standalone installer and no separate options window.
+        on World of Warcraft Retail. Designed for 4K. It has no standalone installer and no options window of its own; Setup opens inside EllesmereUI.
         Everything lives in EllesmereUI under MagguuUI → Options.
       </p>
       <p class="mt-3 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
@@ -74,7 +74,7 @@
       <!--email_off-->
       <p class="mt-3 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
         Questions, feedback or bug reports: email
-        <a :href="`mailto:${contactEmail}`" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">{{ contactEmail }}</a>
+        <ContactEmail :address="contactEmail" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'" />
         or open a
         <a :href="githubIssuesUrl" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">GitHub issue</a>.
       </p>

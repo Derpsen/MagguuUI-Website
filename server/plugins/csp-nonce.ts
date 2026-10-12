@@ -8,6 +8,13 @@
  *   by the hydrated runtime (e.g. AdSense) inherit trust without wildcards.
  * - Non-HTML responses get a locked-down baseline CSP (no scripts at all).
  *
+ * SWR-cached pages (`routeRules` `swr`) are served from cache without running
+ * `render:html`, so the header set there never reached the client and the
+ * routeRules baseline (`default-src 'none'`) blocked all CSS/JS on bare `/`.
+ * The `beforeResponse` hook below runs for every response, rebuilds the HTML
+ * policy from the nonce baked into the (cached) document, and gives non-HTML
+ * responses the baseline only when nothing else set one.
+ *
  * SPA shells (`routeRules` `ssr: false`, e.g. `/admin/**`) place
  * `window.__NUXT_SITE_CONFIG__` in `html.body`. Skipping that fragment left the
  * inline script without a nonce, so production CSP blocked it on hard reload of
@@ -15,7 +22,7 @@
  */
 
 import { randomBytes } from 'node:crypto'
-import { buildHtmlCsp } from '../utils/htmlCsp'
+import { buildHtmlCsp, resolveResponseCsp } from '../utils/htmlCsp'
 
 function injectNonce(fragments: string[] | undefined, nonce: string) {
   return (fragments || []).map(fragment =>
@@ -50,6 +57,22 @@ export default defineNitroPlugin((nitroApp) => {
     catch (error) {
       // Never let a CSP plugin failure turn a valid HTML response into a 500.
       console.error('[csp-nonce] failed to apply nonce/CSP', error)
+    }
+  })
+
+  nitroApp.hooks.hook('beforeResponse', (event, response) => {
+    try {
+      const csp = resolveResponseCsp({
+        contentType: getResponseHeader(event, 'Content-Type'),
+        body: response?.body,
+        current: getResponseHeader(event, 'Content-Security-Policy'),
+        isDev,
+        upgradeInsecure: getRequestProtocol(event, { xForwardedProto: true }) === 'https',
+      })
+      if (csp) setResponseHeader(event, 'Content-Security-Policy', csp)
+    }
+    catch (error) {
+      console.error('[csp-nonce] failed to finalize CSP', error)
     }
   })
 })

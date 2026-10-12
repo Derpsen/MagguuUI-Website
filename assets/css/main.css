@@ -83,6 +83,10 @@ html.dark body {
 
 html.dark .public-shell {
   background-color: #0b1118;
+  /* Muted text tokens (dates, kickers, footer, notes). Stock silver-500/600
+     sat at 4.0:1 / 2.5:1 on #0b1118; these clear 4.5:1 on page and card. */
+  --color-silver-500: #8b9bb0;
+  --color-silver-600: #8090a4;
 }
 
 /* ─── App Shells ────────────────────────────────── */
@@ -792,6 +796,9 @@ html.light body {
 
 html.light .public-shell {
   background-color: #eef4fb;
+  /* Muted text tokens for light mode. Stock gray-400/500 sat at 2.4:1 / 4.4:1. */
+  --color-gray-400: #5b6474;
+  --color-gray-500: #4a5565;
 }
 
 html.light .glass {

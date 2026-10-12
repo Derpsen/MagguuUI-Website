@@ -40,7 +40,14 @@ Admin-Smoke 6/6 PASS auf diesem Digest.
 - Do not perform major dependency upgrades without a separate compatibility
   pass. `types/nuxt-nitro.d.ts` restores Nitro `headers`, `swr`, and `storage`
   on the Nuxt 4.5 config types. Do not delete it. Node 26, TypeScript 7, h3 2,
-  and satori 0.41 stay blocked without an explicit yes.
+  and satori 0.41+ stay blocked without an explicit yes. Dependabot #130
+  (satori 0.44) stays open: do not merge or close it.
+- As of 2026-10-12: addon live **v12.1.7**; container runs as **uid 99**;
+  images are **Cosign keyless** signed; site defaults to **Dark**; **WIM is
+  removed** (Whisper Messenger is the whisper chat); `engines.node >=24.17`,
+  Node 24 locked, Node 26 only after Marco's yes (~end of Oct).
+- CSP lives in `server/plugins/csp-nonce.ts` + `server/utils/htmlCsp.ts`, not
+  in routeRules (SWR HTML got the JSON baseline and lost all CSS/JS).
 - MagguuUI public copy (home/guide/FAQ/changelog/addon metadata) must stay
   aligned with the current MagguuUI release. Tell players to download
   EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface. Do not tell

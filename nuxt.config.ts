@@ -30,10 +30,10 @@ const publicSecurityHeaders = {
   'X-DNS-Prefetch-Control': 'off',
   'X-Permitted-Cross-Domain-Policies': 'none',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  // Baseline CSP for non-HTML (JSON/API) responses. For HTML, the
-  // server/plugins/csp-nonce.ts plugin overrides this header with a
-  // per-request nonce + strict-dynamic policy.
-  'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+  // No Content-Security-Policy here: routeRules headers also land on SWR-cached
+  // HTML, where a `default-src 'none'` baseline blocked every /_nuxt asset.
+  // server/plugins/csp-nonce.ts sets the document policy for HTML and the
+  // locked-down baseline for everything else.
 }
 
 const hotlinkAssetHeaders = {
@@ -220,6 +220,14 @@ export default defineNuxtConfig({
         }
       },
     },
+  },
+
+  experimental: {
+    // swr routes would otherwise get an extracted _payload.json that is cached
+    // separately from the HTML. A stale HTML + fresh payload pair caused the
+    // Home hydration mismatch (WIM vs Whisper Messenger, old contact email).
+    // Inline payload keeps markup and data from the same render.
+    payloadExtraction: false,
   },
 
   routeRules: {

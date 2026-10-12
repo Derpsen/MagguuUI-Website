@@ -55,7 +55,7 @@
           :class="activeTab === tab.value
             ? (isDark ? 'border-brand-300 text-white' : 'border-brand-700 text-gray-950')
             : (isDark ? 'border-transparent text-silver-400 hover:text-white' : 'border-transparent text-gray-500 hover:text-gray-950')"
-          @click="activeTab = tab.value">
+          @click="pick(() => activeTab = tab.value)">
           {{ tab.label }}
           <span v-if="tab.count > 0" class="font-mono text-[11px]" :class="isDark ? 'text-silver-500' : 'text-gray-400'">{{ tab.count }}</span>
         </button>
@@ -75,7 +75,7 @@
                 :aria-selected="selectedClass === cls"
                 class="wow-class-chip"
                 :class="selectedClass === cls ? 'is-active' : ''"
-                @click="selectedClass = cls"
+                @click="pick(() => { selectedClass = cls; pickedSpec = '' })"
               >
                 <img
                   v-if="wowClassIcon(cls)"
@@ -107,7 +107,7 @@
                   :aria-selected="selectedSpec === spec"
                   class="wow-class-chip"
                   :class="selectedSpec === spec ? 'is-active' : ''"
-                  @click="selectedSpec = spec"
+                  @click="pick(() => selectedSpec = spec)"
                 >
                   <img
                     v-if="wowSpecIcon(selectedClass, spec)"
@@ -178,7 +178,7 @@
                 :aria-selected="selectedAddon === addon"
                 class="wow-class-chip"
                 :class="selectedAddon === addon ? 'is-active' : ''"
-                @click="selectedAddon = addon"
+                @click="pick(() => selectedAddon = addon)"
               >
                 <img
                   v-if="addonIconForName(addon)"
@@ -206,7 +206,7 @@
                   :aria-selected="selectedProfileId === String(p.id)"
                   class="wow-class-chip"
                   :class="selectedProfileId === String(p.id) ? 'is-active' : ''"
-                  @click="selectedProfileId = String(p.id)"
+                  @click="pick(() => selectedProfileId = String(p.id))"
                 >
                   <span>{{ p.profile }}</span>
                 </button>
@@ -269,7 +269,7 @@
                 :aria-selected="selectedWowupName === pack.name"
                 class="wow-class-chip"
                 :class="selectedWowupName === pack.name ? 'is-active' : ''"
-                @click="selectedWowupName = pack.name"
+                @click="pick(() => selectedWowupName = pack.name)"
               >
                 <img src="/addon-icons/magguuui.png" alt="" class="wow-class-chip__icon" width="24" height="24" />
                 <span>{{ wowupLabel(pack.name) }}</span>
@@ -413,7 +413,7 @@ const tabSubtitle = computed(() => {
     default: return 'Choose your category and class to copy the import string.'
   }
 })
-const selectedClass = ref(queryText(route.query.class)); const selectedSpec = ref(queryText(route.query.spec)); const layoutCopied = ref(false)
+const pickedClass = ref(queryText(route.query.class)); const pickedSpec = ref(queryText(route.query.spec)); const layoutCopied = ref(false)
 const selectedAddon = ref(queryText(route.query.addon)); const selectedProfileId = ref(queryText(route.query.profile)); const profileCopied = ref(false)
 const selectedWowupName = ref(queryText(route.query.pack)); const wowupCopied = ref(false)
 
@@ -475,12 +475,27 @@ const tabs = computed(() => [
 ])
 
 const layoutClasses = computed(() => [...new Set(layoutList.value.map(l => l.className).filter((c): c is string => Boolean(c)))].sort())
+// Derived, not watched: SSR does not re-run watchers after useFetch resolves,
+// so a watcher-set default rendered no active chip on the server but one on
+// the client (wow-class-chip hydration mismatch).
+const selectedClass = computed({
+  get: () => (pickedClass.value && layoutClasses.value.includes(pickedClass.value)) ? pickedClass.value : (layoutClasses.value[0] || pickedClass.value),
+  set: (value: string) => { pickedClass.value = value },
+})
 const layoutSpecs = computed(() => {
   if (!selectedClass.value) return []
   const stored = layoutList.value
     .filter(l => l.className === selectedClass.value)
     .map(l => l.spec)
   return layoutSpecChoices(selectedClass.value, stored)
+})
+const selectedSpec = computed({
+  get: () => {
+    const specs = layoutSpecs.value
+    if (!specs.length) return pickedSpec.value
+    return specs.includes(pickedSpec.value) ? pickedSpec.value : (specs[0] || '')
+  },
+  set: (value: string) => { pickedSpec.value = value },
 })
 const selectedLayout = computed(() => {
   if (!selectedClass.value || !selectedSpec.value) return null
@@ -501,12 +516,6 @@ function formatSpecList(specs: string[]): string {
   if (specs.length === 2) return `${specs[0]} and ${specs[1]}`
   return `${specs.slice(0, -1).join(', ')}, and ${specs[specs.length - 1]}`
 }
-watch([selectedClass, layoutList], () => {
-  const specs = layoutSpecs.value
-  if (!selectedClass.value || !specs.length) return
-  if (selectedSpec.value && specs.includes(selectedSpec.value)) return
-  selectedSpec.value = specs[0] || ''
-})
 
 const profileAddons = computed(() => [...new Set(profileList.value.map(p => p.addon))].sort(compareProfileAddons))
 const addonProfiles = computed(() => {
@@ -546,7 +555,6 @@ const wowupPacks = computed(() => {
 
 
 // Auto-select first item in each category (respect URL params)
-watch(layoutClasses, (classes) => { if (classes.length && !selectedClass.value) selectedClass.value = classes[0] }, { immediate: true })
 watch(profileAddons, (addons) => { if (addons.length && !selectedAddon.value) selectedAddon.value = addons[0] }, { immediate: true })
 watch(profileList, (list) => {
   const wantedId = queryText(route.query.profile)
@@ -563,7 +571,17 @@ watch(wowupList, (list) => {
   selectedWowupName.value = list.some(w => w.name === wanted) ? wanted : list[0].name
 }, { immediate: true })
 
+// Defaults (first class/spec, first addon, first pack) live in component
+// state only. The URL changes once the user actually picks something, so a
+// bare /strings never redirects and SSR/client render the same markup.
+const userPicked = ref(false)
+function pick(apply: () => void) {
+  userPicked.value = true
+  apply()
+}
+
 function syncUrl() {
+  if (!userPicked.value) return
   const tab = activeTab.value === 'profiles' || activeTab.value === 'wowup' ? activeTab.value : 'layouts'
   const query = queryFromStringsState({
     tab,
@@ -587,13 +605,18 @@ watch([activeTab, selectedClass, selectedSpec, selectedAddon, selectedProfileId,
 function formatDate(d: string | number | null) {
   if (!d) return ''
   const date = typeof d === 'number' ? new Date(d * 1000) : new Date(d)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
 }
+
+const nowMs = ref<number | null>(null)
 
 function timeAgo(d: string | number | null) {
   if (!d) return ''
   const date = typeof d === 'number' ? new Date(d * 1000) : new Date(d)
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
+  // SSR and the hydration pass have no shared clock; show the absolute date
+  // until mounted, then switch to relative time.
+  if (nowMs.value === null) return `Updated ${formatDate(d)}`
+  const seconds = Math.floor((nowMs.value - date.getTime()) / 1000)
   if (seconds < 60) return 'Updated just now'
   const minutes = Math.floor(seconds / 60)
   if (minutes < 60) return `Updated ${minutes}m ago`
@@ -625,6 +648,7 @@ function handleCopyShortcut(e: KeyboardEvent) {
 }
 
 onMounted(() => {
+  nowMs.value = Date.now()
   isMac.value = navigator.platform.toUpperCase().includes('MAC')
   window.addEventListener('keydown', handleCopyShortcut)
 })

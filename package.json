@@ -52,7 +52,7 @@
     "h3": "^1.13.0",
     "jsonwebtoken": "^9.0.3",
     "marked": "^18.0.14",
-    "nuxt": "^4.4.8",
+    "nuxt": "^4.6.0",
     "nuxt-og-image": "^6.5.2",
     "reflect-metadata": "^0.2.2",
     "sanitize-html": "^2.17.7",

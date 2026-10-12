@@ -41,5 +41,5 @@ Ellesmere profile <strong>MagguuUI</strong> at scale <strong>0.58</strong> with 
 **text** (html-safe):
 
 ```html
-<strong>Names &amp; colors</strong> — split unit, party, and raid names; class-colored keybind modifiers. <strong>QoL</strong> — Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (2P/4P), <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, audio device switcher, <strong>Boiling Point</strong>, <strong>Targeted Spell Bars</strong>. Services stay untouched.
+<strong>Names &amp; colors</strong> — two-tone unit, party, and raid names (default + class color); class-colored keybind modifiers. <strong>QoL</strong> — Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (2P/4P), <strong>Smart Tab</strong>, <strong>Quick Focus</strong>, audio device switcher, <strong>Boiling Point</strong>, <strong>Targeted Spell Bars</strong>. Services stay untouched.
 ```

@@ -86,7 +86,7 @@ test('color-mode toggle flips html class between light and dark', async ({ page 
   expect(afterMode).not.toEqual(beforeMode)
 })
 
-test('/imprint shows contact button and separate disclaimer', async ({ page }) => {
+test('/imprint shows contact link and separate disclaimer', async ({ page }) => {
   await visitWithoutConsoleErrors(page, '/imprint')
   const contact = page.getByTestId('legal-contact')
   await expect(contact).toBeVisible()

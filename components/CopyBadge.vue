@@ -1,10 +1,10 @@
 <template>
   <button
     type="button"
-    class="copy-badge inline-flex items-center gap-1.5 rounded-md border px-2 py-1 font-mono text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+    class="copy-badge inline-flex items-center gap-1 rounded px-0.5 font-mono text-[0.85rem] transition-colors hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
     :class="isDark
-      ? 'border-white/15 bg-white/5 text-white hover:bg-white/10 focus-visible:outline-brand-300'
-      : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-100 focus-visible:outline-brand-700'"
+      ? 'text-white focus-visible:outline-brand-300'
+      : 'text-gray-950 focus-visible:outline-brand-700'"
     :aria-label="`Copy ${command}`"
     :data-copied="copied ? 'true' : undefined"
     @click="copy"
@@ -12,7 +12,7 @@
     <span>{{ command }}</span>
     <UIcon
       :name="copied ? 'i-heroicons-check' : 'i-heroicons-clipboard-document'"
-      class="size-3.5 shrink-0"
+      class="size-3 shrink-0"
       :class="copied ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : (isDark ? 'text-silver-400' : 'text-gray-600')"
       aria-hidden="true"
     />

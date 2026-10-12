@@ -189,10 +189,6 @@ function snapshotOriginal() {
   originalData.value = serializeForm()
 }
 
-function stripHtml(value: string): string {
-  return value.replace(/<[^>]*>/g, "").trim()
-}
-
 function addStep() {
   const id = nextStepId++
   form.steps.push({ id, title: "", content: "" })

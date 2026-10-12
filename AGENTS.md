@@ -85,6 +85,7 @@ Admin-Smoke 6/6 PASS auf diesem Digest.
 - Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier). `npm run lint` also runs `lint:uselect` (rejects option-shaped `value: ""`).
 - Validation uses Zod.
 - Motion: page View Transitions via `experimental.viewTransition` (Nuxt skips them under reduced motion). Scroll reveal is CSS-only `.reveal` (`animation-timeline: view()`), transform-only (opacity fails contrast audits), never on the LCP section, and off under `prefers-reduced-motion`. No JS animation libs.
+- `/imprint` is the **Legal notice** page (labels/title say Legal notice, not Impressum/Imprint): operated from **Switzerland**, contact via `<ContactEmail>` only. No §5 TMG, no name, no postal address. `imprint_*` settings are removed (init deletes old rows); no Germany location anywhere.
 
 ## WowUp packs (2026-09-15)
 

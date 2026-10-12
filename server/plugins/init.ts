@@ -858,6 +858,14 @@ export default defineNitroPlugin(() => {
     console.error('[Init] Current addon changelog seed failed:', err)
   }
 
+  // Legal notice no longer shows a name/address: drop the retired imprint_* keys.
+  try {
+    const removed = sqlite.prepare("DELETE FROM settings WHERE key IN ('imprint_name', 'imprint_street', 'imprint_city', 'imprint_country')").run()
+    if (removed.changes > 0) console.log(`[Init] Removed ${removed.changes} retired imprint settings`)
+  } catch (err) {
+    console.error('[Init] Imprint settings cleanup failed:', err)
+  }
+
   // Old seeds stored the retired contact@magguui.com. Admin-set addresses stay.
   try {
     const fixed = db.update(settings)

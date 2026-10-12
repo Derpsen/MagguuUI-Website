@@ -45,6 +45,21 @@ test('/faq loads with FAQ heading', async ({ page }) => {
   await expect(page.locator('h1, h2').filter({ hasText: /faq|frequently/i }).first()).toBeVisible()
 })
 
+test('/imprint shows the legal notice without name or address', async ({ page }) => {
+  await visitWithoutConsoleErrors(page, '/imprint')
+
+  await expect(page.locator('h1').filter({ hasText: 'Legal notice' })).toBeVisible()
+  await expect(page.getByText('MagguuUI is a free, non-commercial project operated from Switzerland.')).toBeVisible()
+  await expect(page.getByText(/TMG|Impressum|Imprint/)).toHaveCount(0)
+})
+
+test('public settings expose no imprint name/address keys', async ({ request }) => {
+  const response = await request.get('/api/v1/settings')
+  expect(response.ok()).toBe(true)
+  const body = JSON.stringify(await response.json())
+  expect(body).not.toMatch(/imprint_|Germany/)
+})
+
 for (const path of ['/changelog', '/addons', '/about', '/imprint', '/privacy']) {
   test(`${path} loads without HTTP 500`, async ({ page }) => {
     const response = await visitWithoutConsoleErrors(page, path)

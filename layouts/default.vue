@@ -308,7 +308,7 @@ const footerLinks = computed(() => [
   { label: 'Changelog', to: '/changelog' },
   { label: 'FAQ', to: '/faq' },
   { label: 'About', to: '/about' },
-  { label: 'Imprint', to: '/imprint' },
+  { label: 'Legal notice', to: '/imprint' },
   { label: 'Privacy', to: '/privacy' },
   { label: 'Contact', contact: true },
 ])

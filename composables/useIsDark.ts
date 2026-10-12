@@ -1,41 +1,35 @@
 /**
  * Single source of truth for public/admin dark-mode classes.
  *
- * Default preference is `dark`. SSR and the first client paint stay on that fallback.
- * The server renders the configured fallback (`dark`). Keep the first client
- * render on the same fallback value to avoid Vue hydration class mismatches;
- * after mount, use the resolved client-side color mode.
+ * SSR (and SWR-cached HTML) cannot know the visitor's stored preference, so the
+ * server always renders the `dark` fallback. On the client, @nuxtjs/color-mode
+ * reads the stored preference (e.g. `light`) *before* hydration. Returning that
+ * value during hydration makes Vue hydrate dark SSR classes against a light
+ * vnode tree; in production Vue does not patch class mismatches, so dark-mode
+ * text colours stayed on a light page after reload.
  *
- * Explicit light/dark preference (theme toggle) always wins so Vue classes stay
- * aligned with the `html.light` / `html.dark` CSS that drives glass-card etc.
+ * Therefore: stay on the dark fallback until the app is hydrated
+ * (flag set in plugins/color-mode.client.ts on `app:suspense:resolve`), then
+ * follow the resolved colour mode so Vue re-renders the correct classes.
  */
 export function useIsDark() {
   const colorMode = useColorMode()
   const hydrated = useState('magguuui-color-mode-hydrated', () => false)
 
-  if (import.meta.client) {
-    onMounted(() => {
-      hydrated.value = true
-    })
-  }
-
   return computed(() => {
+    if (!hydrated.value) return true
+
     const preference = colorMode.preference
     if (preference === 'light') return false
     if (preference === 'dark') return true
-
-    // preference === 'system' (or unknown): match color-mode fallback until mount
-    if (!hydrated.value) return true
 
     const value = colorMode.value
     if (value === 'light') return false
     if (value === 'dark') return true
 
-    // Unresolved 'system' — trust the class color-mode already applied on <html>
     if (import.meta.client) {
       if (document.documentElement.classList.contains('light')) return false
       if (document.documentElement.classList.contains('dark')) return true
-      return window.matchMedia('(prefers-color-scheme: dark)').matches
     }
     return true
   })

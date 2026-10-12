@@ -382,7 +382,7 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'troubleshooting', sortOrder: 1, marker: 'all four MagguuUI folders' },
   { category: 'troubleshooting', sortOrder: 2, marker: 'four sibling folders' },
   { category: 'general', sortOrder: 0, marker: 'no separate options window' },
-  { category: 'addons', sortOrder: 9, marker: '/mui werkzeuge\` — Tools' },
+  { category: 'addons', sortOrder: 9, marker: '/mui werkzeuge` — Tools' },
 ] as const
 
 // Nitro's runNitroPlugins calls plugins without awaiting their promise.

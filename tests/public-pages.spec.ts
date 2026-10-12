@@ -53,6 +53,13 @@ test('/imprint shows the legal notice without name or address', async ({ page })
   await expect(page.getByText(/TMG|Impressum|Imprint/)).toHaveCount(0)
 })
 
+test('public settings expose no imprint name/address keys', async ({ request }) => {
+  const response = await request.get('/api/v1/settings')
+  expect(response.ok()).toBe(true)
+  const body = JSON.stringify(await response.json())
+  expect(body).not.toMatch(/imprint_|Germany/)
+})
+
 for (const path of ['/changelog', '/addons', '/about', '/imprint', '/privacy']) {
   test(`${path} loads without HTTP 500`, async ({ page }) => {
     const response = await visitWithoutConsoleErrors(page, path)

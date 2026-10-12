@@ -84,7 +84,7 @@ Admin-Smoke 6/6 PASS auf diesem Digest.
 - Gate: `npm run typecheck`, `npm run lint`, `npm run test:unit`, and `npm run build`. Add `npm run verify:smoke` and `npm test` only when a page, component, layout, or public route changed. After dependency changes also run `npm run audit:prod`.
 - Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier). `npm run lint` also runs `lint:uselect` (rejects option-shaped `value: ""`).
 - Validation uses Zod.
-- `/imprint` is the **Legal notice** page (labels/title say Legal notice, not Impressum/Imprint): operated from **Switzerland**, contact via `<ContactEmail>` only. No §5 TMG, no name, no postal address.
+- `/imprint` is the **Legal notice** page (labels/title say Legal notice, not Impressum/Imprint): operated from **Switzerland**, contact via `<ContactEmail>` only. No §5 TMG, no name, no postal address. `imprint_*` settings are removed (init deletes old rows); no Germany location anywhere.
 
 ## WowUp packs (2026-09-15)
 

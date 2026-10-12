@@ -45,7 +45,7 @@
         </div>
         <div>
           <dt class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">Skinning</dt>
-          <dd class="mt-1">One NAMES & COLORS section (two columns): split unit-frame and party/raid names plus class-colored keybind modifiers.</dd>
+          <dd class="mt-1">One NAMES & COLORS section (two columns): two-tone unit-frame and party/raid names (default + class color) plus class-colored keybind modifiers.</dd>
         </div>
         <div>
           <dt class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">Quality of life</dt>

@@ -319,7 +319,7 @@ const featureCopy = computed(() => [
   },
   {
     title: content.value?.features?.feature_3_title || 'Skinning and QoL included',
-    text: content.value?.features?.feature_3_text || '<ul><li><strong>Names &amp; colors</strong> — split unit, party, and raid names; class-colored keybind modifiers</li><li><strong>QoL</strong> — Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (2P/4P)</li><li><strong>Smart Tab</strong>, <strong>Quick Focus</strong>, audio device switcher, <strong>Boiling Point</strong>, <strong>Targeted Spell Bars</strong></li><li>Services stay untouched</li></ul>',
+    text: content.value?.features?.feature_3_text || '<ul><li><strong>Names &amp; colors</strong> — two-tone unit, party, and raid names (default + class color); class-colored keybind modifiers</li><li><strong>QoL</strong> — Death Release, Co-Tank, Stealth/Stance, Spell Alerts, party and raid item level (2P/4P)</li><li><strong>Smart Tab</strong>, <strong>Quick Focus</strong>, audio device switcher, <strong>Boiling Point</strong>, <strong>Targeted Spell Bars</strong></li><li>Services stay untouched</li></ul>',
   },
 ])
 

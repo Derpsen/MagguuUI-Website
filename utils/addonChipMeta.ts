@@ -64,7 +64,6 @@ export const ADDON_EMOJI_BY_NAME: Record<string, string> = {
   EXBoss: '📣',
   EXBOSS: '📣',
   EXCore: '🧩',
-  WIM: '💬',
   'Whisper Messenger': '💬',
   'Whisper Messenger (WhisperMessenger)': '💬',
   WhisperMessenger: '💬',

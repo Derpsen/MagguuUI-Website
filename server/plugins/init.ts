@@ -209,6 +209,9 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'features', key: 'feature_1_text', marker: 'Zwei Sidebar-Zeilen: <strong>Options</strong>', locale: 'de' },
   { page: 'guide', section: 'steps', key: 'step_4', marker: 'MagguuUI → Optionen → Setup' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'In **MagguuUI → Optionen**:' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: '<li><strong>Changelog</strong></li>' },
+  { page: 'home', section: 'features', key: 'feature_1_text', marker: '<li><strong>Changelog</strong></li>', locale: 'de' },
+  { page: 'guide', section: 'steps', key: 'step_3', marker: 'HandyNotes, MapNotes, and' },
   { page: 'home', section: 'hero', key: 'description', marker: 'open <code>/mui</code>, run <strong>Apply Magguu profiles</strong>' },
   { page: 'home', section: 'hero', key: 'description', marker: '<code>/mui</code>, <strong>Magguu-Profile übernehmen</strong>', locale: 'de' },
   { page: 'home', section: 'hero', key: 'description', marker: 'four MagguuUI folders' },
@@ -378,6 +381,8 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'troubleshooting', sortOrder: 0, marker: 'All four MagguuUI folders are enabled' },
   { category: 'troubleshooting', sortOrder: 1, marker: 'all four MagguuUI folders' },
   { category: 'troubleshooting', sortOrder: 2, marker: 'four sibling folders' },
+  { category: 'general', sortOrder: 0, marker: 'no separate options window' },
+  { category: 'addons', sortOrder: 9, marker: '/mui werkzeuge\` — Tools' },
 ] as const
 
 // Nitro's runNitroPlugins calls plugins without awaiting their promise.
@@ -847,6 +852,25 @@ export default defineNitroPlugin(() => {
   } catch (err) {
     console.error('[Init] Current addon changelog seed failed:', err)
   }
+
+  // Old seeds stored the retired contact@magguui.com. Admin-set addresses stay.
+  try {
+    const fixed = db.update(settings)
+      .set({ value: SITE_SETTINGS_DEFAULTS.contact_email })
+      .where(and(eq(settings.key, 'contact_email'), eq(settings.value, 'contact@magguui.com')))
+      .run()
+    if ((fixed.changes ?? 0) > 0) console.log('[Init] Updated retired contact email')
+  } catch (err) {
+    console.error('[Init] Contact email fix failed:', err)
+  }
+
+  // SWR-cached HTML from the previous build/seed (e.g. WIM chips, old contact
+  // email) must not outlive a restart. Fire-and-forget; the plugin stays sync.
+  const routeCache = useStorage('cache')
+  routeCache.getKeys('nitro:routes')
+    .then(keys => Promise.all(keys.map(key => routeCache.removeItem(key))))
+    .then((done) => { if (done.length) console.log(`[Init] Cleared ${done.length} cached routes`) })
+    .catch(err => console.error('[Init] Route cache clear failed:', err))
 
   try {
     const retiredProfiles = purgeRetiredAddonProfiles()

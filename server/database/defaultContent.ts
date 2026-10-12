@@ -6,7 +6,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'hero', key: 'badge', value: 'Ready for WoW 12.1', type: 'text', sortOrder: 4, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'Native Ellesmere setup', type: 'text', sortOrder: 0, locale: 'en' },
-  { page: 'home', section: 'features', key: 'feature_1_text', value: '<ul><li><strong>Options</strong> — Setup, Skinning, QoL</li><li><strong>Changelog</strong></li><li><strong>Apply Magguu profiles</strong> — profile, settings, and installed companions</li><li><strong>Magguu Settings</strong> — overlay and QoL only</li><li><strong>Load profiles</strong> — activate on this character</li><li>Open with <code>/mui</code>. Tools with <code>/mui tools</code></li></ul>', type: 'html', sortOrder: 1, locale: 'en' },
+  { page: 'home', section: 'features', key: 'feature_1_text', value: '<ul><li><strong>Options</strong> — Setup, Skinning, QoL</li><li><strong>Apply Magguu profiles</strong> — profile, settings, and installed companions</li><li><strong>Magguu Settings</strong> — overlay and QoL only</li><li><strong>Load profiles</strong> — activate on this character</li><li>Open with <code>/mui</code>. Tools with <code>/mui tools</code></li></ul>', type: 'html', sortOrder: 1, locale: 'en' },
   { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_2_title', value: 'Current Retail layouts', type: 'text', sortOrder: 3, locale: 'en' },
@@ -30,7 +30,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'hero', key: 'badge', value: 'Bereit für WoW 12.1', type: 'text', sortOrder: 4, locale: 'de' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'Natives Ellesmere-Setup', type: 'text', sortOrder: 0, locale: 'de' },
-  { page: 'home', section: 'features', key: 'feature_1_text', value: '<ul><li><strong>Optionen</strong> — Setup, Skinning, QoL</li><li><strong>Changelog</strong></li><li><strong>Magguu-Profile übernehmen</strong> — Profil, Settings und installierte Begleiter</li><li><strong>Magguu Settings</strong> — nur Overlay und QoL</li><li><strong>Profile laden</strong> — auf diesem Charakter aktivieren</li><li>Öffnen mit <code>/mui</code>. Werkzeuge mit <code>/mui tools</code></li></ul>', type: 'html', sortOrder: 1, locale: 'de' },
+  { page: 'home', section: 'features', key: 'feature_1_text', value: '<ul><li><strong>Optionen</strong> — Setup, Skinning, QoL</li><li><strong>Magguu-Profile übernehmen</strong> — Profil, Settings und installierte Begleiter</li><li><strong>Magguu Settings</strong> — nur Overlay und QoL</li><li><strong>Profile laden</strong> — auf diesem Charakter aktivieren</li><li>Öffnen mit <code>/mui</code>. Tools mit <code>/mui tools</code></li></ul>', type: 'html', sortOrder: 1, locale: 'de' },
   { page: 'home', section: 'features', key: 'feature_1_icon', value: 'i-heroicons-cursor-arrow-rays', type: 'text', sortOrder: 2, locale: 'de' },
 
   { page: 'home', section: 'features', key: 'feature_2_title', value: 'Aktuelle Retail-Layouts', type: 'text', sortOrder: 3, locale: 'de' },
@@ -59,7 +59,7 @@ export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'steps', key: 'step_2', value: 'Download **MagguuUI** from CurseForge, Wago, WoWInterface, or the latest [GitHub release](https://github.com/Derpsen/MagguuUI/releases/latest). Leave it enabled next to EllesmereUI.', locale: 'en', type: 'markdown', sortOrder: 21 },
 
   { page: 'guide', section: 'steps', key: 'step_3_title', value: '3. Add optional raid tools', locale: 'en', type: 'text', sortOrder: 30 },
-  { page: 'guide', section: 'steps', key: 'step_3', value: 'Optional only — MagguuUI skips missing addons.\n\n- **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore\n- **WowUp optional:** Whisper Messenger, BugSack, HandyNotes, MapNotes, and the other extras from Setup\n\nCopy the packs from Magguu Setup, or from Import Strings, then paste in WowUp.', locale: 'en', type: 'markdown', sortOrder: 31 },
+  { page: 'guide', section: 'steps', key: 'step_3', value: 'Optional only — MagguuUI skips missing addons.\n\n- **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore\n- **WowUp optional:** Whisper Messenger, BugSack, HandyNotes, HandyNotes MapNotes, and the other extras from Setup\n\nCopy the packs from Magguu Setup, or from Import Strings, then paste in WowUp.', locale: 'en', type: 'markdown', sortOrder: 31 },
 
   { page: 'guide', section: 'steps', key: 'step_4_title', value: '4. Open Setup and Apply Magguu profiles', locale: 'en', type: 'text', sortOrder: 40 },
   { page: 'guide', section: 'steps', key: 'step_4', value: 'Open MagguuUI with `/mui` (or EllesmereUI → MagguuUI → Options → Setup).\n\n- **Apply Magguu profiles** (gold) — fresh install: Magguu Ellesmere profile at scale `0.58`, Magguu Settings, companions if present, class layouts, HUD layout MagguuUI once\n- **Magguu Settings** — overlay/QoL only (does not re-import profiles)\n- **Load profiles** — activate Magguu profiles on this character\n- Setup import buttons: BigWigs, Northern Sky, EXBoss, Whisper Messenger, Smart Reminders\n\nWait until out of combat. Alts can load the same profiles on login.', locale: 'en', type: 'markdown', sortOrder: 41 },
@@ -77,7 +77,7 @@ export const DEFAULT_FAQS = [
     question: 'What is MagguuUI?',
     answer: `MagguuUI is a **native overhaul and curated profile companion for EllesmereUI** on World of Warcraft Retail.
 
-It has no standalone installer and no separate options window. Everything lives in EllesmereUI under **MagguuUI → Options**.
+It has no standalone installer and no options window of its own. Everything lives in EllesmereUI under **MagguuUI → Options**, and that Setup tab is what opens on your first login.
 
 Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface, open \`/mui\`, and run **Apply Magguu profiles**.`,
     sortOrder: 0,
@@ -280,7 +280,7 @@ Settings are stored in the MagguuUI Ellesmere profile. **Magguu Settings** also 
 - \`/mui setup\` — Setup
 - \`/mui qol\` — QoL
 - \`/mui profile\` — Setup
-- \`/mui tools\` / \`/mui export\` / \`/mui werkzeuge\` — Tools
+- \`/mui tools\` / \`/mui export\` — Tools (\`/mui werkzeuge\` works too)
 
 Older installer commands are gone.`,
     sortOrder: 9,

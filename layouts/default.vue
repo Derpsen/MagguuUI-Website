@@ -292,11 +292,8 @@ const navLinks = [
   { to: '/faq', label: 'FAQ', icon: 'i-heroicons-question-mark-circle' },
 ]
 
-const primaryAction = computed(() => {
-  if (route.path === '/guide') return { to: '/strings', label: 'Strings', icon: 'i-heroicons-bolt' }
-  if (route.path === '/strings') return { to: '/guide', label: 'Guide', icon: 'i-heroicons-book-open' }
-  return { to: '/guide', label: 'Setup', icon: 'i-heroicons-arrow-right' }
-})
+// Same header CTA on every page.
+const primaryAction = { to: '/guide', label: 'Setup', icon: 'i-heroicons-arrow-right' }
 
 const socialLinks = computed(() => ({
   github: siteSettings.value.github_url || 'https://github.com/Derpsen/MagguuUI',
@@ -349,7 +346,10 @@ function isActive(path: string): boolean {
 }
 
 const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguu.xyz')
-const contactMailto = computed(() => `mailto:${contactEmail.value}`)
+// Built after mount so Cloudflare Email Obfuscation has no mailto: to rewrite.
+const contactMailto = ref<string | undefined>(undefined)
+onMounted(() => { contactMailto.value = `mailto:${contactEmail.value}` })
+watch(contactEmail, (value) => { if (contactMailto.value) contactMailto.value = `mailto:${value}` })
 
 function handleWindowScroll() {
   if (!import.meta.client) return

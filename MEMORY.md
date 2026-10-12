@@ -216,3 +216,14 @@
 - Audit-Allowlist review-by **2026-11-30**: `simple-git` + `@simple-git/argv-parser` (+ `braces` / `node-forge` from #114). Overrides #117: `vue`/`@vue/server-renderer` 3.5.43, `seroval` 1.6.8, `shell-quote` 1.12.0, `source-map-js` 1.2.2.
 - Optional pack / Discord embeds = **Whisper Messenger**, nicht WIM / Ellesmere WIM Skin.
 - Prefer Done-Wave Capture skill nach App-Image-Wellen; keine neuen Specialist-Bots.
+
+## 2026-10-12 Facts refresh
+
+- MagguuUI addon live **v12.1.7**.
+- Container runs as **uid 99** (Unraid `nobody`). Images are signed with **Cosign keyless** (GitHub OIDC).
+- Website defaults to **Dark** mode (`colorMode.preference: 'dark'`); light only when the visitor picks it.
+- **WIM is removed** everywhere. Whisper Messenger is the whisper chat. Player button: **Apply Magguu profiles** (4K only in descriptions).
+- Node: `engines.node >=24.17`, Node 24 locked. Node 26 only after Marco's yes (~end of Oct 2026).
+- satori: locked at `^0.34.1` (nuxt-og-image 6 peer `>=0.33.5`). 0.x minors are breaking for Satori layout/CSS, so 0.41+ is a locked major like Node 26, TS 7, h3 2. Dependabot **#130** (0.34.1 → 0.44.3) stays open and untouched: no merge, no close, until a separate OG-image compatibility pass.
+- CSP: HTML policy comes from `server/plugins/csp-nonce.ts` (render:html + beforeResponse, rebuilt from the cached nonce on SWR hits). routeRules no longer set a CSP. `experimental.payloadExtraction: false` keeps SWR HTML and payload from the same render. Init clears `nitro:routes` cache on boot.
+- Contact email renders client-side (`components/ContactEmail.vue`, footer mailto after mount) so Cloudflare Email Obfuscation has nothing to rewrite.

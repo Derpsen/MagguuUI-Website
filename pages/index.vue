@@ -82,7 +82,7 @@
       </div>
     </section>
 
-    <section aria-label="Addons and latest release" class="mt-16 grid lg:grid-cols-[minmax(0,1.25fr)_minmax(15rem,0.75fr)] gap-12 lg:gap-16 items-start">
+    <section aria-label="Addons and latest release" class="reveal mt-16 grid lg:grid-cols-[minmax(0,1.25fr)_minmax(15rem,0.75fr)] gap-12 lg:gap-16 items-start">
       <div>
         <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ content?.addons?.title || 'Supported Addons' }}</h2>
         <p class="mt-2 text-sm max-w-xl leading-relaxed" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'EllesmereUI is required. Everything else is optional.' }}</p>
@@ -111,7 +111,7 @@
       </div>
     </section>
 
-    <section aria-label="Features" class="mt-16 pt-10 border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+    <section aria-label="Features" class="reveal mt-16 pt-10 border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
       <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ content?.features_heading?.title || 'The module' }}</h2>
       <p class="mt-2 text-sm max-w-xl" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.features_heading?.subtitle || 'An EllesmereUI setup with optional raid tools' }}</p>
       <div class="mt-2" :class="isDark ? 'divide-white/10' : 'divide-gray-200'">
@@ -204,15 +204,19 @@ useSeoMeta({
   ogDescription: () => homeMetaDescription.value,
   ogSiteName: () => homeSiteName.value,
   ogUrl: homeCanonical,
-  ogImage: () => homeOgImage.value,
-  ogImageWidth: 1200,
-  ogImageHeight: 630,
-  ogImageType: 'image/png',
+  ogImage: () => siteSettings.value.og_image_url || undefined,
+  ogImageWidth: () => siteSettings.value.og_image_url ? 1200 : undefined,
+  ogImageHeight: () => siteSettings.value.og_image_url ? 630 : undefined,
+  ogImageType: () => siteSettings.value.og_image_url ? 'image/png' : undefined,
   twitterCard: 'summary_large_image',
   twitterTitle: () => homeMetaTitle.value,
   twitterDescription: () => homeMetaDescription.value,
-  twitterImage: () => homeOgImage.value,
+  twitterImage: () => siteSettings.value.og_image_url || undefined,
 })
+
+if (!siteSettings.value.og_image_url) {
+  defineOgImage('MagguuOg', { description: homeMetaDescription.value })
+}
 
 interface HomeContent {
   hero?: { badge?: string, title?: string, title2?: string, description?: string, [k: string]: unknown }

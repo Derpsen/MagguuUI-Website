@@ -84,6 +84,7 @@ Admin-Smoke 6/6 PASS auf diesem Digest.
 - Gate: `npm run typecheck`, `npm run lint`, `npm run test:unit`, and `npm run build`. Add `npm run verify:smoke` and `npm test` only when a page, component, layout, or public route changed. After dependency changes also run `npm run audit:prod`.
 - Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier). `npm run lint` also runs `lint:uselect` (rejects option-shaped `value: ""`).
 - Validation uses Zod.
+- Motion: page View Transitions via `experimental.viewTransition` (Nuxt skips them under reduced motion). Scroll reveal is CSS-only `.reveal` (`animation-timeline: view()`), transform-only (opacity fails contrast audits), never on the LCP section, and off under `prefers-reduced-motion`. No JS animation libs.
 
 ## WowUp packs (2026-09-15)
 

@@ -18,13 +18,9 @@ export function usePublicPageSeo(options: PublicPageSeoOptions) {
 
   const siteName = computed(() => siteSettings.value.site_name || PUBLIC_SITE_SETTINGS_DEFAULTS.site_name)
   const fullTitle = computed(() => buildPublicPageTitle(options.title, siteName.value))
-  // Prefer an admin-pinned image. Otherwise use the static logo so page
-  // SSR never waits on runtime OG generation (that path 500s without a
-  // signing secret, then 404s on the generated URL).
-  const ogImage = computed(() => {
-    const v = siteSettings.value.og_image_url?.trim()
-    return v || buildPublicUrl('/logo.png')
-  })
+  // An admin-pinned image wins. Otherwise each page gets its own Takumi
+  // card (components/OgImage/MagguuOg.takumi.vue) with its title/description.
+  const pinnedOgImage = computed(() => siteSettings.value.og_image_url?.trim() || '')
   const canonicalUrl = computed(() => buildPublicUrl(options.path))
 
   useSeoMeta({
@@ -34,16 +30,20 @@ export function usePublicPageSeo(options: PublicPageSeoOptions) {
     ogDescription: options.description,
     ogSiteName: siteName,
     ogUrl: canonicalUrl,
-    ogImage,
-    ogImageWidth: 1200,
-    ogImageHeight: 630,
-    ogImageType: 'image/png',
-    twitterImage: ogImage,
+    ogImage: () => pinnedOgImage.value || undefined,
+    ogImageWidth: () => pinnedOgImage.value ? 1200 : undefined,
+    ogImageHeight: () => pinnedOgImage.value ? 630 : undefined,
+    ogImageType: () => pinnedOgImage.value ? 'image/png' : undefined,
+    twitterImage: () => pinnedOgImage.value || undefined,
     twitterTitle: fullTitle,
     twitterDescription: options.description,
     twitterCard: 'summary_large_image',
     robots: options.robots,
   })
+
+  if (!pinnedOgImage.value) {
+    defineOgImage('MagguuOg', { title: options.title, description: options.description })
+  }
 
   // Function form keeps the canonical href reactive across SPA navigation —
   // an inline object literal would freeze the value at setup time.

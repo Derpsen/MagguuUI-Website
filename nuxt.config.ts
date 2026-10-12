@@ -228,6 +228,9 @@ export default defineNuxtConfig({
     // Home hydration mismatch (WIM vs Whisper Messenger, old contact email).
     // Inline payload keeps markup and data from the same render.
     payloadExtraction: false,
+    // Native View Transitions API on client navigation. Nuxt skips it for
+    // prefers-reduced-motion: reduce; unsupported browsers navigate as before.
+    viewTransition: true,
   },
 
   routeRules: {

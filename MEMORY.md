@@ -3,7 +3,7 @@
 ## Overview
 
 - Project: `MagguuUI-Website`
-- Stack: Nuxt 4 (caret ^4.4.8; lock may resolve 4.5.x), Vue 3.5, TypeScript 6, Nuxt UI 4.10, Tailwind CSS 4.3 (CSS-first), Drizzle 0.45, SQLite via `better-sqlite3` 13 (WAL, busy_timeout=5000), Node 24, nuxt-og-image 6 with Satori. Validation: Zod. Lint: Nuxt ESLint Flat Config (no separate Prettier).
+- Stack: Nuxt 4 (caret ^4.4.8; lock may resolve 4.5.x), Vue 3.5, TypeScript 6, Nuxt UI 4.10, Tailwind CSS 4.3 (CSS-first), Drizzle 0.45, SQLite via `better-sqlite3` 13 (WAL, busy_timeout=5000), Node 24, nuxt-og-image 6 with Takumi (`@takumi-rs/core`, native glibc/musl binaries). Validation: Zod. Lint: Nuxt ESLint Flat Config (no separate Prettier).
 - Deployment: Docker on Unraid — image built by `.github/workflows/docker.yml` and published to GHCR; Unraid `update_container MagguuUI`. Live 2026-09-11: homepage catalog-summary + admin-only ECharts. GitHub sync reads MagguuUI_Data/AddOns + Classes.
 - Repo contains the public website, admin panel, and Nitro/API backend in one app
 
@@ -75,7 +75,7 @@
 - API helpers: `server/utils/response.ts`
 - String CRUD: `composables/useStringManager.ts`
 - Admin navigation: `composables/useAdminNavigation.ts`
-- OG default: `components/OgImage/MagguuOg.satori.vue`
+- OG default: `components/OgImage/MagguuOg.takumi.vue` (per-page via `usePublicPageSeo`; admin-pinned `og_image_url` wins)
 
 ## Collaboration Notes
 
@@ -95,7 +95,7 @@
 
 - Public SSR pages feed public API routes with SWR route rules; admin SPA (`ssr:false`) talks to `/api/v1/admin/*` (JWT/cookie). Server API uses SQLite WAL mode with `busy_timeout=5000`. Docker image goes Unraid / Cloudflare Tunnel to `ui.magguu.xyz`.
 - `requireAuth(event)` accepts legacy bearer tokens and HttpOnly cookie sessions. Session validation is bound to browser + OS family (`server/utils/session.ts`). Keep the softer `/api/v1/auth/session` endpoint aligned with `requireAuth`.
-- OG images: Satori templates need a `.satori.vue` suffix. Site-wide default is `components/OgImage/MagguuOg.satori.vue` (`nuxt.config.ts`).
+- OG images: templates need a renderer suffix; we use `.takumi.vue` (`components/OgImage/MagguuOg.takumi.vue`). `satori` stays installed below 0.41 (no active `.satori.vue`).
 - GitHub webhook `server/api/v1/webhooks/github.post.ts` accepts signed events only from the configured repository, imports main pushes from the immutable after SHA, and handles `CHANGELOG.md`, `MagguuUI.toc`, and `MagguuUI_Data/AddOns|Classes/*.lua` independently. Manual pulls resolve main once and fetch the MagguuUI_Data snapshot at that SHA.
 - Required production env: `NUXT_JWT_SECRET`, `NUXT_ADMIN_PASSWORD`. Optional: `NUXT_GITHUB_TOKEN`, `NUXT_WEBAUTHN_*`, `API_BEARER_TOKEN`, `NUXT_OG_IMAGE_SECRET`. See `.env.example` and `docs/env-vars.md`.
 

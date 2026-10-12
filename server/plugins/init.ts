@@ -331,6 +331,7 @@ const LEGACY_FAQ_MARKERS = [
   { category: 'addons', sortOrder: 4, marker: 'KeystoneLoot' },
   { category: 'addons', sortOrder: 3, marker: 'all four Skinning NAMES & COLORS toggles' },
   { category: 'addons', sortOrder: 10, marker: 'Split EXBoss names' },
+  { category: 'addons', sortOrder: 10, marker: 'How do split names work?' },
   { category: 'addons', sortOrder: 7, marker: 'Smart Tab (chat channel cycling)\n- Quick Focus' },
   { category: 'general', sortOrder: 0, marker: 'run **Install All**' },
   { category: 'installation', sortOrder: 0, marker: 'run **Install All** on Setup' },

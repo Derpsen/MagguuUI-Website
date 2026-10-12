@@ -287,14 +287,14 @@ Older installer commands are gone.`,
   },
   {
     category: 'addons',
-    question: 'How do split names work?',
-    answer: `**Skinning → NAMES & COLORS** (two columns) splits player names: first half white, second half class or reaction color.
+    question: 'How do two-tone names work?',
+    answer: `**Skinning → NAMES & COLORS** (two columns) shows player names in two tones: first half white (default), second half class or reaction color.
 
-- **Split unit-frame names**
-- **Split party and raid names**
+- **Two-tone unit-frame names**
+- **Two-tone party and raid names**
 - **Class-colored keybind modifiers**
 
-Protected or hidden names stay unsplit and white. Magguu Settings turns these on (AuraBuff counts centered). Reset turns them off. Turn the toggles off on the Skinning tab if you prefer a single color.`,
+Protected or hidden names stay single-color white. Magguu Settings turns these on (AuraBuff counts centered). Reset turns them off. Turn the toggles off on the Skinning tab if you prefer a single color.`,
     sortOrder: 10,
   },
   {

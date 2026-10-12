@@ -182,7 +182,7 @@
 - Public settings now return merged defaults from `utils/siteSettingsDefaults.ts`, so empty databases still expose stable SEO/contact defaults.
 - Homepage SEO/JSON-LD now uses centralized public settings instead of a half-static/half-dynamic split.
 - Public layout branding now reads `site_name` from settings in key visible spots.
-- `/imprint` is now the **Legal notice** page (2026-10-12): "MagguuUI is a free, non-commercial project operated from Switzerland." + `<ContactEmail>`. No §5 TMG, no name, no postal address Follow-up: `imprint_*` settings + `Germany` default removed from defaults/admin UI/public API; `server/plugins/init.ts` deletes leftover `imprint_*` rows on boot.
+- `/imprint` is now the **Legal notice** page (2026-10-12): "MagguuUI is a free, non-commercial project operated from Switzerland." + `<ContactEmail>`. No §5 TMG, no name, no postal address. Follow-up: `imprint_*` settings + `Germany` default removed from defaults/admin UI/public API; `server/plugins/init.ts` deletes leftover `imprint_*` rows on boot.
 - Shared seeded content now lives in `server/database/defaultContent.ts`, which reduces drift between startup init and manual seed flows.
 - Standalone `db:seed` now bootstraps schema/tables via `server/database/bootstrap.ts` before inserts, which aligns fresh seeding with normal app startup.
 - About, FAQ, Privacy, Guide, Strings, and Changelog pages now use safer shared public title helpers and settings-driven fallbacks for branding/contact metadata.

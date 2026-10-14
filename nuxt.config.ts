@@ -346,6 +346,7 @@ export default defineNuxtConfig({
     '/api/v1/settings': { swr: 300 },
     '/api/v1/latest-change': { swr: 60 },
     '/assets/logo.png': { redirect: '/logo.png' },
+    '/sw.js': { headers: { ...publicSecurityHeaders, 'Cache-Control': 'no-cache', 'Service-Worker-Allowed': '/' } },
     '/logo.png': { headers: hotlinkAssetHeaders },
     '/logo-300.png': { headers: hotlinkAssetHeaders },
     '/**': {

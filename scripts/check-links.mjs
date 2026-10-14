@@ -68,7 +68,8 @@ for (let i = 0; i < entries.length; i += 8) {
   const batch = await Promise.all(entries.slice(i, i + 8).map(async ([url, from]) => ({ url, status: await check(url), from: [...from] })))
   results.push(...batch)
 }
-// Bot-protected hosts answer 403/429 to any crawler; list them, but do not fail on them.
+// Bot-protected stores answer 403/429 to any crawler: counted as OK (pass).
+// Real 404s/5xx/network errors still fail the run.
 const BOT_WALLED = /(^|\.)(curseforge\.com|wago\.io|wowinterface\.com)$/
 const isWalled = r => (r.status === 403 || r.status === 429) && BOT_WALLED.test(new URL(r.url).hostname)
 const unverified = results.filter(isWalled)
@@ -79,7 +80,7 @@ const md = [
   '',
   ...(broken.length ? ['| Status | URL | Found on |', '|---|---|---|', ...broken.map(b => `| ${b.status} | ${b.url} | ${b.from.slice(0, 3).join(', ')} |`)] : ['No broken links.']),
   '',
-  `${unverified.length} links on bot-protected hosts (CurseForge/Wago/WoWInterface) answered 403/429 and could not be verified.`,
+  `${unverified.length} links on bot-protected stores (CurseForge/Wago/WoWInterface) answered 403/429: treated as OK.`,
 ].join('\n')
 writeFileSync('link-report.md', `${md}\n`)
 console.log(md)

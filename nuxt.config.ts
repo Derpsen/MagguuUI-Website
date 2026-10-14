@@ -37,7 +37,7 @@ const publicSecurityHeaders = {
 }
 
 /** Client manifest keys that only the admin needs (never prefetched publicly). */
-const ADMIN_ONLY_CHUNK = /(^|\/)(layouts\/admin\.vue|pages\/admin\/(?!login\.vue)|components\/admin\/|components\/TipTapEditor\.vue|components\/CommandPalette\.vue|components\/KeyboardShortcuts\.vue)|node_modules\/(@tiptap|prosemirror-|echarts|zrender|vue-echarts)/
+const ADMIN_ONLY_CHUNK = /(^|\/)(layouts\/admin\.vue|pages\/admin\/(?!login\.vue)|components\/admin\/|components\/TipTapEditor\.vue|components\/CommandPalette\.vue|components\/KeyboardShortcuts\.vue)|node_modules\/(@tiptap|prosemirror-|echarts|zrender|vue-echarts|web-vitals)/
 
 const hotlinkAssetHeaders = {
   ...publicSecurityHeaders,

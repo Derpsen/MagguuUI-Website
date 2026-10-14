@@ -47,7 +47,8 @@ test.describe('lazy import strings', () => {
     const list = await page.request.get('/api/v1/wowup?view=meta')
     const body = await list.json() as { data: Record<string, Record<string, unknown>> }
     const packs = Object.values(body.data)
-    test.skip(packs.length === 0, 'no WowUp packs seeded')
+    // playwright.config.ts seeds `E2E Test Pack` (server/plugins/e2e-seed.ts).
+    expect(packs.length).toBeGreaterThan(0)
     for (const pack of packs) {
       expect(pack).not.toHaveProperty('string')
       expect(typeof pack.stringLength).toBe('number')
@@ -55,7 +56,7 @@ test.describe('lazy import strings', () => {
 
     const fetched: string[] = []
     page.on('request', (req) => { if (/\/api\/v1\/wowup\/\d+$/.test(new URL(req.url()).pathname)) fetched.push(req.url()) })
-    const name = Object.keys(body.data)[0]!
+    const name = Object.keys(body.data).includes('E2E Test Pack') ? 'E2E Test Pack' : Object.keys(body.data)[0]!
     await page.goto(`/strings?pack=${encodeURIComponent(name)}`)
     await page.waitForLoadState('networkidle')
     expect(fetched).toHaveLength(0)

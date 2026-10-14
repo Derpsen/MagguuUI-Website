@@ -205,3 +205,42 @@ test('contact email (Settings) is live on /imprint and /about', async () => {
     await json(await api.put('/api/v1/admin/settings', { data: { contact_email: prev } }))
   }
 })
+
+test('review changes before saving, then restore from history (home eyebrow)', async () => {
+  const prev = (await adminContent('home')).en?.hero?.eyebrow ?? ''
+  const value = stamp()
+  try {
+    await page.goto('/admin/content/home')
+    await page.waitForLoadState('networkidle')
+    await page.locator('input#home-hero-eyebrow').fill(value)
+    await page.getByTestId('home-review').click()
+    const preview = page.getByTestId('change-preview')
+    await expect(preview).toBeVisible()
+    await expect(preview).toContainText('hero · eyebrow')
+    await expect(preview).toContainText(value)
+    await page.getByTestId('change-preview-save').click()
+    await expect(page.getByText('Homepage saved').first()).toBeVisible()
+    await expectLive('/', value)
+
+    // The previous eyebrow is now a revision; restoring it puts it back live.
+    await page.goto('/admin/content/home')
+    const history = page.getByTestId('content-history')
+    await expect(history).toBeVisible({ timeout: 15_000 })
+    await history.getByTestId('content-history-restore').first().click()
+    await expect(page.getByText('Restored').first()).toBeVisible()
+    const after = (await adminContent('home')).en?.hero?.eyebrow ?? ''
+    expect(after).toBe(prev)
+  } finally {
+    await bulk([{ page: 'home', section: 'hero', key: 'eyebrow', value: prev }])
+  }
+})
+
+test('admin Web Vitals view lists beaconed p75 per page', async () => {
+  const beacon = JSON.stringify({ path: '/faq', metrics: [{ name: 'LCP', value: 1234 }, { name: 'CLS', value: 0.02 }] })
+  const res = await page.request.post('/api/v1/vitals', { data: beacon, headers: { 'content-type': 'text/plain' } })
+  expect(res.status()).toBe(204)
+  await page.goto('/admin/system/vitals')
+  await expect(page.getByTestId('vitals-table')).toBeVisible({ timeout: 15_000 })
+  const row = page.getByTestId('vitals-table').getByRole('row', { name: /\/faq/ })
+  await expect(row).toContainText('ms')
+})

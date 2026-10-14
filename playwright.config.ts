@@ -30,6 +30,8 @@ export default defineConfig({
       // admin password; force-reset so the E2E login always matches this value.
       NUXT_ADMIN_PASSWORD: process.env.NUXT_ADMIN_PASSWORD || 'playwright-admin',
       NUXT_FORCE_PASSWORD_RESET: 'true',
+      // Seeds one WowUp pack (server/plugins/e2e-seed.ts) for the lazy-strings test.
+      NUXT_E2E_SEED: 'true',
       NUXT_JWT_SECRET: process.env.NUXT_JWT_SECRET || 'playwright-dummy-jwt-secret-32-chars-long-XXXXXXXX',
     },
     url: 'http://localhost:3000',

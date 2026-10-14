@@ -56,7 +56,7 @@ export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'steps', key: 'step_1', value: 'Install **EllesmereUI 9.0.6+** from CurseForge, Wago, or WoWInterface and keep it enabled. MagguuUI will not load without it. Ellesmere start popup is skipped; MagguuUI Setup opens on that login.', locale: 'en', type: 'markdown', sortOrder: 11 },
 
   { page: 'guide', section: 'steps', key: 'step_2_title', value: '2. Install MagguuUI', locale: 'en', type: 'text', sortOrder: 20 },
-  { page: 'guide', section: 'steps', key: 'step_2', value: 'Download **MagguuUI** from CurseForge, Wago, WoWInterface, or the latest [GitHub release](https://github.com/Derpsen/MagguuUI/releases/latest). Leave it enabled next to EllesmereUI.', locale: 'en', type: 'markdown', sortOrder: 21 },
+  { page: 'guide', section: 'steps', key: 'step_2', value: 'Download **MagguuUI** from CurseForge, Wago, or WoWInterface. Leave it enabled next to EllesmereUI.', locale: 'en', type: 'markdown', sortOrder: 21 },
 
   { page: 'guide', section: 'steps', key: 'step_3_title', value: '3. Add optional raid tools', locale: 'en', type: 'text', sortOrder: 30 },
   { page: 'guide', section: 'steps', key: 'step_3', value: 'Optional only — MagguuUI skips missing addons.\n\n- **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore\n- **WowUp optional:** Whisper Messenger, BugSack, HandyNotes, HandyNotes MapNotes, and the other extras from Setup\n\nCopy the packs from Magguu Setup, or from Import Strings, then paste in WowUp.', locale: 'en', type: 'markdown', sortOrder: 31 },

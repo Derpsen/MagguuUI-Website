@@ -22,14 +22,12 @@
       <SafeHtml class="page-copy mt-3 text-sm leading-relaxed" :class="isDark ? 'page-copy--dark text-silver-400' : 'text-gray-600'" :html="copy.website?.body || ''" />
     </section>
 
-    <section class="mt-10 border-t pt-8" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+    <section id="contact" class="mt-10 border-t pt-8" :class="isDark ? 'border-white/10' : 'border-gray-200'">
       <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ copy.contact?.title }}</h2>
       <!--email_off-->
       <p class="mt-3 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
         {{ copy.contact?.lead }}
-        <ContactEmail :address="contactEmail" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'" />
-        or open a
-        <a :href="githubIssuesUrl" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">GitHub issue</a>.
+        <ContactEmail :address="contactEmail" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'" />.
       </p>
       <!--/email_off-->
     </section>
@@ -53,8 +51,6 @@ const siteSettings = usePublicPageSeo({
 })
 
 const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguu.xyz')
-const githubUrl = computed(() => siteSettings.value.github_url || 'https://github.com/Derpsen/MagguuUI')
-const githubIssuesUrl = computed(() => githubUrl.value.endsWith('/issues') ? githubUrl.value : `${githubUrl.value.replace(/\/$/, '')}/issues`)
 
 </script>
 

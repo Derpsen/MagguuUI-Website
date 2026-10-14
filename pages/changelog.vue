@@ -54,11 +54,6 @@
             @click="toggleRelease(release.id)">
             {{ isReleaseExpanded(release.id) ? 'Show less' : 'Show more' }}
           </button>
-          <a v-if="index === 0" :href="githubChangelogUrl" target="_blank" rel="noopener noreferrer"
-            class="underline underline-offset-4"
-            :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-950'">
-            Full changelog on GitHub
-          </a>
         </div>
       </article>
     </div>
@@ -75,11 +70,6 @@ import { publicAnchorId } from '~/utils/publicAnchor'
 import { renderMarkdownToSafeHtml } from '~/utils/richText'
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
-const siteSettings = usePublicSiteSettings()
-const githubChangelogUrl = computed(() => {
-  const base = (siteSettings.value?.github_url || 'https://github.com/Derpsen/MagguuUI').replace(/\/$/, '')
-  return `${base}/blob/main/CHANGELOG.md`
-})
 usePublicPageSeo({
   title: 'Changelog',
   description: 'MagguuUI release notes, newest first, with older versions on the same page.',

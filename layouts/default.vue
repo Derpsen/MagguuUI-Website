@@ -277,6 +277,7 @@
 
 <script setup lang="ts">
 import { SPECULATION_RULES } from '~/utils/speculationRules'
+import { isPrivateRepoUrl } from '~/utils/privateRepoLinks'
 
 const colorMode = useColorMode()
 const route = useRoute()
@@ -329,7 +330,7 @@ const navLinks = [
 const primaryAction = { to: '/guide', label: 'Setup', icon: 'i-heroicons-arrow-right' }
 
 const socialLinks = computed(() => ({
-  github: siteSettings.value.github_url || 'https://github.com/Derpsen/MagguuUI',
+  github: isPrivateRepoUrl(siteSettings.value.github_url) ? '' : (siteSettings.value.github_url || ''),
   discord: siteSettings.value.discord_url || '',
   curseforge: siteSettings.value.curseforge_url || '',
 }))

@@ -7,7 +7,8 @@ export const SITE_SETTINGS_DEFAULTS = {
   site_name: 'MagguuUI',
   site_description: 'Native overhaul for EllesmereUI. Designed for 4K.',
   curseforge_url: 'https://www.curseforge.com/wow/addons/magguuui',
-  github_url: 'https://github.com/Derpsen/MagguuUI',
+  // Derpsen/MagguuUI is private (404 for visitors): no default GitHub link.
+  github_url: '',
   discord_url: '',
   maintenance_mode: 'false',
   banner_text: '',

@@ -429,7 +429,7 @@ const retentionOptions = [
 ]
 
 const linkFields = [
-  { key: "github_url", label: "GitHub", placeholder: "https://github.com/Derpsen/MagguuUI" },
+  { key: "github_url", label: "GitHub", placeholder: "https://github.com/… (public repos only)" },
   { key: "discord_url", label: "Discord", placeholder: "https://discord.gg/..." },
   { key: "curseforge_url", label: "CurseForge", placeholder: "https://www.curseforge.com/wow/addons/..." },
 ]

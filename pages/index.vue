@@ -145,6 +145,7 @@
 </template>
 
 <script setup lang="ts">
+import { isPrivateRepoUrl } from '~/utils/privateRepoLinks'
 import { buildPublicUrl } from '~/utils/publicSite'
 import {
   addonGroupForSlug,
@@ -208,7 +209,7 @@ useHead({
               '@type': 'ImageObject',
               url: buildPublicUrl('/logo.png'),
             },
-            ...(siteSettings.value.github_url ? { sameAs: [siteSettings.value.github_url] } : {}),
+            ...(siteSettings.value.github_url && !isPrivateRepoUrl(siteSettings.value.github_url) ? { sameAs: [siteSettings.value.github_url] } : {}),
           },
         },
       ]),

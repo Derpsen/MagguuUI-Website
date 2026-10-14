@@ -46,8 +46,8 @@
       <p class="text-sm border-t pt-6" :class="isDark ? 'border-white/10 text-silver-500' : 'border-gray-200 text-gray-500'">
         Still stuck? Read the
         <NuxtLink to="/guide" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">Installation Guide</NuxtLink>
-        or open a
-        <a :href="githubIssuesUrl" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">GitHub issue</a>.
+        or
+        <NuxtLink to="/about#contact" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">get in touch</NuxtLink>.
       </p>
     </div>
 
@@ -59,7 +59,7 @@
 <script setup lang="ts">
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
-const siteSettings = usePublicPageSeo({
+usePublicPageSeo({
   title: 'FAQ',
   description: 'MagguuUI answers for EllesmereUI setup, Apply Magguu profiles, optional companion profiles, and troubleshooting.',
   path: '/faq',
@@ -121,6 +121,4 @@ useHead({
     },
   ],
 })
-const githubUrl = computed(() => siteSettings.value.github_url || 'https://github.com/Derpsen/MagguuUI')
-const githubIssuesUrl = computed(() => githubUrl.value.endsWith('/issues') ? githubUrl.value : `${githubUrl.value.replace(/\/$/, '')}/issues`)
 </script>

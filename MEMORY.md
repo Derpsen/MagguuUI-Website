@@ -261,3 +261,28 @@
 - CI: weekly `lighthouse-live.yml` (Mon 05:17 UTC, artifact + summary);
   `build.yml` has an experimental Node 26 matrix entry (continue-on-error).
 
+## 2026-10-14 Queue A–J (Webcraft, direct to main)
+
+- A RUM: `plugins/web-vitals.client.ts` (idle import, public only) → `POST
+  /api/v1/vitals` (text/plain beacon, 30/min/IP, tracking setting) →
+  `web_vitals`; admin p75 table `/admin/system/vitals`.
+- B `scripts/check-links.mjs` + weekly `linkcheck.yml`. CurseForge/Wago/WoWI
+  answer 403 to bots → "unverified", not failures. First run found 404s on
+  every `github.com/Derpsen/MagguuUI` link (repo not public).
+- C Ctrl/Cmd+K `components/PublicSearch.vue` (UCommandPalette in UModal),
+  index from the DB at `/api/v1/search-index` (SWR 120s, cleared on writes);
+  not build-time on purpose, so admin edits are searchable at once.
+- D `AdminChangePreview` (before/after per field) on Home + Pages editors.
+- E `/api/health`: status, checks.database, build.sha/shortSha/time,
+  startedAt, uptimeSeconds; no-store; 503 when the DB check fails.
+- F/I were already on main (#141): `experimental.viewTransition` + reduced
+  motion CSS; per-page `defineOgImage('MagguuOg')` (Takumi). Covered by tests.
+- G Speculation Rules (moderate prefetch, public only) in the default layout.
+- H `public/sw.js` + `plugins/pwa.client.ts`: offline `/strings` + `/guide`
+  and their read APIs, cache-first only for hashed `/_nuxt`.
+- J `content_revisions` written by `content/bulk`; History panel + restore.
+- Perf (local prod build, Lighthouse mobile median of 3): `/` perf 84 → 85,
+  `/strings` 92 → 92, a11y 100, CLS 0. `/` initial JS+CSS gzip 295.3 → 298.4 kB,
+  modulepreload 25 → 26, prefetch 3 → 4. axe: 0 violations on all public pages
+  and the search dialog.
+

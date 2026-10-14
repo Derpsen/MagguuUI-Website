@@ -49,6 +49,18 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     keeps admin chunks out of public prefetch/modulepreload.
   - `/strings` lists use `view=meta`; full strings load per id on copy/edit.
   - Admin dashboard `Live:` line reads `GIT_SHA`/`BUILD_TIME` (docker.yml).
+- Queue A–J 2026-10-14 (keep these invariants):
+  - RUM: `/api/v1/vitals` stores path + metric + value only (no IP/UA/cookie);
+    never add identifiers. Admin view: `/admin/system/vitals` (p75).
+  - Search: `/api/v1/search-index` is public data only; `PublicSearch.vue`
+    and `web-vitals` stay out of public prefetch (`ADMIN_ONLY_CHUNK`).
+  - Speculation Rules (`utils/speculationRules.ts`) must keep excluding
+    `/admin*` and `/api/*`.
+  - `public/sw.js` is network-first and never caches admin/auth/sync/webhook
+    or non-GET. Bump `VERSION` when changing cache layout.
+  - Content saves write `content_revisions`; restore goes through
+    `/api/v1/admin/content/revisions/:id/restore` (undoable).
+  - `NUXT_E2E_SEED=true` (Playwright only, never prod) seeds `E2E Test Pack`.
 - CodeQL: `github/codeql-action/init` and `analyze` must use the **same**
   commit pin in `.github/workflows/codeql.yml`.
 - Nuxt UI v4 modals: `UModal` default slot is the trigger. Modal content must

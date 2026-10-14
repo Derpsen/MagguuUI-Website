@@ -1,3 +1,4 @@
+import type { ServerResponse } from 'node:http'
 import { applyPrivateApiHeaders, applyPrivateApiHeadersToRecord } from '~/server/utils/privateApiHeaders'
 
 /**
@@ -17,6 +18,21 @@ function isPrivateApiPath(path: string) {
 }
 
 export default defineNitroPlugin((nitroApp) => {
+  // Nuxt's renderer sets `x-powered-by: Nuxt` straight on the response; the
+  // render:response delete below does not reach it. Drop it at the source.
+  nitroApp.hooks.hook('request', (event) => {
+    const res = event.node.res as ServerResponse
+    const setHeader = res.setHeader.bind(res)
+    res.setHeader = ((name: string, value: number | string | readonly string[]) => {
+      if (name.toLowerCase() === 'x-powered-by') return res
+      return setHeader(name, value)
+    }) as ServerResponse['setHeader']
+  })
+
+  nitroApp.hooks.hook('beforeResponse', (event) => {
+    if (!event.node.res.headersSent) event.node.res.removeHeader('x-powered-by')
+  })
+
   nitroApp.hooks.hook('render:response', (response, { event }) => {
     if (!response.headers) return
 

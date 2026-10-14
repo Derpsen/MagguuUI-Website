@@ -25,6 +25,14 @@ function runCleanup() {
   try {
     sqlite.prepare('DELETE FROM page_views WHERE created_at < ?').run(cutoff)
     sqlite.prepare('DELETE FROM copy_events WHERE created_at < ?').run(cutoff)
+    sqlite.prepare('DELETE FROM web_vitals WHERE created_at < ?').run(cutoff)
+    // Keep the newest 50 revisions per content cell; older ones go.
+    sqlite.prepare(`DELETE FROM content_revisions WHERE id IN (
+      SELECT id FROM (
+        SELECT id, ROW_NUMBER() OVER (PARTITION BY page, section, key, locale ORDER BY id DESC) AS rn
+        FROM content_revisions
+      ) WHERE rn > 50
+    )`).run()
   } catch { /* tables may not exist yet */ }
 }
 

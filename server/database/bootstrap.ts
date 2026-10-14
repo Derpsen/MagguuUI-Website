@@ -231,6 +231,27 @@ export const DATABASE_BOOTSTRAP_SQL = `
   );
   CREATE INDEX IF NOT EXISTS idx_rate_limits_updated_at ON rate_limits(updated_at);
 
+  CREATE TABLE IF NOT EXISTS web_vitals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    path TEXT NOT NULL,
+    metric TEXT NOT NULL,
+    value INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+  CREATE INDEX IF NOT EXISTS idx_web_vitals_metric_path_created_at ON web_vitals(metric, path, created_at);
+
+  CREATE TABLE IF NOT EXISTS content_revisions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    page TEXT NOT NULL,
+    section TEXT NOT NULL,
+    key TEXT NOT NULL,
+    locale TEXT NOT NULL DEFAULT 'en',
+    value TEXT,
+    user_id INTEGER,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+  CREATE INDEX IF NOT EXISTS idx_content_revisions_page_created_at ON content_revisions(page, created_at);
+
   CREATE TABLE IF NOT EXISTS addons (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     slug TEXT NOT NULL UNIQUE,

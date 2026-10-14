@@ -330,6 +330,39 @@ export const pageViews = sqliteTable('page_views', {
   createdAtIdx: index('idx_page_views_created_at').on(table.createdAt),
 }))
 
+// ─── Web Vitals (anonymous RUM) ────────────────────
+// One row per metric sample: page path, metric name, value. No IP, UA,
+// cookie or user id is stored. Retention follows the page_views setting.
+export const webVitals = sqliteTable('web_vitals', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  path: text('path').notNull(),
+  metric: text('metric').notNull(), // LCP | INP | CLS | TTFB
+  value: integer('value').notNull(), // ms; CLS × 1000
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+}, (table) => ({
+  metricPathIdx: index('idx_web_vitals_metric_path_created_at').on(table.metric, table.path, table.createdAt),
+}))
+
+// ─── Content revisions ─────────────────────────────
+// Previous value of a site_content cell, written before each admin save.
+// `value` NULL = the cell did not exist yet (restore deletes it).
+export const contentRevisions = sqliteTable('content_revisions', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  page: text('page').notNull(),
+  section: text('section').notNull(),
+  key: text('key').notNull(),
+  locale: text('locale').notNull().default('en'),
+  value: text('value'),
+  userId: integer('user_id'),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+}, (table) => ({
+  pageCreatedIdx: index('idx_content_revisions_page_created_at').on(table.page, table.createdAt),
+}))
+
 // ─── Addons ────────────────────────────────────────
 // Supported WoW addons surfaced on /addons page.
 // Auto-synced from MagguuUI.toc OptionalDeps + RequiredDeps via webhook.

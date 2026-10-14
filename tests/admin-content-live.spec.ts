@@ -49,6 +49,14 @@ test.afterAll(async () => {
   await context?.close()
 })
 
+test('admin dashboard shows the live image SHA + build time as text', async () => {
+  await page.goto('/admin')
+  const line = page.getByTestId('admin-live-build')
+  await expect(line).toBeVisible({ timeout: 30_000 })
+  // Local/dev servers have no build args: fallback is `dev`.
+  await expect(line).toHaveText(/^\s*Live: ([0-9a-f]{7}|dev) · built (dev|\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC)$/)
+})
+
 test('home hero eyebrow + step (admin form) is live on /', async () => {
   await page.goto('/')
   const before = await adminContent('home')

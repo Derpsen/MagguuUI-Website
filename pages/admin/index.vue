@@ -35,6 +35,14 @@
               Here is what is happening with your project today.
               <span class="ml-1 text-xs opacity-70">Auto refresh {{ nextRefresh }}s</span>
             </p>
+            <p
+              class="text-xs font-mono"
+              :class="isDark ? 'text-white/60' : 'text-slate-500'"
+              data-testid="admin-live-build"
+              :title="buildInfo?.gitSha"
+            >
+              Live: {{ buildLabel }}
+            </p>
           </div>
 
           <div class="flex items-center gap-6">
@@ -335,9 +343,12 @@
 </template>
 
 <script setup lang="ts">
+import { formatBuildLabel, type BuildInfo } from '~/utils/buildInfo'
+
 definePageMeta({ layout: 'admin' })
 
 const isDark = useIsDark()
+
 const { apiFetch } = useApi()
 const { user } = useAuth()
 const { notifications: notifItems, refresh: notifRefresh } = useAdminNotifications()
@@ -615,6 +626,17 @@ async function loadStats() {
   }
 }
 
+const buildInfo = ref<BuildInfo | null>(null)
+const buildLabel = computed(() => buildInfo.value ? formatBuildLabel(buildInfo.value) : '…')
+
+async function loadBuildInfo() {
+  try {
+    buildInfo.value = await apiFetch<BuildInfo>('/api/v1/admin/system/build')
+  } catch {
+    buildInfo.value = null
+  }
+}
+
 async function refreshAll() {
   nextRefresh.value = REFRESH_INTERVAL
   await loadStats()
@@ -648,6 +670,7 @@ function formatTrend(value?: number | null) {
 const typeLabel = entityTypeLabel
 
 onMounted(async () => {
+  void loadBuildInfo()
   await loadStats()
   await loadStoredVersion()
   notifRefresh(true)

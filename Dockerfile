@@ -37,12 +37,16 @@ FROM node:${NODE_VERSION}-bookworm-slim@${NODE_DIGEST}
 
 ARG VCS_REF=unknown
 ARG BUILD_DATE=unknown
+ARG GIT_SHA=dev
+ARG BUILD_TIME=dev
 
 WORKDIR /app
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=3000 \
     NODE_OPTIONS=--enable-source-maps \
+    GIT_SHA=${GIT_SHA} \
+    BUILD_TIME=${BUILD_TIME} \
     PUID=99 \
     PGID=100
 

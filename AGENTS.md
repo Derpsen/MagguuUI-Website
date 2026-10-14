@@ -8,7 +8,9 @@ strings (EllesmereUI, BigWigs, Northern Sky Raid Tools, class layouts). Live:
 image `ghcr.io/derpsen/magguuui-website` (LAN origin
 `http://192.168.178.21:3000` on `br0`). Ops notes: `MEMORY.md`.
 
-**Live ops baseline (2026-10-12):** live image OCI `sha-1febf58` (#144 clean
+**Live ops baseline (2026-10-14):** live image OCI `sha-d8e734a` (digest
+`sha256:516f6c21…`): admin restyle, admin save clears the cache,
+`/admin/content` shows a page list. Previous baseline 2026-10-12: `sha-1febf58` (#144 clean
 module section + legal notice, #146 nowrap, #147 green mini-label headings).
 #148 (color-mode reload test) is test-only, so no pull. #149 (two-tone names
 wording) merged to main 2026-10-12 21:18 Berlin and needs the next app-image
@@ -17,9 +19,9 @@ pull. Light-mode hydration fix: `useIsDark` stays dark until mount. The older
 
 ## Grok Bot helpers and rooms (2026-10-12)
 
-Helpers were renamed 2026-10-12; their IDs did not change. Webcraft owns **MagguuUI-Website only**. Botsmith owns MagguuBot + Magguu-Dashboard. Luaforge owns the MagguuUI addon Lua. Sentinel reviews PRs. Launchpad does releases (Tag-Gate). Homebase does Unraid. Captain does the Notion projects. Buddy is the front door. Old names were Stack Fixer, Bot Fixer, Addon Fixer, Reviewer, Release Helfer, Homelab Helfer and Projects Manager.
+Helpers were renamed 2026-10-12; their IDs did not change. Webcraft owns **MagguuUI-Website only**. Botsmith owns MagguuBot + Magguu-Dashboard. Luaforge owns the MagguuUI addon Lua. Sentinel reviews on request. Launchpad does releases (Tag-Gate). Homebase does Unraid. Captain does the Notion projects. Buddy is the front door. Old names were Stack Fixer, Bot Fixer, Addon Fixer, Reviewer, Release Helfer, Homelab Helfer and Projects Manager.
 Rooms: Addon HQ (MagguuUI), Web Studio (this repo), Bot Lab, Dashboard Deck, Homebase Ops.
-**Direct-change rule:** Buddy makes small Website design/text changes directly (own PR, green CI, squash-merge, one pull). Bigger work goes to Webcraft.
+**Direct-change rule:** Buddy makes small Website design/text changes directly. Bigger work goes to Webcraft. Since 2026-10-12 helpers and Buddy push directly to `main` (no PRs, no Sentinel pre-review); Buddy reviews commits afterwards; Homebase pulls autonomously after green Docker publish.
 Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain structured text with small green mini-label headings.
 
 ## Safe Working Rules
@@ -128,7 +130,7 @@ After Unraid app-image pull / when Buddy asks (Homebase owns container pull):
    - `/admin/strings/profiles`
    - `/admin/strings/layouts`
    - `/admin/data/addons`
-   - `/admin/content` (redirects to `/admin/content/home` — treat redirect-to-home as OK)
+   - `/admin/content` (shows the content page list since `sha-d8e734a`; no redirect anymore)
 3. Report to Buddy **only on FAIL** (or short OK if asked).
 4. Nach App-Image-Wellen: Prefer **Done-Wave Capture** skill (Buddy/PM) — kein Extra-Ping Homebase wenn Digest schon live.
 

@@ -210,7 +210,7 @@
 
 ## 2026-10-06 Ops sync (Buddy Inventur)
 
-- Live Website digest `sha256:76ef22c97b84cbd6162d9aef44df0d620ab1cea8c1252daf1fadd432c8c3f60d` (OCI `sha-5c26d99` / tip `5c26d99`) — kein Re-Pull wenn live schon darauf.
+- (superseded, see 2026-10-14) Live Website digest `sha256:76ef22c97b84cbd6162d9aef44df0d620ab1cea8c1252daf1fadd432c8c3f60d` (OCI `sha-5c26d99` / tip `5c26d99`) — kein Re-Pull wenn live schon darauf.
 - Wave: #95 (`@simplewebauthn/browser` 14) + #117 (audit overrides/allowlist); Homebase App-Image + Admin-Smoke **6/6 PASS** auf diesem Digest.
 - Passkey: Marco live Proton Pass = PASS; Box-Desktop != Proton-Passkey -> kein FAIL.
 - Audit-Allowlist review-by **2026-11-30**: `simple-git` + `@simple-git/argv-parser` (+ `braces` / `node-forge` from #114). Overrides #117: `vue`/`@vue/server-renderer` 3.5.43, `seroval` 1.6.8, `shell-quote` 1.12.0, `source-map-js` 1.2.2.
@@ -231,8 +231,8 @@
 ## 2026-10-12 Docs/Bots-Sync
 
 - Helpers renamed (IDs unchanged): Webcraft = Website only; Botsmith = MagguuBot + Magguu-Dashboard; Luaforge = addon Lua; Sentinel = review; Launchpad = releases/Tag-Gate; Homebase = Unraid; Captain = Notion; Buddy = front door. Rooms: Addon HQ, Web Studio, Bot Lab, Dashboard Deck, Homebase Ops.
-- Buddy makes small design/text changes directly (own PR, green CI, squash, one pull); bigger work goes to Webcraft.
-- Live `sha-1febf58` (#144, #146, #147). #148 is test-only (no pull). #149 two-tone wording merged to main and is waiting for the next pull. `useIsDark` stays dark until mount (light-mode hydration fix).
+- Buddy makes small design/text changes directly; bigger work goes to Webcraft. Since 2026-10-12 helpers and Buddy push directly to `main` (no PRs, no Sentinel pre-review); Buddy reviews commits afterwards; Homebase pulls autonomously after green Docker publish.
+- Live 2026-10-14: `sha-d8e734a` (digest `sha256:516f6c21…`): admin restyle, admin save clears cache, `/admin/content` shows a page list. Before: `sha-1febf58` (#144, #146, #147). #148 is test-only (no pull). #149 two-tone wording merged to main and is waiting for the next pull. `useIsDark` stays dark until mount (light-mode hydration fix).
 - Legal notice: "free, non-commercial project operated from Switzerland" + `contact@magguu.xyz`; no name, no address. Plain structured text with small green mini-label headings; no cards, icon boxes or flashy buttons.
 - Addon live v12.1.7. "Split names" options are becoming "Two-tone unit-frame names" / "Two-tone party and raid names" (MagguuUI PR #30; `SPLIT_NAMES` keys unchanged): half the name in the default color, half in the class color.
 - Unchanged: WIM is removed and Whisper Messenger is used; "Apply Magguu profiles"; Node 26 needs Marco's yes; locked TS 7, h3 2, satori 0.41; uid 99 + Cosign; `engines.node >=24.17`; no tags without Marco's yes; never remove third-party author names.

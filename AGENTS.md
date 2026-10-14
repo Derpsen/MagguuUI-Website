@@ -77,7 +77,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
   on the Nuxt 4.5 config types. Do not delete it. Node 26, TypeScript 7, h3 2,
   and satori 0.41+ stay blocked without an explicit yes. Dependabot #130
   (satori 0.44) stays open: do not merge or close it.
-- As of 2026-10-12: addon live **v12.1.7**; container runs as **uid 99**;
+- As of 2026-10-14: addon live **v12.1.8**; container runs as **uid 99**;
   images are **Cosign keyless** signed; site defaults to **Dark**; **WIM is
   removed** (Whisper Messenger is the whisper chat); `engines.node >=24.17`,
   Node 24 locked, Node 26 only after Marco's yes (~end of Oct).
@@ -171,7 +171,7 @@ Merge reports to Buddy must say which path applies:
 For PRs / copy / pack deltas:
 
 - Four siblings: MagguuUI / MagguuUI_Data / MagguuUI_EUI / MagguuUI_Media
-- EllesmereUI TOC min **9.0.6+**; live **9.2.9**; Magguu bake is **dump-based**; notes track **v12.1.7**
+- EllesmereUI TOC min **9.0.6+**; live **9.2.9**; Magguu bake is **dump-based**; notes track **v12.1.8**
 - WowUp Starter: EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore
 - Optional includes Whisper Messenger (WhisperMessenger), Auctionator, Smart Reminders, HandyNotes MapNotes; **no WIM / Ellesmere WIM Skin**; **no WindTools**; **no KeystoneLoot / MagguuKSL**
 - No EXBoss name-split

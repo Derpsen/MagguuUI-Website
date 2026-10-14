@@ -1,43 +1,73 @@
 export const CURRENT_ADDON_CHANGELOG = {
-  version: 'v12.1.7',
-  publishedAt: new Date('2026-10-10T00:00:00Z'),
-  content: `Ready for WoW 12.1. MagguuUI lives inside EllesmereUI. Type \`/mui\` to open it.
+  version: 'v12.1.8',
+  publishedAt: new Date('2026-10-14T00:00:00Z'),
+  content: `Ready for WoW 12.1.5. MagguuUI lives inside EllesmereUI. Type \`/mui\` to open it.
 
 ### What's new
 
-- Updated Magguu profiles for EllesmereUI, BigWigs, Northern Sky, EXBoss, HandyNotes, GTFO, Smart Reminders, and Whisper Messenger. Use the gold **Apply Magguu profiles** button.
-- Rogue and Warlock class layouts changed. Apply them on that character.
-- **Whisper Messenger** is the whisper addon. Chat history stays on this character.
-- On a new character, Magguu asks before it loads profiles.
-- Setup splits **First install** from **Already installed**. Gold **Apply Magguu profiles** is first install. **Apply Magguu Settings** and **Load on this character** sit under Already installed and do not reinstall profiles.
-- First-install toggle is **Include Magguu Settings** (default on). Afterwards, Magguu Settings is overlay and QoL only.
-- **HandyNotes MapNotes** Magguu settings apply with HandyNotes when you use **Apply Magguu profiles** or **Load profiles**. Still on WowUp Optional.
-- **Raider.IO Talent Builds**: left-click a build to load it. Auto-open once per party or raid instance.
-- Magguu chat size still applies. Magguu does not join, leave, or hide Services — you manage that channel.
+- **Changelog** now matches the EllesmereUI Patch Notes: one collapsible card per version, newest open.
+- **Ready for WoW 12.1.5.** MagguuUI loads without the out-of-date addons setting.
+- Updated Magguu profiles for EllesmereUI, BigWigs, Northern Sky, Whisper Messenger, and the HUD Edit Mode layout. Use the gold **Apply Magguu profiles** button.
 
 ### Additional features
 
 - Needs **EllesmereUI 9.0.6+** (live **9.2.9**). Download MagguuUI and EllesmereUI from CurseForge, Wago, or WoWInterface.
-- Gold Setup is **Apply Magguu profiles**. Below it: **Apply Magguu Settings** and **Load profiles**. Scale \`0.58\`. Magguu Settings is overlay/QoL only. Load profiles switches existing Magguu profiles; it does not re-import them.
-- **Apply Magguu profiles** writes the HUD Edit Mode layout **MagguuUI** once.
-- Ellesmere start popup is skipped; MagguuUI Setup opens on that login.
-- **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, Whisper Messenger, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
-- **Skinning** is one **NAMES & COLORS** section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers. Magguu Settings turns these on; reset turns them off.
-- **QoL** includes party and raid item level (and 2P/4P) and **Boiling Point**. AuraBuff counts stay centered.
-- **Apply Magguu profiles** turns on **Targeted Spell Bars**.
-- The BigWigs keystone viewer stays closed when a Mythic+ run ends.
+- **Apply Magguu profiles** writes the HUD Edit Mode layout **MagguuUI** and turns on **Targeted Spell Bars**.
+- **QoL** includes party and raid item level (and 2P/4P) and **Boiling Point**.
 - Setup import buttons: BigWigs, Northern Sky, EXBoss, Whisper Messenger, Smart Reminders.
+
+### Bug fixes
+
+- **Northern Sky** import works with the Northern Sky update for WoW 12.1.5.
 
 ### Install notes
 
 - Download **MagguuUI** and **EllesmereUI 9.0.6+** from CurseForge, Wago, or WoWInterface, and leave them enabled.
 - Open \`/mui\` and run **Apply Magguu profiles**.
-- BigWigs, LittleWigs, Northern Sky, EXBoss, and EXCore are in the WowUp starter list. MagguuUI still loads without them.
-- Works on WoW 12.1 and still loads on Midnight 12.0.
+- **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, Whisper Messenger, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
+- Works on WoW 12.1.5 and still loads on Midnight 12.0.
 - UI is available in every WoW client language MagguuUI ships.`,
 } as const
 
 export const PREVIOUS_ADDON_CHANGELOGS = [
+  {
+    version: 'v12.1.7',
+    publishedAt: new Date('2026-10-10T00:00:00Z'),
+    content: `Ready for WoW 12.1. MagguuUI lives inside EllesmereUI. Type \`/mui\` to open it.
+
+  ### What's new
+
+  - Updated Magguu profiles for EllesmereUI, BigWigs, Northern Sky, EXBoss, HandyNotes, GTFO, Smart Reminders, and Whisper Messenger. Use the gold **Apply Magguu profiles** button.
+  - Rogue and Warlock class layouts changed. Apply them on that character.
+  - **Whisper Messenger** is the whisper addon. Chat history stays on this character.
+  - On a new character, Magguu asks before it loads profiles.
+  - Setup splits **First install** from **Already installed**. Gold **Apply Magguu profiles** is first install. **Apply Magguu Settings** and **Load on this character** sit under Already installed and do not reinstall profiles.
+  - First-install toggle is **Include Magguu Settings** (default on). Afterwards, Magguu Settings is overlay and QoL only.
+  - **HandyNotes MapNotes** Magguu settings apply with HandyNotes when you use **Apply Magguu profiles** or **Load profiles**. Still on WowUp Optional.
+  - **Raider.IO Talent Builds**: left-click a build to load it. Auto-open once per party or raid instance.
+  - Magguu chat size still applies. Magguu does not join, leave, or hide Services — you manage that channel.
+
+  ### Additional features
+
+  - Needs **EllesmereUI 9.0.6+** (live **9.2.9**). Download MagguuUI and EllesmereUI from CurseForge, Wago, or WoWInterface.
+  - Gold Setup is **Apply Magguu profiles**. Below it: **Apply Magguu Settings** and **Load profiles**. Scale \`0.58\`. Magguu Settings is overlay/QoL only. Load profiles switches existing Magguu profiles; it does not re-import them.
+  - **Apply Magguu profiles** writes the HUD Edit Mode layout **MagguuUI** once.
+  - Ellesmere start popup is skipped; MagguuUI Setup opens on that login.
+  - **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, Whisper Messenger, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
+  - **Skinning** is one **NAMES & COLORS** section (two columns): split unit-frame names, split party and raid names, and class-colored keybind modifiers. Magguu Settings turns these on; reset turns them off.
+  - **QoL** includes party and raid item level (and 2P/4P) and **Boiling Point**. AuraBuff counts stay centered.
+  - **Apply Magguu profiles** turns on **Targeted Spell Bars**.
+  - The BigWigs keystone viewer stays closed when a Mythic+ run ends.
+  - Setup import buttons: BigWigs, Northern Sky, EXBoss, Whisper Messenger, Smart Reminders.
+
+  ### Install notes
+
+  - Download **MagguuUI** and **EllesmereUI 9.0.6+** from CurseForge, Wago, or WoWInterface, and leave them enabled.
+  - Open \`/mui\` and run **Apply Magguu profiles**.
+  - BigWigs, LittleWigs, Northern Sky, EXBoss, and EXCore are in the WowUp starter list. MagguuUI still loads without them.
+  - Works on WoW 12.1 and still loads on Midnight 12.0.
+  - UI is available in every WoW client language MagguuUI ships.`,
+  },
   {
     version: 'v12.1.6',
     publishedAt: new Date('2026-09-26T00:00:00Z'),

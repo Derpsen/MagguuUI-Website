@@ -41,7 +41,7 @@
 
 ## MagguuUI product facts (2026-09-07)
 
-- EllesmereUI TOC min **9.0.6+**; **live 9.2.9**; Magguu bake is **dump-based**; notes track **v12.1.7**.
+- EllesmereUI TOC min **9.0.6+**; **live 9.2.9**; Magguu bake is **dump-based**; notes track **v12.1.8**.
 - Four siblings: MagguuUI / MagguuUI_Data / MagguuUI_EUI / MagguuUI_Media.
 - Posted Magguu export = **full bake** (2026-09-11: Ellesmere type=full, BigWigs, NSRT, EXBoss, WIM, Waypoint UI, HandyNotes, TTT, GTFO, BugSack, PGF, Smart Reminders). Magguu Settings overlay still does not reimport the bake.
 - **Targeted Spell Bars** is a public feature name. Public pages do not tell players to turn EXBoss MythicCast off.
@@ -219,7 +219,7 @@
 
 ## 2026-10-12 Facts refresh
 
-- MagguuUI addon live **v12.1.7**.
+- MagguuUI addon live **v12.1.8**.
 - Container runs as **uid 99** (Unraid `nobody`). Images are signed with **Cosign keyless** (GitHub OIDC).
 - Website defaults to **Dark** mode (`colorMode.preference: 'dark'`); light only when the visitor picks it.
 - **WIM is removed** everywhere. Whisper Messenger is the whisper chat. Player button: **Apply Magguu profiles** (4K only in descriptions).
@@ -234,7 +234,7 @@
 - Buddy makes small design/text changes directly; bigger work goes to Webcraft. Since 2026-10-12 helpers and Buddy push directly to `main` (no PRs, no Sentinel pre-review); Buddy reviews commits afterwards; Homebase pulls autonomously after green Docker publish.
 - Live 2026-10-14: `sha-d8e734a` (digest `sha256:516f6c21…`): admin restyle, admin save clears cache, `/admin/content` shows a page list. Before: `sha-1febf58` (#144, #146, #147). #148 is test-only (no pull). #149 two-tone wording merged to main and is waiting for the next pull. `useIsDark` stays dark until mount (light-mode hydration fix).
 - Legal notice: "free, non-commercial project operated from Switzerland" + `contact@magguu.xyz`; no name, no address. Plain structured text with small green mini-label headings; no cards, icon boxes or flashy buttons.
-- Addon live v12.1.7. "Split names" options are becoming "Two-tone unit-frame names" / "Two-tone party and raid names" (MagguuUI PR #30; `SPLIT_NAMES` keys unchanged): half the name in the default color, half in the class color.
+- Addon live v12.1.8. "Split names" options are becoming "Two-tone unit-frame names" / "Two-tone party and raid names" (MagguuUI PR #30; `SPLIT_NAMES` keys unchanged): half the name in the default color, half in the class color.
 - Unchanged: WIM is removed and Whisper Messenger is used; "Apply Magguu profiles"; Node 26 needs Marco's yes; locked TS 7, h3 2, satori 0.41; uid 99 + Cosign; `engines.node >=24.17`; no tags without Marco's yes; never remove third-party author names.
 
 ## 2026-10-14 Perf wave (Webcraft, direct to main)

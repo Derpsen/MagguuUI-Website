@@ -7,7 +7,7 @@
 
 import { eq, and } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
-import { siteContent } from '~/server/database/schema'
+import { contentRevisions, siteContent } from '~/server/database/schema'
 import { validateBody, contentBulkSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
@@ -27,6 +27,20 @@ export default defineEventHandler(async (event) => {
           eq(siteContent.key, item.key),
           eq(siteContent.locale, locale),
         )).get()
+
+      // Revision history: keep the previous value of every cell that changes.
+      const previous = existing?.value ?? null
+      const next = item.value || null
+      if (previous !== next) {
+        db.insert(contentRevisions).values({
+          page: item.page,
+          section: item.section,
+          key: item.key,
+          locale,
+          value: previous,
+          userId: auth.userId,
+        }).run()
+      }
 
       // Delete if value is empty (cleanup removed steps etc.)
       if (!item.value && existing) {

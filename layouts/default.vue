@@ -263,6 +263,8 @@
 </template>
 
 <script setup lang="ts">
+import { SPECULATION_RULES } from '~/utils/speculationRules'
+
 const colorMode = useColorMode()
 const route = useRoute()
 const mobileOpen = ref(false)
@@ -274,6 +276,9 @@ const siteSettings = usePublicSiteSettings()
 const siteName = computed(() => siteSettings.value.site_name || 'MagguuUI')
 
 usePageTracking()
+useHead({
+  script: [{ type: 'speculationrules', innerHTML: JSON.stringify(SPECULATION_RULES), key: 'speculationrules' }],
+})
 
 function setTheme(mode: 'light' | 'dark') {
   colorMode.preference = mode

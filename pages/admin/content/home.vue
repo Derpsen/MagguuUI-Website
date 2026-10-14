@@ -2,11 +2,15 @@
   <div class="space-y-6">
     <AdminStickyBar :show="hasChanges" description="Homepage changes are ready to publish.">
       <template #actions>
+        <UButton variant="ghost" color="neutral" icon="i-heroicons-eye" data-testid="home-review" @click="reviewOpen = true">
+          Review changes
+        </UButton>
         <UButton icon="i-heroicons-check" :loading="saving" @click="save">
           Save
         </UButton>
       </template>
     </AdminStickyBar>
+    <AdminChangePreview v-model:open="reviewOpen" :changes="pendingChanges" :saving="saving" @confirm="save" />
 
     <AdminPageHeader
       icon="i-heroicons-home"
@@ -213,10 +217,12 @@
         </div>
       </div>
     </AdminPanel>
+    <AdminContentHistory ref="history" :pages="['home']" label="the homepage" @restored="load" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { diffContentForms, type ContentForm } from "~/utils/contentChanges"
 import { HOME_HERO_EXTRA_DEFAULTS } from "~/utils/pageCopyDefaults"
 
 definePageMeta({ layout: "admin" })
@@ -261,6 +267,12 @@ const form = reactive({
 })
 
 const originalData = ref("")
+const reviewOpen = ref(false)
+const history = ref<{ load: () => Promise<void> } | null>(null)
+const pendingChanges = computed(() => {
+  if (!originalData.value) return []
+  return diffContentForms(JSON.parse(originalData.value) as ContentForm, JSON.parse(serializeForm()) as ContentForm)
+})
 
 function serializeForm(): string {
   return JSON.stringify({
@@ -339,7 +351,9 @@ async function save() {
   try {
     await apiFetch("/api/v1/admin/content/bulk", { method: "POST", body: { items } })
     toast.add({ title: "Homepage saved", color: "success" })
+    reviewOpen.value = false
     nextTick(() => snapshotOriginal())
+    void history.value?.load()
   } catch {
     toast.add({ title: "Error", color: "error" })
   } finally {

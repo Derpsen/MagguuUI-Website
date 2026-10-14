@@ -2,11 +2,15 @@
   <div class="space-y-6">
     <AdminStickyBar :show="hasChanges" description="Page text changes are ready to publish.">
       <template #actions>
+        <UButton variant="ghost" color="neutral" icon="i-heroicons-eye" data-testid="pages-review" @click="reviewOpen = true">
+          Review changes
+        </UButton>
         <UButton icon="i-heroicons-check" :loading="saving" data-testid="pages-save" @click="save">
           Save
         </UButton>
       </template>
     </AdminStickyBar>
+    <AdminChangePreview v-model:open="reviewOpen" :changes="pendingChanges" :saving="saving" @confirm="save" />
 
     <AdminPageHeader
       icon="i-heroicons-document-duplicate"
@@ -74,11 +78,13 @@
         </div>
       </AdminPanel>
     </template>
+    <AdminContentHistory v-if="!loading" ref="history" :pages="[page]" :label="currentPath" @restored="load" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { EDITABLE_PAGE_DEFAULTS, isHtmlCopyKey, mergePageCopy } from '~/utils/pageCopyDefaults'
+import { diffContentForms, type ContentForm } from '~/utils/contentChanges'
 import type { EditablePageKey, PageCopyDefaults } from '~/utils/pageCopyDefaults'
 
 definePageMeta({ layout: 'admin' })
@@ -112,6 +118,14 @@ const forms = reactive<Record<EditablePageKey, PageCopyDefaults>>({
 
 const originalData = ref('')
 const serialize = () => JSON.stringify(forms)
+const reviewOpen = ref(false)
+const history = ref<{ load: () => Promise<void> } | null>(null)
+const pendingChanges = computed(() => {
+  if (!originalData.value) return []
+  const before = JSON.parse(originalData.value) as Record<string, ContentForm>
+  return pageTabs.flatMap(({ key, label }) => diffContentForms(before[key] || {}, forms[key] as ContentForm)
+    .map(c => ({ ...c, section: `${label} · ${c.section}` })))
+})
 const hasChanges = computed(() => !loading.value && !!originalData.value && serialize() !== originalData.value)
 
 const sectionTitles: Record<string, string> = {
@@ -172,7 +186,9 @@ async function save() {
   try {
     await apiFetch('/api/v1/admin/content/bulk', { method: 'POST', body: { items } })
     toast.add({ title: 'Pages saved', color: 'success' })
+    reviewOpen.value = false
     nextTick(() => { originalData.value = serialize() })
+    void history.value?.load()
   } catch {
     toast.add({ title: 'Error', color: 'error' })
   } finally {

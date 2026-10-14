@@ -36,6 +36,19 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
   `window.location.assign('/')` (or `navigateTo('/', { external: true })`).
 - Admin routeRules: `/admin/**` stays `ssr:false` (auth flash). Exception:
   `/admin/login` is `ssr:true`. Depth: `MEMORY.md`.
+- Perf wave 2026-10-14 (keep these invariants):
+  - Homepage screenshots: edit the source JPG in `public/screenshots/`, then
+    `node scripts/generate-screenshots.mjs` (sharp, devDep) and commit the
+    `-800/-1280/-2000` AVIF/WebP/JPG variants. No runtime image service.
+  - Edge cache: only `CDN_CACHEABLE_PATHS` (`server/utils/publicCache.ts`)
+    get `CDN-Cache-Control`; browsers always get `max-age=0, must-revalidate`.
+    Never add admin/auth/sync/query URLs. Writes purge Cloudflare only with
+    `CLOUDFLARE_ZONE_ID` + `CLOUDFLARE_API_TOKEN`.
+  - Admin-only CSS lives in `assets/css/admin.css` (imported by the admin
+    layout + login), not `main.css`. `ADMIN_ONLY_CHUNK` in `nuxt.config.ts`
+    keeps admin chunks out of public prefetch/modulepreload.
+  - `/strings` lists use `view=meta`; full strings load per id on copy/edit.
+  - Admin dashboard `Live:` line reads `GIT_SHA`/`BUILD_TIME` (docker.yml).
 - CodeQL: `github/codeql-action/init` and `analyze` must use the **same**
   commit pin in `.github/workflows/codeql.yml`.
 - Nuxt UI v4 modals: `UModal` default slot is the trigger. Modal content must

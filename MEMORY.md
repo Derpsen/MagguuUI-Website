@@ -236,3 +236,28 @@
 - Legal notice: "free, non-commercial project operated from Switzerland" + `contact@magguu.xyz`; no name, no address. Plain structured text with small green mini-label headings; no cards, icon boxes or flashy buttons.
 - Addon live v12.1.7. "Split names" options are becoming "Two-tone unit-frame names" / "Two-tone party and raid names" (MagguuUI PR #30; `SPLIT_NAMES` keys unchanged): half the name in the default color, half in the class color.
 - Unchanged: WIM is removed and Whisper Messenger is used; "Apply Magguu profiles"; Node 26 needs Marco's yes; locked TS 7, h3 2, satori 0.41; uid 99 + Cosign; `engines.node >=24.17`; no tags without Marco's yes; never remove third-party author names.
+
+## 2026-10-14 Perf wave (Webcraft, direct to main)
+
+- Screenshots: pre-generated AVIF/WebP/JPG at 800/1280/2000w via
+  `scripts/generate-screenshots.mjs`; `ScreenshotFrame` uses `<picture>` +
+  srcset, lightbox uses the 2000w variant. Originals stay as sources.
+- Cache: public pages + `/api/v1/catalog-summary` send
+  `CDN-Cache-Control`/`Cloudflare-CDN-Cache-Control: public, max-age=120,
+  stale-while-revalidate=600`. Cloudflare only uses it with a Cache Rule
+  (Eligible for cache) on those URLs. Writes clear Nitro + (if envs set)
+  purge the Cloudflare zone, debounced 1.5s (`server/utils/cloudflarePurge.ts`).
+- Headers: origin sends HSTS `max-age=31536000; includeSubDomains`; live
+  `max-age=0` comes from Cloudflare's edge HSTS setting (dashboard, not code).
+  `x-powered-by` is dropped in `server/plugins/security-headers.ts`.
+- Bundle: admin CSS split to `assets/css/admin.css`; admin-only chunks not
+  prefetched; client codeSplitting vendor/app groups for the entry graph.
+  Local prod build `/`: modulepreload 30 -> 25, prefetch 8 -> 3, no admin CSS.
+- WowUp list: `/api/v1/wowup?view=meta` (length, preview, addonNames) and
+  `/api/v1/wowup/:id`; the plain list endpoint stays fat for old clients.
+- Build info: Dockerfile `GIT_SHA`/`BUILD_TIME` args -> env; admin dashboard
+  shows `Live: <sha7> · built <UTC>` (fallback `dev`) via
+  `/api/v1/admin/system/build`.
+- CI: weekly `lighthouse-live.yml` (Mon 05:17 UTC, artifact + summary);
+  `build.yml` has an experimental Node 26 matrix entry (continue-on-error).
+

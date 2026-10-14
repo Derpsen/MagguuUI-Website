@@ -1,11 +1,17 @@
 <script setup lang="ts">
+import { screenshotSrcset, screenshotVariant } from '~/utils/screenshots'
+
 const props = defineProps<{
   src: string
   alt: string
   caption: string
   width: number
   height: number
+  /** `sizes` for the inline srcset; the lightbox always uses the 2000w file. */
+  sizes?: string
 }>()
+
+const sizes = computed(() => props.sizes || '(min-width: 1280px) 1200px, 100vw')
 
 const isDark = useIsDark()
 const open = ref(false)
@@ -38,16 +44,22 @@ onBeforeUnmount(() => {
       :aria-label="`Open ${caption}`"
       @click="open = true"
     >
-      <img
-        :src="props.src"
-        :alt="props.alt"
-        :width="props.width"
-        :height="props.height"
-        class="w-full border"
-        :class="isDark ? 'border-white/10' : 'border-gray-200'"
-        loading="lazy"
-        decoding="async"
-      />
+      <picture>
+        <source type="image/avif" :srcset="screenshotSrcset(props.src, 'avif')" :sizes="sizes">
+        <source type="image/webp" :srcset="screenshotSrcset(props.src, 'webp')" :sizes="sizes">
+        <img
+          :src="screenshotVariant(props.src, 1280, 'jpg')"
+          :srcset="screenshotSrcset(props.src, 'jpg')"
+          :sizes="sizes"
+          :alt="props.alt"
+          :width="props.width"
+          :height="props.height"
+          class="w-full border"
+          :class="isDark ? 'border-white/10' : 'border-gray-200'"
+          loading="lazy"
+          decoding="async"
+        />
+      </picture>
     </button>
     <figcaption class="mt-2 font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">
       {{ caption }}
@@ -74,13 +86,17 @@ onBeforeUnmount(() => {
           aria-label="Close"
           @click="close"
         >
-          <img
-            :src="props.src"
-            :alt="props.alt"
-            :width="props.width"
-            :height="props.height"
-            class="max-h-[92vh] max-w-full object-contain"
-          />
+          <picture>
+            <source type="image/avif" :srcset="screenshotVariant(props.src, 2000, 'avif')">
+            <source type="image/webp" :srcset="screenshotVariant(props.src, 2000, 'webp')">
+            <img
+              :src="screenshotVariant(props.src, 2000, 'jpg')"
+              :alt="props.alt"
+              :width="props.width"
+              :height="props.height"
+              class="max-h-[92vh] max-w-full object-contain"
+            />
+          </picture>
         </button>
       </div>
     </Teleport>

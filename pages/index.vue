@@ -59,6 +59,7 @@
       <div class="mt-6 grid sm:grid-cols-2 gap-6">
         <ScreenshotFrame
           src="/screenshots/edit-mode.jpg"
+          sizes="(min-width: 1280px) 600px, (min-width: 640px) 50vw, 100vw"
           alt="Edit Mode with the Magguu frame layout."
           caption="Edit Mode"
           :width="2000"
@@ -66,6 +67,7 @@
         />
         <ScreenshotFrame
           src="/screenshots/setup.jpg"
+          sizes="(min-width: 1280px) 600px, (min-width: 640px) 50vw, 100vw"
           alt="EllesmereUI MagguuUI Setup, with Apply Magguu profiles."
           caption="Setup"
           :width="2000"

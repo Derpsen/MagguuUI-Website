@@ -1,0 +1,53 @@
+name: Lighthouse (live)
+
+# Weekly Lighthouse / Web Vitals snapshot of the production site.
+on:
+  schedule:
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Run Lighthouse against ui.magguu.xyz
+        id: lh
+        # treosh/lighthouse-ci-action@12.6.2
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18
+        with:
+          urls: |
+            https://ui.magguu.xyz/
+            https://ui.magguu.xyz/guide
+            https://ui.magguu.xyz/strings
+          runs: 3
+          uploadArtifacts: true
+          artifactName: lighthouse-live
+
+      - name: Job summary
+        if: always()
+        env:
+          MANIFEST: ${{ steps.lh.outputs.manifest }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs')
+          const manifest = JSON.parse(process.env.MANIFEST || '[]').filter(r => r.isRepresentativeRun)
+          const pct = v => (v == null ? '–' : Math.round(v * 100))
+          const ms = v => (v == null ? '–' : `${Math.round(v)} ms`)
+          const lines = [
+            '## Lighthouse (live, mobile, median of 3)',
+            '',
+            '| URL | Perf | A11y | BP | SEO | LCP | CLS | TBT | FCP | TTFB |',
+            '|---|---|---|---|---|---|---|---|---|---|',
+          ]
+          for (const run of manifest) {
+            const lhr = JSON.parse(fs.readFileSync(run.jsonPath, 'utf8'))
+            const a = lhr.audits
+            const s = run.summary
+            lines.push(`| ${run.url} | ${pct(s.performance)} | ${pct(s.accessibility)} | ${pct(s['best-practices'])} | ${pct(s.seo)} | ${ms(a['largest-contentful-paint']?.numericValue)} | ${(a['cumulative-layout-shift']?.numericValue ?? 0).toFixed(3)} | ${ms(a['total-blocking-time']?.numericValue)} | ${ms(a['first-contentful-paint']?.numericValue)} | ${ms(a['server-response-time']?.numericValue)} |`)
+          }
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n')
+          NODE

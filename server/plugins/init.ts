@@ -15,11 +15,38 @@ import { CURRENT_ADDON_CHANGELOG, PREVIOUS_ADDON_CHANGELOGS, scrubPublishedChang
 import { users, siteContent, faqs, settings, changelogs } from '~/server/database/schema'
 import { DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
+import { isPrivateRepoUrl, rewritePrivateRepoLinks } from '~/utils/privateRepoLinks'
 import { purgeRetiredAddonProfiles } from '~/server/utils/addonProfileSync'
 import { ensureAddonsSeeded } from '~/server/utils/syncAddons'
 
 
 type SeedContentEntry = typeof DEFAULT_SITE_CONTENT[number]
+
+/** Rewrites links to the private addon repo in content, FAQs and changelogs. */
+function rewritePrivateRepoLinksInDb(): number {
+  const like = '%github.com/Derpsen/MagguuUI%'
+  let changed = 0
+  const targets: Array<{ table: string, columns: string[] }> = [
+    { table: 'site_content', columns: ['value'] },
+    { table: 'faqs', columns: ['question', 'answer'] },
+    { table: 'changelogs', columns: ['content', 'content_en'] },
+  ]
+  for (const { table, columns } of targets) {
+    for (const column of columns) {
+      const rows = sqlite.prepare(`SELECT id, "${column}" AS v FROM "${table}" WHERE "${column}" LIKE ?`).all(like) as Array<{ id: number, v: string | null }>
+      const update = sqlite.prepare(`UPDATE "${table}" SET "${column}" = ? WHERE id = ?`)
+      for (const row of rows) {
+        if (!row.v) continue
+        const next = rewritePrivateRepoLinks(row.v)
+        if (next !== row.v) {
+          update.run(next, row.id)
+          changed++
+        }
+      }
+    }
+  }
+  return changed
+}
 
 const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'hero', key: 'title', marker: 'Your WoW Interface,' },
@@ -572,6 +599,17 @@ export default defineNitroPlugin(() => {
         .where(eq(settings.id, setting.id))
         .run()
       repairedSettings++
+    }
+    // Derpsen/MagguuUI is private: its GitHub URLs 404 for visitors. Idempotent
+    // rewrite of the stored setting and any seeded/admin text that links there.
+    const githubSetting = existingSettings.find(item => item.key === 'github_url')
+    if (githubSetting && isPrivateRepoUrl(githubSetting.value)) {
+      db.update(settings).set({ value: '', updatedAt: new Date() }).where(eq(settings.id, githubSetting.id)).run()
+      repairedSettings++
+    }
+    const repoLinkRewrites = rewritePrivateRepoLinksInDb()
+    if (repoLinkRewrites > 0) {
+      console.log(`[Init] Rewrote ${repoLinkRewrites} private MagguuUI repo links`)
     }
     if (repairedSettings > 0) {
       console.log(`[Init] Repaired ${repairedSettings} outdated default site settings`)

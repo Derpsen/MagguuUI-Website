@@ -4,6 +4,7 @@ import { and, asc, count, desc, eq, like, sql } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { characterLayouts, changelogs, profiles, wowupStrings } from '~/server/database/schema'
 import { ELVUI_PACKED_PREFIX } from '~/server/utils/addonProfileLua'
+import { parseWowupAddonNames } from '~/utils/addonChipMeta'
 
 interface ReadOptions {
   includeHidden?: boolean
@@ -59,6 +60,40 @@ export function readWowUpMap(options: ReadOptions = {}) {
       string: row.string,
       description: row.description,
       updatedAt: row.updatedAt,
+    }
+  }
+  return { data: keyed, count: rows.length }
+}
+
+/** WowUp packs without the import blob: length, 200-char preview, addon names. */
+export function readWowUpIndex() {
+  const rows = db.select({
+    id: wowupStrings.id,
+    name: wowupStrings.name,
+    description: wowupStrings.description,
+    updatedAt: wowupStrings.updatedAt,
+    string: wowupStrings.string,
+  }).from(wowupStrings)
+    .where(eq(wowupStrings.isVisible, true))
+    .orderBy(asc(wowupStrings.sortOrder), asc(wowupStrings.name), asc(wowupStrings.id))
+    .all()
+
+  const keyed: Record<string, {
+    id: number
+    description: string | null
+    updatedAt: Date
+    stringLength: number
+    preview: string
+    addonNames: string[]
+  }> = {}
+  for (const row of rows) {
+    keyed[row.name] = {
+      id: row.id,
+      description: row.description,
+      updatedAt: row.updatedAt,
+      stringLength: row.string.length,
+      preview: row.string.slice(0, 200),
+      addonNames: parseWowupAddonNames(row.string),
     }
   }
   return { data: keyed, count: rows.length }

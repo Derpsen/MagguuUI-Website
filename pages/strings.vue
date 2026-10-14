@@ -315,11 +315,11 @@
               </div>
               <div class="flex items-center justify-between text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
                 <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono" :class="isDark ? 'bg-white/5 text-silver-600 border border-brand-400/10' : 'bg-gray-100 text-gray-400 border border-gray-200'">{{ isMac ? '⌘' : 'Ctrl' }}+C</kbd>
-                <span>{{ stringSizeLabel(selectedWowup.string?.length || 0) }}</span>
+                <span>{{ stringSizeLabel(wowupStrings[selectedWowup.id]?.length || selectedWowup.stringLength || 0) }}</span>
               </div>
               <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24">
                 <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
-                  {{ selectedWowup.string?.substring(0, 200) }}{{ (selectedWowup.string?.length || 0) > 200 ? '...' : '' }}
+                  {{ selectedWowup.preview || '' }}{{ (selectedWowup.stringLength || 0) > 200 ? '...' : '' }}
                 </p>
               </div>
             </div>
@@ -435,16 +435,24 @@ interface PublicLayout {
   preview?: string | null
   [k: string]: unknown
 }
-interface PublicWowup { id: number, string: string, description?: string | null, [k: string]: unknown }
+interface PublicWowup {
+  id: number
+  description?: string | null
+  stringLength?: number | null
+  preview?: string | null
+  addonNames?: string[]
+  [k: string]: unknown
+}
 type ProfileGroupedPublic = Record<string, PublicProfile[]>
 type WowupKeyedPublic = Record<string, PublicWowup>
 
 const { data: profileData, refresh: refreshProfiles } = useFetch<{ data: ProfileGroupedPublic }>('/api/v1/profiles?view=meta')
-const { data: wowupData, refresh: refreshWowup } = useFetch<{ data: WowupKeyedPublic }>('/api/v1/wowup')
+const { data: wowupData, refresh: refreshWowup } = useFetch<{ data: WowupKeyedPublic }>('/api/v1/wowup?view=meta')
 const { data: layoutData, refresh: refreshLayouts } = useFetch<{ data: PublicLayout[] }>('/api/v1/layouts?view=meta')
 
 const profileStrings = ref<Record<number, string>>({})
 const layoutStrings = ref<Record<number, string>>({})
+const wowupStrings = ref<Record<number, string>>({})
 
 type FlatProfile = PublicProfile & { addon: string }
 
@@ -539,9 +547,10 @@ const selectedWowup = computed(() => {
 })
 
 const selectedWowupAddons = computed(() => {
-  const raw = selectedWowup.value?.string
-  if (!raw) return [] as string[]
-  return parseWowupAddonNames(raw)
+  const row = selectedWowup.value
+  if (!row) return [] as string[]
+  const full = wowupStrings.value[row.id]
+  return full ? parseWowupAddonNames(full) : (row.addonNames ?? [])
 })
 
 const wowupPacks = computed(() => {
@@ -643,7 +652,7 @@ function handleCopyShortcut(e: KeyboardEvent) {
     e.preventDefault()
     if (activeTab.value === 'layouts' && selectedLayout.value) copyLayout()
     else if (activeTab.value === 'profiles' && selectedProfile.value) copyProfile()
-    else if (activeTab.value === 'wowup' && selectedWowup.value?.string) copyWowup()
+    else if (activeTab.value === 'wowup' && selectedWowup.value) copyWowup()
   }
 }
 
@@ -723,6 +732,20 @@ async function loadLayoutString(id: number): Promise<string | null> {
   }
 }
 
+async function loadWowupString(id: number): Promise<string | null> {
+  const cached = wowupStrings.value[id]
+  if (cached) return cached
+  try {
+    const res = await $fetch<{ data?: { string?: string } }>(`/api/v1/wowup/${id}`)
+    const text = res.data?.string
+    if (!text) return null
+    wowupStrings.value = { ...wowupStrings.value, [id]: text }
+    return text
+  } catch {
+    return null
+  }
+}
+
 watch(selectedProfile, (row) => {
   if (!import.meta.client || !row || profileStrings.value[row.id]) return
   void loadProfileString(row.id)
@@ -761,11 +784,17 @@ async function copyProfile() {
   setTimeout(() => { profileCopied.value = false }, 2000)
 }
 async function copyWowup() {
-  if (!selectedWowup.value?.string) return
-  await doCopy(selectedWowup.value.string)
+  const row = selectedWowup.value
+  if (!row) return
+  const text = await loadWowupString(row.id)
+  if (!text) {
+    toast.add({ title: 'Could not copy', color: 'error' })
+    return
+  }
+  await doCopy(text)
   wowupCopied.value = true
   toast.add({ title: 'Copied!', icon: 'i-heroicons-check-circle', color: 'success', duration: 2000 })
-  trackCopy('wowup', selectedWowup.value.id)
+  trackCopy('wowup', row.id)
   setTimeout(() => { wowupCopied.value = false }, 2000)
 }
 
@@ -783,7 +812,15 @@ async function editProfile(p: FlatProfile) {
   Object.assign(editForm, { type: 'profile', id: p.id, addon: p.addon, profile: p.profile, string: text })
   editModal.value = true
 }
-function editWowup(w: FlatWowup) { Object.assign(editForm, { type: 'wowup', id: w.id, name: w.name, string: w.string }); editModal.value = true }
+async function editWowup(w: FlatWowup) {
+  const text = await loadWowupString(w.id)
+  if (!text) {
+    toast.add({ title: 'Could not load string', color: 'error' })
+    return
+  }
+  Object.assign(editForm, { type: 'wowup', id: w.id, name: w.name, string: text })
+  editModal.value = true
+}
 async function editLayout(l: PublicLayout) {
   const text = await loadLayoutString(l.id)
   if (!text) {
@@ -803,6 +840,7 @@ async function saveEdit() {
       await refreshProfiles()
     } else if (editForm.type === 'wowup') {
       await apiFetch(`/api/v1/admin/wowup/${editForm.id}`, { method: 'PUT', body: { name: editForm.name, string: editForm.string } })
+      wowupStrings.value = { ...wowupStrings.value, [editForm.id]: editForm.string }
       await refreshWowup()
     } else if (editForm.type === 'layout') {
       await apiFetch(`/api/v1/admin/layouts/${editForm.id}`, { method: 'PUT', body: { className: editForm.className, spec: editForm.spec, importString: editForm.string } })

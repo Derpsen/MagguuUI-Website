@@ -36,6 +36,9 @@ const publicSecurityHeaders = {
   // locked-down baseline for everything else.
 }
 
+/** Client manifest keys that only the admin needs (never prefetched publicly). */
+const ADMIN_ONLY_CHUNK = /(^|\/)(layouts\/admin\.vue|pages\/admin\/(?!login\.vue)|components\/admin\/|components\/TipTapEditor\.vue|components\/CommandPalette\.vue|components\/KeyboardShortcuts\.vue)|node_modules\/(@tiptap|prosemirror-|echarts|zrender|vue-echarts)/
+
 const hotlinkAssetHeaders = {
   ...publicSecurityHeaders,
   // Store listings (WoWI/Wago) hotlink these PNGs. Default CORP same-origin
@@ -222,6 +225,66 @@ export default defineNuxtConfig({
     },
   },
 
+  hooks: {
+    // Admin-only chunks (admin layout/pages/components, TipTap, charts) must not
+    // ride along on public pages as <link rel="prefetch"> / modulepreload.
+    // Shared chunks/CSS that only admin chunks import are admin-only too.
+    'build:manifest'(manifest) {
+      const adminOnly = new Set(Object.keys(manifest).filter(key => ADMIN_ONLY_CHUNK.test(key)))
+      const importers = new Map<string, Set<string>>()
+      for (const [key, chunk] of Object.entries(manifest)) {
+        for (const dep of [...(chunk.imports ?? []), ...(chunk.dynamicImports ?? [])]) {
+          if (!importers.has(dep)) importers.set(dep, new Set())
+          importers.get(dep)!.add(key)
+        }
+      }
+      let grew = true
+      while (grew) {
+        grew = false
+        for (const [key, chunk] of Object.entries(manifest)) {
+          if (adminOnly.has(key) || chunk.isEntry) continue
+          const from = importers.get(key)
+          if (from?.size && [...from].every(k => adminOnly.has(k))) {
+            adminOnly.add(key)
+            grew = true
+          }
+        }
+      }
+      for (const key of adminOnly) {
+        const chunk = manifest[key]
+        if (!chunk) continue
+        chunk.prefetch = false
+        chunk.preload = false
+        for (const css of chunk.css ?? []) {
+          const cssChunk = manifest[css]
+          if (cssChunk) cssChunk.prefetch = false
+        }
+      }
+    },
+  },
+
+  vite: {
+    // Fewer, larger initial chunks on public pages: code statically reachable
+    // from the entry (vue/nuxt runtime, @nuxt/ui primitives, layout chrome)
+    // was split into ~25 tiny shared chunks, each its own modulepreload.
+    // Client only; SSR chunking stays default.
+    $client: {
+      build: {
+        rolldownOptions: {
+          output: {
+            codeSplitting: {
+              groups: [
+                // `$initial`: statically reachable from the entry, i.e. on every page anyway.
+                { name: 'vendor', test: /node_modules[\\/]/, tags: ['$initial'], priority: 10 },
+                { name: 'app', test: /^(?!.*node_modules)/, tags: ['$initial'], priority: 5 },
+              ],
+            },
+          },
+        },
+      },
+    },
+  },
+
   experimental: {
     // swr routes would otherwise get an extracted _payload.json that is cached
     // separately from the HTML. A stale HTML + fresh payload pair caused the
@@ -270,6 +333,7 @@ export default defineNuxtConfig({
     '/api/v1/profiles/**': { swr: 120 },
     '/api/v1/addons': { swr: 120 },
     '/api/v1/wowup': { swr: 120 },
+    '/api/v1/wowup/**': { swr: 120 },
     '/api/v1/layouts': { swr: 120 },
     '/api/v1/layouts/**': { swr: 120 },
     '/api/v1/content/**': { swr: 120 },

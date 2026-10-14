@@ -215,3 +215,9 @@ npm run db:seed        # seed default data
 
 Marco uses Grok Bot "Buddy" as the single front door. Helpers report back to
 Buddy.
+
+## Private addon repo (2026-10)
+- `Derpsen/MagguuUI` is private: never link it publicly. Downloads → CurseForge, changelog → `/changelog`, issues → `/about#contact`.
+- `utils/privateRepoLinks.ts` (`isPrivateRepoUrl`, `rewritePrivateRepoLinks`); `server/plugins/init.ts` rewrites DB content/FAQs/changelogs and clears a private `github_url` idempotently on boot.
+- `NUXT_GITHUB_REPO` sync config (server-side, authenticated) stays as is.
+- Link check: CurseForge/Wago/WoWI 403/429 = pass; real 404s fail. `tests/private-repo-links.spec.ts` guards the public pages.

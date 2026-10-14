@@ -286,3 +286,5 @@
   modulepreload 25 → 26, prefetch 3 → 4. axe: 0 violations on all public pages
   and the search dialog.
 
+
+- 2026-10-14: Private-repo link sweep for Derpsen/MagguuUI (mapping CurseForge / /changelog / /about#contact), idempotent DB migration in init.ts, link check treats store 403 as OK.

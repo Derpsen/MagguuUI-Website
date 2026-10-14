@@ -129,6 +129,8 @@ Important values include:
 - `NUXT_WEBAUTHN_RP_ID`
 - `NUXT_WEBAUTHN_ORIGIN`
 - `NUXT_OG_IMAGE_SECRET`
+- `CLOUDFLARE_ZONE_ID` / `CLOUDFLARE_API_TOKEN` (optional: purge the Cloudflare edge cache on admin/sync/webhook writes; see `docs/env-vars.md`)
+- `GIT_SHA` / `BUILD_TIME` (set by the Docker build; shown in the admin, fallback `dev`)
 
 Generate `NUXT_OG_IMAGE_SECRET` outside the repo with `npx nuxt-og-image generate-secret` when dynamic OG images are enabled in production.
 

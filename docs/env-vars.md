@@ -23,9 +23,14 @@ Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` 
 | `NUXT_FORCE_PASSWORD_RESET` | empty | Set to `true` once to force admin password reset on startup |
 | `NUXT_SYNC_SEEDED_CONTENT` | empty | Set to `true` to re-sync default content on startup |
 | `NUXT_OG_IMAGE_SECRET` | empty | Signing secret for dynamic `nuxt-og-image` generation URLs |
+| `CLOUDFLARE_ZONE_ID` | empty | Cloudflare zone of ui.magguu.xyz. With `CLOUDFLARE_API_TOKEN`, admin/sync/webhook writes purge the edge cache. Empty = logged no-op. |
+| `CLOUDFLARE_API_TOKEN` | empty | API token with only *Zone → Cache Purge → Purge* on that zone. Host/container secret only. |
+| `GIT_SHA` / `BUILD_TIME` | `dev` | Image commit + build time shown in the admin. Set by `docker.yml` build-args; no manual value needed. |
 | `NODE_ENV` | `production` in Docker | Runtime mode |
 
 ## Notes
+
+- Edge caching: public pages (`/`, `/guide`, `/faq`, `/changelog`, `/about`, `/addons`, `/imprint`, `/privacy`) and `/api/v1/catalog-summary` send `CDN-Cache-Control: public, max-age=120, stale-while-revalidate=600`. Browsers still get `Cache-Control: public, max-age=0, must-revalidate` (ETag → 304), so admin edits show on the next reload. Cloudflare only stores HTML when a Cache Rule marks these URLs *Eligible for cache* (origin cache control respected); without that rule nothing changes at the edge.
 
 - Passkeys require matching `NUXT_WEBAUTHN_RP_ID` and `NUXT_WEBAUTHN_ORIGIN` in production.
 - Changing `NUXT_JWT_SECRET` invalidates all existing sessions. Users must log in again.

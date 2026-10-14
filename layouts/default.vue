@@ -37,6 +37,19 @@
 
         <div class="ml-auto flex items-center gap-3 shrink-0">
           <button
+            type="button"
+            class="inline-flex items-center justify-center w-8 h-8"
+            :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-950'"
+            aria-label="Search (Ctrl+K)"
+            title="Search (Ctrl+K)"
+            aria-keyshortcuts="Control+K Meta+K"
+            data-testid="public-search-open"
+            @click="openSearch"
+          >
+            <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4" />
+          </button>
+          <LazyPublicSearch v-if="searchMounted" v-model:open="searchOpen" />
+          <button
             class="public-theme-toggle inline-flex items-center justify-center w-8 h-8"
             :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-950'"
             :title="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
@@ -276,6 +289,21 @@ const siteSettings = usePublicSiteSettings()
 const siteName = computed(() => siteSettings.value.site_name || 'MagguuUI')
 
 usePageTracking()
+const searchOpen = ref(false)
+const searchMounted = ref(false)
+function openSearch() {
+  searchMounted.value = true
+  searchOpen.value = true
+}
+function onSearchKey(event: KeyboardEvent) {
+  if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    openSearch()
+  }
+}
+onMounted(() => window.addEventListener('keydown', onSearchKey))
+onBeforeUnmount(() => window.removeEventListener('keydown', onSearchKey))
+
 useHead({
   script: [{ type: 'speculationrules', innerHTML: JSON.stringify(SPECULATION_RULES), key: 'speculationrules' }],
 })

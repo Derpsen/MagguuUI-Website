@@ -36,8 +36,11 @@ const publicSecurityHeaders = {
   // locked-down baseline for everything else.
 }
 
-/** Client manifest keys that only the admin needs (never prefetched publicly). */
-const ADMIN_ONLY_CHUNK = /(^|\/)(layouts\/admin\.vue|pages\/admin\/(?!login\.vue)|components\/admin\/|components\/TipTapEditor\.vue|components\/CommandPalette\.vue|components\/KeyboardShortcuts\.vue)|node_modules\/(@tiptap|prosemirror-|echarts|zrender|vue-echarts|web-vitals)/
+/**
+ * Client manifest keys never prefetched on public pages: admin-only code, plus
+ * on-demand public extras (Ctrl+K search, the idle-loaded web-vitals module).
+ */
+const ADMIN_ONLY_CHUNK = /(^|\/)(components\/PublicSearch\.vue|layouts\/admin\.vue|pages\/admin\/(?!login\.vue)|components\/admin\/|components\/TipTapEditor\.vue|components\/CommandPalette\.vue|components\/KeyboardShortcuts\.vue)|node_modules\/(@tiptap|prosemirror-|echarts|zrender|vue-echarts|web-vitals)/
 
 const hotlinkAssetHeaders = {
   ...publicSecurityHeaders,
@@ -338,6 +341,7 @@ export default defineNuxtConfig({
     '/api/v1/layouts/**': { swr: 120 },
     '/api/v1/content/**': { swr: 120 },
     '/api/v1/faqs': { swr: 120 },
+    '/api/v1/search-index': { swr: 120 },
     '/api/v1/changelogs': { swr: 120 },
     '/api/v1/settings': { swr: 300 },
     '/api/v1/latest-change': { swr: 60 },

@@ -245,7 +245,7 @@ Line endings are normalized through `.gitattributes` to avoid Windows/Linux depl
 
 ## Related Repositories
 
-- Addon repo: `https://github.com/Derpsen/MagguuUI`
+- Addon downloads: `https://www.curseforge.com/wow/addons/magguuui` (changelog: `/changelog` on the site; the addon repo is private)
 - Website repo: `https://github.com/Derpsen/MagguuUI-Website`
 
 ## Current Status

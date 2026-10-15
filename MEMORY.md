@@ -224,7 +224,7 @@
 - Website defaults to **Dark** mode (`colorMode.preference: 'dark'`); light only when the visitor picks it.
 - **WIM is removed** everywhere. Whisper Messenger is the whisper chat. Player button: **Apply Magguu profiles** (4K only in descriptions).
 - Node: `engines.node >=24.17`, Node 24 locked. Node 26 only after Marco's yes (~end of Oct 2026).
-- satori: locked at `^0.34.1` (nuxt-og-image 6 peer `>=0.33.5`). 0.x minors are breaking for Satori layout/CSS, so 0.41+ is a locked major like Node 26, TS 7, h3 2. Dependabot **#130** (0.34.1 → 0.44.3) stays open and untouched: no merge, no close, until a separate OG-image compatibility pass.
+- satori: locked at `^0.34.1` (nuxt-og-image 6 peer `>=0.33.5`). 0.x minors are breaking for Satori layout/CSS, so 0.41+ is a locked major like Node 26, TS 7, h3 2. Dependabot **#130** (0.34.1 → 0.44.3) was closed 2026-10-12, superseded by **#140** (0.34.1 → 0.47.1); #140 stays open and untouched: no merge, no close, until a separate OG-image compatibility pass.
 - CSP: HTML policy comes from `server/plugins/csp-nonce.ts` (render:html + beforeResponse, rebuilt from the cached nonce on SWR hits). routeRules no longer set a CSP. `experimental.payloadExtraction: false` keeps SWR HTML and payload from the same render. Init clears `nitro:routes` cache on boot.
 - Contact email renders client-side (`components/ContactEmail.vue`, footer mailto after mount) so Cloudflare Email Obfuscation has nothing to rewrite.
 
@@ -232,7 +232,7 @@
 
 - Helpers renamed (IDs unchanged): Webcraft = Website only; Botsmith = MagguuBot + Magguu-Dashboard; Luaforge = addon Lua; Sentinel = review; Launchpad = releases/Tag-Gate; Homebase = Unraid; Captain = Notion; Buddy = front door. Rooms: Addon HQ, Web Studio, Bot Lab, Dashboard Deck, Homebase Ops.
 - Buddy makes small design/text changes directly; bigger work goes to Webcraft. Since 2026-10-12 helpers and Buddy push directly to `main` (no PRs, no Sentinel pre-review); Buddy reviews commits afterwards; Homebase pulls autonomously after green Docker publish.
-- Live 2026-10-14: `sha-d8e734a` (digest `sha256:516f6c21…`): admin restyle, admin save clears cache, `/admin/content` shows a page list. Before: `sha-1febf58` (#144, #146, #147). #148 is test-only (no pull). #149 two-tone wording merged to main and is waiting for the next pull. `useIsDark` stays dark until mount (light-mode hydration fix).
+- (superseded, see 2026-10-15) Live 2026-10-14: `sha-d8e734a` (digest `sha256:516f6c21…`): admin restyle, admin save clears cache, `/admin/content` shows a page list. Before: `sha-1febf58` (#144, #146, #147). #148 is test-only (no pull). #149 two-tone wording merged to main and is waiting for the next pull. `useIsDark` stays dark until mount (light-mode hydration fix).
 - Legal notice: "free, non-commercial project operated from Switzerland" + `contact@magguu.xyz`; no name, no address. Plain structured text with small green mini-label headings; no cards, icon boxes or flashy buttons.
 - Addon live v12.1.8. "Split names" options are becoming "Two-tone unit-frame names" / "Two-tone party and raid names" (MagguuUI PR #30; `SPLIT_NAMES` keys unchanged): half the name in the default color, half in the class color.
 - Unchanged: WIM is removed and Whisper Messenger is used; "Apply Magguu profiles"; Node 26 needs Marco's yes; locked TS 7, h3 2, satori 0.41; uid 99 + Cosign; `engines.node >=24.17`; no tags without Marco's yes; never remove third-party author names.
@@ -288,3 +288,9 @@
 
 
 - 2026-10-14: Private-repo link sweep for Derpsen/MagguuUI (mapping CurseForge / /changelog / /about#contact), idempotent DB migration in init.ts, link check treats store 403 as OK.
+
+## 2026-10-15 Live state + Arbeitscomputer
+
+- Live since 2026-10-14 late evening: `sha-5db94ed` (digest `sha256:abfe0d1db9157bfb9be5b2f09b678a537c1b7994447db111f403d361c2f339c4`; v12.1.8 changelog notes; build id `93cfa63c`). Superseded: `sha-72ed68e`, `sha-d8e734a`, `sha-1febf58`. Only open PR: Dependabot #140 (satori, on hold).
+- Helfer-Arbeitscomputer ist die Unraid-VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a262-ebf10016d570`), Repos unter `~/Projekte` nach Homebase-Umzug. Marcos PC (`f01cf815-a384-40fb-ac18-c8450b4d5889`) nur noch für WoW-AddOns-Deploy, darf aus sein.
+- Webcraft schreibt Marco nie im 1:1; Status/Done nur an Buddy.

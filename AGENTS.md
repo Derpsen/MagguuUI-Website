@@ -8,13 +8,15 @@ strings (EllesmereUI, BigWigs, Northern Sky Raid Tools, class layouts). Live:
 image `ghcr.io/derpsen/magguuui-website` (LAN origin
 `http://192.168.178.21:3000` on `br0`). Ops notes: `MEMORY.md`.
 
-**Live ops baseline (2026-10-14):** live image OCI `sha-d8e734a` (digest
-`sha256:516f6c21…`): admin restyle, admin save clears the cache,
-`/admin/content` shows a page list. Previous baseline 2026-10-12: `sha-1febf58` (#144 clean
+**Live ops baseline (2026-10-14 late evening, checked 2026-10-15):** live image OCI
+`sha-5db94ed` (digest
+`sha256:abfe0d1db9157bfb9be5b2f09b678a537c1b7994447db111f403d361c2f339c4`):
+v12.1.8 changelog notes; live build id `93cfa63c` (`/_nuxt/builds/latest.json`).
+Superseded: `sha-72ed68e`; `sha-d8e734a` (digest `sha256:516f6c21…`: admin restyle,
+admin save clears the cache, `/admin/content` shows a page list). Previous baseline 2026-10-12: `sha-1febf58` (#144 clean
 module section + legal notice, #146 nowrap, #147 green mini-label headings).
 #148 (color-mode reload test) is test-only, so no pull. #149 (two-tone names
-wording) merged to main 2026-10-12 21:18 Berlin and needs the next app-image
-pull. Light-mode hydration fix: `useIsDark` stays dark until mount. The older
+wording) merged to main 2026-10-12 21:18 Berlin (live now, included in `sha-5db94ed`). Light-mode hydration fix: `useIsDark` stays dark until mount. The older
 2026-10-06 baseline (`sha-5c26d99`) is superseded.
 
 ## Grok Bot helpers and rooms (2026-10-12)
@@ -76,7 +78,8 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
   pass. `types/nuxt-nitro.d.ts` restores Nitro `headers`, `swr`, and `storage`
   on the Nuxt 4.5 config types. Do not delete it. Node 26, TypeScript 7, h3 2,
   and satori 0.41+ stay blocked without an explicit yes. Dependabot #130
-  (satori 0.44) stays open: do not merge or close it.
+  (satori 0.44) was closed 2026-10-12, superseded by #140 (satori 0.34.1 → 0.47.1);
+  #140 stays open on hold: do not merge or close it.
 - As of 2026-10-14: addon live **v12.1.8**; container runs as **uid 99**;
   images are **Cosign keyless** signed; site defaults to **Dark**; **WIM is
   removed** (Whisper Messenger is the whisper chat); `engines.node >=24.17`,

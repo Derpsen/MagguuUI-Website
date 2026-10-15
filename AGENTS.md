@@ -224,3 +224,7 @@ Buddy.
 - `utils/privateRepoLinks.ts` (`isPrivateRepoUrl`, `rewritePrivateRepoLinks`); `server/plugins/init.ts` rewrites DB content/FAQs/changelogs and clears a private `github_url` idempotently on boot.
 - `NUXT_GITHUB_REPO` sync config (server-side, authenticated) stays as is.
 - Link check: CurseForge/Wago/WoWI 403/429 = pass; real 404s fail. `tests/private-repo-links.spec.ts` guards the public pages.
+
+## Work computer
+
+Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a262-ebf10016d570`), repos under `~/Projekte`. Marco's PC (`f01cf815-a384-40fb-ac18-c8450b4d5889`) is only for the WoW AddOns deploy.

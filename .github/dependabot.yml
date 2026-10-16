@@ -71,9 +71,6 @@ updates:
     # Let fresh releases age before Dependabot proposes them (supply-chain safety).
     cooldown:
       default-days: 3
-      semver-major-days: 7
-      semver-minor-days: 3
-      semver-patch-days: 2
     groups:
       codeql-action:
         patterns:
@@ -99,6 +96,3 @@ updates:
     # Let fresh releases age before Dependabot proposes them (supply-chain safety).
     cooldown:
       default-days: 3
-      semver-major-days: 7
-      semver-minor-days: 3
-      semver-patch-days: 2

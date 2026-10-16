@@ -201,7 +201,7 @@ Never `value: ""` on select / option items — use a sentinel (e.g. `"all"`). En
 - `scorecard.yml` (OpenSSF, weekly + .github pushes, SARIF to code scanning), `dependency-review.yml` (PRs, fails on high), `quality.yml` (`tools/drift-check.sh` + actionlint 1.7.12 sha256-pinned + zizmor 1.31.1, medium+). Drift check: banned WIM/WindTools/KeystoneLoot outside `tools/drift-allow.txt`, Docker uid 99 drop, `engines.node >=26.12`.
 - zizmor: checkouts use `persist-credentials: false`; docker.yml has no npm cache; the `pull_request_target`/`workflow_run` triggers are ignored inline (no PR code runs).
 - Secret scanning + push protection enabled (public repo, free).
-- Dependabot `cooldown`: 2 days patch, 3 minor/default, 7 major.
+- Dependabot `cooldown`: npm 2 days patch, 3 minor/default, 7 major; actions + docker only `default-days: 3` (semver-*-days is npm-only).
 - Playwright: `tests/support/warmup.ts` warms the dev server; readiness probe is `/api/health`.
 
 ## Commands

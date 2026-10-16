@@ -319,3 +319,7 @@
 ## 2026-10-16 Repo settings
 
 - allow_auto_merge=true; main protection: required checks `build (26, false)`, `Analyze (javascript-typescript)`, enforce_admins=false, no reviews, no force-push. #155/#156 closed (6159d96), #158 (satori 0.56) closed as incompatible with og-image 7 peer.
+
+## 2026-10-17 Security/quality wave
+
+- 2456016 Playwright warm-up fix; 6465a7e Scorecard; ef7ebdc dependency-review; secret scanning + push protection on; 25b6ce1/84c746b/1bdd5ba Quality workflow + zizmor hardening; Dependabot cooldown.

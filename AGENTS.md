@@ -196,6 +196,14 @@ Never `value: ""` on select / option items — use a sentinel (e.g. `"all"`). En
 - `docker.yml` push uses a `paths` filter: `*.md`, `docs/`, `.github/`, `.githooks/` changes do not build (except `docker.yml` itself); workflow_dispatch stays for the Dependabot dispatch.
 - `post-deploy-smoke.yml`: after a successful docker run on main (polls up to ~15 min for the Unraid pull and the matching `/api/health` build sha), daily 05:23 UTC, and manual. Checks `/`, `/admin/login`, `/api/health` = 200. Red only when the site is down; a sha mismatch alone is just a warning.
 
+## Security / quality CI (2026-10-17)
+
+- `scorecard.yml` (OpenSSF, weekly + .github pushes, SARIF to code scanning), `dependency-review.yml` (PRs, fails on high), `quality.yml` (`tools/drift-check.sh` + actionlint 1.7.12 sha256-pinned + zizmor 1.31.1, medium+). Drift check: banned WIM/WindTools/KeystoneLoot outside `tools/drift-allow.txt`, Docker uid 99 drop, `engines.node >=26.12`.
+- zizmor: checkouts use `persist-credentials: false`; docker.yml has no npm cache; the `pull_request_target`/`workflow_run` triggers are ignored inline (no PR code runs).
+- Secret scanning + push protection enabled (public repo, free).
+- Dependabot `cooldown`: 2 days patch, 3 minor/default, 7 major.
+- Playwright: `tests/support/warmup.ts` warms the dev server; readiness probe is `/api/health`.
+
 ## Commands
 
 ```bash

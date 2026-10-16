@@ -12,11 +12,7 @@ const ogImageDefaults = {
 }
 const ogImageConfig = {
   defaults: ogImageDefaults,
-  fonts: [
-    'Plus+Jakarta+Sans:700',
-    'Plus+Jakarta+Sans:500',
-    'JetBrains+Mono:500',
-  ],
+  // v7: fonts come from @nuxt/fonts (fonts.families below); signing key from NUXT_APP_SECRET.
 }
 
 const publicSecurityHeaders = {

@@ -36,8 +36,6 @@ updates:
       npm-minor-patch:
         patterns:
           - "*"
-        exclude-patterns:
-          - satori
         update-types:
           - minor
           - patch
@@ -48,10 +46,6 @@ updates:
       - dependency-name: typescript
         update-types:
           - version-update:semver-major
-      # satori 0.x minors are breaking; held below 0.41 (see AGENTS.md)
-      - dependency-name: satori
-        versions:
-          - ">=0.41.0"
       - dependency-name: js-yaml
         versions:
           - ">=5.0.0"

@@ -33,8 +33,7 @@ jobs:
       - name: Label patch/minor updates
         if: >-
           (steps.meta.outputs.update-type == 'version-update:semver-patch' ||
-           steps.meta.outputs.update-type == 'version-update:semver-minor') &&
-          !contains(steps.meta.outputs.dependency-names, 'satori')
+           steps.meta.outputs.update-type == 'version-update:semver-minor')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
@@ -46,8 +45,7 @@ jobs:
       - name: Enable auto-merge (only if repo settings make it wait for CI)
         if: >-
           (steps.meta.outputs.update-type == 'version-update:semver-patch' ||
-           steps.meta.outputs.update-type == 'version-update:semver-minor') &&
-          !contains(steps.meta.outputs.dependency-names, 'satori')
+           steps.meta.outputs.update-type == 'version-update:semver-minor')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}

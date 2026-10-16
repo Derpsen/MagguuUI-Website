@@ -311,3 +311,7 @@
 ## 2026-10-16 Node 26
 
 - engines `>=26.12.0`, Dockerfile `node:26-bookworm-slim@sha256:2989926…8913`, CI on Node 26 only (check `build (26, false)`), Dependabot node ignore removed. Local docker run: entrypoint drops to uid 99, /api/health 200.
+
+## 2026-10-16 nuxt-og-image 7 + satori 0.47.1
+
+- nuxt-og-image ^7.0.6 (7.0.7), satori ^0.47.1 (v7 peer); satori hold removed (closes #155/#156). `ogImage.fonts` removed (v7 reads @nuxt/fonts; @nuxt/ui still pins @nuxt/fonts 0.14, so OG text uses bundled Inter until ui moves to fonts 1). Signing: set `NUXT_APP_SECRET` (>=32 chars) in prod; v7 still falls back to NUXT_OG_IMAGE_SECRET with a warning. Renders checked for /, /guide, /faq, /changelog.

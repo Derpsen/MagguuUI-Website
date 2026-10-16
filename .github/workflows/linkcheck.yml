@@ -33,7 +33,7 @@ jobs:
 
       - name: Job summary
         if: always()
-        run: test -f link-report.md && cat link-report.md >> "$GITHUB_STEP_SUMMARY" || true
+        run: if [ -f link-report.md ]; then cat link-report.md >> "$GITHUB_STEP_SUMMARY"; fi
 
       - name: Upload report
         if: always()

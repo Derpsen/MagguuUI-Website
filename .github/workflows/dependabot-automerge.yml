@@ -7,7 +7,7 @@ name: Dependabot auto-merge
 
 on:
   pull_request_target:
-    types: [opened, reopened, synchronize]
+    types: [opened, reopened, synchronize, closed]
   workflow_run:
     workflows: [Build]
     types: [completed]
@@ -16,7 +16,7 @@ permissions: {}
 
 jobs:
   enable:
-    if: github.event_name == 'pull_request_target' && github.event.pull_request.user.login == 'dependabot[bot]'
+    if: github.event_name == 'pull_request_target' && github.event.action != 'closed' && github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -62,6 +62,26 @@ jobs:
           fi
           gh pr merge --auto --squash "$PR_URL"
 
+  # For merges by a real user / auto-merge (closed event does fire then).
+  post-merge-dispatch:
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Dispatch main workflows
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          for wf in docker.yml build.yml codeql.yml; do
+            gh workflow run "$wf" --repo "$REPO" --ref main
+          done
+
   merge:
     if: >-
       github.event_name == 'workflow_run' &&
@@ -69,6 +89,7 @@ jobs:
       github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
+      actions: write
       contents: write
       pull-requests: write
     steps:
@@ -103,3 +124,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: gh pr merge ${{ steps.pr.outputs.number }} --repo ${{ github.repository }} --squash --delete-branch --match-head-commit "$HEAD_SHA"
+
+      # A GITHUB_TOKEN merge fires neither push nor pull_request_target(closed),
+      # so dispatch the main workflows from here as well.
+      - name: Dispatch main workflows
+        if: steps.pr.outputs.should_merge == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          for wf in docker.yml build.yml codeql.yml; do
+            gh workflow run "$wf" --repo "$REPO" --ref main
+          done

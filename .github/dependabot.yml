@@ -46,6 +46,10 @@ updates:
       - dependency-name: typescript
         update-types:
           - version-update:semver-major
+      # nuxt-og-image 7 peer is satori ^0.47.1; widen when og-image does
+      - dependency-name: satori
+        versions:
+          - ">=0.48.0"
       - dependency-name: js-yaml
         versions:
           - ">=5.0.0"

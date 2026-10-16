@@ -315,3 +315,7 @@
 ## 2026-10-16 nuxt-og-image 7 + satori 0.47.1
 
 - nuxt-og-image ^7.0.6 (7.0.7), satori ^0.47.1 (v7 peer); satori hold removed (closes #155/#156). `ogImage.fonts` removed (v7 reads @nuxt/fonts; @nuxt/ui still pins @nuxt/fonts 0.14, so OG text uses bundled Inter until ui moves to fonts 1). Signing: set `NUXT_APP_SECRET` (>=32 chars) in prod; v7 still falls back to NUXT_OG_IMAGE_SECRET with a warning. Renders checked for /, /guide, /faq, /changelog.
+
+## 2026-10-16 Repo settings
+
+- allow_auto_merge=true; main protection: required checks `build (26, false)`, `Analyze (javascript-typescript)`, enforce_admins=false, no reviews, no force-push. #155/#156 closed (6159d96), #158 (satori 0.56) closed as incompatible with og-image 7 peer.

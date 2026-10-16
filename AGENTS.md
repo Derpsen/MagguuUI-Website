@@ -189,8 +189,8 @@ Never `value: ""` on select / option items — use a sentinel (e.g. `"all"`). En
 
 ## Dependabot + pre-push (2026-10-16)
 
-- `.github/dependabot.yml`: npm and github-actions patch+minor come as grouped PRs; majors stay separate. Ignored: h3 2.x, TypeScript majors, satori >=0.41, js-yaml >=5, docker node >=26.
-- `.github/workflows/dependabot-automerge.yml` (pull_request_target): labels patch/minor PRs (never majors, never satori); runs `gh pr merge --auto --squash` only if `allow_auto_merge` and required checks on main exist, otherwise merges after Build succeeds (workflow_run).
+- `.github/dependabot.yml`: npm and github-actions patch+minor come as grouped PRs; majors stay separate. Ignored: h3 2.x, TypeScript majors, js-yaml >=5, satori >=0.48 (nuxt-og-image 7 peer ^0.47.1).
+- `.github/workflows/dependabot-automerge.yml` (pull_request_target): labels patch/minor PRs (never majors); `gh pr merge --auto --squash`. Since 2026-10-16 allow_auto_merge=true and main requires `build (26, false)` + `Analyze (javascript-typescript)` (enforce_admins=false, no reviews), so direct pushes by Derpsen still work. If the matrix/job names change, update branch protection.
 - Run `npm run hooks:install` (`git config core.hooksPath .githooks`) once per clone. `.githooks/pre-push` runs lint, typecheck, test:unit, and actionlint (skipped if not installed).
 
 - `docker.yml` push uses a `paths` filter: `*.md`, `docs/`, `.github/`, `.githooks/` changes do not build (except `docker.yml` itself); workflow_dispatch stays for the Dependabot dispatch.

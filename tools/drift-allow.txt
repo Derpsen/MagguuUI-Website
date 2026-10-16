@@ -1,0 +1,19 @@
+# Files allowed to name WIM/WindTools/KeystoneLoot: they implement the ban,
+# migrate old rows, or document the retirement. One exact path per line.
+docs/store-descriptions/SUMMARY.md
+nuxt.config.ts
+pages/index.vue
+server/api/v1/admin/wowup/[id].put.ts
+server/api/v1/admin/wowup/index.post.ts
+server/database/addonMetadata.ts
+server/database/defaultAddonChangelog.ts
+server/plugins/init.ts
+server/utils/addonProfileLua.ts
+server/utils/addonProfileSync.ts
+tests/unit/addonGroups.test.ts
+tests/unit/addonProfileLua.test.ts
+tests/unit/featureCardMeta.test.ts
+tests/unit/publicAnchor.test.ts
+tests/unit/stringsDeepLink.test.ts
+tests/unit/wowupPackCopy.test.ts
+utils/addonChipMeta.ts

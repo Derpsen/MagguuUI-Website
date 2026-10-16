@@ -3,7 +3,7 @@ name: Post-deploy smoke
 # Red run (= GitHub notification) only on FAIL; success stays silent.
 
 on:
-  workflow_run:
+  workflow_run:  # zizmor: ignore[dangerous-triggers] -- no PR code is checked out or run
     workflows: [docker]
     types: [completed]
     branches: [main]

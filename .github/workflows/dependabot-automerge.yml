@@ -6,9 +6,9 @@ name: Dependabot auto-merge
 # `enable` job skips and the `merge` job below merges only after Build passes.
 
 on:
-  pull_request_target:
+  pull_request_target:  # zizmor: ignore[dangerous-triggers] -- no PR code is checked out or run
     types: [opened, reopened, synchronize, closed]
-  workflow_run:
+  workflow_run:  # zizmor: ignore[dangerous-triggers] -- no PR code is checked out or run
     workflows: [Build]
     types: [completed]
 

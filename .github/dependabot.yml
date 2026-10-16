@@ -15,15 +15,32 @@ updates:
           - "@nuxt/*"
           - nitropack
           - h3
+        update-types:
+          - minor
+          - patch
       tiptap:
         patterns:
           - "@tiptap/*"
+        update-types:
+          - minor
+          - patch
       test-tooling:
         patterns:
           - "@playwright/*"
           - playwright
           - typescript
           - tsx
+        update-types:
+          - minor
+          - patch
+      npm-minor-patch:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - satori
+        update-types:
+          - minor
+          - patch
     ignore:
       - dependency-name: h3
         versions:
@@ -31,6 +48,13 @@ updates:
       - dependency-name: typescript
         update-types:
           - version-update:semver-major
+      # satori 0.x minors are breaking; held below 0.41 (see AGENTS.md)
+      - dependency-name: satori
+        versions:
+          - ">=0.41.0"
+      - dependency-name: js-yaml
+        versions:
+          - ">=5.0.0"
 
   - package-ecosystem: github-actions
     directory: /
@@ -44,6 +68,15 @@ updates:
       codeql-action:
         patterns:
           - "github/codeql-action*"
+        update-types:
+          - minor
+          - patch
+      actions-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: docker
     directory: /
@@ -53,3 +86,8 @@ updates:
       time: "05:30"
       timezone: Europe/Berlin
     open-pull-requests-limit: 3
+    ignore:
+      # Node 26 needs Marco's explicit yes
+      - dependency-name: node
+        versions:
+          - ">=26"

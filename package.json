@@ -28,7 +28,8 @@
     "test:unit": "node --import tsx --test tests/unit/*.test.ts",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "test:install": "playwright install chromium"
+    "test:install": "playwright install chromium",
+    "hooks:install": "git config core.hooksPath .githooks"
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.3.0",

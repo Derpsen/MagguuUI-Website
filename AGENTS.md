@@ -187,6 +187,12 @@ When WowUp/copy product facts change, update Website + MagguuBot + **Magguu-Dash
 
 Never `value: ""` on select / option items — use a sentinel (e.g. `"all"`). Enforced by `npm run lint` / `npm run lint:uselect` (`scripts/check-uselect-empty-value.mjs`). Content-store rows without `label:` (e.g. guide.vue `value: ""`) are not select options and are ignored by the check.
 
+## Dependabot + pre-push (2026-10-16)
+
+- `.github/dependabot.yml`: npm and github-actions patch+minor come as grouped PRs; majors stay separate. Ignored: h3 2.x, TypeScript majors, satori >=0.41, js-yaml >=5, docker node >=26.
+- `.github/workflows/dependabot-automerge.yml` (pull_request_target): labels patch/minor PRs (never majors, never satori); runs `gh pr merge --auto --squash` only if `allow_auto_merge` and required checks on main exist, otherwise merges after Build succeeds (workflow_run).
+- Run `npm run hooks:install` (`git config core.hooksPath .githooks`) once per clone. `.githooks/pre-push` runs lint, typecheck, test:unit, and actionlint (skipped if not installed).
+
 ## Commands
 
 ```bash

@@ -4,6 +4,8 @@ const isCI = !!process.env.CI
 
 export default defineConfig({
   testDir: 'tests',
+  // Dev-server warm-up (see tests/support/warmup.ts)
+  globalSetup: './tests/support/warmup.ts',
   testMatch: /.*\.spec\.ts/,
   retries: isCI ? 1 : 0,
   workers: 2,
@@ -34,7 +36,9 @@ export default defineConfig({
       NUXT_E2E_SEED: 'true',
       NUXT_JWT_SECRET: process.env.NUXT_JWT_SECRET || 'playwright-dummy-jwt-secret-32-chars-long-XXXXXXXX',
     },
-    url: 'http://localhost:3000',
+    // Health probe: a cold SSR probe on / could hang past the timeout while
+    // Vite optimizes deps. tests/support/warmup.ts then warms the pages.
+    url: 'http://localhost:3000/api/health',
     reuseExistingServer: !isCI,
     timeout: 120_000,
   },

@@ -30,11 +30,14 @@ for (const path of ['/', '/imprint']) {
     const dark = await textColors(page)
     expect(luminance(dark.h1), 'default theme is dark (light heading text)').toBeGreaterThan(0.5)
 
-    await page.evaluate(() => localStorage.setItem('nuxt-color-mode', 'light'))
-    await page.reload()
-    await page.waitForLoadState('networkidle')
-
-    await expect(page.locator('html')).toHaveClass(/(^|\s)light(\s|$)/)
+    // Retry the store+reload: on a cold dev server a late Vite dep-optimize
+    // reload can re-run the color-mode plugin and overwrite the stored value.
+    await expect(async () => {
+      await page.evaluate(() => localStorage.setItem('nuxt-color-mode', 'light'))
+      await page.reload()
+      await page.waitForLoadState('networkidle')
+      await expect(page.locator('html')).toHaveClass(/(^|\s)light(\s|$)/, { timeout: 5_000 })
+    }).toPass({ timeout: 45_000 })
     await expect.poll(async () => luminance((await textColors(page)).h1)).toBeLessThan(0.2)
     const light = await textColors(page)
     expect(light.h1).not.toBe(dark.h1)

@@ -307,3 +307,7 @@
 ## 2026-10-16 Docker path filter + post-deploy smoke
 
 - `docker.yml` no longer builds on docs/.github-only pushes (paths with negations; docker.yml itself still builds). New `post-deploy-smoke.yml` (workflow_run after docker, daily, dispatch); fails only when the site is down.
+
+## 2026-10-16 Node 26
+
+- engines `>=26.12.0`, Dockerfile `node:26-bookworm-slim@sha256:2989926…8913`, CI on Node 26 only (check `build (26, false)`), Dependabot node ignore removed. Local docker run: entrypoint drops to uid 99, /api/health 200.

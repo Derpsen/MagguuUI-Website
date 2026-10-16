@@ -86,8 +86,3 @@ updates:
       time: "05:30"
       timezone: Europe/Berlin
     open-pull-requests-limit: 3
-    ignore:
-      # Node 26 needs Marco's explicit yes
-      - dependency-name: node
-        versions:
-          - ">=26"

@@ -76,14 +76,14 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
   creation. Do not hand-write migration files unless the strategy changes.
 - Do not perform major dependency upgrades without a separate compatibility
   pass. `types/nuxt-nitro.d.ts` restores Nitro `headers`, `swr`, and `storage`
-  on the Nuxt 4.5 config types. Do not delete it. Node 26, TypeScript 7, h3 2,
-  and satori 0.41+ stay blocked without an explicit yes. Dependabot #130
+  on the Nuxt 4.5 config types. Do not delete it. TypeScript 7, h3 2,
+  and js-yaml 5 stay blocked without an explicit yes. Dependabot #130
   (satori 0.44) was closed 2026-10-12, superseded by #140 (satori 0.34.1 → 0.47.1);
   #140 stays open on hold: do not merge or close it.
 - As of 2026-10-14: addon live **v12.1.8**; container runs as **uid 99**;
   images are **Cosign keyless** signed; site defaults to **Dark**; **WIM is
   removed** (Whisper Messenger is the whisper chat); `engines.node >=24.17`,
-  Node 24 locked, Node 26 only after Marco's yes (~end of Oct).
+  Node 26 since 2026-10-16 (Marco's yes; 26.12.0 Current, LTS from late Oct).
 - CSP lives in `server/plugins/csp-nonce.ts` + `server/utils/htmlCsp.ts`, not
   in routeRules (SWR HTML got the JSON baseline and lost all CSS/JS).
 - MagguuUI public copy (home/guide/FAQ/changelog/addon metadata) must stay

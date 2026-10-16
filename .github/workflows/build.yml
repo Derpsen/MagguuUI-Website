@@ -18,16 +18,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Node 26 is an early-warning entry only: engines/Docker stay on Node 24.
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - node: 24
-            experimental: false
           - node: 26
-            experimental: true
+            experimental: false
     env:
       NUXT_OG_IMAGE_SECRET: ci-dummy-og-image-secret
 

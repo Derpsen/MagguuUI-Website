@@ -34,7 +34,9 @@ export default defineConfig({
       NUXT_E2E_SEED: 'true',
       NUXT_JWT_SECRET: process.env.NUXT_JWT_SECRET || 'playwright-dummy-jwt-secret-32-chars-long-XXXXXXXX',
     },
-    url: 'http://localhost:3000',
+    // Probe the API, not an SSR page: the first SSR request can hang while
+    // Vite re-optimizes deps, and Playwright's probe then never resolves.
+    url: 'http://localhost:3000/api/health',
     reuseExistingServer: !isCI,
     timeout: 120_000,
   },

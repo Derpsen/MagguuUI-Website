@@ -294,3 +294,7 @@
 - Live since 2026-10-14 late evening: `sha-5db94ed` (digest `sha256:abfe0d1db9157bfb9be5b2f09b678a537c1b7994447db111f403d361c2f339c4`; v12.1.8 changelog notes; build id `93cfa63c`). Superseded: `sha-72ed68e`, `sha-d8e734a`, `sha-1febf58`. Only open PR: Dependabot #140 (satori, on hold).
 - Helfer-Arbeitscomputer ist die Unraid-VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a262-ebf10016d570`), Repos unter `~/Projekte` nach Homebase-Umzug. Marcos PC (`f01cf815-a384-40fb-ac18-c8450b4d5889`) nur noch für WoW-AddOns-Deploy, darf aus sein.
 - Webcraft schreibt Marco nie im 1:1; Status/Done nur an Buddy.
+
+## 2026-10-16 CSP ERR_HTTP_HEADERS_SENT
+
+- `server/plugins/csp-nonce.ts` beforeResponse/render:html now skip when `res.headersSent || res.writableEnded` (`canWriteHeaders` in `server/utils/htmlCsp.ts`, unit-tested). Repro: prod build + aborted curl (`-m 0.02`) on `/` and `/admin/login` → 6x ERR_HTTP_HEADERS_SENT before, 0 after.

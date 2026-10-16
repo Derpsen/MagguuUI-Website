@@ -21,7 +21,7 @@ list_files() {
 banned='(WIM|WindTools|KeystoneLoot)'
 while IFS= read -r f; do
   case "$f" in
-    *CHANGELOG*|*MEMORY*|AGENTS.md|tools/drift-check.sh) continue ;;
+    *CHANGELOG*|*MEMORY*|AGENTS.md|tools/drift-check.sh|tools/drift-allow.txt) continue ;;
     *package-lock.json|*.png|*.jpg|*.jpeg|*.webp|*.svg|*.ico|*.ttf|*.otf|*.woff|*.woff2|*.zip) continue ;;
   esac
   [ -f "$f" ] || continue

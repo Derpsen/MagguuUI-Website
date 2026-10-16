@@ -76,7 +76,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
   creation. Do not hand-write migration files unless the strategy changes.
 - Do not perform major dependency upgrades without a separate compatibility
   pass. `types/nuxt-nitro.d.ts` restores Nitro `headers`, `swr`, and `storage`
-  on the Nuxt 4.5 config types. Do not delete it. TypeScript 7, h3 2,
+  on the Nuxt 4.5 config types. Do not delete it. TypeScript 7 (typescript-eslint peer <6.1), h3 2 (Nitro 2 / Nuxt 4 pin h3 1),
   and js-yaml 5 stay blocked without an explicit yes. Dependabot #130
   (satori 0.44) was closed 2026-10-12, superseded by #140 (satori 0.34.1 → 0.47.1);
   #140 stays open on hold: do not merge or close it.

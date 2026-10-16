@@ -327,3 +327,7 @@
 ## 2026-10-17 SW CSP hotfix
 
 - Live bug: /sw.js got the non-HTML baseline CSP (default-src none), which also governs the worker's fetch(). After the SW installed, navigations to /guide and /strings and all /_nuxt assets failed (net::ERR_FAILED). Fix: explicit CSP on /sw.js with connect-src self. Verified with a prod build: SW-served /guide and /strings 200, 0 console errors.
+
+## 2026-10-17 Step 4 result
+
+- Lockfile refreshed (0379847); web-vitals 6 already in (#157). TS 7.0.2 tried: tsc ok but typescript-eslint peer `<6.1.0` breaks lint, so skipped. h3 2 skipped (nitropack 2 depends on h3 ^1). View Transitions already on (experimental.viewTransition + reduced-motion CSS). Lighthouse local before/after: ~/Projekte/lh-before.txt / lh-after.txt (no real change; changelog mobile LCP ~8.4s simulated, render-blocking entry CSS ~750 ms est. is the main lever). Light/dark screenshots in ~/Projekte/shots look right.

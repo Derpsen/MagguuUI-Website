@@ -323,3 +323,7 @@
 ## 2026-10-17 Security/quality wave
 
 - 2456016 Playwright warm-up fix; 6465a7e Scorecard; ef7ebdc dependency-review; secret scanning + push protection on; 25b6ce1/84c746b/1bdd5ba Quality workflow + zizmor hardening; Dependabot cooldown.
+
+## 2026-10-17 SW CSP hotfix
+
+- Live bug: /sw.js got the non-HTML baseline CSP (default-src none), which also governs the worker's fetch(). After the SW installed, navigations to /guide and /strings and all /_nuxt assets failed (net::ERR_FAILED). Fix: explicit CSP on /sw.js with connect-src self. Verified with a prod build: SW-served /guide and /strings 200, 0 console errors.

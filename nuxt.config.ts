@@ -342,7 +342,10 @@ export default defineNuxtConfig({
     '/api/v1/settings': { swr: 300 },
     '/api/v1/latest-change': { swr: 60 },
     '/assets/logo.png': { redirect: '/logo.png' },
-    '/sw.js': { headers: { ...publicSecurityHeaders, 'Cache-Control': 'no-cache', 'Service-Worker-Allowed': '/' } },
+    // The worker's own CSP governs its fetch(): the non-HTML baseline
+    // (default-src 'none') blocked every same-origin fetch, so SW-handled
+    // navigations (/guide, /strings) and /_nuxt assets failed with ERR_FAILED.
+    '/sw.js': { headers: { ...publicSecurityHeaders, 'Cache-Control': 'no-cache', 'Service-Worker-Allowed': '/', 'Content-Security-Policy': "default-src 'none'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'" } },
     '/logo.png': { headers: hotlinkAssetHeaders },
     '/logo-300.png': { headers: hotlinkAssetHeaders },
     '/**': {

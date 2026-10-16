@@ -1,0 +1,66 @@
+name: Post-deploy smoke
+
+# Red run (= GitHub notification) only on FAIL; success stays silent.
+
+on:
+  workflow_run:
+    workflows: [docker]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "23 5 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: post-deploy-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      BASE: https://ui.magguu.xyz
+      UA: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 MagguuUI-smoke"
+      # After a docker build, wait for the Unraid auto-update pull (up to ~15 min).
+      EXPECT_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || '' }}
+      MAX_TRIES: ${{ github.event_name == 'workflow_run' && '30' || '3' }}
+    steps:
+      - name: Smoke live site
+        run: |
+          check() {
+            code=$(curl -sS -o /tmp/body -w '%{http_code}' -A "$UA" --max-time 20 "$BASE$1" || echo 000)
+            echo "$1 -> $code"
+            if [ "$code" = 403 ] && grep -qi cloudflare /tmp/body; then
+              echo "::warning::$1 returned Cloudflare 403 (bot challenge), not counted as down"
+              return 0
+            fi
+            [ "$code" = 200 ]
+          }
+          try=1
+          while :; do
+            ok=1
+            for p in / /admin/login /api/health; do check "$p" || ok=0; done
+            live=""
+            if [ "$ok" = 1 ]; then
+              curl -sS -A "$UA" --max-time 20 "$BASE/api/health" -o /tmp/health || true
+              live=$(jq -r '.build.sha // empty' /tmp/health 2>/dev/null || true)
+              echo "live build sha: ${live:-unknown}"
+              if [ -z "$EXPECT_SHA" ] || [ "$live" = "$EXPECT_SHA" ]; then
+                echo "Smoke OK"; exit 0
+              fi
+            fi
+            if [ "$try" -ge "$MAX_TRIES" ]; then
+              if [ "$ok" = 1 ]; then
+                # Site is up; the new image just isn't live yet. Do not page for that.
+                echo "::warning::Site healthy but live sha ${live:-unknown} != expected $EXPECT_SHA after $try tries"
+                exit 0
+              fi
+              echo "::error::Smoke FAILED after $try tries"; exit 1
+            fi
+            try=$((try + 1)); sleep 30
+          done

@@ -193,6 +193,9 @@ Never `value: ""` on select / option items — use a sentinel (e.g. `"all"`). En
 - `.github/workflows/dependabot-automerge.yml` (pull_request_target): labels patch/minor PRs (never majors, never satori); runs `gh pr merge --auto --squash` only if `allow_auto_merge` and required checks on main exist, otherwise merges after Build succeeds (workflow_run).
 - Run `npm run hooks:install` (`git config core.hooksPath .githooks`) once per clone. `.githooks/pre-push` runs lint, typecheck, test:unit, and actionlint (skipped if not installed).
 
+- `docker.yml` push uses a `paths` filter: `*.md`, `docs/`, `.github/`, `.githooks/` changes do not build (except `docker.yml` itself); workflow_dispatch stays for the Dependabot dispatch.
+- `post-deploy-smoke.yml`: after a successful docker run on main (polls up to ~15 min for the Unraid pull and the matching `/api/health` build sha), daily 05:23 UTC, and manual. Checks `/`, `/admin/login`, `/api/health` = 200. Red only when the site is down; a sha mismatch alone is just a warning.
+
 ## Commands
 
 ```bash

@@ -4,6 +4,16 @@ on:
   push:
     branches: [main]
     tags: ['v*.*.*']
+    # Build on everything except docs and CI-only changes; docker.yml itself
+    # (and Dockerfile, app/, server/, public/, package*.json) still build.
+    # Later patterns override earlier ones. Tag pushes ignore path filters.
+    paths:
+      - '**'
+      - '!**/*.md'
+      - '!docs/**'
+      - '!.github/**'
+      - '!.githooks/**'
+      - '.github/workflows/docker.yml'
   workflow_dispatch:
 
 concurrency:

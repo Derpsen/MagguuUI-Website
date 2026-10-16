@@ -303,3 +303,7 @@
 
 - Dependabot patch/minor grouped (npm + actions); majors separate; satori >=0.41 / js-yaml 5 / h3 2 / TS 7 / Node 26 ignored. Automerge workflow renamed to `dependabot-automerge.yml` (pull_request_target + Build fallback). Repo: allow_auto_merge=false, main unprotected (no required checks), so the `--auto` path is skipped for now.
 - `.githooks/pre-push` (lint, typecheck, unit, actionlint); `npm run hooks:install`. Enabled on the Ubuntu VM checkout.
+
+## 2026-10-16 Docker path filter + post-deploy smoke
+
+- `docker.yml` no longer builds on docs/.github-only pushes (paths with negations; docker.yml itself still builds). New `post-deploy-smoke.yml` (workflow_run after docker, daily, dispatch); fails only when the site is down.

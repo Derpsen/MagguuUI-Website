@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { BASELINE_CSP, buildHtmlCsp, resolveResponseCsp } from '../../server/utils/htmlCsp'
+import { BASELINE_CSP, buildHtmlCsp, canWriteHeaders, resolveResponseCsp } from '../../server/utils/htmlCsp'
 
 test('prod over HTTPS keeps upgrade-insecure-requests', () => {
   const csp = buildHtmlCsp('abc', { isDev: false, upgradeInsecure: true })
@@ -44,4 +44,11 @@ test('HTML without a nonce never gets strict-dynamic or the baseline', () => {
 test('non-HTML gets the baseline only when no policy is set', () => {
   assert.equal(resolveResponseCsp({ contentType: 'application/json', body: '{}', current: '', isDev: false, upgradeInsecure: true }), BASELINE_CSP)
   assert.equal(resolveResponseCsp({ contentType: 'text/css', body: '', current: 'x', isDev: false, upgradeInsecure: true }), null)
+})
+
+test('canWriteHeaders skips responses whose headers were already sent', async () => {
+  assert.equal(canWriteHeaders({ node: { res: { headersSent: false, writableEnded: false } } }), true)
+  assert.equal(canWriteHeaders({ node: { res: { headersSent: true } } }), false)
+  assert.equal(canWriteHeaders({ node: { res: { writableEnded: true } } }), false)
+  assert.equal(canWriteHeaders({}), true)
 })

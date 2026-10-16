@@ -78,3 +78,15 @@ export function resolveResponseCsp(input: {
   }
   return current ? null : BASELINE_CSP
 }
+
+/**
+ * Whether response headers can still be written. `beforeResponse` also runs
+ * for handlers that already flushed the response themselves (streams, aborted
+ * requests, redirects/304s written by other middleware); writing then throws
+ * ERR_HTTP_HEADERS_SENT.
+ */
+export function canWriteHeaders(event: { handled?: boolean, node?: { res?: { headersSent?: boolean, writableEnded?: boolean } } }): boolean {
+  const res = event.node?.res
+  if (!res) return true
+  return !res.headersSent && !res.writableEnded
+}

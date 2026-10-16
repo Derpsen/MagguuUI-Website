@@ -22,7 +22,7 @@
  */
 
 import { randomBytes } from 'node:crypto'
-import { buildHtmlCsp, resolveResponseCsp } from '../utils/htmlCsp'
+import { buildHtmlCsp, canWriteHeaders, resolveResponseCsp } from '../utils/htmlCsp'
 
 function injectNonce(fragments: string[] | undefined, nonce: string) {
   return (fragments || []).map(fragment =>
@@ -52,6 +52,7 @@ export default defineNitroPlugin((nitroApp) => {
       // upgrade-insecure-requests only over HTTPS (Cloudflare tunnel sets X-Forwarded-Proto);
       // plain-HTTP LAN access would otherwise lose all /_nuxt CSS/JS.
       const upgradeInsecure = getRequestProtocol(event, { xForwardedProto: true }) === 'https'
+      if (!canWriteHeaders(event)) return
       setResponseHeader(event, 'Content-Security-Policy', buildHtmlCsp(nonce, { isDev, upgradeInsecure }))
     }
     catch (error) {
@@ -61,6 +62,9 @@ export default defineNitroPlugin((nitroApp) => {
   })
 
   nitroApp.hooks.hook('beforeResponse', (event, response) => {
+    // Responses already flushed by their handler (streams, aborted requests,
+    // redirects) can't take headers anymore: ERR_HTTP_HEADERS_SENT.
+    if (!canWriteHeaders(event)) return
     try {
       const csp = resolveResponseCsp({
         contentType: getResponseHeader(event, 'Content-Type'),

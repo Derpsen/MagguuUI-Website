@@ -14,13 +14,23 @@
 
     <p class="font-mono text-[11px] uppercase tracking-[0.16em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Release notes</p>
 
+    <article v-if="unreleased" id="unreleased" class="mt-3 border-b pb-10" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+      <h2 class="font-mono text-2xl font-semibold tracking-tight leading-none" :class="isDark ? 'text-white' : 'text-gray-950'">
+        Unreleased
+      </h2>
+      <p class="mt-3 text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+        In the next release. Not in the current download yet.
+      </p>
+      <SafeHtml class="prose-custom text-sm mt-8 block" :html="renderMarkdown(unreleased.content)" />
+    </article>
+
     <div v-if="releases.length">
       <article
         v-for="(release, index) in releases"
         :key="release.id"
         :id="publicAnchorId('release', release.version)"
         class="border-b pb-10"
-        :class="[index === 0 ? 'mt-3' : 'mt-10', isDark ? 'border-white/10' : 'border-gray-200']"
+        :class="[index === 0 && !unreleased ? 'mt-3' : 'mt-10', isDark ? 'border-white/10' : 'border-gray-200']"
       >
         <component
           :is="index === 0 ? 'h1' : 'h2'"
@@ -77,8 +87,10 @@ usePublicPageSeo({
 })
 
 interface ChangelogPageEntry { id: number, version: string, content: string, contentEn?: string | null, publishedAt: string | number | null, [k: string]: unknown }
-const { data: changelogData } = useFetch<{ data: ChangelogPageEntry[] }>('/api/v1/changelogs')
+const { data: changelogData } = useFetch<{ data: ChangelogPageEntry[], meta?: { unreleased?: { id: number, version: string, content: string } | null } }>('/api/v1/changelogs')
 const releases = computed<ChangelogPageEntry[]>(() => changelogData.value?.data ?? [])
+// Notes for the next release; never counted as the current release.
+const unreleased = computed(() => changelogData.value?.meta?.unreleased ?? null)
 
 function renderMarkdown(text: string): string {
   return renderMarkdownToSafeHtml(text, { stripChangelogDateHeaders: true })

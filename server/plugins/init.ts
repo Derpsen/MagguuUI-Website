@@ -12,6 +12,7 @@ import { and, eq, count } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
 import { DEFAULT_FAQS, DEFAULT_GUIDE_CONTENT, DEFAULT_HOME_CONTENT, DEFAULT_SITE_CONTENT } from '~/server/database/defaultContent'
 import { CURRENT_ADDON_CHANGELOG, PREVIOUS_ADDON_CHANGELOGS, scrubPublishedChangelog } from '~/server/database/defaultAddonChangelog'
+import { UNRELEASED_CHANGELOG_VERSION, isUnreleasedAddonVersion } from '~/server/utils/parseAddonChangelog'
 import { users, siteContent, faqs, settings, changelogs } from '~/server/database/schema'
 import { DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 import { SITE_SETTINGS_DEFAULTS } from '~/utils/siteSettingsDefaults'
@@ -883,6 +884,25 @@ export default defineNitroPlugin(() => {
           .run()
         console.log(`[Init] Updated addon changelog ${entry.version}`)
       }
+    }
+
+    // Rows synced from a not-yet-released heading (v12.1.9, v12.1.9-Dev) become
+    // "Unreleased"; the newest of them wins if there are several.
+    const pending = db.select().from(changelogs).all()
+      .filter(row => row.version.startsWith('v') && isUnreleasedAddonVersion(row.version, CURRENT_ADDON_CHANGELOG.version))
+      .sort((a, b) => (b.updatedAt?.getTime() ?? 0) - (a.updatedAt?.getTime() ?? 0))
+    if (pending.length) {
+      const hasUnreleased = db.select().from(changelogs).where(eq(changelogs.version, UNRELEASED_CHANGELOG_VERSION)).get()
+      pending.forEach((row, index) => {
+        if (index === 0 && !hasUnreleased) {
+          db.update(changelogs).set({ version: UNRELEASED_CHANGELOG_VERSION, updatedAt: new Date() }).where(eq(changelogs.id, row.id)).run()
+          console.log(`[Init] Renamed changelog ${row.version} to ${UNRELEASED_CHANGELOG_VERSION}`)
+        }
+        else {
+          db.delete(changelogs).where(eq(changelogs.id, row.id)).run()
+          console.log(`[Init] Removed duplicate unreleased changelog ${row.version}`)
+        }
+      })
     }
 
     const publishedNotes = db.select().from(changelogs).all()

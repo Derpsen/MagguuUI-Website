@@ -331,3 +331,7 @@
 ## 2026-10-17 Step 4 result
 
 - Lockfile refreshed (0379847); web-vitals 6 already in (#157). TS 7.0.2 tried: tsc ok but typescript-eslint peer `<6.1.0` breaks lint, so skipped. h3 2 skipped (nitropack 2 depends on h3 ^1). View Transitions already on (experimental.viewTransition + reduced-motion CSS). Lighthouse local before/after: ~/Projekte/lh-before.txt / lh-after.txt (no real change; changelog mobile LCP ~8.4s simulated, render-blocking entry CSS ~750 ms est. is the main lever). Light/dark screenshots in ~/Projekte/shots look right.
+
+## 2026-10-17 Unreleased changelog
+
+- Website changelog rows live in the DB; the newest CHANGELOG.md heading of the private MagguuUI repo is upserted by the GitHub webhook/pull. Live had a `v12.1.9` row (synced 2026-10-17) shown as Current release. Now: any heading newer than CURRENT_ADDON_CHANGELOG (or `-Dev`) is stored as `Unreleased` (init renames existing rows; sync maps new ones and drops the row once the newest heading is a release). `/api/v1/changelogs` keeps releases in `data` (data[0] = v12.1.8) and returns `meta.unreleased`; /changelog shows it above v12.1.8 without "Current release". Content stays whatever the addon repo CHANGELOG says.

@@ -43,3 +43,14 @@ Legacy.
     assert.ok(compareAddonVersions('v12.1.2', 'v12.0.21') > 0)
   })
 })
+
+describe('unreleased changelog headings', () => {
+  it('treats newer and -Dev headings as unreleased, current and older as released', async () => {
+    const { isUnreleasedAddonVersion } = await import('../../server/utils/parseAddonChangelog')
+    assert.equal(isUnreleasedAddonVersion('v12.1.9', 'v12.1.8'), true)
+    assert.equal(isUnreleasedAddonVersion('v12.1.9-Dev', 'v12.1.8'), true)
+    assert.equal(isUnreleasedAddonVersion('v12.1.8', 'v12.1.8'), false)
+    assert.equal(isUnreleasedAddonVersion('v12.1.7', 'v12.1.8'), false)
+    assert.equal(isUnreleasedAddonVersion('v12.2.0', 'v12.1.8'), true)
+  })
+})

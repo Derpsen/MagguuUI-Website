@@ -37,6 +37,18 @@ export function compareAddonVersions(a: string, b: string): number {
   return 0
 }
 
+/** Changelog row label for notes newer than the release this site ships. */
+export const UNRELEASED_CHANGELOG_VERSION = 'Unreleased'
+
+/**
+ * True for headings that are not released yet, relative to the current
+ * release (e.g. `v12.1.9` or `v12.1.9-Dev` while 12.1.8 is live).
+ */
+export function isUnreleasedAddonVersion(version: string, currentRelease: string): boolean {
+  if (/-dev$/i.test(version.trim())) return true
+  return compareAddonVersions(version, currentRelease) > 0
+}
+
 export function pickLatestAddonChangelog(entries: ChangelogEntry[]): ChangelogEntry | undefined {
   if (!entries.length) return undefined
   return entries.reduce((best, entry) => {

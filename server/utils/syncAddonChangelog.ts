@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
 import { changelogs } from '~/server/database/schema'
-import { parseAddonChangelog, pickLatestAddonChangelog } from '~/server/utils/parseAddonChangelog'
+import { CURRENT_ADDON_CHANGELOG } from '~/server/database/defaultAddonChangelog'
+import { UNRELEASED_CHANGELOG_VERSION, isUnreleasedAddonVersion, parseAddonChangelog, pickLatestAddonChangelog } from '~/server/utils/parseAddonChangelog'
 
 export interface AddonChangelogSyncStats {
   inserted: number
@@ -21,8 +22,17 @@ export function syncAddonChangelog(markdown: string): AddonChangelogSyncStats {
 
   if (!latest) return stats
 
+  // A heading newer than the shipped release (v12.1.9 / v12.1.9-Dev while
+  // 12.1.8 is current) is stored as "Unreleased", so it never counts as the
+  // latest release. Once the newest heading is a release, the row goes away.
+  const unreleased = isUnreleasedAddonVersion(latest.version, CURRENT_ADDON_CHANGELOG.version)
+  const version = unreleased ? UNRELEASED_CHANGELOG_VERSION : latest.version
+
   sqlite.transaction(() => {
-    const existing = db.select().from(changelogs).where(eq(changelogs.version, latest.version)).get()
+    if (!unreleased) {
+      db.delete(changelogs).where(eq(changelogs.version, UNRELEASED_CHANGELOG_VERSION)).run()
+    }
+    const existing = db.select().from(changelogs).where(eq(changelogs.version, version)).get()
     if (existing) {
       if (existing.content !== latest.content) {
         db.update(changelogs)
@@ -41,7 +51,7 @@ export function syncAddonChangelog(markdown: string): AddonChangelogSyncStats {
       }
     } else {
       db.insert(changelogs).values({
-        version: latest.version,
+        version,
         content: latest.content,
         contentEn: latest.content,
         isPublished: true,

@@ -11,7 +11,7 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
 **Live ops baseline (2026-10-14 late evening, checked 2026-10-15):** live image OCI
 `sha-5db94ed` (digest
 `sha256:abfe0d1db9157bfb9be5b2f09b678a537c1b7994447db111f403d361c2f339c4`):
-v12.1.8 changelog notes; live build id `93cfa63c` (`/_nuxt/builds/latest.json`).
+v12.1.8 changelog notes; live build id `93cfa63c` (`/_nuxt/builds/latest.json`). **Superseded 2026-10-17:** live is now `sha-6dc9870` (PWA `/sw.js` connect-src fix, Node 26, nuxt-og-image 7 + satori 0.47.1), build id `da0941f8` (built 2026-10-17 01:40 Berlin).
 Superseded: `sha-72ed68e`; `sha-d8e734a` (digest `sha256:516f6c21…`: admin restyle,
 admin save clears the cache, `/admin/content` shows a page list). Previous baseline 2026-10-12: `sha-1febf58` (#144 clean
 module section + legal notice, #146 nowrap, #147 green mini-label headings).
@@ -19,11 +19,10 @@ module section + legal notice, #146 nowrap, #147 green mini-label headings).
 wording) merged to main 2026-10-12 21:18 Berlin (live now, included in `sha-5db94ed`). Light-mode hydration fix: `useIsDark` stays dark until mount. The older
 2026-10-06 baseline (`sha-5c26d99`) is superseded.
 
-## Grok Bot helpers and rooms (2026-10-12)
+## Grok Bot helpers (renamed 2026-10-16)
 
-Helpers were renamed 2026-10-12; their IDs did not change. Webcraft owns **MagguuUI-Website only**. Botsmith owns MagguuBot + Magguu-Dashboard. Luaforge owns the MagguuUI addon Lua. Sentinel reviews on request. Launchpad does releases (Tag-Gate). Homebase does Unraid. Captain does the Notion projects. Buddy is the front door. Old names were Stack Fixer, Bot Fixer, Addon Fixer, Reviewer, Release Helfer, Homelab Helfer and Projects Manager.
-Rooms: Addon HQ (MagguuUI), Web Studio (this repo), Bot Lab, Dashboard Deck, Homebase Ops.
-**Direct-change rule:** Buddy makes small Website design/text changes directly. Bigger work goes to Webcraft. Since 2026-10-12 helpers and Buddy push directly to `main` (no PRs, no Sentinel pre-review); Buddy reviews commits afterwards; Homebase pulls autonomously after green Docker publish.
+Helpers were renamed again 2026-10-16; their IDs did not change. "Website" owns **MagguuUI-Website only**. "Bot & Dashboard" owns MagguuBot + Magguu-Dashboard. "Addon (Lua)" owns the MagguuUI addon Lua. "Code-Review" reviews on request. "Release" does releases (Tag-Gate). "Unraid & Server" does Unraid. Buddy is the front door. Former names: Webcraft, Botsmith, Luaforge, Sentinel, Launchpad, Homebase (before that Stack Fixer, Bot Fixer, Addon Fixer, Reviewer, Release Helfer, Homelab Helfer). Captain (Projects Manager) and all group chats/rooms were deleted 2026-10-16.
+**Direct-change rule:** Buddy makes small Website design/text changes directly. Bigger work goes to "Website". Since 2026-10-12 helpers and Buddy push directly to `main` (no PRs, no pre-review); Buddy reviews commits afterwards; after a green Docker publish the no-AI Unraid pull/test script (`magguu-pull`, rollback on failure) pulls the new image.
 Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain structured text with small green mini-label headings.
 
 ## Safe Working Rules
@@ -77,12 +76,12 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
 - Do not perform major dependency upgrades without a separate compatibility
   pass. `types/nuxt-nitro.d.ts` restores Nitro `headers`, `swr`, and `storage`
   on the Nuxt 4.5 config types. Do not delete it. TypeScript 7 (typescript-eslint peer <6.1), h3 2 (Nitro 2 / Nuxt 4 pin h3 1),
-  and js-yaml 5 stay blocked without an explicit yes. Dependabot #130
-  (satori 0.44) was closed 2026-10-12, superseded by #140 (satori 0.34.1 → 0.47.1);
-  #140 stays open on hold: do not merge or close it.
+  and js-yaml 5 stay blocked without an explicit yes. satori moved to
+  ^0.47.1 with nuxt-og-image 7 on 2026-10-16 (hold dropped, #140/#155/#156 closed); satori >=0.48 stays blocked
+  (og-image 7 peer ^0.47.1).
 - As of 2026-10-14: addon live **v12.1.8**; container runs as **uid 99**;
   images are **Cosign keyless** signed; site defaults to **Dark**; **WIM is
-  removed** (Whisper Messenger is the whisper chat); `engines.node >=24.17`,
+  removed** (Whisper Messenger is the whisper chat); `engines.node >=26.12.0`,
   Node 26 since 2026-10-16 (Marco's yes; 26.12.0 Current, LTS from late Oct).
 - CSP lives in `server/plugins/csp-nonce.ts` + `server/utils/htmlCsp.ts`, not
   in routeRules (SWR HTML got the JSON baseline and lost all CSS/JS).
@@ -150,7 +149,7 @@ Routine „Magguu Audit Allowlist Review“ ~2. Nov; re-check before review-by.
 
 ## Admin-Smoke checklist
 
-After Unraid app-image pull / when Buddy asks (Homebase owns container pull):
+After Unraid app-image pull / when Buddy asks ("Unraid & Server" owns container pull):
 
 1. Login `/admin/login`
 2. These five routes must be **200** (from #102):
@@ -160,14 +159,14 @@ After Unraid app-image pull / when Buddy asks (Homebase owns container pull):
    - `/admin/data/addons`
    - `/admin/content` (shows the content page list since `sha-d8e734a`; no redirect anymore)
 3. Report to Buddy **only on FAIL** (or short OK if asked).
-4. Nach App-Image-Wellen: Prefer **Done-Wave Capture** skill (Buddy/PM) — kein Extra-Ping Homebase wenn Digest schon live.
+4. Nach App-Image-Wellen: Prefer **Done-Wave Capture** skill (Buddy) — kein Extra-Ping "Unraid & Server" wenn Digest schon live.
 
 ## Merge reports: Actions-only vs App-Image
 
 Merge reports to Buddy must say which path applies:
 
-- **Actions-only / pin-only Dependabot** → no Homebase pull.
-- **App-Image** (Dockerfile / app code that publishes the docker image) → Homebase via Container-nach-CI after green docker publish; Webcraft/Buddy do not double-ping Homebase. Skip recreate if live already on handoff digest.
+- **Actions-only / pin-only Dependabot** → no "Unraid & Server" pull.
+- **App-Image** (Dockerfile / app code that publishes the docker image) → the no-AI Unraid pull/test script (`magguu-pull`, rollback on failure) after green docker publish; "Website"/Buddy do not double-ping "Unraid & Server". Skip recreate if live already on handoff digest.
 
 ## Product-facts Diff checklist
 
@@ -227,7 +226,7 @@ npm run db:seed        # seed default data
 
 ## Git / publish (Buddy hub)
 
-- **Grok Bot helpers (Webcraft, etc.) under Buddy:** Standing autonomy. For clear in-scope Website work (bugs, redesign, copy, logos, deps), commit, push, and merge to main **without asking Marco** and without waiting for a go-ahead. Never force-push. Never publish unrelated dirty WIP. Report only to Buddy (short German + links). Marco only reads Buddy — do not ask him for permission in this chat.
+- **Grok Bot helpers ("Website" etc.) under Buddy:** Standing autonomy. For clear in-scope Website work (bugs, redesign, copy, logos, deps), commit, push, and merge to main **without asking Marco** and without waiting for a go-ahead. Never force-push. Never publish unrelated dirty WIP. Report only to Buddy (short German + links). Marco only reads Buddy — do not ask him for permission in this chat.
 - Tags and releases still need an explicit release ask via Buddy.
 - Manual human Cursor sessions (Marco himself): do not commit/push/tag unless he asks.
 

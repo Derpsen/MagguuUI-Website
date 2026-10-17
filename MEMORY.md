@@ -3,7 +3,7 @@
 ## Overview
 
 - Project: `MagguuUI-Website`
-- Stack: Nuxt 4 (caret ^4.4.8; lock may resolve 4.5.x), Vue 3.5, TypeScript 6, Nuxt UI 4.10, Tailwind CSS 4.3 (CSS-first), Drizzle 0.45, SQLite via `better-sqlite3` 13 (WAL, busy_timeout=5000), Node 24, nuxt-og-image 6 with Takumi (`@takumi-rs/core`, native glibc/musl binaries). Validation: Zod. Lint: Nuxt ESLint Flat Config (no separate Prettier).
+- Stack: Nuxt 4 (lock 4.6.2 since 2026-10-16), Vue 3.5, TypeScript 6, Nuxt UI 4.12, Tailwind CSS 4.3 (CSS-first), Drizzle 0.45, SQLite via `better-sqlite3` 13 (WAL, busy_timeout=5000), Node 26 (since 2026-10-16), nuxt-og-image 7 with Takumi (`@takumi-rs/core`, native glibc/musl binaries). Validation: Zod. Lint: Nuxt ESLint Flat Config (no separate Prettier).
 - Deployment: Docker on Unraid — image built by `.github/workflows/docker.yml` and published to GHCR; Unraid `update_container MagguuUI`. Live 2026-09-11: homepage catalog-summary + admin-only ECharts. GitHub sync reads MagguuUI_Data/AddOns + Classes.
 - Repo contains the public website, admin panel, and Nitro/API backend in one app
 
@@ -95,7 +95,7 @@
 
 - Public SSR pages feed public API routes with SWR route rules; admin SPA (`ssr:false`) talks to `/api/v1/admin/*` (JWT/cookie). Server API uses SQLite WAL mode with `busy_timeout=5000`. Docker image goes Unraid / Cloudflare Tunnel to `ui.magguu.xyz`.
 - `requireAuth(event)` accepts legacy bearer tokens and HttpOnly cookie sessions. Session validation is bound to browser + OS family (`server/utils/session.ts`). Keep the softer `/api/v1/auth/session` endpoint aligned with `requireAuth`.
-- OG images: templates need a renderer suffix; we use `.takumi.vue` (`components/OgImage/MagguuOg.takumi.vue`). `satori` stays installed below 0.41 (no active `.satori.vue`).
+- OG images: templates need a renderer suffix; we use `.takumi.vue` (`components/OgImage/MagguuOg.takumi.vue`). `satori` ^0.47.1 (nuxt-og-image 7 peer; no active `.satori.vue`); >=0.48 blocked.
 - GitHub webhook `server/api/v1/webhooks/github.post.ts` accepts signed events only from the configured repository, imports main pushes from the immutable after SHA, and handles `CHANGELOG.md`, `MagguuUI.toc`, and `MagguuUI_Data/AddOns|Classes/*.lua` independently. Manual pulls resolve main once and fetch the MagguuUI_Data snapshot at that SHA.
 - Required production env: `NUXT_JWT_SECRET`, `NUXT_ADMIN_PASSWORD`. Optional: `NUXT_GITHUB_TOKEN`, `NUXT_WEBAUTHN_*`, `API_BEARER_TOKEN`, `NUXT_OG_IMAGE_SECRET`. See `.env.example` and `docs/env-vars.md`.
 
@@ -203,15 +203,15 @@
 
 ## 2026-09-27 autonomy
 
-- Admin-Smoke checklist documented in `AGENTS.md` (login + five #102 routes; report FAIL-only to Buddy; Homebase owns pull).
-- Merge reports must say **Actions-only** vs **App-Image** (Dependabot pin-only = no Homebase; app/Dockerfile publish = Homebase via Container-nach-CI after green docker).
+- Admin-Smoke checklist documented in `AGENTS.md` (login + five #102 routes; report FAIL-only to Buddy; "Unraid & Server" owns pull).
+- Merge reports must say **Actions-only** vs **App-Image** (Dependabot pin-only = no "Unraid & Server"; app/Dockerfile publish = the no-AI Unraid pull/test script after green docker).
 - USelect/Reka: never option-shaped `value: ""`; sentinel e.g. `"all"`. Enforced by `npm run lint` / `lint:uselect` (`scripts/check-uselect-empty-value.mjs`). `pages/admin/system/github.vue` syncFilters All → `"all"`.
 - Pack/copy product-fact deltas: update Website + MagguuBot + **Magguu-Dashboard** AGENTS (+ MEMORY where present) the same round.
 
 ## 2026-10-06 Ops sync (Buddy Inventur)
 
 - (superseded, see 2026-10-14) Live Website digest `sha256:76ef22c97b84cbd6162d9aef44df0d620ab1cea8c1252daf1fadd432c8c3f60d` (OCI `sha-5c26d99` / tip `5c26d99`) — kein Re-Pull wenn live schon darauf.
-- Wave: #95 (`@simplewebauthn/browser` 14) + #117 (audit overrides/allowlist); Homebase App-Image + Admin-Smoke **6/6 PASS** auf diesem Digest.
+- Wave: #95 (`@simplewebauthn/browser` 14) + #117 (audit overrides/allowlist); "Unraid & Server" App-Image + Admin-Smoke **6/6 PASS** auf diesem Digest.
 - Passkey: Marco live Proton Pass = PASS; Box-Desktop != Proton-Passkey -> kein FAIL.
 - Audit-Allowlist review-by **2026-11-30**: `simple-git` + `@simple-git/argv-parser` (+ `braces` / `node-forge` from #114). Overrides #117: `vue`/`@vue/server-renderer` 3.5.43, `seroval` 1.6.8, `shell-quote` 1.12.0, `source-map-js` 1.2.2.
 - Optional pack / Discord embeds = **Whisper Messenger**, nicht WIM / Ellesmere WIM Skin.
@@ -223,21 +223,21 @@
 - Container runs as **uid 99** (Unraid `nobody`). Images are signed with **Cosign keyless** (GitHub OIDC).
 - Website defaults to **Dark** mode (`colorMode.preference: 'dark'`); light only when the visitor picks it.
 - **WIM is removed** everywhere. Whisper Messenger is the whisper chat. Player button: **Apply Magguu profiles** (4K only in descriptions).
-- Node: `engines.node >=24.17`, Node 24 locked. Node 26 only after Marco's yes (~end of Oct 2026).
-- satori: locked at `^0.34.1` (nuxt-og-image 6 peer `>=0.33.5`). 0.x minors are breaking for Satori layout/CSS, so 0.41+ is a locked major like Node 26, TS 7, h3 2. Dependabot **#130** (0.34.1 → 0.44.3) was closed 2026-10-12, superseded by **#140** (0.34.1 → 0.47.1); #140 stays open and untouched: no merge, no close, until a separate OG-image compatibility pass.
+- Node: (superseded 2026-10-16) `engines.node >=24.17`, Node 24 locked. Now Node 26 live, `engines.node >=26.12.0` (Marco's yes 2026-10-16).
+- satori (superseded 2026-10-16, now ^0.47.1 with nuxt-og-image 7; #140 closed): locked at `^0.34.1` (nuxt-og-image 6 peer `>=0.33.5`). 0.x minors are breaking for Satori layout/CSS, so 0.41+ is a locked major like Node 26, TS 7, h3 2. Dependabot **#130** (0.34.1 → 0.44.3) was closed 2026-10-12, superseded by **#140** (0.34.1 → 0.47.1); #140 stays open and untouched: no merge, no close, until a separate OG-image compatibility pass.
 - CSP: HTML policy comes from `server/plugins/csp-nonce.ts` (render:html + beforeResponse, rebuilt from the cached nonce on SWR hits). routeRules no longer set a CSP. `experimental.payloadExtraction: false` keeps SWR HTML and payload from the same render. Init clears `nitro:routes` cache on boot.
 - Contact email renders client-side (`components/ContactEmail.vue`, footer mailto after mount) so Cloudflare Email Obfuscation has nothing to rewrite.
 
 ## 2026-10-12 Docs/Bots-Sync
 
-- Helpers renamed (IDs unchanged): Webcraft = Website only; Botsmith = MagguuBot + Magguu-Dashboard; Luaforge = addon Lua; Sentinel = review; Launchpad = releases/Tag-Gate; Homebase = Unraid; Captain = Notion; Buddy = front door. Rooms: Addon HQ, Web Studio, Bot Lab, Dashboard Deck, Homebase Ops.
-- Buddy makes small design/text changes directly; bigger work goes to Webcraft. Since 2026-10-12 helpers and Buddy push directly to `main` (no PRs, no Sentinel pre-review); Buddy reviews commits afterwards; Homebase pulls autonomously after green Docker publish.
+- Helpers (renamed again 2026-10-16, IDs unchanged): "Website" = MagguuUI-Website only; "Bot & Dashboard" = MagguuBot + Magguu-Dashboard; "Addon (Lua)" = addon Lua; "Code-Review" = review on request; "Release" = releases/Tag-Gate; "Unraid & Server" = Unraid; Buddy = front door. Former names: Webcraft, Botsmith, Luaforge, Sentinel, Launchpad, Homebase. Captain and all group chats/rooms were deleted 2026-10-16; Buddy contacts helpers directly; Notion holds only rules and the daily Docs-Abgleich log.
+- Buddy makes small design/text changes directly; bigger work goes to "Website". Since 2026-10-12 helpers and Buddy push directly to `main` (no PRs, no pre-review); Buddy reviews commits afterwards; after a green Docker publish the no-AI Unraid pull/test script (`magguu-pull`, rollback on failure) pulls the new image.
 - (superseded, see 2026-10-15) Live 2026-10-14: `sha-d8e734a` (digest `sha256:516f6c21…`): admin restyle, admin save clears cache, `/admin/content` shows a page list. Before: `sha-1febf58` (#144, #146, #147). #148 is test-only (no pull). #149 two-tone wording merged to main and is waiting for the next pull. `useIsDark` stays dark until mount (light-mode hydration fix).
 - Legal notice: "free, non-commercial project operated from Switzerland" + `contact@magguu.xyz`; no name, no address. Plain structured text with small green mini-label headings; no cards, icon boxes or flashy buttons.
 - Addon live v12.1.8. "Split names" options are becoming "Two-tone unit-frame names" / "Two-tone party and raid names" (MagguuUI PR #30; `SPLIT_NAMES` keys unchanged): half the name in the default color, half in the class color.
-- Unchanged: WIM is removed and Whisper Messenger is used; "Apply Magguu profiles"; Node 26 needs Marco's yes; locked TS 7, h3 2, satori 0.41; uid 99 + Cosign; `engines.node >=24.17`; no tags without Marco's yes; never remove third-party author names.
+- Unchanged: WIM is removed and Whisper Messenger is used; "Apply Magguu profiles"; Node 26 live since 2026-10-16; locked TS 7, h3 2, js-yaml 5, satori >=0.48; uid 99 + Cosign; `engines.node >=26.12.0`; no tags without Marco's yes; never remove third-party author names.
 
-## 2026-10-14 Perf wave (Webcraft, direct to main)
+## 2026-10-14 Perf wave ("Website", direct to main)
 
 - Screenshots: pre-generated AVIF/WebP/JPG at 800/1280/2000w via
   `scripts/generate-screenshots.mjs`; `ScreenshotFrame` uses `<picture>` +
@@ -261,7 +261,7 @@
 - CI: weekly `lighthouse-live.yml` (Mon 05:17 UTC, artifact + summary);
   `build.yml` has an experimental Node 26 matrix entry (continue-on-error).
 
-## 2026-10-14 Queue A–J (Webcraft, direct to main)
+## 2026-10-14 Queue A–J ("Website", direct to main)
 
 - A RUM: `plugins/web-vitals.client.ts` (idle import, public only) → `POST
   /api/v1/vitals` (text/plain beacon, 30/min/IP, tracking setting) →
@@ -291,9 +291,9 @@
 
 ## 2026-10-15 Live state + Arbeitscomputer
 
-- Live since 2026-10-14 late evening: `sha-5db94ed` (digest `sha256:abfe0d1db9157bfb9be5b2f09b678a537c1b7994447db111f403d361c2f339c4`; v12.1.8 changelog notes; build id `93cfa63c`). Superseded: `sha-72ed68e`, `sha-d8e734a`, `sha-1febf58`. Only open PR: Dependabot #140 (satori, on hold).
-- Helfer-Arbeitscomputer ist die Unraid-VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a262-ebf10016d570`), Repos unter `~/Projekte` nach Homebase-Umzug. Marcos PC (`f01cf815-a384-40fb-ac18-c8450b4d5889`) nur noch für WoW-AddOns-Deploy, darf aus sein.
-- Webcraft schreibt Marco nie im 1:1; Status/Done nur an Buddy.
+- Live since 2026-10-14 late evening: `sha-5db94ed` (digest `sha256:abfe0d1db9157bfb9be5b2f09b678a537c1b7994447db111f403d361c2f339c4`; v12.1.8 changelog notes; build id `93cfa63c`). Superseded: `sha-72ed68e`, `sha-d8e734a`, `sha-1febf58`. (Superseded 2026-10-17: live `sha-6dc9870`, build id `da0941f8`; #140 closed 2026-10-16, no open PRs.)
+- Helfer-Arbeitscomputer ist die Unraid-VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a262-ebf10016d570`), Repos unter `~/Projekte` nach dem Umzug auf die VM. Marcos PC (`f01cf815-a384-40fb-ac18-c8450b4d5889`) nur noch für WoW-AddOns-Deploy, darf aus sein.
+- "Website" schreibt Marco nie im 1:1; Status/Done nur an Buddy.
 
 ## 2026-10-16 CSP ERR_HTTP_HEADERS_SENT
 
@@ -301,7 +301,7 @@
 
 ## 2026-10-16 Dependabot grouping + pre-push hook
 
-- Dependabot patch/minor grouped (npm + actions); majors separate; satori >=0.41 / js-yaml 5 / h3 2 / TS 7 / Node 26 ignored. Automerge workflow renamed to `dependabot-automerge.yml` (pull_request_target + Build fallback). Repo: allow_auto_merge=false, main unprotected (no required checks), so the `--auto` path is skipped for now.
+- Dependabot patch/minor grouped (npm + actions); majors separate; satori >=0.41 / js-yaml 5 / h3 2 / TS 7 / Node 26 ignored (later 2026-10-16: Node 26 and satori ignores lifted, satori now >=0.48 ignored). Automerge workflow renamed to `dependabot-automerge.yml` (pull_request_target + Build fallback). Repo: allow_auto_merge=false, main unprotected (no required checks), so the `--auto` path is skipped for now.
 - `.githooks/pre-push` (lint, typecheck, unit, actionlint); `npm run hooks:install`. Enabled on the Ubuntu VM checkout.
 
 ## 2026-10-16 Docker path filter + post-deploy smoke

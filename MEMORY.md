@@ -339,3 +339,18 @@
 ## 2026-10-22 Docs drift check
 
 - Weekly AI docs review replaced by `tools/docs-drift.sh` + `.github/docs-drift-rules.txt` + `docs-drift.yml` (issue "Docs-Drift"). Baseline fixes: AGENTS live line now `sha-d7b13eb`, @types/node 26 added to locked list. Docker `paths` now also skip `tools/**`.
+
+## 2026-10-22 Live-build pointer
+
+- AGENTS.md no longer states a live sha/digest (auto-deploy); it points to /api/health. docs-drift flags `sha-…`/`sha256:` in AGENTS.md and checks /api/health = 200. Removed AGENTS block, kept here as history:
+
+  > **Live ops baseline (2026-10-14 late evening, checked 2026-10-15):** live image OCI
+  > `sha-5db94ed` (digest
+  > `sha256:abfe0d1db9157bfb9be5b2f09b678a537c1b7994447db111f403d361c2f339c4`):
+  > v12.1.8 changelog notes; live build id `93cfa63c` (`/_nuxt/builds/latest.json`). **Superseded 2026-10-17:** was `sha-6dc9870` (PWA `/sw.js` connect-src fix, Node 26, nuxt-og-image 7 + satori 0.47.1), build id `da0941f8` (built 2026-10-17 01:40 Berlin). **Checked 2026-10-22:** live is now `sha-00171ef` (`/api/health`; docs-drift commit, app code as `cdbd4d9` Unreleased changelog + #161). `tools/docs-drift.sh` checks this line weekly.
+  > Superseded: `sha-72ed68e`; `sha-d8e734a` (digest `sha256:516f6c21…`: admin restyle,
+  > admin save clears the cache, `/admin/content` shows a page list). Previous baseline 2026-10-12: `sha-1febf58` (#144 clean
+  > module section + legal notice, #146 nowrap, #147 green mini-label headings).
+  > #148 (color-mode reload test) is test-only, so no pull. #149 (two-tone names
+  > wording) merged to main 2026-10-12 21:18 Berlin (live now, included in `sha-5db94ed`). Light-mode hydration fix: `useIsDark` stays dark until mount. The older
+  > 2026-10-06 baseline (`sha-5c26d99`) is superseded.

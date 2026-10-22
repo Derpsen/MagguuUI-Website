@@ -8,16 +8,10 @@ strings (EllesmereUI, BigWigs, Northern Sky Raid Tools, class layouts). Live:
 image `ghcr.io/derpsen/magguuui-website` (LAN origin
 `http://192.168.178.21:3000` on `br0`). Ops notes: `MEMORY.md`.
 
-**Live ops baseline (2026-10-14 late evening, checked 2026-10-15):** live image OCI
-`sha-5db94ed` (digest
-`sha256:abfe0d1db9157bfb9be5b2f09b678a537c1b7994447db111f403d361c2f339c4`):
-v12.1.8 changelog notes; live build id `93cfa63c` (`/_nuxt/builds/latest.json`). **Superseded 2026-10-17:** was `sha-6dc9870` (PWA `/sw.js` connect-src fix, Node 26, nuxt-og-image 7 + satori 0.47.1), build id `da0941f8` (built 2026-10-17 01:40 Berlin). **Checked 2026-10-22:** live is now `sha-00171ef` (`/api/health`; docs-drift commit, app code as `cdbd4d9` Unreleased changelog + #161). `tools/docs-drift.sh` checks this line weekly.
-Superseded: `sha-72ed68e`; `sha-d8e734a` (digest `sha256:516f6c21…`: admin restyle,
-admin save clears the cache, `/admin/content` shows a page list). Previous baseline 2026-10-12: `sha-1febf58` (#144 clean
-module section + legal notice, #146 nowrap, #147 green mini-label headings).
-#148 (color-mode reload test) is test-only, so no pull. #149 (two-tone names
-wording) merged to main 2026-10-12 21:18 Berlin (live now, included in `sha-5db94ed`). Light-mode hydration fix: `useIsDark` stays dark until mount. The older
-2026-10-06 baseline (`sha-5c26d99`) is superseded.
+**Live build:** auto-deployed (`magguu-pull` after every green Docker publish). The
+current image SHA and build time are at https://ui.magguu.xyz/api/health
+(`build.sha`, `build.time`). Do not write a live `sha-…` tag or digest here; deploy
+history lives in `MEMORY.md`.
 
 ## Grok Bot helpers (renamed 2026-10-16)
 
@@ -157,7 +151,7 @@ After Unraid app-image pull / when Buddy asks ("Unraid & Server" owns container 
    - `/admin/strings/profiles`
    - `/admin/strings/layouts`
    - `/admin/data/addons`
-   - `/admin/content` (shows the content page list since `sha-d8e734a`; no redirect anymore)
+   - `/admin/content` (shows the content page list; no redirect anymore)
 3. Report to Buddy **only on FAIL** (or short OK if asked).
 4. Nach App-Image-Wellen: Prefer **Done-Wave Capture** skill (Buddy) — kein Extra-Ping "Unraid & Server" wenn Digest schon live.
 
@@ -205,7 +199,7 @@ Never `value: ""` on select / option items — use a sentinel (e.g. `"all"`). En
 
 ## Docs drift (2026-10-22)
 
-- `tools/docs-drift.sh` (generic, copy 1:1 to other Magguu repos) reads `.github/docs-drift-rules.txt` (`regex<TAB>reason[<TAB>allow]`, `@files`, `@allow`, `@version-*`) and prints `file:line: reason`; exit 1 on hits. Here it also compares the "live is now `sha-…`" line above with `/api/health` `.build.shortSha` (`/_nuxt/builds/latest.json` is only the Nuxt build manifest). Update that line after each deploy.
+- `tools/docs-drift.sh` (generic, copy 1:1 to other Magguu repos) reads `.github/docs-drift-rules.txt` (`regex<TAB>reason[<TAB>allow[<TAB>file-scope]]`, `@files`, `@allow`, `@health-url`) and prints `file:line: reason`; exit 1 on hits. AGENTS.md must not name a live `sha-…`/digest (rule scoped to AGENTS.md; MEMORY.md history is fine), and `@health-url` checks that `/api/health` answers 200.
 - `.github/workflows/docs-drift.yml` (Mon 05:17 UTC + dispatch) opens/updates one issue "Docs-Drift" assigned to Derpsen, and closes it when clean.
 
 ## Commands

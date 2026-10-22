@@ -259,7 +259,7 @@
   shows `Live: <sha7> · built <UTC>` (fallback `dev`) via
   `/api/v1/admin/system/build`.
 - CI: weekly `lighthouse-live.yml` (Mon 05:17 UTC, artifact + summary);
-  `build.yml` has an experimental Node 26 matrix entry (continue-on-error).
+  `build.yml` has an experimental Node 26 matrix entry (continue-on-error; superseded 2026-10-16: CI is Node 26 only).
 
 ## 2026-10-14 Queue A–J ("Website", direct to main)
 
@@ -335,3 +335,7 @@
 ## 2026-10-17 Unreleased changelog
 
 - Website changelog rows live in the DB; the newest CHANGELOG.md heading of the private MagguuUI repo is upserted by the GitHub webhook/pull. Live had a `v12.1.9` row (synced 2026-10-17) shown as Current release. Now: any heading newer than CURRENT_ADDON_CHANGELOG (or `-Dev`) is stored as `Unreleased` (init renames existing rows; sync maps new ones and drops the row once the newest heading is a release). `/api/v1/changelogs` keeps releases in `data` (data[0] = v12.1.8) and returns `meta.unreleased`; /changelog shows it above v12.1.8 without "Current release". Content stays whatever the addon repo CHANGELOG says.
+
+## 2026-10-22 Docs drift check
+
+- Weekly AI docs review replaced by `tools/docs-drift.sh` + `.github/docs-drift-rules.txt` + `docs-drift.yml` (issue "Docs-Drift"). Baseline fixes: AGENTS live line now `sha-d7b13eb`, @types/node 26 added to locked list. Docker `paths` now also skip `tools/**`.

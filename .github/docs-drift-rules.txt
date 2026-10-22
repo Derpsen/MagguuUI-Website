@@ -1,0 +1,25 @@
+# docs-drift rules for MagguuUI-Website (read by tools/docs-drift.sh)
+# Format: regex<TAB>reason[<TAB>allow-regex]. ERE, case-sensitive.
+
+@files AGENTS.md MEMORY.md README*.md CLAUDE.md .github/copilot-instructions.md .cursor/rules/** .grok/**
+
+# Lines that are explicitly history are fine everywhere.
+@allow \(20[0-9]{2}-[0-9]{2}-[0-9]{2}: |[Ff]ormer(ly)? names?|[Ff]ormerly|\bex-|[Rr]enamed|[Ss]uperseded|[Hh]istor(y|ical)|\(was 
+
+# Live version: /api/health build sha vs the "live is now `sha-xxxxxxx`" line in AGENTS.md.
+# (/_nuxt/builds/latest.json is only the Nuxt build manifest {id,timestamp}; the image
+# sha lives in /api/health.) The last matching line in AGENTS.md wins.
+@version-source https://ui.magguu.xyz/api/health
+@version-jq .build.shortSha
+@version-doc AGENTS.md
+@version-doc-regex live is now `sha-([0-9a-f]{7,40})`
+
+# --- rules ---
+\b(Webcraft|Botsmith|Luaforge|Launchpad|Homebase)\b	old helper name; current: Website, Bot & Dashboard, Addon (Lua), Release, Unraid & Server
+\bSentinel\b	old helper name Sentinel; current: Code-Review	sentinel \(e\.g\.
+\bCaptain\b	Captain was deleted 2026-10-16; Buddy contacts helpers directly	deleted|removed
+\bWIM\b	WIM described as active; Whisper Messenger replaced it	[Rr]emoved|[Rr]etired|replaced|no longer|[Nn]ever|ban(ned)?|blocks?|instead of|not WIM|nicht WIM|no WIM|WIM is$|WIM vs|WIM/WindTools|drift
+[Oo]pen a PR|Reviewer pre-review|[Pp]re-review|squash-merge (is )?required|via PR only|[Mm]erge via PR	old PR/pre-review flow; push directly to main through the gate	Dependabot|no PRs|no pre-review
+Node 26 (is )?(locked|held|blocked|on hold|needs)|Node 24 locked|Node 26 only after|needs Marco's yes.*Node 26|Node 26.*needs Marco's yes	Node 26 is live; it is no longer locked
+satori (0\.41\+?|<0\.41|>=0\.41|stays (installed )?below 0\.41|locked at)	satori lock is >=0.48 (nuxt-og-image 7 peer ^0.47.1)
+[Ll]ocked( majors)?:.*\b(Node 26|satori 0\.41)	locked list outdated; locked: TypeScript 7, h3 2, js-yaml 5, satori >=0.48, @types/node 26

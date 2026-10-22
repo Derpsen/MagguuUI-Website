@@ -11,7 +11,7 @@ image `ghcr.io/derpsen/magguuui-website` (LAN origin
 **Live ops baseline (2026-10-14 late evening, checked 2026-10-15):** live image OCI
 `sha-5db94ed` (digest
 `sha256:abfe0d1db9157bfb9be5b2f09b678a537c1b7994447db111f403d361c2f339c4`):
-v12.1.8 changelog notes; live build id `93cfa63c` (`/_nuxt/builds/latest.json`). **Superseded 2026-10-17:** live is now `sha-6dc9870` (PWA `/sw.js` connect-src fix, Node 26, nuxt-og-image 7 + satori 0.47.1), build id `da0941f8` (built 2026-10-17 01:40 Berlin).
+v12.1.8 changelog notes; live build id `93cfa63c` (`/_nuxt/builds/latest.json`). **Superseded 2026-10-17:** was `sha-6dc9870` (PWA `/sw.js` connect-src fix, Node 26, nuxt-og-image 7 + satori 0.47.1), build id `da0941f8` (built 2026-10-17 01:40 Berlin). **Checked 2026-10-22:** live is now `sha-d7b13eb` (`/api/health`, built 2026-10-19 05:31 Berlin; codeql-action bump #161 on top of the Unreleased-changelog change `cdbd4d9`). `tools/docs-drift.sh` checks this line weekly.
 Superseded: `sha-72ed68e`; `sha-d8e734a` (digest `sha256:516f6c21…`: admin restyle,
 admin save clears the cache, `/admin/content` shows a page list). Previous baseline 2026-10-12: `sha-1febf58` (#144 clean
 module section + legal notice, #146 nowrap, #147 green mini-label headings).
@@ -76,7 +76,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
 - Do not perform major dependency upgrades without a separate compatibility
   pass. `types/nuxt-nitro.d.ts` restores Nitro `headers`, `swr`, and `storage`
   on the Nuxt 4.5 config types. Do not delete it. TypeScript 7 (typescript-eslint peer <6.1), h3 2 (Nitro 2 / Nuxt 4 pin h3 1),
-  and js-yaml 5 stay blocked without an explicit yes. satori moved to
+  js-yaml 5, and @types/node 26 stay blocked without an explicit yes. satori moved to
   ^0.47.1 with nuxt-og-image 7 on 2026-10-16 (hold dropped, #140/#155/#156 closed); satori >=0.48 stays blocked
   (og-image 7 peer ^0.47.1).
 - As of 2026-10-14: addon live **v12.1.8**; container runs as **uid 99**;
@@ -202,6 +202,11 @@ Never `value: ""` on select / option items — use a sentinel (e.g. `"all"`). En
 - Secret scanning + push protection enabled (public repo, free).
 - Dependabot `cooldown`: npm 2 days patch, 3 minor/default, 7 major; actions + docker only `default-days: 3` (semver-*-days is npm-only).
 - Playwright: `tests/support/warmup.ts` warms the dev server; readiness probe is `/api/health`.
+
+## Docs drift (2026-10-22)
+
+- `tools/docs-drift.sh` (generic, copy 1:1 to other Magguu repos) reads `.github/docs-drift-rules.txt` (`regex<TAB>reason[<TAB>allow]`, `@files`, `@allow`, `@version-*`) and prints `file:line: reason`; exit 1 on hits. Here it also compares the "live is now `sha-…`" line above with `/api/health` `.build.shortSha` (`/_nuxt/builds/latest.json` is only the Nuxt build manifest). Update that line after each deploy.
+- `.github/workflows/docs-drift.yml` (Mon 05:17 UTC + dispatch) opens/updates one issue "Docs-Drift" assigned to Derpsen, and closes it when clean.
 
 ## Commands
 

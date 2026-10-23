@@ -251,3 +251,9 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 - **satori ≥0.48** (0.63.2): nuxt-og-image 7.0.7 peer is `satori ^0.47.1`.
 - **js-yaml 5** (5.5.0): major; the override stays at 4.3.2 until Marco says yes.
 - Security: private vulnerability reporting is on (2026-10-23). CodeQL runs as the advanced workflow, so default setup stays off (the two conflict). Docker publish (`build-and-push`, the only job with `attestations: write` + `id-token: write`) ships buildx provenance + SBOM, a keyless Cosign signature, and a GitHub artifact attestation (`actions/attest-build-provenance` v4.2.2, pushed to GHCR). Verify with `gh attestation verify oci://ghcr.io/derpsen/magguuui-website:latest --owner Derpsen`. Immutable Releases: untouched (no releases).
+
+## zizmor advisory workflow + reporting rule (2026-10-23)
+
+- `.github/workflows/zizmor.yml` runs zizmorcore/zizmor-action v0.8.0 (SHA-pinned, zizmor 1.31.1, `min-severity: informational`) on push to main, PRs and dispatch. It is advisory only: `continue-on-error: true`, not a required check, `contents: read` only. There is no SARIF upload (`advanced-security: false`), so no `security-events: write` and no duplicate code-scanning alerts. The blocking gate remains zizmor medium+ in `quality.yml`. Findings are read from the job log; do not fix them without a task.
+- Reporting to Buddy: exactly **one** Done message per task, about 800 characters max, plus a path/commit for details. Interim updates only for tasks longer than 30 minutes.
+

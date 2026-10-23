@@ -367,3 +367,8 @@
 
 - Turned on Dependabot security updates (`PUT /automated-security-fixes`). dependabot-automerge.yml is unchanged apart from a comment: security patch/minor PRs auto-merge after CI, security majors are left for a human.
 - docker.yml `build-and-push` now also runs `actions/attest-build-provenance` v4.2.2 (pin 4d10147), with subject = ghcr image + build digest and push-to-registry. Added `attestations: write` to that job only.
+
+## 2026-10-23 zizmor advisory workflow
+
+- Added `.github/workflows/zizmor.yml` (zizmor-action v0.8.0 pin 53290ba, advisory, no SARIF; see AGENTS.md for why). Docs/.github-only change, so the docker build is skipped by the paths filter.
+- Reporting rule from Buddy: one Done message per task (~800 chars + path/commit); interim updates only for tasks over 30 min.

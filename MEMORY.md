@@ -354,3 +354,11 @@
   > #148 (color-mode reload test) is test-only, so no pull. #149 (two-tone names
   > wording) merged to main 2026-10-12 21:18 Berlin (live now, included in `sha-5db94ed`). Light-mode hydration fix: `useIsDark` stays dark until mount. The older
   > 2026-10-06 baseline (`sha-5c26d99`) is superseded.
+
+## 2026-10-23 Knowledge refresh
+
+- Node 26.12.1 (2026-10-21) is still Current, with Active LTS expected late Oct 2026. Docker base `node:26-bookworm-slim` index moved from `sha256:2989926…8913` to `sha256:2814715…16fe` (= 26.12.1). `engines >=26.12.0` unchanged.
+- Bumped: codeql-action v4.38.3 → v4.39.1 (pin 9b32540) and @takumi-rs/core 2.16.3 → 2.17.1 (lockfile only). All other actions are already on their latest release (checkout v7.0.1, setup-node v7.1.0, build-push v7.4.0, cosign-installer v4.1.2, scorecard v2.5.0, trivy v0.36.0…).
+- Nuxt 4.6.2, @nuxt/ui 4.12.0 and nuxt-og-image 7.0.7 are all at latest.
+- Enabled private vulnerability reporting (free).
+- Left off for Marco: Dependabot security updates (would open security PRs outside the grouping/cooldown flow); `actions/attest-build-provenance` v4.2.2 for GitHub artifact attestations (needs `attestations: write`; buildx provenance + Cosign already cover it); immutable releases (only matter once there are tags/releases).

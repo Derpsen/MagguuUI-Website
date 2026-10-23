@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1.7
 # ─── Build Stage ─────────────────────────────────
-# node:26-bookworm-slim multi-arch index digest (2026-10-16)
+# node:26-bookworm-slim multi-arch index digest (2026-10-23, Node 26.12.1)
 ARG NODE_VERSION=26
-ARG NODE_DIGEST=sha256:298992629d69bbd5b2b03ad57094d8e4fcb3a8eeb7c4e25d29de656519568913
+ARG NODE_DIGEST=sha256:28147155d47dc31abe0a46e0d12b59b2fb3d0a2dcc5dc65fce76a074180b16fe
 FROM node:${NODE_VERSION}-bookworm-slim@${NODE_DIGEST} AS build
 
 WORKDIR /app

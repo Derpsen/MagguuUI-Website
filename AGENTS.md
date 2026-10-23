@@ -76,7 +76,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
 - As of 2026-10-14: addon live **v12.1.8**; container runs as **uid 99**;
   images are **Cosign keyless** signed; site defaults to **Dark**; **WIM is
   removed** (Whisper Messenger is the whisper chat); `engines.node >=26.12.0`,
-  Node 26 since 2026-10-16 (Marco's yes; 26.12.0 Current, LTS from late Oct).
+  Node 26 since 2026-10-16 (Marco's yes); Docker base 26.12.1 since 2026-10-23 (still Current, Active LTS expected late Oct 2026).
 - CSP lives in `server/plugins/csp-nonce.ts` + `server/utils/htmlCsp.ts`, not
   in routeRules (SWR HTML got the JSON baseline and lost all CSS/JS).
 - MagguuUI public copy (home/guide/FAQ/changelog/addon metadata) must stay
@@ -243,3 +243,11 @@ Buddy.
 ## Work computer
 
 Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a262-ebf10016d570`), repos under `~/Projekte`. Marco's PC (`f01cf815-a384-40fb-ac18-c8450b4d5889`) is only for the WoW AddOns deploy.
+
+## Blocked majors: why (checked 2026-10-23)
+
+- **TypeScript 7** (7.0.2): typescript-eslint 8.72 peer is `>=4.8.4 <6.1.0`. Stay on TS 6.0.x until typescript-eslint supports 7.
+- **h3 2** (2.0.8): Nitro 2 (nitropack 2.13.5) needs h3 1. Nitro 3 is still beta (`3.0.260903-beta`), and Nuxt 4 is on Nitro 2.
+- **satori ≥0.48** (0.63.2): nuxt-og-image 7.0.7 peer is `satori ^0.47.1`.
+- **js-yaml 5** (5.5.0): major; the override stays at 4.3.2 until Marco says yes.
+- Security: private vulnerability reporting is on (2026-10-23). CodeQL runs as the advanced workflow, so default setup stays off (the two conflict). Docker publish already ships buildx provenance + SBOM and a keyless Cosign signature.

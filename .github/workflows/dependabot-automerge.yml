@@ -1,6 +1,10 @@
 name: Dependabot auto-merge
 
 # Patch + minor Dependabot PRs get auto-merge (squash). Majors never.
+# Security-update PRs (repo setting on since 2026-10-23) skip grouping/cooldown
+# on purpose but go through the same gate: fetch-metadata still reports
+# update-type version-update:semver-*, so a security patch/minor is labelled and
+# auto-merged after CI, and a security major waits for a human.
 # Safety: `gh pr merge --auto` only waits for CI when the repo has
 # "Allow auto-merge" AND required status checks on main. Without both, the
 # `enable` job skips and the `merge` job below merges only after Build passes.

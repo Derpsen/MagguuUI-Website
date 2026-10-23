@@ -362,3 +362,8 @@
 - Nuxt 4.6.2, @nuxt/ui 4.12.0 and nuxt-og-image 7.0.7 are all at latest.
 - Enabled private vulnerability reporting (free).
 - Left off for Marco: Dependabot security updates (would open security PRs outside the grouping/cooldown flow); `actions/attest-build-provenance` v4.2.2 for GitHub artifact attestations (needs `attestations: write`; buildx provenance + Cosign already cover it); immutable releases (only matter once there are tags/releases).
+
+## 2026-10-23 Security updates + artifact attestations
+
+- Turned on Dependabot security updates (`PUT /automated-security-fixes`). dependabot-automerge.yml is unchanged apart from a comment: security patch/minor PRs auto-merge after CI, security majors are left for a human.
+- docker.yml `build-and-push` now also runs `actions/attest-build-provenance` v4.2.2 (pin 4d10147), with subject = ghcr image + build digest and push-to-registry. Added `attestations: write` to that job only.

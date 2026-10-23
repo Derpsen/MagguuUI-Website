@@ -12,7 +12,7 @@ import { validateBody, passwordChangeSchema } from '~/server/utils/validation'
 import { revokeAllUserSessions } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  const auth = requireAdminAccess(event)
 
   // Rate-limit per user to stop a stolen-session brute-force of currentPassword
   // (bcrypt cost 12 makes each guess slow but not free).

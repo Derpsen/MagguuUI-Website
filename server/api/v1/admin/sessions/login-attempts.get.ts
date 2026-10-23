@@ -8,7 +8,7 @@
 import { sqlite } from '~/server/database'
 
 export default defineEventHandler(async (event) => {
-  requireAuth(event)
+  requireAdminAccess(event)
 
   const query = getQuery(event)
   const limit = Math.min(Number(query.limit) || 50, 200)

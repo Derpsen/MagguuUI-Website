@@ -9,7 +9,8 @@ import { asc } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { addons } from '~/server/database/schema'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const rows = db.select().from(addons)
     .orderBy(asc(addons.category), asc(addons.sortOrder), asc(addons.name))
     .all()

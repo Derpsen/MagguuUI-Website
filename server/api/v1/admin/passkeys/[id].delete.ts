@@ -8,7 +8,7 @@
 import { deletePasskey } from '~/server/utils/webauthn'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  const auth = requireAdminAccess(event)
   const id = Number(getRouterParam(event, 'id'))
 
   if (!id || isNaN(id)) {

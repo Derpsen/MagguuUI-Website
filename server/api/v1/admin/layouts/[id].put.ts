@@ -9,6 +9,7 @@ import { validateBody, layoutUpdateSchema } from '~/server/utils/validation'
 import { parseRouteId } from '~/server/utils/adminCrud'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const id = parseRouteId(event)
 
   const existing = db.select().from(characterLayouts).where(eq(characterLayouts.id, id)).get()

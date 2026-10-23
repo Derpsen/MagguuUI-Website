@@ -10,6 +10,7 @@ import { profiles } from '~/server/database/schema'
 import { parseRouteId } from '~/server/utils/adminCrud'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const id = parseRouteId(event)
 
   const existing = db.select().from(profiles).where(eq(profiles.id, id)).get()

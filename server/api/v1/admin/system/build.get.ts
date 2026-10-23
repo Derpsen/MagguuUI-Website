@@ -3,6 +3,6 @@
 import { readBuildInfo } from '~/utils/buildInfo'
 
 export default defineEventHandler((event) => {
-  requireAuth(event)
+  requireAdminAccess(event)
   return apiSuccess(readBuildInfo())
 })

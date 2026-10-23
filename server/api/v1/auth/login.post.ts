@@ -2,8 +2,12 @@
  * POST /api/v1/auth/login
  *
  * Authenticate admin user and return JWT token + session.
- * Rate-limited: 5 attempts per 15 minutes per IP, then 15 min block.
- * Account lockout: 10 failed attempts in 30 min → 30 min lock.
+ * Throttled with exponential backoff on failures, per IP (5 free failures)
+ * and per account across IPs (`max_login_attempts` free failures, delay capped
+ * at `lockout_duration_minutes`). There is no automatic account lock any more:
+ * a lock used to kill every existing session and let anyone who knew the
+ * username lock the admin out. An explicit admin lock (isLocked) is still
+ * honoured for new logins. Passkey login has its own path and is unchanged.
  */
 
 import bcrypt from 'bcrypt'
@@ -11,27 +15,38 @@ import { eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { users } from '~/server/database/schema'
 import { completeSuccessfulLogin } from '~/server/utils/loginSuccess'
-import {
-  logLoginAttempt,
-  checkAccountLockout,
-  checkAndLockIfNeeded,
-} from '~/server/utils/session'
+import { logLoginAttempt, checkAccountLockout } from '~/server/utils/session'
+import { LOGIN_ACCOUNT_BACKOFF, LOGIN_IP_BACKOFF, type BackoffConfig } from '~/server/utils/loginBackoff'
+import { clearLoginFailures, loginThrottleRetryAfter, recordLoginFailure } from '~/server/utils/loginThrottle'
+import { getLockoutDurationMinutes, getMaxLoginAttempts } from '~/server/utils/settings'
+
+function throttled(event: Parameters<Parameters<typeof defineEventHandler>[0]>[0], retryAfter: number): never {
+  setResponseHeader(event, 'Retry-After', retryAfter)
+  const wait = retryAfter < 120 ? `${retryAfter} seconds` : `${Math.ceil(retryAfter / 60)} minutes`
+  throw createError({ statusCode: 429, message: `Too many login attempts. Please wait ${wait}.` })
+}
+
+function accountBackoff(): BackoffConfig {
+  return {
+    ...LOGIN_ACCOUNT_BACKOFF,
+    freeFailures: getMaxLoginAttempts(),
+    maxMs: getLockoutDurationMinutes() * 60_000,
+  }
+}
 
 export default defineEventHandler(async (event) => {
   const ip = getClientIp(event)
   const ipKey = rateLimitIpKey(ip)
   const ua = getRequestHeader(event, 'user-agent') || ''
 
-  // IP rate limit: 5 attempts / 15 min, IPv6 collapsed to /64 so a single
-  // subscriber can't burn the bucket from sibling addresses.
-  const ipRl = checkRateLimit(`login:ip:${ipKey}`, 5, 15 * 60 * 1000, 15 * 60 * 1000)
-  if (!ipRl.allowed) {
-    setResponseHeader(event, 'Retry-After', ipRl.retryAfter)
-    throw createError({
-      statusCode: 429,
-      message: `Too many login attempts. Please wait ${Math.ceil(ipRl.retryAfter / 60)} minutes.`,
-    })
-  }
+  // Per-IP backoff (IPv6 collapsed to /64 so sibling addresses share a key).
+  const ipThrottleKey = `login-fail:ip:${ipKey}`
+  const ipWait = loginThrottleRetryAfter(ipThrottleKey)
+  if (ipWait > 0) throttled(event, ipWait)
+  // Coarse burst cap so parallel requests can't race past the backoff before
+  // their failures are recorded (bcrypt is async).
+  const burst = checkRateLimit(`login:burst:${ipKey}`, 20, 60_000, 60_000)
+  if (!burst.allowed) throttled(event, burst.retryAfter)
 
   const body = await readBody(event)
 
@@ -47,20 +62,14 @@ export default defineEventHandler(async (event) => {
   body.username = username
   body.password = password
 
-  // Username-keyed rate limit: 10 attempts / hour. Layered with the IP bucket so
-  // distributed credential-stuffing against a single account can't ride past
-  // the IP throttle by rotating source addresses.
+  // Per-account backoff across all IPs: slows distributed guessing against
+  // one username without locking the account or touching its sessions.
   const userKey = body.username.toLowerCase()
-  const userRl = checkRateLimit(`login:user:${userKey}`, 10, 60 * 60 * 1000, 60 * 60 * 1000)
-  if (!userRl.allowed) {
-    setResponseHeader(event, 'Retry-After', userRl.retryAfter)
-    throw createError({
-      statusCode: 429,
-      message: `Too many login attempts. Please wait ${Math.ceil(userRl.retryAfter / 60)} minutes.`,
-    })
-  }
+  const userThrottleKey = `login-fail:user:${userKey}`
+  const userWait = loginThrottleRetryAfter(userThrottleKey)
+  if (userWait > 0) throttled(event, userWait)
 
-  // Check account lockout
+  // Explicit admin lock (no automatic locking any more)
   const lockout = checkAccountLockout(body.username)
   if (lockout.locked) {
     logLoginAttempt({
@@ -97,8 +106,8 @@ export default defineEventHandler(async (event) => {
       failReason: !user ? 'user_not_found' : 'invalid_password',
     })
 
-    // Check if should lock the account now
-    checkAndLockIfNeeded(body.username)
+    recordLoginFailure(ipThrottleKey, LOGIN_IP_BACKOFF)
+    recordLoginFailure(userThrottleKey, accountBackoff())
 
     throw createError({
       statusCode: 401,
@@ -106,9 +115,9 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Success — reset both rate-limit buckets for this IP and username
-  resetRateLimit(`login:ip:${ipKey}`)
-  resetRateLimit(`login:user:${userKey}`)
+  // Success — clear backoff for this IP and username
+  clearLoginFailures(ipThrottleKey)
+  clearLoginFailures(userThrottleKey)
 
   return completeSuccessfulLogin({
     event,

@@ -8,6 +8,7 @@ import { bulkDeleteByIds } from '~/server/utils/adminCrud'
 import { validateBody, bulkDeleteSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const body = await readBody(event)
   const data = validateBody(bulkDeleteSchema, body)
 

@@ -7,7 +7,7 @@
 import { hashToken, validateSession } from '~/server/utils/session'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  const auth = requireAdminAccess(event)
   const token = extractToken(event)
 
   if (!token) {

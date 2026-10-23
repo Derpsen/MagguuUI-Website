@@ -7,7 +7,7 @@ import { changelogs } from '~/server/database/schema'
 import { validateBody, changelogCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  const auth = requireAdminAccess(event)
   const body = await readBody(event)
   const data = validateBody(changelogCreateSchema, body)
 

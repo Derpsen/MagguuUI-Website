@@ -18,6 +18,7 @@ import { db } from '~/server/database'
 import { activityLog } from '~/server/database/schema'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const query = getQuery(event)
   const page = Math.max(1, Number(query.page) || 1)
   const limit = Math.min(Number(query.limit) || 25, 100)

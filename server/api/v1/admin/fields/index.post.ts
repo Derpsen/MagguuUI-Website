@@ -8,7 +8,7 @@ import { fieldDefinitions } from '~/server/database/schema'
 import { validateBody, fieldDefinitionCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  const auth = requireAdminAccess(event)
   const body = await readBody(event)
   const data = validateBody(fieldDefinitionCreateSchema, body)
 

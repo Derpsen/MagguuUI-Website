@@ -8,7 +8,7 @@ import { db } from '~/server/database'
 import { contentRevisions, siteContent, users } from '~/server/database/schema'
 
 export default defineEventHandler((event) => {
-  requireAuth(event)
+  requireAdminAccess(event)
   const raw = getQuery(event).page
   const pages = (Array.isArray(raw) ? raw : [raw]).filter((p): p is string => typeof p === 'string' && /^[\w-]{1,40}$/.test(p))
   if (pages.length === 0) throw createError({ statusCode: 400, message: 'page is required' })

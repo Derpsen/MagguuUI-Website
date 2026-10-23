@@ -8,6 +8,7 @@ import { faqs } from '~/server/database/schema'
 import { validateBody, faqUpdateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const id = Number(getRouterParam(event, 'id'))
   if (isNaN(id)) throw createError({ statusCode: 400, message: 'Invalid ID' })
 

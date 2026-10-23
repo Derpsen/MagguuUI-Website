@@ -34,21 +34,22 @@ export interface CurrentAuthUser {
 
 /**
  * Resolve authorization from current database state, not only from JWT claims.
- * Deleted or locked users are rejected and role changes take effect without
- * waiting for an existing token to expire.
+ * Deleted users are rejected and role changes take effect without waiting
+ * for an existing token to expire. isLocked only blocks *new* logins: it must
+ * not kill sessions that were already validated (an unauthenticated caller
+ * used to be able to trigger it). Revoke sessions explicitly instead.
  */
 export function getCurrentAuthUser(userId: number): CurrentAuthUser | null {
   const user = db.select({
     id: users.id,
     username: users.username,
     role: users.role,
-    isLocked: users.isLocked,
   })
     .from(users)
     .where(eq(users.id, userId))
     .get()
 
-  if (!user || user.isLocked) return null
+  if (!user) return null
   return { id: user.id, username: user.username, role: user.role }
 }
 

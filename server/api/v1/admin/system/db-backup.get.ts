@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   // The middleware allows GET requests for the viewer role — db-backup leaks
   // the entire DB (password hashes, session tokens, passkey public keys) so
   // explicitly require admin here.
-  const auth = requireAuth(event)
+  const auth = requireAdminAccess(event)
   if (auth.role !== 'admin') {
     throw createError({ statusCode: 403, message: 'Admin role required' })
   }

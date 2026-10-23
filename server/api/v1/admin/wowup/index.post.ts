@@ -8,6 +8,7 @@ import { validateBody, wowupCreateSchema } from '~/server/utils/validation'
 import { wowupPackContainsWim } from '~/utils/addonChipMeta'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const body = await readBody(event)
   const data = validateBody(wowupCreateSchema, body)
   if (wowupPackContainsWim(data.string)) {

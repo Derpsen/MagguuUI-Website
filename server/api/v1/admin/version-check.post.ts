@@ -10,6 +10,7 @@ import { resolveLocalAddonVersion } from '~/server/utils/addonVersion'
 import { githubErrorHint, parseGitHubError, parseGitHubRepo } from '~/server/utils/github'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   // Even though the middleware authenticates this endpoint, an admin token
   // could be replayed at high frequency to fan-out outbound requests against
   // api.github.com. 10 calls / 10 min is enough for legitimate UI use.

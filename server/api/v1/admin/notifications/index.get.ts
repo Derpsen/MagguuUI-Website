@@ -20,7 +20,8 @@ interface Notification {
   link?: string
 }
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const notifications: Notification[] = []
 
   // 1. Check recent failed syncs

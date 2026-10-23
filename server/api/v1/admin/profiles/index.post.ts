@@ -9,6 +9,7 @@ import { profiles } from '~/server/database/schema'
 import { validateBody, profileCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const body = await readBody(event)
   const data = validateBody(profileCreateSchema, body)
 

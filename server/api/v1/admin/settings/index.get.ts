@@ -5,7 +5,8 @@
 import { db } from '~/server/database'
 import { settings } from '~/server/database/schema'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const all = db.select().from(settings).all()
 
   // Convert to key-value object

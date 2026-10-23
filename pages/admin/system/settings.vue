@@ -167,14 +167,14 @@
             </div>
 
             <div class="admin-field">
-              <label class="admin-field__label">Lockout duration</label>
-              <USelect v-model="form.lockout_duration_minutes" aria-label="Lockout duration" :items="lockoutOptions" value-key="value" :disabled="saving" />
+              <label class="admin-field__label">Max login delay</label>
+              <USelect v-model="form.lockout_duration_minutes" aria-label="Max login delay" :items="lockoutOptions" value-key="value" :disabled="saving" />
             </div>
 
             <div class="admin-inline-note">
               <UIcon name="i-heroicons-information-circle" class="h-4 w-4 text-amber-500" />
               <span class="text-sm text-slate-600 dark:text-slate-400">
-                After {{ form.max_login_attempts }} failed attempts, the account locks for {{ form.lockout_duration_minutes }} minutes.
+                After {{ form.max_login_attempts }} failed attempts, password login for that account slows down (doubling delay, up to {{ form.lockout_duration_minutes }} minutes). Signed-in sessions stay valid.
               </span>
             </div>
           </div>

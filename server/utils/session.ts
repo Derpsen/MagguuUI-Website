@@ -9,7 +9,6 @@ import { createHash } from 'crypto'
 import { db, sqlite } from '~/server/database'
 import { sessions, loginAttempts, users } from '~/server/database/schema'
 import { eq, and, desc } from 'drizzle-orm'
-import { getMaxLoginAttempts, getLockoutDurationMinutes } from '~/server/utils/settings'
 
 // ─── User-Agent Parsers (shared with page-view.post.ts) ──
 
@@ -240,36 +239,6 @@ export function checkAccountLockout(username: string): { locked: boolean; retryA
   }
 
   return { locked: false, retryAfterSeconds: 0 }
-}
-
-export function checkAndLockIfNeeded(username: string): boolean {
-  const maxAttempts = getMaxLoginAttempts()           // default 10
-  const lockoutMinutes = getLockoutDurationMinutes()   // default 30
-  const lockoutWindow = lockoutMinutes * 60            // same window as lockout duration
-  const windowStart = Math.floor(Date.now() / 1000) - lockoutWindow
-
-  const recentFails = sqlite.prepare(
-    'SELECT COUNT(*) as count FROM login_attempts WHERE username = ? AND success = 0 AND created_at > ?'
-  ).get(username, windowStart) as { count: number }
-
-  if (recentFails.count >= maxAttempts) {
-    const user = db.select().from(users)
-      .where(eq(users.username, username))
-      .get()
-    if (user) {
-      lockAccount(user.id, lockoutMinutes * 60)
-      return true
-    }
-  }
-  return false
-}
-
-function lockAccount(userId: number, durationSeconds: number) {
-  const lockedUntil = new Date(Date.now() + durationSeconds * 1000)
-  db.update(users)
-    .set({ isLocked: true, lockedUntil })
-    .where(eq(users.id, userId))
-    .run()
 }
 
 export function unlockAccount(userId: number) {

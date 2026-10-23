@@ -10,6 +10,7 @@ import { resolve } from 'path'
 import { unlinkSync } from 'fs'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const id = parseRouteId(event)
 
   const existing = db.select().from(characterLayouts).where(eq(characterLayouts.id, id)).get()

@@ -12,7 +12,8 @@ import {
   copyEvents, activityLog, users,
 } from '~/server/database/schema'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   // ─── Time Boundaries ──────────────────────────────
   const now = Math.floor(Date.now() / 1000)
   const weekAgo = now - 7 * 24 * 60 * 60

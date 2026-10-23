@@ -10,6 +10,7 @@ import { wowupPackContainsWim } from '~/utils/addonChipMeta'
 import { parseRouteId } from '~/server/utils/adminCrud'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const id = parseRouteId(event)
 
   const existing = db.select().from(wowupStrings).where(eq(wowupStrings.id, id)).get()

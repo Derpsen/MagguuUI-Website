@@ -5,7 +5,8 @@
  * Verifies token has correct access to the configured repo.
  */
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const config = useRuntimeConfig()
 
   if (!config.githubToken) {

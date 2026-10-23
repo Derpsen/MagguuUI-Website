@@ -6,7 +6,8 @@ import { asc } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { wowupStrings } from '~/server/database/schema'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const all = db.select().from(wowupStrings).orderBy(asc(wowupStrings.name)).all()
   return apiSuccess(all)
 })

@@ -10,7 +10,7 @@ import { join } from 'path'
 import { sqlite } from '~/server/database'
 
 export default defineEventHandler(async (event) => {
-  requireAuth(event)
+  requireAdminAccess(event)
 
   const dbPath = join(process.cwd(), 'data', 'magguuui.db')
 

@@ -9,7 +9,8 @@ import { asc } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { profiles } from '~/server/database/schema'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const allProfiles = db
     .select()
     .from(profiles)

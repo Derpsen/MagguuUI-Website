@@ -8,7 +8,7 @@ import { renamePasskey } from '~/server/utils/webauthn'
 import { validateBody, passkeyRenameSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  const auth = requireAdminAccess(event)
   const id = Number(getRouterParam(event, 'id'))
 
   if (!id || isNaN(id)) {

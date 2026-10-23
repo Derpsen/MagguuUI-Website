@@ -6,7 +6,8 @@ import { asc } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { characterLayouts } from '~/server/database/schema'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const all = db.select().from(characterLayouts).orderBy(asc(characterLayouts.sortOrder)).all()
   return apiSuccess(all)
 })

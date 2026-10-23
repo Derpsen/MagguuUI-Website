@@ -3,6 +3,10 @@
  *
  * Automatically protects ALL /api/v1/admin/* routes.
  * Requires valid JWT Bearer token in Authorization header.
+ * The prefix check runs on the canonical (decoded, slash-collapsed,
+ * dot-resolved, lowercased) path, so `/api/v1/%61dmin`, `%2561dmin`,
+ * `//admin`, `/Admin` and `x/..%2fadmin` are gated too. Every admin handler
+ * also calls requireAdminAccess() itself (defense in depth).
  * Also enforces Origin checks on /api/v1/auth/* state-changing requests so
  * login-CSRF can't ride on a SameSite relax or a future browser quirk.
  * Private cache headers are applied by middleware/private-api-headers.ts.
@@ -30,10 +34,14 @@ function enforceSameOrigin(event: Parameters<Parameters<typeof defineEventHandle
 }
 
 export default defineEventHandler((event) => {
-  const url = getRequestURL(event)
-  const path = url.pathname
   const method = getMethod(event)
+  const path = canonicalRequestPath(event.path)
+  if (path === null) {
+    throw createError({ statusCode: 400, message: 'Invalid request path' })
+  }
 
+  // Prefix match (not segment match) on purpose: `/api/v1/adminx` is gated as
+  // well, which is the safe direction.
   const isAdmin = path.startsWith('/api/v1/admin')
   const isAuth = path.startsWith('/api/v1/auth')
 
@@ -51,11 +59,7 @@ export default defineEventHandler((event) => {
   // remain reachable for unauthenticated callers. Stop here.
   if (!isAdmin) return
 
-  // Verify JWT
-  const auth = requireAuth(event)
-
-  // Viewers may only read — block all write operations
-  if (!SAFE_METHODS.has(method) && auth.role === 'viewer') {
-    throw createError({ statusCode: 403, message: 'Insufficient permissions' })
-  }
+  // Verify JWT; viewers may only read. Cached on the event for the handler's
+  // own requireAdminAccess() call.
+  requireAdminAccess(event)
 })

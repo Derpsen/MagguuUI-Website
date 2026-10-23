@@ -7,7 +7,8 @@
 import { sql } from 'drizzle-orm'
 import { db } from '~/server/database'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const weekAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60
 
   const created = db.get<{ count: number }>(sql`

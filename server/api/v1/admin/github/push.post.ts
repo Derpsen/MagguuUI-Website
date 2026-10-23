@@ -11,6 +11,7 @@ import { validateBody, githubPushSchema } from '~/server/utils/validation'
 import { parseGitHubError, githubErrorHint, parseGitHubRepo } from '~/server/utils/github'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const ip = getClientIp(event)
   const { allowed, retryAfter } = checkRateLimit(`admin-gh-push:${ip}`, 10, 10 * 60 * 1000, 10 * 60 * 1000)
   if (!allowed) {

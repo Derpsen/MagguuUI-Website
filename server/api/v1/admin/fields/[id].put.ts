@@ -8,7 +8,7 @@ import { fieldDefinitions } from '~/server/database/schema'
 import { validateBody, fieldDefinitionUpdateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  const auth = requireAdminAccess(event)
   const id = Number(getRouterParam(event, 'id'))
   if (isNaN(id)) throw createError({ statusCode: 400, message: 'Invalid ID' })
 

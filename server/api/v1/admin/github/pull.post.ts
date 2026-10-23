@@ -29,6 +29,7 @@ const MAIN_BRANCH = 'main'
 const MAX_CHANGELOG_BYTES = 4 * 1024 * 1024
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const ip = getClientIp(event)
   const { allowed, retryAfter } = checkRateLimit(`admin-gh-pull:${ip}`, 5, 10 * 60 * 1000, 10 * 60 * 1000)
   if (!allowed) {

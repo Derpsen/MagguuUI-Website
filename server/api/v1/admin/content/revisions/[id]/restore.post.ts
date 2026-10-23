@@ -12,7 +12,7 @@ import { parseRouteId } from '~/server/utils/adminCrud'
 import { isHtmlCopyKey } from '~/utils/pageCopyDefaults'
 
 export default defineEventHandler((event) => {
-  const auth = requireAuth(event)
+  const auth = requireAdminAccess(event)
   const id = parseRouteId(event)
   const rev = db.select().from(contentRevisions).where(eq(contentRevisions.id, id)).get()
   if (!rev) throw createError({ statusCode: 404, message: 'Revision not found' })

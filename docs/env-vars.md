@@ -8,6 +8,7 @@ Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` 
 |---|---|
 | `NUXT_JWT_SECRET` | JWT signing key. Generate 64 random chars. The runtime guard intentionally rejects missing/default values in production. |
 | `NUXT_ADMIN_PASSWORD` | First admin password. Bcrypt-hashed on first startup by `server/plugins/init.ts`. |
+| `NUXT_TRUSTED_PROXIES` | Optional. IPs/CIDRs whose `cf-connecting-ip` / `x-real-ip` / `x-forwarded-for` headers are trusted (socket peer check). Default `private` (loopback + RFC1918 + ULA). Set to the cloudflared address to stop LAN spoofing; `none` = socket IP only. |
 
 ## Optional
 

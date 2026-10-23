@@ -257,3 +257,17 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 - `.github/workflows/zizmor.yml` runs zizmorcore/zizmor-action v0.8.0 (SHA-pinned, zizmor 1.31.1, `min-severity: informational`) on push to main, PRs and dispatch. It is advisory only: `continue-on-error: true`, not a required check, `contents: read` only. There is no SARIF upload (`advanced-security: false`), so no `security-events: write` and no duplicate code-scanning alerts. The blocking gate remains zizmor medium+ in `quality.yml`. Findings are read from the job log; do not fix them without a task.
 - Reporting to Buddy: exactly **one** Done message per task, about 800 characters max, plus a path/commit for details. Interim updates only for tasks longer than 30 minutes.
 
+
+## Security fixes 2026-10-23 (audit run-20261023)
+
+- **Admin gate:** `server/middleware/admin-api.ts` checks the prefix on `canonicalRequestPath(event.path)` (`server/utils/requestPath.ts`). That function decodes repeatedly until stable, turns `\` into `/`, collapses `//`, resolves `.`/`..` and lowercases. A malformed path or one still changing after 5 decode rounds gets 400. Every `server/api/v1/admin/**` handler also calls `requireAdminAccess(event)` (`server/utils/adminAccess.ts`: JWT + viewer read-only, cached on `event.context.adminAuth`) or `requireAdmin`. **A new admin handler must start with one of these.** E2E: `tests/admin-path-bypass.spec.ts`.
+- **Login throttle:** password login uses exponential backoff, not account lockout (`server/utils/loginBackoff.ts` + `loginThrottle.ts`, keys `login-fail:ip:*` / `login-fail:user:*` in `rate_limits`).
+  - Per IP: 5 free failures, then 30 s doubling up to 15 min.
+  - Per account: `max_login_attempts` free failures, then doubling up to `lockout_duration_minutes`.
+  - Per-IP burst cap: 20/min.
+  - Nothing sets `isLocked` automatically any more. `getCurrentAuthUser` no longer rejects sessions because of `isLocked` (it only blocks new logins). Revoke sessions explicitly.
+  - Passkey login is unchanged.
+- **Client IP:** `getClientIp` trusts `cf-connecting-ip` / `x-real-ip` / `x-forwarded-for` only when the socket peer is in `NUXT_TRUSTED_PROXIES` (`server/utils/trustedProxy.ts`). Otherwise it uses the socket IP.
+  - The setting takes IPs or CIDRs, or the keywords `private` (the default when unset: loopback + RFC1918 + ULA/link-local) or `none`.
+  - The container on br0 (`192.168.178.21:3000`) **is reachable directly from the LAN**. With the default, only LAN hosts can still spoof the header.
+  - To close that, set `NUXT_TRUSTED_PROXIES` to the cloudflared address. After a deploy, `docker logs MagguuUI | grep trusted-proxy` prints it once.

@@ -11,7 +11,7 @@ import { contentRevisions, siteContent } from '~/server/database/schema'
 import { validateBody, contentBulkSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  const auth = requireAdminAccess(event)
   const body = await readBody(event)
   const data = validateBody(contentBulkSchema, body)
 

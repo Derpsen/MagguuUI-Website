@@ -23,7 +23,8 @@ import { syncAddonsFromToc } from '~/server/utils/syncAddons'
 const MAIN_BRANCH = 'main'
 const MAX_TOC_BYTES = 256 * 1024
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const config = useRuntimeConfig()
   const token = (config.githubToken as string | undefined) || ''
   const repoRef = parseGitHubRepo(config.githubRepo || 'Derpsen/MagguuUI')

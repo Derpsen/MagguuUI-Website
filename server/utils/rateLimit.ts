@@ -7,6 +7,7 @@
 
 import type { H3Event } from 'h3'
 import { sqlite } from '~/server/database'
+import { isTrustedProxy, parseTrustedProxies } from '~/server/utils/trustedProxy'
 
 interface RateEntryRow {
   key: string
@@ -116,38 +117,57 @@ export function cleanupRateLimits(retentionMs: number = 24 * 60 * 60 * 1000) {
 /**
  * Get client IP from H3 event.
  *
- * Priority:
- * 1. `cf-connecting-ip` — set by Cloudflare tunnel; not forgeable by the client
- *    because CF strips any value supplied in the request.
- * 2. `x-real-ip` — set by reverse proxies we control.
- * 3. Raw socket address — always trustworthy (local).
+ * Proxy headers are believed only when the TCP peer is a trusted proxy
+ * (NUXT_TRUSTED_PROXIES, default `private`; see trustedProxy.ts). The
+ * container port is reachable on the LAN, so a direct caller could otherwise
+ * spoof `cf-connecting-ip` and choose its own rate-limit key.
  *
- * `x-forwarded-for` is intentionally NOT trusted by default: an attacker can
- * set it freely to bypass IP-keyed rate limits. It is only honored as a last
- * resort when no other signal is available.
+ * From a trusted proxy, priority is:
+ * 1. `cf-connecting-ip` — set by the Cloudflare tunnel (CF overwrites any
+ *    client-supplied value).
+ * 2. `x-real-ip` — set by reverse proxies we control.
+ * 3. `x-forwarded-for` first hop — last resort, warned once in production.
+ * Otherwise (or with no headers) the socket address is used.
  */
 let warnedForwardedForFallback = false
+let warnedProxySocket = false
+let trustedCache: { raw: string | undefined; list: ReturnType<typeof parseTrustedProxies> } | null = null
+
+function trustedProxies() {
+  const raw = process.env.NUXT_TRUSTED_PROXIES
+  if (!trustedCache || trustedCache.raw !== raw) {
+    trustedCache = { raw, list: parseTrustedProxies(raw) }
+  }
+  return trustedCache.list
+}
 
 export function getClientIp(event: H3Event): string {
+  const socket = event.node?.req?.socket?.remoteAddress
   const cf = getHeader(event, 'cf-connecting-ip')
-  if (cf) return cf.trim()
+
+  if (!isTrustedProxy(socket, trustedProxies())) {
+    return socket || 'unknown'
+  }
+
+  if (cf) {
+    if (process.env.NODE_ENV === 'production' && !warnedProxySocket) {
+      // One-shot hint so ops can pin NUXT_TRUSTED_PROXIES to the exact
+      // cloudflared address (docker logs MagguuUI | grep trusted-proxy).
+      warnedProxySocket = true
+      console.info(`[trusted-proxy] cf-connecting-ip accepted from socket ${socket}`)
+    }
+    return cf.trim()
+  }
 
   const real = getHeader(event, 'x-real-ip')
   if (real) return real.trim()
 
-  const socket = event.node?.req?.socket?.remoteAddress
-  if (socket && socket !== '::1' && socket !== '127.0.0.1') return socket
-
   const forwarded = getHeader(event, 'x-forwarded-for')
   if (forwarded) {
     if (process.env.NODE_ENV === 'production' && !warnedForwardedForFallback) {
-      // Loud one-shot warning: in prod, the deploy is meant to sit behind
-      // Cloudflare which sets cf-connecting-ip. If we ever fall back to the
-      // client-controllable x-forwarded-for, IP-keyed rate limits become
-      // forgeable. Surfacing the misconfiguration once is enough to spot it.
       warnedForwardedForFallback = true
       console.warn('[rateLimit] cf-connecting-ip and x-real-ip missing in production; ' +
-        'falling back to client-supplied x-forwarded-for. IP rate limits may be bypassable.')
+        'falling back to x-forwarded-for from a trusted proxy.')
     }
     return (forwarded.split(',')[0] ?? forwarded).trim()
   }

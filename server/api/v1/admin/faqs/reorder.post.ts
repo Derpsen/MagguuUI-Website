@@ -7,7 +7,7 @@ import { reorderBySortOrder } from '~/server/utils/adminCrud'
 import { validateBody, reorderSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  const auth = requireAdminAccess(event)
   const body = await readBody(event)
   const data = validateBody(reorderSchema, body)
 

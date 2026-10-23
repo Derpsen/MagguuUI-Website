@@ -8,6 +8,7 @@ import { db } from '~/server/database'
 import { profiles, wowupStrings, characterLayouts, changelogs, siteContent, settings } from '~/server/database/schema'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const allProfiles = db.select().from(profiles).all()
   const allWowup = db.select().from(wowupStrings).all()
   const allLayouts = db.select().from(characterLayouts).all()

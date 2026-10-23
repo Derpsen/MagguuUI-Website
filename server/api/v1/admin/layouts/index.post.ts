@@ -7,6 +7,7 @@ import { characterLayouts } from '~/server/database/schema'
 import { validateBody, layoutCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const body = await readBody(event)
   const data = validateBody(layoutCreateSchema, body)
 

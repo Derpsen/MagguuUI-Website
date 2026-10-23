@@ -113,7 +113,7 @@ const form = reactive({ username: '', password: '' })
 const loading = ref(false)
 const passkeyLoading = ref(false)
 const error = ref('')
-const isLocked = computed(() => error.value === 'Account temporarily locked. Try again in 30 minutes.')
+const isLocked = computed(() => /locked|too many login attempts/i.test(error.value))
 const hasPasskeys = ref(false)
 const loginHighlights = [
   {

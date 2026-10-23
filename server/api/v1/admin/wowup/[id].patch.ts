@@ -9,6 +9,7 @@ import { parseRouteId } from '~/server/utils/adminCrud'
 import { validateBody, visibilityToggleSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const id = parseRouteId(event)
 
   const existing = db.select().from(wowupStrings).where(eq(wowupStrings.id, id)).get()

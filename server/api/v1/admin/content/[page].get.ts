@@ -11,6 +11,7 @@ import { siteContent } from '~/server/database/schema'
 import { createContentLocaleBuckets, DEFAULT_CONTENT_LOCALE } from '~/server/utils/contentLocales'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const page = getRouterParam(event, 'page')
   if (!page) throw createError({ statusCode: 400, message: 'Page parameter required' })
 

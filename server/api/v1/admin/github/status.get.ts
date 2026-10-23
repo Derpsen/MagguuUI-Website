@@ -10,6 +10,7 @@ import { syncHistory, settings } from '~/server/database/schema'
 import { resolveLocalAddonVersion } from '~/server/utils/addonVersion'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const config = useRuntimeConfig()
   const hasToken = !!config.githubToken
   const repo = config.githubRepo || 'Derpsen/MagguuUI'

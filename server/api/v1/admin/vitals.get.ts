@@ -6,7 +6,7 @@ import { webVitals } from '~/server/database/schema'
 import { aggregateVitals } from '~/server/utils/webVitals'
 
 export default defineEventHandler((event) => {
-  requireAuth(event)
+  requireAdminAccess(event)
   const days = Math.min(90, Math.max(1, Number(getQuery(event).days) || 28))
   const since = new Date(Date.now() - days * 86_400_000)
   const rows = db.select({ path: webVitals.path, metric: webVitals.metric, value: webVitals.value })

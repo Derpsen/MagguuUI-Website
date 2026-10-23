@@ -372,3 +372,10 @@
 
 - Added `.github/workflows/zizmor.yml` (zizmor-action v0.8.0 pin 53290ba, advisory, no SARIF; see AGENTS.md for why). Docs/.github-only change, so the docker build is skipped by the paths filter.
 - Reporting rule from Buddy: one Done message per task (~800 chars + path/commit); interim updates only for tasks over 30 min.
+
+## 2026-10-23 Security fix (audit run-20261023)
+
+- CRITICAL `/api/v1/%61dmin/...` middleware bypass fixed: the gate now uses the canonical path, and every admin handler calls `requireAdminAccess`/`requireAdmin`.
+- MEDIUM: the global account lockout that killed all sessions is replaced by per-IP + per-account exponential backoff. The `max_login_attempts` / `lockout_duration_minutes` settings now mean "free failures" and "max delay".
+- cf-connecting-ip is trusted only from `NUXT_TRUSTED_PROXIES` (default `private`). The live container is directly reachable on the LAN (checked from the VM: `http://192.168.178.21:3000/api/health` returned 200). No env change is needed for production to keep working; pinning the cloudflared IP is optional hardening.
+- Hardening notes from the audit left open: `latest-change` entityName leak, webhook invalid-signature syncHistory rows, WebAuthn rpId fallback, passkey `e.message`.

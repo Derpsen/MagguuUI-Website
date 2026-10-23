@@ -11,6 +11,7 @@ import { parseRouteId } from '~/server/utils/adminCrud'
 import { validateBody, entityToggleSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const id = parseRouteId(event)
 
   const existing = db.select().from(profiles).where(eq(profiles.id, id)).get()

@@ -9,7 +9,7 @@ import { revokeAllUserSessions } from '~/server/utils/session'
 import { sqlite } from '~/server/database'
 
 export default defineEventHandler(async (event) => {
-  const auth = requireAuth(event)
+  const auth = requireAdminAccess(event)
   const currentSessionId = event.context.sessionId
 
   if (!currentSessionId) {

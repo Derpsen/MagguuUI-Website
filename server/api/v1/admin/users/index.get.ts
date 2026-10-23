@@ -6,7 +6,8 @@
 import { db } from '~/server/database'
 import { users } from '~/server/database/schema'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const rows = db.select({
     id: users.id,
     username: users.username,

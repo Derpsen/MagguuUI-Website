@@ -8,6 +8,7 @@ import { db } from '~/server/database'
 import { fieldDefinitions } from '~/server/database/schema'
 
 export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const query = getQuery(event)
   const entityType = query.entityType as string | undefined
 

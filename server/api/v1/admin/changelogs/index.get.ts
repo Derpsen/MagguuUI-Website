@@ -6,7 +6,8 @@ import { desc } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { changelogs } from '~/server/database/schema'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  requireAdminAccess(event)
   const all = db.select().from(changelogs).orderBy(desc(changelogs.createdAt)).all()
   return apiSuccess(all)
 })

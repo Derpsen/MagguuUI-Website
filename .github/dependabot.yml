@@ -10,10 +10,10 @@ updates:
     open-pull-requests-limit: 5
     # Let fresh releases age before Dependabot proposes them (supply-chain safety).
     cooldown:
-      default-days: 3
+      default-days: 7
       semver-major-days: 7
-      semver-minor-days: 3
-      semver-patch-days: 2
+      semver-minor-days: 7
+      semver-patch-days: 7
     groups:
       nuxt-stack:
         patterns:
@@ -70,7 +70,7 @@ updates:
     open-pull-requests-limit: 5
     # Let fresh releases age before Dependabot proposes them (supply-chain safety).
     cooldown:
-      default-days: 3
+      default-days: 7
     groups:
       codeql-action:
         patterns:
@@ -95,4 +95,4 @@ updates:
     open-pull-requests-limit: 3
     # Let fresh releases age before Dependabot proposes them (supply-chain safety).
     cooldown:
-      default-days: 3
+      default-days: 7

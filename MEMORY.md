@@ -379,3 +379,7 @@
 - MEDIUM: the global account lockout that killed all sessions is replaced by per-IP + per-account exponential backoff. The `max_login_attempts` / `lockout_duration_minutes` settings now mean "free failures" and "max delay".
 - cf-connecting-ip is trusted only from `NUXT_TRUSTED_PROXIES` (default `private`). The live container is directly reachable on the LAN (checked from the VM: `http://192.168.178.21:3000/api/health` returned 200). No env change is needed for production to keep working; pinning the cloudflared IP is optional hardening.
 - Hardening notes from the audit left open: `latest-change` entityName leak, webhook invalid-signature syncHistory rows, WebAuthn rpId fallback, passkey `e.message`.
+
+## 2026-10-23 zizmor green + cooldown 7d
+
+- zizmor job made green (step continue-on-error + summary step); Dependabot cooldown raised to 7 days (fixes the 3 medium dependabot-cooldown findings). Left: 1 informational template-injection in dependabot-automerge.yml:128.

@@ -194,7 +194,7 @@ Never `value: ""` on select / option items — use a sentinel (e.g. `"all"`). En
 - `scorecard.yml` (OpenSSF, weekly + .github pushes, SARIF to code scanning), `dependency-review.yml` (PRs, fails on high), `quality.yml` (`tools/drift-check.sh` + actionlint 1.7.12 sha256-pinned + zizmor 1.31.1, medium+). Drift check: banned WIM/WindTools/KeystoneLoot outside `tools/drift-allow.txt`, Docker uid 99 drop, `engines.node >=26.12`.
 - zizmor: checkouts use `persist-credentials: false`; docker.yml has no npm cache; the `pull_request_target`/`workflow_run` triggers are ignored inline (no PR code runs).
 - Secret scanning + push protection enabled (public repo, free).
-- Dependabot `cooldown`: npm 2 days patch, 3 minor/default, 7 major; actions + docker only `default-days: 3` (semver-*-days is npm-only).
+- Dependabot `cooldown` (since 2026-10-23, zizmor dependabot-cooldown): 7 days everywhere. npm sets `default-days` + `semver-major|minor|patch-days: 7`; actions + docker only `default-days: 7` (semver-*-days is npm-only). Security updates are not subject to cooldown.
 - Playwright: `tests/support/warmup.ts` warms the dev server; readiness probe is `/api/health`.
 
 ## Docs drift (2026-10-22)
@@ -254,7 +254,7 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 
 ## zizmor advisory workflow + reporting rule (2026-10-23)
 
-- `.github/workflows/zizmor.yml` runs zizmorcore/zizmor-action v0.8.0 (SHA-pinned, zizmor 1.31.1, `min-severity: informational`) on push to main, PRs and dispatch. It is advisory only: `continue-on-error: true`, not a required check, `contents: read` only. There is no SARIF upload (`advanced-security: false`), so no `security-events: write` and no duplicate code-scanning alerts. The blocking gate remains zizmor medium+ in `quality.yml`. Findings are read from the job log; do not fix them without a task.
+- `.github/workflows/zizmor.yml` runs zizmorcore/zizmor-action v0.8.0 (SHA-pinned, zizmor 1.31.1, `min-severity: informational`) on push to main, PRs and dispatch. It is advisory only and ends green: step-level + job-level `continue-on-error: true`, findings in the log and `$GITHUB_STEP_SUMMARY`, not a required check, `contents: read` only. There is no SARIF upload (`advanced-security: false`), so no `security-events: write` and no duplicate code-scanning alerts. The blocking gate remains zizmor medium+ in `quality.yml`. Findings are read from the job log; do not fix them without a task.
 - Reporting to Buddy: exactly **one** Done message per task, about 800 characters max, plus a path/commit for details. Interim updates only for tasks longer than 30 minutes.
 
 

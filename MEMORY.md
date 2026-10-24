@@ -383,3 +383,10 @@
 ## 2026-10-23 zizmor green + cooldown 7d
 
 - zizmor job made green (step continue-on-error + summary step); Dependabot cooldown raised to 7 days (fixes the 3 medium dependabot-cooldown findings). Left: 1 informational template-injection in dependabot-automerge.yml:128.
+
+## 2026-10-24 Wave 1: changelog feeds + filter + ?since=
+
+- Added RSS/Atom (`/changelog/feed.xml`, `/changelog/atom.xml`), the `?since=` / `from` / `to` / `q` filter on `/changelog` (SSR GET form) and `utils/changelogVersion.ts` (semver-like compare, dev builds sort before their release). Details and limits (no addon field, `isPublished` is the only hide flag, page shows newest 24) are in AGENTS.md.
+- Gotcha: h3 `handleCacheHeaders({maxAge})` adds `s-maxage`, which `public-cache-invalidate.ts` turns into `max-age=0, must-revalidate`. The feed sets `max-age=600` via `cacheControls` instead.
+- Gotcha: `server/plugins/e2e-seed.ts` used an early `return` when the WowUp pack existed, which would have skipped later seeds. Seeds are now separate functions.
+- Dark and Light checked via screenshots in ~/Projekte/shots (cl-dark.png, cl-light.png).

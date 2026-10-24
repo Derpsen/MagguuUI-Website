@@ -37,6 +37,9 @@ jobs:
       - name: Failure alarm dry run (fake gh, local server, no real webhook)
         run: bash tools/failure-alarm.test.sh
 
+      - name: Lighthouse budget checker unit tests
+        run: node --test tools/lighthouse-budget.test.mjs
+
       - name: actionlint
         run: |
           curl -sSfL -o actionlint.tgz "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"

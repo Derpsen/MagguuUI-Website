@@ -1,0 +1,17 @@
+{
+  "_comment": "Advisory Lighthouse budgets (see .github/workflows/lighthouse.yml). performance = minimum score, lcp/tbt in ms (max), cls (max), scriptKb = max transferred JavaScript in KB. Set slightly below the measured baseline so regressions are flagged; shared runners are noisy, re-calibrate when the app changes on purpose.",
+  "pages": {
+    "/": {
+      "mobile": { "performance": 78, "lcp": 4800, "cls": 0.05, "tbt": 150, "scriptKb": 265 },
+      "desktop": { "performance": 92, "lcp": 1500, "cls": 0.05, "tbt": 50, "scriptKb": 265 }
+    },
+    "/changelog": {
+      "mobile": { "performance": 75, "lcp": 4400, "cls": 0.05, "tbt": 150, "scriptKb": 260 },
+      "desktop": { "performance": 88, "lcp": 2200, "cls": 0.05, "tbt": 50, "scriptKb": 260 }
+    },
+    "/guide": {
+      "mobile": { "performance": 75, "lcp": 5100, "cls": 0.05, "tbt": 150, "scriptKb": 265 },
+      "desktop": { "performance": 92, "lcp": 1600, "cls": 0.05, "tbt": 50, "scriptKb": 265 }
+    }
+  }
+}

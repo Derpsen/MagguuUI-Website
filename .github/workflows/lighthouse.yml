@@ -1,12 +1,37 @@
 name: Lighthouse
 
+# Advisory performance budgets for the home page, /changelog and /guide
+# (mobile + desktop). Budgets live in .github/lighthouse-budgets.json.
+# This workflow is deliberately NOT a required check and never fails: a missed
+# budget only raises a ::warning:: annotation and a row in the job summary.
+# It does not run on every push (noise / runner minutes).
 on:
   pull_request:
     branches: [main]
+    paths:
+      - 'app.config.ts'
+      - 'assets/**'
+      - 'components/**'
+      - 'composables/**'
+      - 'layouts/**'
+      - 'middleware/**'
+      - 'nuxt.config.ts'
+      - 'package-lock.json'
+      - 'pages/**'
+      - 'plugins/**'
+      - 'public/**'
+      - 'server/**'
+      - 'utils/**'
+      - '.github/lighthouse/**'
+      - '.github/lighthouse-budgets.json'
+      - '.github/workflows/lighthouse.yml'
+      - 'tools/lighthouse-budget.mjs'
+  schedule:
+    - cron: '41 4 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
-  pull-requests: write
 
 concurrency:
   group: lighthouse-${{ github.ref }}
@@ -14,12 +39,17 @@ concurrency:
 
 jobs:
   audit:
+    name: Lighthouse budgets (advisory)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
+    # Advisory: even a crashed step must not turn the workflow red.
+    continue-on-error: true
     env:
       NUXT_OG_IMAGE_SECRET: ci-dummy-og-image-secret
       NUXT_JWT_SECRET: ci-dummy-secret-must-be-32-chars-long-XXXXXXXXXX
       NUXT_ADMIN_PASSWORD: ci-dummy
+      NUXT_APP_SECRET: ci-dummy-app-secret-must-be-long-enough-XXXXXXXX
+      PORT: '3124'
     steps:
       - name: Checkout repository
         # actions/checkout@v7.0.0
@@ -38,28 +68,61 @@ jobs:
 
       - run: npm run build
 
-      - name: Start preview server
+      - name: Start production server
         run: |
-          nohup npm run preview > preview.log 2>&1 &
+          nohup node .output/server/index.mjs > server.log 2>&1 &
           for _ in {1..90}; do
-            if curl --fail --silent http://localhost:3000/ > /dev/null; then
+            if curl --fail --silent "http://localhost:${PORT}/" > /dev/null; then
               exit 0
             fi
             sleep 1
           done
-          cat preview.log
+          cat server.log
           exit 1
 
-      - name: Run Lighthouse
+      - name: Lighthouse (mobile)
         # treosh/lighthouse-ci-action@12.6.2
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18
         with:
           urls: |
-            http://localhost:3000/
+            http://localhost:3124/
+            http://localhost:3124/changelog
+            http://localhost:3124/guide
+          configPath: .github/lighthouse/mobile.json
+          runs: 3
           uploadArtifacts: true
-          temporaryPublicStorage: true
-          runs: 1
+          artifactName: lighthouse-mobile
 
-      - name: Stop preview server
+      - name: Keep mobile results
         if: always()
-        run: pkill -f "nuxt preview" || true
+        run: |
+          rm -rf lh-mobile
+          if [ -d .lighthouseci ]; then mv .lighthouseci lh-mobile; fi
+
+      - name: Lighthouse (desktop)
+        if: always()
+        # treosh/lighthouse-ci-action@12.6.2
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18
+        with:
+          urls: |
+            http://localhost:3124/
+            http://localhost:3124/changelog
+            http://localhost:3124/guide
+          configPath: .github/lighthouse/desktop.json
+          runs: 3
+          uploadArtifacts: true
+          artifactName: lighthouse-desktop
+
+      - name: Keep desktop results
+        if: always()
+        run: |
+          rm -rf lh-desktop
+          if [ -d .lighthouseci ]; then mv .lighthouseci lh-desktop; fi
+
+      - name: Compare against budgets
+        if: always()
+        run: node tools/lighthouse-budget.mjs .github/lighthouse-budgets.json mobile=lh-mobile desktop=lh-desktop
+
+      - name: Stop production server
+        if: always()
+        run: pkill -f ".output/server/index.mjs" || true

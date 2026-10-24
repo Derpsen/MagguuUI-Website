@@ -321,3 +321,11 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 - `server/utils/searchIndex.ts` now also emits Changelog entries (published `vX.Y.Z` only, newest 24, `contentEn || content`, never Unreleased/drafts) and a plain-text `body` (capped at `SEARCH_BODY_MAX`) for Guide steps, FAQ and Changelog. Strings stay label-only. `STATIC_GUIDE_SECTIONS` lists guide sections that are static in `pages/guide.vue` (currently `#apply-one-module`); update it when that copy changes.
 - `utils/searchMatch.ts` does the matching in the browser: every word must occur (case-insensitive substring) in label, preview or body; label > preview > body; body-only hits show a snippet. Groups are passed with `ignoreFilter: true`, so the palette's Fuse filter is off. Trade-off: no typo tolerance any more.
 - Tests: `tests/unit/searchMatch.test.ts`, `tests/unit/searchIndex.test.ts`, `tests/queue.spec.ts` ("full-text search"), plus the axe test for the search dialog.
+
+## Lighthouse budgets (advisory, 2026-10-24)
+
+- `.github/workflows/lighthouse.yml` builds the app, serves `.output/server/index.mjs` and runs Lighthouse CI (pinned `treosh/lighthouse-ci-action`, 3 runs, median) on `/`, `/changelog`, `/guide`, mobile + desktop (`.github/lighthouse/{mobile,desktop}.json`, performance category only).
+- Triggers: `pull_request` (app-code path filter), weekly schedule, `workflow_dispatch`. Not on push. Permissions `contents: read`, no secrets, no public upload (the old `temporaryPublicStorage` upload is gone).
+- Budgets live in `.github/lighthouse-budgets.json` (min performance score, max LCP/TBT in ms, max CLS, max transferred JS in KB), set slightly below the measured baseline. `tools/lighthouse-budget.mjs` (unit-tested) writes the table to `$GITHUB_STEP_SUMMARY` and one `::warning::` per exceeded budget, and always exits 0.
+- The job has `continue-on-error: true`, is not a required check and has no failure-alarm job. Do not add one. Shared runners are noisy: treat a single warning as a hint, re-run before acting. Re-calibrate the budgets after intentional app changes.
+- `lighthouse-live.yml` (weekly production snapshot) is separate and unchanged.

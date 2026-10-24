@@ -958,11 +958,16 @@ html.light .admin-savebar__content {
 
 .admin-command__group {
   padding: 0.75rem 0.75rem 0.35rem;
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--admin-fg-faint);
+  color: var(--color-brand-700);
+}
+
+html.dark .admin-command__group {
+  color: var(--color-brand-300);
 }
 
 .admin-command__item {
@@ -975,17 +980,32 @@ html.light .admin-savebar__content {
   color: var(--admin-fg);
 }
 
+.admin-command__item {
+  cursor: pointer;
+  border-radius: 0.5rem;
+}
+
 .admin-command__item:hover,
 .admin-command__item--active {
-  transform: translateY(-1px);
   background: var(--admin-muted-bg);
 }
 
+.admin-command__item--active {
+  outline: 1px solid var(--admin-border);
+}
+
 .admin-command__item-icon {
-  width: 2rem;
-  height: 2rem;
-  background: rgba(37, 99, 235, 0.12);
-  color: var(--admin-accent);
+  flex-shrink: 0;
+  color: var(--admin-fg-muted);
+}
+
+/* The palette is teleported to <body>, outside .admin-shell: give it its own tokens. */
+.admin-command {
+  --admin-fg: var(--ui-text-highlighted);
+  --admin-fg-muted: var(--ui-text-muted);
+  --admin-fg-faint: var(--ui-text-dimmed);
+  --admin-border: var(--ui-border);
+  --admin-muted-bg: var(--ui-bg-elevated);
 }
 
 .admin-command__shortcut {

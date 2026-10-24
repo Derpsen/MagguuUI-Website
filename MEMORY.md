@@ -430,3 +430,8 @@
 
 - Added `WhatsNewBanner` + `utils/whatsNew.ts` (see AGENTS.md). Decisions: banner is fixed bottom-left (no layout shift), hides on /changelog and counts that as seen; Dismiss/link/Esc record the newest version; first visitors only get the value stored. Admin layout does not show it.
 - Gotcha: the local dev DB used by Playwright already holds the real releases (v12.1.x), so tests read the newest version from `/api/v1/release-stamps` instead of assuming v0.9.3.
+
+## 2026-10-24 Wave 9 (admin Ctrl/Cmd+K palette)
+
+- Upgraded the existing `CommandPalette.vue` instead of adding a second one (no new dependency). Decisions: kept the custom list in UModal (full combobox ARIA added), search is multi-word AND with label-first ranking, tab pages are searchable, Log out is offered as an action but needs Enter on that option (nothing runs on open). Styling made plain (mono mini-label groups, no icon boxes, no hover lift).
+- Gotcha: dialogs teleport out of `.admin-shell`, so `--admin-*` vars were undefined there (no highlight on the active option) -> tokens defined on `.admin-command`. Playwright screenshots of animated dialogs need `animations: 'disabled'`.

@@ -244,3 +244,97 @@ test('admin Web Vitals view lists beaconed p75 per page', async () => {
   const row = page.getByTestId('vitals-table').getByRole('row', { name: /\/faq/ })
   await expect(row).toContainText('ms')
 })
+
+test.describe('admin command palette (Ctrl/Cmd+K)', () => {
+  const palette = () => page.getByTestId('admin-command')
+  const box = () => page.getByRole('combobox', { name: 'Search admin pages and actions' })
+
+  test.beforeEach(async () => {
+    await page.goto('/admin/system/fields')
+    await expect(page.getByRole('button', { name: 'Open command palette' }).first()).toBeAttached({ timeout: 30_000 })
+    await page.waitForLoadState('networkidle')
+  })
+
+  for (const combo of ['Control+k', 'Meta+k']) {
+    test(`${combo} opens a labelled combobox/listbox and Esc closes it`, async () => {
+      await page.keyboard.press(combo)
+      await expect(palette()).toBeVisible()
+      await expect(box()).toBeFocused()
+      await expect(box()).toHaveAttribute('aria-controls', 'admin-command-list')
+      await expect(page.getByRole('listbox', { name: 'Pages and actions' })).toBeVisible()
+      await expect(page.getByRole('option').first()).toHaveAttribute('aria-selected', 'true')
+      await page.keyboard.press('Escape')
+      await expect(palette()).toHaveCount(0)
+      // The same shortcut toggles it again.
+      await page.keyboard.press(combo)
+      await expect(palette()).toBeVisible()
+      await page.keyboard.press(combo)
+      await expect(palette()).toHaveCount(0)
+    })
+  }
+
+  test('typing filters, arrows move the active option, Enter navigates', async () => {
+    await page.keyboard.press('Control+k')
+    await box().fill('api keys')
+    await expect(page.getByRole('option').first()).toContainText('API Keys')
+    const n = await page.getByRole('option').count()
+    await expect(page.getByRole('status').filter({ hasText: 'result' })).toHaveText(`${n} ${n === 1 ? 'result' : 'results'}`)
+    await box().fill('settings')
+    const count = await page.getByRole('option').count()
+    expect(count).toBeGreaterThan(2)
+    await page.keyboard.press('ArrowDown')
+    const active = await box().getAttribute('aria-activedescendant')
+    expect(active).toBe('admin-command-list-opt-1')
+    await expect(page.locator(`#${active}`)).toHaveAttribute('aria-selected', 'true')
+    await box().fill('security')
+    await page.keyboard.press('Enter')
+    await expect(page).toHaveURL(/\/admin\/system\/settings\?tab=security/)
+    await expect(palette()).toHaveCount(0)
+  })
+
+  test('a query with no match shows an empty state', async () => {
+    await page.keyboard.press('Control+k')
+    await box().fill('zzzzqqq')
+    await expect(page.getByRole('option')).toHaveCount(0)
+    await expect(palette()).toContainText('No results')
+  })
+
+  test('Tab stays inside the dialog (focus trap) and focus returns to the trigger after Esc', async () => {
+    const trigger = page.getByRole('button', { name: 'Open command palette' }).filter({ visible: true }).first()
+    await trigger.click()
+    await expect(palette()).toBeVisible()
+    for (let i = 0; i < 4; i++) {
+      await page.keyboard.press('Tab')
+      expect(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]'))).toBe(true)
+    }
+    await page.keyboard.press('Escape')
+    await expect(palette()).toHaveCount(0)
+    await expect(trigger).toBeFocused()
+  })
+
+  test('toggle theme and open public website actions work', async () => {
+    const before = await page.evaluate(() => document.documentElement.classList.contains('dark'))
+    await page.keyboard.press('Control+k')
+    await box().fill('theme')
+    await expect(page.getByRole('option').first()).toContainText(before ? 'Switch to light mode' : 'Switch to dark mode')
+    await page.keyboard.press('Enter')
+    await expect.poll(() => page.evaluate(() => document.documentElement.classList.contains('dark'))).toBe(!before)
+    // put it back
+    await page.keyboard.press('Control+k')
+    await box().fill('theme')
+    await page.keyboard.press('Enter')
+    await expect.poll(() => page.evaluate(() => document.documentElement.classList.contains('dark'))).toBe(before)
+    await page.keyboard.press('Control+k')
+    await box().fill('public website')
+    await page.keyboard.press('Enter')
+    await expect(page).toHaveURL(/\/$/)
+  })
+
+  test('the Log out action is offered but not run by browsing', async () => {
+    await page.keyboard.press('Control+k')
+    await box().fill('log out')
+    await expect(page.getByRole('option').first()).toContainText('Log out')
+    await page.keyboard.press('Escape')
+    await expect(page).toHaveURL(/\/admin\/system\/fields/)
+  })
+})

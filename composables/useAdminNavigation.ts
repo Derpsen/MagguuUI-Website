@@ -20,6 +20,7 @@ export interface AdminContextItem extends AdminNavLink {
 
 export interface AdminCommandItem extends AdminNavLink {
   group: string
+  id: string
 }
 
 const dashboardContext: AdminContextItem = {
@@ -222,11 +223,11 @@ const dockLinks: AdminNavLink[] = [
   ...adminSections.map(section => section.links[0]).filter((link): link is AdminNavLink => Boolean(link)),
 ]
 
-const commandActions: AdminCommandItem[] = [
+const commandActions: Omit<AdminCommandItem, 'id'>[] = [
   { group: 'Actions', to: '/admin/strings/profiles?action=create', label: 'New Addon Profile', icon: 'i-heroicons-plus', description: 'Create a new addon import string.' },
   { group: 'Actions', to: '/admin/content/changelog?action=create', label: 'New Update', icon: 'i-heroicons-plus', description: 'Document the latest release.' },
   { group: 'Actions', to: '/admin/strings/wowup?action=create', label: 'New WowUp String', icon: 'i-heroicons-plus', description: 'Add a new WowUp package string.' },
-  { group: 'Other', to: '/', label: 'View Website', icon: 'i-heroicons-arrow-top-right-on-square', description: 'Open the public website.' },
+  { group: 'Actions', to: '/', label: 'Open public website', icon: 'i-heroicons-arrow-top-right-on-square', description: 'Leave the admin and view the public site.' },
 ]
 
 export function isAdminPathActive(currentPath: string, targetPath: string, exact = false): boolean {
@@ -255,16 +256,22 @@ export function useAdminNavigation() {
     return contextItems.find(item => isAdminPathActive(path, item.to, item.to === '/admin')) || dashboardContext
   })
 
-  const commandItems = computed<AdminCommandItem[]>(() => [
-    { group: 'Overview', ...dashboardContext },
-    ...adminSections.flatMap(section =>
-      section.links.map(link => ({
-        ...link,
-        group: section.title,
-      })),
-    ),
-    ...commandActions,
-  ])
+  // Pages come from the same section list as the sidebar (children = tabs/sub-pages);
+  // actions are the "New ..." shortcuts. Theme/logout are added by the palette itself.
+  const commandItems = computed<AdminCommandItem[]>(() => {
+    const pages: Omit<AdminCommandItem, 'id'>[] = [
+      { group: 'Overview', ...dashboardContext },
+      ...adminSections.flatMap(section => section.links.flatMap(link => [
+        { ...link, group: section.title },
+        ...(link.children ?? []).map(child => ({
+          ...child,
+          label: `${link.label} › ${child.label}`,
+          group: section.title,
+        })),
+      ])),
+    ]
+    return [...pages, ...commandActions].map(item => ({ ...item, id: `${item.group}:${item.to}` }))
+  })
 
   return {
     sections: adminSections,

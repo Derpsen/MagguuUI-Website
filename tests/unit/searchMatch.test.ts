@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { queryTokens, searchEntries, type MatchableEntry } from '../../utils/searchMatch'
+import { queryTokens, searchEntries, withinOneEdit, type MatchableEntry } from '../../utils/searchMatch'
 
 const entries: MatchableEntry[] = [
   { id: 'g1', group: 'Guide', label: '1. Install EllesmereUI', text: 'Download EllesmereUI from CurseForge', body: 'Download EllesmereUI from CurseForge, Wago or WoWInterface and unpack it.', to: '/guide#step-1' },
@@ -53,5 +53,41 @@ describe('searchEntries', () => {
 
   it('returns nothing for a query that matches no entry', () => {
     assert.deepEqual(searchEntries(entries, 'qwertyuiop'), [])
+  })
+})
+
+describe('typo fallback', () => {
+  it('withinOneEdit allows one insert, delete or replace but not two', () => {
+    assert.ok(withinOneEdit('bigwigs', 'bigwigs'))
+    assert.ok(withinOneEdit('bigwigs', 'bigwigz'))
+    assert.ok(withinOneEdit('bigwigs', 'bigwig'))
+    assert.ok(withinOneEdit('bigwig', 'bigwigs'))
+    assert.ok(withinOneEdit('bgwigs', 'bigwigs'))
+    assert.ok(!withinOneEdit('bigwigs', 'bigwgz'))
+    assert.ok(!withinOneEdit('abcd', 'dcba'))
+    assert.ok(!withinOneEdit('abc', 'abcde'))
+  })
+
+  it('finds a misspelled word only when the strict pass returns nothing', () => {
+    assert.deepEqual(searchEntries(entries, 'bigwgis'), [])
+    assert.deepEqual(searchEntries(entries, 'bigwigz').map(h => h.entry.id), ['s1', 'g2'])
+    assert.deepEqual(searchEntries(entries, 'ellesmerui instal').map(h => h.entry.id), ['g1'])
+  })
+
+  it('tolerates a typo in a half-typed word (prefix + one edit)', () => {
+    assert.deepEqual(searchEntries(entries, 'zebrafsh').map(h => h.entry.id), ['g2', 'c1'])
+    assert.deepEqual(searchEntries(entries, 'zxbrxf'), [])
+    assert.deepEqual(searchEntries(entries, 'zebrfi').map(h => h.entry.id), ['g2', 'c1'])
+  })
+
+  it('never fuzzes short words and keeps strict hits untouched', () => {
+    assert.deepEqual(searchEntries(entries, 'adx'), [])
+    const strict = searchEntries(entries, 'zebrafish')
+    assert.deepEqual(strict.map(h => h.entry.id), ['g2', 'c1'])
+    assert.match(strict[1]!.snippet, /Zebrafish bug/)
+  })
+
+  it('still requires every word to match', () => {
+    assert.deepEqual(searchEntries(entries, 'bigwigz wago'), [])
   })
 })

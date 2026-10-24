@@ -418,4 +418,9 @@
 
 - Replaced the old PR-only home-page `lighthouse.yml` (no assertions, public temp storage, `pull-requests: write`) with an advisory budget workflow: 3 pages x mobile/desktop, median of 3, budgets in `.github/lighthouse-budgets.json`, checker `tools/lighthouse-budget.mjs` with unit tests. Job-level `continue-on-error`, no alarm job, not on push. Workflow-only change, so no docker image build.
 - Local baseline (VM, prod build): home mobile 83 / desktop 99, changelog 86 / 94, guide 81 / 98; LCP ~4.1 s mobile, ~234 KB transferred JS per page. On the CI runner: mobile home 81 / changelog 64 (LCP 8.4 s, reproducible in 2 of 3 runs, worth a look) / guide 78; desktop 99 / 94 / 98. Budgets calibrated to that. See AGENTS.md "Lighthouse budgets".
-- Note: `lighthouse-live.yml` reads `steps.lh.outputs.manifest`, which this action version does not declare; its summary table may be empty (not touched in this wave).
+
+## 2026-10-24 Follow-ups: changelog LCP, lighthouse-live, search typos
+
+- Root cause of /changelog mobile LCP 8.3 s: reproduced locally with the LHCI mobile config and a fresh DB (same 47 KB HTML as CI). Observed LCP was ~0.3 s; Lantern's simulation waited for the 880 KB `logo.png` (manifest icon fetched by Chrome). New `icon-192/512.png` in `manifest.json`: 8.26 s -> 4.03 s (perf 70 -> 82), home 4.1 s and guide 4.4-4.6 s unchanged. Real users were not affected much, but the icon was needlessly big.
+- `lighthouse-live.yml`: the `manifest` output does exist in the action source (just not in action.yml), so the table was not broken; it now reads `.lighthouseci/manifest.json`, adds `/changelog`, prints the table to the log and is job-level advisory. Kept (live-only value).
+- Search typo fallback implemented in `utils/searchMatch.ts` (see AGENTS.md).

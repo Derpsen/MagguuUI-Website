@@ -1,12 +1,12 @@
 {
-  "_comment": "Advisory Lighthouse budgets (see .github/workflows/lighthouse.yml). performance = minimum score, lcp/tbt in ms (max), cls (max), scriptKb = max transferred JavaScript in KB. Calibrated on the first GitHub-runner run (2026-10-24) and set slightly below it so regressions are flagged; shared runners are noisy, so re-run before acting and re-calibrate after intentional app changes.",
+  "_comment": "Advisory Lighthouse budgets (see .github/workflows/lighthouse.yml). performance = minimum score, lcp/tbt in ms (max), cls (max), scriptKb = max transferred JavaScript in KB. Calibrated on the first GitHub-runner run (2026-10-24), /changelog mobile tightened after the manifest-icon fix and set slightly below it so regressions are flagged; shared runners are noisy, so re-run before acting and re-calibrate after intentional app changes.",
   "pages": {
     "/": {
       "mobile": { "performance": 76, "lcp": 4800, "cls": 0.03, "tbt": 230, "scriptKb": 250 },
       "desktop": { "performance": 95, "lcp": 1300, "cls": 0.03, "tbt": 60, "scriptKb": 250 }
     },
     "/changelog": {
-      "mobile": { "performance": 58, "lcp": 9200, "cls": 0.03, "tbt": 380, "scriptKb": 245 },
+      "mobile": { "performance": 70, "lcp": 4800, "cls": 0.03, "tbt": 250, "scriptKb": 245 },
       "desktop": { "performance": 90, "lcp": 2000, "cls": 0.03, "tbt": 60, "scriptKb": 245 }
     },
     "/guide": {

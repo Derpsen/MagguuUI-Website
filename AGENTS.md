@@ -326,6 +326,11 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 
 - `.github/workflows/lighthouse.yml` builds the app, serves `.output/server/index.mjs` and runs Lighthouse CI (pinned `treosh/lighthouse-ci-action`, 3 runs, median) on `/`, `/changelog`, `/guide`, mobile + desktop (`.github/lighthouse/{mobile,desktop}.json`, performance category only).
 - Triggers: `pull_request` (app-code path filter), weekly schedule, `workflow_dispatch`. Not on push. Permissions `contents: read`, no secrets, no public upload (the old `temporaryPublicStorage` upload is gone).
-- Budgets live in `.github/lighthouse-budgets.json` (min performance score, max LCP/TBT in ms, max CLS, max transferred JS in KB), calibrated on the first GitHub-runner run and set slightly below it (mobile `/changelog` is the slow one: ~64 / LCP ~8.4 s with the seeded CI DB). `tools/lighthouse-budget.mjs` (unit-tested) writes the table to `$GITHUB_STEP_SUMMARY` and one `::warning::` per exceeded budget, and always exits 0.
+- Budgets live in `.github/lighthouse-budgets.json` (min performance score, max LCP/TBT in ms, max CLS, max transferred JS in KB), calibrated on the first GitHub-runner run and set slightly below it (mobile `/changelog`: ~82 / LCP ~4.0 s after the icon fix, was 70 / 8.3 s). `tools/lighthouse-budget.mjs` (unit-tested) writes the table to `$GITHUB_STEP_SUMMARY` and one `::warning::` per exceeded budget, and always exits 0.
 - The job has `continue-on-error: true`, is not a required check and has no failure-alarm job. Do not add one. Shared runners are noisy: treat a single warning as a hint, re-run before acting. Re-calibrate the budgets after intentional app changes.
-- `lighthouse-live.yml` (weekly production snapshot) is separate and unchanged.
+- `lighthouse-live.yml` (weekly snapshot of the production site: `/`, `/guide`, `/changelog`, `/strings`, all four categories) is kept for what only live shows. It reads `.lighthouseci/manifest.json`, is advisory (`continue-on-error`, no alarm job).
+- Gotcha: Lighthouse's simulated (Lantern) LCP waited for the 880 KB `logo.png` that Chrome fetches as the PWA manifest icon, which put mobile `/changelog` LCP at 8.3 s while the real observed LCP was ~0.3 s. The manifest now points at small `icon-192.png` / `icon-512.png` (256-colour, 7 KB / 25 KB). Keep manifest icons small; `logo.png` stays for hotlinks/OG.
+
+## Search typo fallback (2026-10-24)
+
+- `utils/searchMatch.ts`: only when the strict pass finds nothing, tokens of 4+ characters also match words one edit (insert/delete/replace) away from a word or from its first token-length (+-1) letters. Every token must still match. No dependency, about +0.3 KB gzip.

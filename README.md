@@ -50,7 +50,7 @@ This repository contains the public website for MagguuUI, the internal admin are
 - `assets/css/main.css`
   - public styling plus the scoped admin design system
 - `public/`
-  - static assets such as `logo.svg`, `manifest.json`, `robots.txt`, `sitemap.xml`
+  - static assets such as `logo.svg`, `manifest.json` (`/robots.txt` and `/sitemap.xml` come from the SEO modules)
 
 ## Admin UI
 

@@ -61,6 +61,9 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@nuxt/eslint',
     'nuxt-og-image',
+    '@nuxtjs/sitemap',
+    '@nuxtjs/robots',
+    'nuxt-link-checker',
     // @nuxt/icon, @nuxtjs/color-mode, @nuxt/fonts are auto-registered by @nuxt/ui v4
   ],
 
@@ -70,6 +73,46 @@ export default defineNuxtConfig({
   },
 
   ogImage: ogImageConfig,
+
+  // SEO modules (the individual @nuxtjs/* packages, not the @nuxtjs/seo umbrella,
+  // which would also pull nuxt-ai-ready, nuxt-skew-protection and nuxt-seo-utils).
+  // Schema.org stays hand-written in pages (home, FAQ): it is factual and a module
+  // would only duplicate it.
+  sitemap: {
+    // The list lives in server/api/__sitemap__/urls.ts: public pages only.
+    excludeAppSources: true,
+    sources: ['/api/__sitemap__/urls'],
+    exclude: ['/admin/**', '/api/**', '/_og/**', '/__og-image__/**'],
+    credits: false,
+    xsl: false,
+    autoLastmod: false,
+  },
+
+  robots: {
+    credits: false,
+    // Same rules as the old public/robots.txt: everything public, no admin, no API.
+    groups: [
+      { userAgent: ['*'], allow: ['/'], disallow: ['/admin/', '/api/'] },
+    ],
+  },
+
+  // Link checker is CI-only (LINK_CHECK=1, see .github/workflows/link-check.yml):
+  // it reads prerendered pages, and the production build is SSR. Never in the image.
+  linkChecker: {
+    enabled: process.env.LINK_CHECK === '1',
+    failOnError: false,
+    runOnBuild: true,
+    fetchRemoteUrls: true,
+    excludeLinks: [
+      '/admin/**',
+      '/api/**',
+      // CurseForge answers bots with 403 (every link is a false positive).
+      /^https:\/\/www\.curseforge\.com\//,
+    ],
+    // Addon names in ?addon= values are intentionally mixed case.
+    skipInspections: ['no-uppercase-chars'],
+    report: { markdown: true, json: true, publish: false },
+  },
 
   app: {
     head: {
@@ -188,6 +231,16 @@ export default defineNuxtConfig({
       },
     },
     compressPublicAssets: true,
+    // Only for the CI link check (LINK_CHECK=1): prerender the public pages so
+    // nuxt-link-checker has HTML to scan. Never set for the image build.
+    ...(process.env.LINK_CHECK === '1'
+      ? {
+          prerender: {
+            failOnError: false,
+            routes: ['/', '/guide', '/faq', '/changelog', '/about', '/addons', '/imprint', '/privacy', '/strings'],
+          },
+        }
+      : {}),
     externals: {
       inline: ['@simplewebauthn/server'],
     },

@@ -1,0 +1,101 @@
+name: Link check (build)
+
+# Advisory link check (nuxt-link-checker). WARNING ONLY: never blocks and stays
+# green (step-level and job-level continue-on-error, not a required check, no
+# failure alarm). The production build is SSR, so a separate build with
+# LINK_CHECK=1 prerenders the public pages into a throwaway runner; the image
+# build never sets it. Findings are in the job summary and as annotations.
+# The weekly check of the live site is linkcheck.yml (scripts/check-links.mjs).
+# Known false positives are excluded in nuxt.config.ts (CurseForge answers
+# bots with 403; addon query values are intentionally mixed case).
+
+on:
+  pull_request:
+    paths:
+      - 'pages/**'
+      - 'components/**'
+      - 'server/plugins/init.ts'
+      - 'utils/siteSettingsDefaults.ts'
+      - 'nuxt.config.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: link-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  link-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        # actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        # actions/setup-node@v6.4.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 26
+          cache: npm
+
+      - run: npm ci
+
+      - name: Prerender public pages and scan links (advisory)
+        id: scan
+        continue-on-error: true
+        env:
+          LINK_CHECK: "1"
+          NODE_ENV: production
+          # Throwaway values for the prerender's server start; nothing is deployed.
+          NUXT_JWT_SECRET: ci-link-check-jwt-secret-0123456789abcdef
+          NUXT_ADMIN_PASSWORD: ci-link-check-admin-password-0123456789
+          NUXT_APP_SECRET: ci-link-check-app-secret-0123456789abcdef
+          NUXT_OG_IMAGE_SECRET: ci-link-check-og-image-secret-0123456789
+        run: |
+          mkdir -p data
+          npm run build
+
+      - name: Report to job summary
+        if: always()
+        env:
+          OUTCOME: ${{ steps.scan.outcome }}
+        run: |
+          json=.output/link-checker-report.json
+          md=.output/link-checker-report.md
+          {
+            echo "## Link check (advisory, never blocks)"
+            echo
+            echo "build step outcome: \`${OUTCOME}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ ! -f "$json" ]; then
+            echo "::warning::Link check produced no report (build step: ${OUTCOME})."
+            exit 0
+          fi
+          errors=$(jq '[.[].reports[].error[]] | length' "$json")
+          warnings=$(jq '[.[].reports[].warning[]] | length' "$json")
+          echo "- errors: ${errors}, warnings: ${warnings}" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$errors" -gt 0 ]; then
+            echo "::warning::Link check found ${errors} broken link(s); see the job summary."
+            jq -r '.[] | .route as $r | .reports[] | select((.error | length) > 0) | "- `\($r)` -> \(.link): \(.error[0].message)"' "$json" | head -50 >> "$GITHUB_STEP_SUMMARY"
+          fi
+          head -c 60000 "$md" >> "$GITHUB_STEP_SUMMARY" || true
+          exit 0
+
+      - name: Upload report
+        if: always()
+        # actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: link-checker-report
+          path: .output/link-checker-report.*
+          if-no-files-found: ignore
+          retention-days: 14

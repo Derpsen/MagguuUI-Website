@@ -400,3 +400,8 @@
 
 - Added `failure-alarm.yml` (copy of the MagguuUI template + `commit_sha` input + same-commit dedupe lookup), alarm jobs in 6 workflows, `.github/zizmor.yml`, `tools/failure-alarm.test.sh` (runs in quality.yml). One real webhook test was done from the throwaway branch `tmp/escalation-test` (deleted afterwards): HTTP 200, no repeat runs.
 - Follow-ups: feed memo in `changelogFeedResponse.ts`; E2E seed has Unreleased + draft rows; osv-scanner step uses `set -o pipefail`; `/changelog` lost its page swr rule (query variants were cached per URL); undici override 8.12.3.
+
+## 2026-10-24 Task B: SEO modules
+
+- Added @nuxtjs/sitemap, @nuxtjs/robots, nuxt-link-checker (no umbrella, no nuxt-schema-org: existing JSON-LD is enough). Sitemap source `server/api/__sitemap__/urls.ts`, robots via `robots` config; removed `server/routes/sitemap.xml.ts` and `public/robots.txt`. Filtered `/changelog?...` views are noindex. Link check is CI-only (`LINK_CHECK=1`, `link-check.yml`, warning only).
+- Client bundle unchanged (4.8 MB, 271 files in `_nuxt` before and after). See AGENTS.md "SEO modules".

@@ -162,6 +162,9 @@ const filterResult = computed(() => filterChangelog(releases.value, {
   q: queryText('q'),
 }))
 const filtering = computed(() => filterResult.value.active)
+// Filtered views are shareable but are not separate pages: keep them out of the
+// index (canonical already points at /changelog). Sets meta and X-Robots-Tag.
+useRobotsRule(computed(() => filtering.value ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'))
 const filterErrors = computed(() => filterResult.value.errors)
 const shown = computed(() => filterResult.value.items)
 const latestId = computed(() => releases.value[0]?.id)

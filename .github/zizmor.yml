@@ -1,0 +1,16 @@
+# zizmor config.
+#
+# self-repository: the callers of the failure alarm use `uses: ./.github/workflows/failure-alarm.yml`.
+# zizmor 1.31 prefers GitHub's `uses: $/...` syntax, but actionlint 1.7.x (pre-push + CI) rejects it as an
+# invalid workflow-call format, so the workspace-relative form stays until actionlint supports `$/`. A reusable
+# workflow call resolves from the same commit, not from a checkout step, so the supply-chain risk the audit
+# describes does not apply.
+rules:
+  self-repository:
+    ignore:
+      - build.yml
+      - docker.yml
+      - codeql.yml
+      - quality.yml
+      - drift.yml
+      - post-deploy-smoke.yml

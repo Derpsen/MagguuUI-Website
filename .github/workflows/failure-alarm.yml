@@ -1,0 +1,131 @@
+name: Failure alarm
+
+# Reusable workflow (workflow_call only), same template as MagguuUI/failure-alarm.yml and MagguuBot/ci-alarm.yml.
+# Build, docker, CodeQL, Quality, Drift and Post-deploy smoke call it from an `alarm` job with `if: failure()`
+# on main. It posts ONE JSON alarm to the escalation webhook; it never fails the calling run and never logs a
+# secret or the response body. NOT wired into the advisory zizmor / osv-scanner workflows.
+# Dedupe: (1) one alarm per run (run_attempt > 1 sends nothing), (2) no alarm when an earlier run of the same
+# workflow on the same commit already failed (lookup via the Actions API), (3) `dedupe_key = workflow@sha` in the
+# payload for the receiver.
+#
+# Secrets (repo secrets, passed explicitly by the callers, never `secrets: inherit`):
+#   ESCALATION_WEBHOOK_URL  endpoint (the URL itself is secret)
+#   ESCALATION_BEARER       bearer token for the Authorization header
+# Missing or empty secrets (fork PRs, unset repo) = skip silently, exit 0.
+
+on:
+  workflow_call:
+    inputs:
+      commit_sha:
+        description: "Commit the failed run is about (default github.sha, workflow_run callers pass head_sha)"
+        required: false
+        type: string
+        default: ''
+    secrets:
+      ESCALATION_WEBHOOK_URL:
+        required: false
+      ESCALATION_BEARER:
+        required: false
+
+permissions: {}
+
+jobs:
+  alarm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+    permissions:
+      actions: read
+    steps:
+      - name: Send failure alarm
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WEBHOOK_URL: ${{ secrets.ESCALATION_WEBHOOK_URL }}
+          BEARER: ${{ secrets.ESCALATION_BEARER }}
+          REPO: ${{ github.repository }}
+          WORKFLOW: ${{ github.workflow }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SHA: ${{ inputs.commit_sha || github.sha }}
+          BRANCH: ${{ github.ref_name }}
+          EVENT: ${{ github.event_name }}
+        # Keep this the LAST step and the script the whole `run:` block: tools/failure-alarm.test.sh
+        # extracts everything after the `run: |` line below and runs it against a fake gh + local server.
+        run: |
+          set +x
+          set -u
+          if [ -z "${WEBHOOK_URL:-}" ] || [ -z "${BEARER:-}" ]; then
+            echo "Escalation secrets not available; alarm skipped."
+            exit 0
+          fi
+          if [ "${RUN_ATTEMPT:-1}" -gt 1 ]; then
+            echo "Re-run (attempt ${RUN_ATTEMPT}); alarm not re-sent."
+            exit 0
+          fi
+
+          # Earlier failed run of the same workflow on the same commit already raised an alarm.
+          prior=$(gh api "repos/${REPO}/actions/runs?head_sha=${SHA}&per_page=100" 2>/dev/null |
+            jq -r --arg w "$WORKFLOW" --argjson id "$RUN_ID" \
+              '[.workflow_runs[]? | select(.name == $w and .id < $id and .conclusion == "failure")] | length' 2>/dev/null) || prior=0
+          if [ "${prior:-0}" -gt 0 ] 2>/dev/null; then
+            echo "Earlier failed run of ${WORKFLOW} on ${SHA::7} exists; alarm not repeated."
+            exit 0
+          fi
+
+          mask() {
+            # Strips ANSI + timestamps, then masks tokens, auth headers and both secret values.
+            sed -E 's/\x1b\[[0-9;]*[A-Za-z]//g; s/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+Z //' |
+              sed -E 's/gh[pousr]_[A-Za-z0-9]{20,}/***/g; s/github_pat_[A-Za-z0-9_]{20,}/***/g' |
+              sed -E 's/([Bb]earer|[Bb]asic|[Tt]oken)[[:space:]]+[A-Za-z0-9._~+\/=-]+/\1 ***/g' |
+              sed -E 's/([Aa]uthorization)[[:space:]]*[:=].*/\1: ***/g' |
+              awk '
+                function scrub(line, secret,   out, i) {
+                  if (secret == "") return line
+                  out = ""
+                  while ((i = index(line, secret)) > 0) {
+                    out = out "***"
+                    line = substr(line, i + length(secret))
+                  }
+                  return out line
+                }
+                { print scrub(scrub($0, ENVIRON["WEBHOOK_URL"]), ENVIRON["BEARER"]) }'
+          }
+
+          jobs_json=$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/attempts/${RUN_ATTEMPT}/jobs?per_page=100" 2>/dev/null) ||
+            jobs_json='{"jobs":[]}'
+          failed=$(printf '%s' "$jobs_json" | jq -c '[.jobs[]? | select(.conclusion == "failure")][:3][] |
+            {id, name, steps: [.steps[]? | select(.conclusion == "failure") | .name]}' 2>/dev/null) || failed=""
+
+          details='[]'
+          while IFS= read -r job; do
+            [ -n "$job" ] || continue
+            id=$(printf '%s' "$job" | jq -r '.id')
+            tail_txt=$(gh api "repos/${REPO}/actions/jobs/${id}/logs" 2>/dev/null |
+              awk '{ l[NR] = $0; if ($0 ~ /##\[error\]/) e = NR }
+                   END { end = (e > 0 ? e : NR); start = end - 19; if (start < 1) start = 1
+                         for (i = start; i <= end; i++) print l[i] }' | mask | cut -c1-300) || tail_txt=""
+            details=$(printf '%s' "$details" | jq -c --argjson job "$job" --arg log "$tail_txt" \
+              '. + [{job: $job.name, failed_steps: $job.steps, log_tail: $log}]')
+          done <<< "$failed"
+
+          payload=$(mktemp)
+          jq -n \
+            --arg repo "$REPO" --arg workflow "$WORKFLOW" --arg run_url "$RUN_URL" --arg sha "$SHA" \
+            --arg branch "$BRANCH" --arg event "$EVENT" --arg attempt "$RUN_ATTEMPT" \
+            --argjson failed_jobs "$details" '{
+              repo: $repo, workflow: $workflow, run_url: $run_url, commit_sha: $sha, branch: $branch,
+              event: $event, run_attempt: ($attempt | tonumber),
+              dedupe_key: ($workflow + "@" + $sha),
+              text: ("CI failed: " + $repo + " / " + $workflow + " @ " + $sha[0:7] + " (" + $branch + ") " + $run_url),
+              failed_jobs: $failed_jobs
+            }' > "$payload" || { echo "Could not build alarm payload; skipped."; exit 0; }
+
+          # curl config on stdin: URL and bearer never appear in argv, logs or error text.
+          code=$(printf 'url = "%s"\nheader = "Authorization: Bearer %s"\n' "$WEBHOOK_URL" "$BEARER" |
+            curl -sS --max-time 15 -K - -X POST -H "Content-Type: application/json" --data-binary "@${payload}" \
+              -o /dev/null -w '%{http_code}' 2>/dev/null) || code="error"
+          rm -f "$payload"
+          echo "Failure alarm for ${WORKFLOW}@${SHA::7}: webhook status ${code}"
+          exit 0

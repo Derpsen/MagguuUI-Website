@@ -34,6 +34,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Failure alarm dry run (fake gh, local server, no real webhook)
+        run: bash tools/failure-alarm.test.sh
+
       - name: actionlint
         run: |
           curl -sSfL -o actionlint.tgz "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
@@ -42,4 +45,17 @@ jobs:
           ./actionlint -color
 
       - name: zizmor
-        run: pipx run "zizmor==${ZIZMOR_VERSION}" --format=github --min-severity=medium .github/workflows
+        run: pipx run "zizmor==${ZIZMOR_VERSION}" --config .github/zizmor.yml --format=github --min-severity=medium .github/workflows
+
+  alarm:
+    # Failure alarm to the escalation webhook (main only; silent without secrets; never fails the run).
+    # Template: failure-alarm.yml. Dedupe: one per run, none if the same workflow already failed on this commit.
+    name: failure alarm
+    needs: [quality]
+    if: ${{ failure() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    permissions:
+      actions: read
+    uses: ./.github/workflows/failure-alarm.yml
+    secrets:
+      ESCALATION_WEBHOOK_URL: ${{ secrets.ESCALATION_WEBHOOK_URL }}
+      ESCALATION_BEARER: ${{ secrets.ESCALATION_BEARER }}

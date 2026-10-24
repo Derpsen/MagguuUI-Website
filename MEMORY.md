@@ -395,3 +395,7 @@
 
 - Hotfix first: undici override 8.11.2 -> 8.12.2 (GHSA-xjj6-f33q-929c high, plus two moderate) because `audit:prod` blocked Build + docker verify on 877f2bf. Fix 738ce95 went live via auto-deploy.
 - `tools/drift-check.sh` replaced by `tools/magguu-drift.py` + new-format `tools/drift-allow.txt`; runs in `drift.yml` without paths-ignore. osv-scanner advisory workflow + `osv-scanner.toml` (3 reasoned ignores). `${{ }}` in dependabot-automerge `run:` moved to env. Details in AGENTS.md.
+
+## 2026-10-24 Task A: CI failure alarm
+
+- Added `failure-alarm.yml` (copy of the MagguuUI template + `commit_sha` input + same-commit dedupe lookup), alarm jobs in 6 workflows, `.github/zizmor.yml`, `tools/failure-alarm.test.sh` (runs in quality.yml). One real webhook test was done from a throwaway branch `tmp/escalation-test` (deleted afterwards); see the report for the HTTP code.

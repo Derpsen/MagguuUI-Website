@@ -78,3 +78,16 @@ jobs:
           name: public
           path: .output/public
           retention-days: 7
+
+  alarm:
+    # Failure alarm to the escalation webhook (main only; silent without secrets; never fails the run).
+    # Template: failure-alarm.yml. Dedupe: one per run, none if the same workflow already failed on this commit.
+    name: failure alarm
+    needs: [build]
+    if: ${{ failure() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    permissions:
+      actions: read
+    uses: ./.github/workflows/failure-alarm.yml
+    secrets:
+      ESCALATION_WEBHOOK_URL: ${{ secrets.ESCALATION_WEBHOOK_URL }}
+      ESCALATION_BEARER: ${{ secrets.ESCALATION_BEARER }}

@@ -46,3 +46,16 @@ jobs:
         uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370
         with:
           category: "/language:${{ matrix.language }}"
+
+  alarm:
+    # Failure alarm to the escalation webhook (main only; silent without secrets; never fails the run).
+    # Template: failure-alarm.yml. Dedupe: one per run, none if the same workflow already failed on this commit.
+    name: failure alarm
+    needs: [analyze]
+    if: ${{ failure() && (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/main' }}
+    permissions:
+      actions: read
+    uses: ./.github/workflows/failure-alarm.yml
+    secrets:
+      ESCALATION_WEBHOOK_URL: ${{ secrets.ESCALATION_WEBHOOK_URL }}
+      ESCALATION_BEARER: ${{ secrets.ESCALATION_BEARER }}

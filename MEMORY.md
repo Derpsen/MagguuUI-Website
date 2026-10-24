@@ -417,5 +417,5 @@
 ## 2026-10-24 Wave 5: Lighthouse budgets (advisory)
 
 - Replaced the old PR-only home-page `lighthouse.yml` (no assertions, public temp storage, `pull-requests: write`) with an advisory budget workflow: 3 pages x mobile/desktop, median of 3, budgets in `.github/lighthouse-budgets.json`, checker `tools/lighthouse-budget.mjs` with unit tests. Job-level `continue-on-error`, no alarm job, not on push. Workflow-only change, so no docker image build.
-- Local baseline (VM, prod build): home mobile 83 / desktop 99, changelog 86 / 94, guide 81 / 98; LCP ~4.1 s mobile, ~234 KB transferred JS per page. The earlier changelog-mobile 70 was a noisy run. See AGENTS.md "Lighthouse budgets".
+- Local baseline (VM, prod build): home mobile 83 / desktop 99, changelog 86 / 94, guide 81 / 98; LCP ~4.1 s mobile, ~234 KB transferred JS per page. On the CI runner: mobile home 81 / changelog 64 (LCP 8.4 s, reproducible in 2 of 3 runs, worth a look) / guide 78; desktop 99 / 94 / 98. Budgets calibrated to that. See AGENTS.md "Lighthouse budgets".
 - Note: `lighthouse-live.yml` reads `steps.lh.outputs.manifest`, which this action version does not declare; its summary table may be empty (not touched in this wave).

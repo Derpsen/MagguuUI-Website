@@ -6,7 +6,7 @@
       "desktop": { "performance": 95, "lcp": 1300, "cls": 0.03, "tbt": 60, "scriptKb": 250 }
     },
     "/changelog": {
-      "mobile": { "performance": 70, "lcp": 4800, "cls": 0.03, "tbt": 250, "scriptKb": 245 },
+      "mobile": { "performance": 74, "lcp": 4600, "cls": 0.03, "tbt": 260, "scriptKb": 245 },
       "desktop": { "performance": 90, "lcp": 2000, "cls": 0.03, "tbt": 60, "scriptKb": 245 }
     },
     "/guide": {

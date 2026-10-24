@@ -59,9 +59,9 @@ export function displayRichText(source: string, options: MarkdownRenderOptions =
 }
 
 /** Markdown/HTML to plain text for compact list previews (no raw ** / ### markers). */
-export function plainTextPreview(source: string, maxLen = 150): string {
+export function plainTextPreview(source: string, maxLen = 150, options: MarkdownRenderOptions = {}): string {
   if (!source) return ''
-  const html = displayRichText(source)
+  const html = displayRichText(source, options)
   const text = html
     .replace(/<[^>]*>/g, ' ')
     .replace(/&nbsp;/gi, ' ')

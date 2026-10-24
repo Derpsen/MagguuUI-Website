@@ -1,18 +1,17 @@
 <!--
-  PublicSearch — Ctrl/Cmd+K search over Guide, FAQ and Strings.
+  PublicSearch — Ctrl/Cmd+K full-text search over Guide, Changelog, FAQ and Strings.
   Loaded lazily (LazyPublicSearch) the first time search opens; the index is
   fetched once from /api/v1/search-index.
 -->
 <template>
-  <UModal v-model:open="open" title="Search" description="Search the guide, FAQ and import strings." :ui="{ content: 'max-w-xl max-h-[80vh] overflow-y-auto' }">
+  <UModal v-model:open="open" title="Search" description="Search the guide, changelog, FAQ and import strings." :ui="{ content: 'max-w-xl max-h-[80vh] overflow-y-auto' }">
     <template #content>
       <UCommandPalette
         v-model:search-term="term"
         :groups="groups"
         :loading="pending"
-        placeholder="Search guide, FAQ, strings…"
-        :fuse="{ resultLimit: 8, fuseOptions: { keys: ['label', 'suffix'], threshold: 0.35, ignoreLocation: true } }"
-        :input="{ 'aria-label': 'Search guide, FAQ and strings' }"
+        placeholder="Search guide, changelog, FAQ, strings…"
+        :input="{ 'aria-label': 'Search guide, changelog, FAQ and strings' }"
         :ui="{ viewport: 'overflow-visible', itemLabelSuffix: 'text-muted', itemDescription: 'text-muted', label: 'text-muted' }"
         data-testid="public-search"
         @update:model-value="go"
@@ -22,7 +21,9 @@
 </template>
 
 <script setup lang="ts">
-interface SearchEntry { id: string, group: string, label: string, text: string, to: string }
+import { searchEntries, type MatchableEntry } from '~/utils/searchMatch'
+
+type SearchEntry = MatchableEntry
 
 const open = defineModel<boolean>('open', { default: false })
 const term = ref('')
@@ -55,11 +56,17 @@ function nameListbox() {
 watch([open, entries, term], () => { void nextTick(() => requestAnimationFrame(nameListbox)) }, { flush: 'post' })
 onMounted(() => requestAnimationFrame(nameListbox))
 
-const groups = computed(() => (['Guide', 'FAQ', 'Strings'] as const).map(id => ({
-  id,
-  label: id,
-  items: entries.value.filter(e => e.group === id).map(e => ({ id: e.id, label: e.label, suffix: e.text, to: e.to })),
-})))
+// Matching is done here (utils/searchMatch.ts), so the palette's own filter is
+// switched off per group; hits carry a body snippet when only the full text matched.
+const groups = computed(() => {
+  const hits = searchEntries(entries.value, term.value)
+  return (['Guide', 'Changelog', 'FAQ', 'Strings'] as const).map(id => ({
+    id,
+    label: id,
+    ignoreFilter: true,
+    items: hits.filter(h => h.entry.group === id).map(h => ({ id: h.entry.id, label: h.entry.label, suffix: h.snippet, to: h.entry.to })),
+  }))
+})
 
 function go(item: unknown) {
   const to = (item as { to?: string } | null)?.to

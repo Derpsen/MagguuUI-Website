@@ -47,7 +47,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
 - Queue A–J 2026-10-14 (keep these invariants):
   - RUM: `/api/v1/vitals` stores path + metric + value only (no IP/UA/cookie);
     never add identifiers. Admin view: `/admin/system/vitals` (p75).
-  - Search: `/api/v1/search-index` is public data only; `PublicSearch.vue`
+  - Search: `/api/v1/search-index` is public data only (full-text since 2026-10-24, see "Full-text search"); `PublicSearch.vue`
     and `web-vitals` stay out of public prefetch (`ADMIN_ONLY_CHUNK`).
   - Speculation Rules (`utils/speculationRules.ts`) must keep excluding
     `/admin*` and `/api/*`.
@@ -314,3 +314,10 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 - **Stamp:** `utils/stringStamp.ts` builds "Version X.Y.Z, updated YYYY-MM-DD". Date = the row's `updatedAt` (UTC day). Version = newest published `vX.Y.Z` changelog release whose UTC publish day is on or before that day (from `GET /api/v1/release-stamps`, swr 120, published rows only, never Unreleased). There is NO per-string version column, so this is a best-effort inference; with no matching release only "Updated YYYY-MM-DD" shows. Profile, layout and WowUp rows all carry `updatedAt`; admin PUT/PATCH bumps it.
 - **Guide section "Apply only one module"** (`#apply-one-module` in `pages/guide.vue`, static, not in the editable steps) was verified against the addon source: `MUE:InstallAll` (MagguuUI_Data/Profiles/Setup.lua) has no per-module selection, only the "Include Magguu Settings" toggle. Single imports live in Setup under Required/Optional (`MUE:BuildIndividualProfileOptions`, MagguuUI_EUI/Tools.lua): EllesmereUI profile, class layouts, BigWigs, Northern Sky, EXBoss, Smart Reminders, Whisper Messenger (optional ones only while the addon is installed). WaypointUI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack and PGF have no single-import button. Re-check this list when the addon's Setup page changes.
 - Tests: `tests/unit/stringStamp.test.ts`, `tests/unit/clipboard.test.ts`, `tests/strings-copy.spec.ts`.
+
+## Full-text search (2026-10-24)
+
+- No Nuxt Content, no new dependency: Nuxt Content would add its own SQLite store, a second content source next to `site_content`/`changelogs` (both are DB-edited in the admin), and a build-time index, which does not fit this stack. Instead the existing Ctrl+K palette (`components/PublicSearch.vue`, lazy) got full-text matching.
+- `server/utils/searchIndex.ts` now also emits Changelog entries (published `vX.Y.Z` only, newest 24, `contentEn || content`, never Unreleased/drafts) and a plain-text `body` (capped at `SEARCH_BODY_MAX`) for Guide steps, FAQ and Changelog. Strings stay label-only. `STATIC_GUIDE_SECTIONS` lists guide sections that are static in `pages/guide.vue` (currently `#apply-one-module`); update it when that copy changes.
+- `utils/searchMatch.ts` does the matching in the browser: every word must occur (case-insensitive substring) in label, preview or body; label > preview > body; body-only hits show a snippet. Groups are passed with `ignoreFilter: true`, so the palette's Fuse filter is off. Trade-off: no typo tolerance any more.
+- Tests: `tests/unit/searchMatch.test.ts`, `tests/unit/searchIndex.test.ts`, `tests/queue.spec.ts` ("full-text search"), plus the axe test for the search dialog.

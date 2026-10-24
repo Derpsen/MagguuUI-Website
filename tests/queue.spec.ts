@@ -62,12 +62,56 @@ test.describe('search (Ctrl+K)', () => {
     await page.keyboard.press('Control+k')
     const palette = page.getByTestId('public-search')
     await expect(palette).toBeVisible()
-    await page.getByPlaceholder('Search guide, FAQ, strings…').fill('What is MagguuUI')
+    await page.getByPlaceholder('Search guide, changelog, FAQ, strings…').fill('What is MagguuUI')
     const option = page.getByRole('option', { name: /What is MagguuUI/ }).first()
     await expect(option).toBeVisible()
     await option.click()
     await expect(page).toHaveURL(/\/faq#faq-what-is-magguuui/)
     expect(indexRequests.length).toBe(1)
+  })
+})
+
+test.describe('full-text search (guide + changelog)', () => {
+  test('finds words that only occur in a changelog body', async ({ page }) => {
+    await page.goto('/')
+    await page.waitForLoadState('networkidle')
+    await page.keyboard.press('Control+k')
+    const input = page.getByPlaceholder('Search guide, changelog, FAQ, strings…')
+    await expect(input).toBeVisible()
+    await expect(input).toHaveAccessibleName(/Search guide, changelog, FAQ and strings/)
+    // "Zebrafish" is only in the body of the seeded v0.9.1 and v0.9.3 notes.
+    await input.fill('zebrafish')
+    const option = page.getByRole('option', { name: /Changelog · v0\.9\.3/ })
+    await expect(option).toBeVisible()
+    await expect(page.getByRole('option', { name: /Changelog · v0\.9\.2/ })).toHaveCount(0)
+    await expect(option).toContainText('Zebrafish')
+    await option.click()
+    await expect(page).toHaveURL(/\/changelog#release-v0-9-3/)
+  })
+
+  test('never leaks Unreleased or draft notes', async ({ page }) => {
+    await page.goto('/')
+    await page.waitForLoadState('networkidle')
+    await page.keyboard.press('Control+k')
+    const input = page.getByPlaceholder('Search guide, changelog, FAQ, strings…')
+    // Wait until the index is loaded (a real hit shows), then the sentinels must not match.
+    await input.fill('zebrafish')
+    await expect(page.getByRole('option', { name: /Changelog · v0\.9\.3/ })).toBeVisible()
+    await input.fill('UNRELEASEDMARK')
+    await expect(page.getByRole('option')).toHaveCount(0)
+    await input.fill('DRAFTMARK')
+    await expect(page.getByRole('option')).toHaveCount(0)
+  })
+
+  test('finds the static guide section by body text', async ({ page }) => {
+    await page.goto('/')
+    await page.waitForLoadState('networkidle')
+    await page.keyboard.press('Control+k')
+    await page.getByPlaceholder('Search guide, changelog, FAQ, strings…').fill('premade groups filter')
+    const option = page.getByRole('option', { name: /Apply only one module/ })
+    await expect(option).toBeVisible()
+    await option.click()
+    await expect(page).toHaveURL(/\/guide#apply-one-module/)
   })
 })
 

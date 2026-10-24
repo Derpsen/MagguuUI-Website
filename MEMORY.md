@@ -409,3 +409,7 @@
 ## 2026-10-24 Wave 3: Strings copy, stamps, single-module guide
 
 - The big gradient "Copy String" buttons became a small plain `StringCopyButton` with an aria-live status; `doCopy` used to return true even when `execCommand` failed, now it reports failure. Per-string version/date stamps come from `updatedAt` + published releases (`/api/v1/release-stamps`); no per-string version exists, so the version is an inference (gap reported). Guide got a static "Apply only one module" section verified against the addon source. See AGENTS.md.
+
+## 2026-10-24 Wave 4: full-text search
+
+- Nuxt Content rejected (second content store + build-time index vs. DB-edited content). Extended the lazy Ctrl+K index with Changelog entries and full plain-text bodies and replaced Fuse with `utils/searchMatch.ts` (AND of words, ranked, snippets). No new dependency; no typo tolerance anymore. See AGENTS.md "Full-text search".

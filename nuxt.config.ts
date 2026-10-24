@@ -322,7 +322,13 @@ export default defineNuxtConfig({
     '/': { swr: 120 },
     '/guide': { swr: 120 },
     '/faq': { swr: 120 },
-    '/changelog': { swr: 120 },
+    // Deliberately NO page-level swr for /changelog: it takes ?since/from/to/q, and
+    // Nitro's route cache keys on the full URL, so every query variant would get its
+    // own entry (unbounded growth, and route rules cannot express a getKey or bypass).
+    // The page reads its data from /api/v1/changelogs (bare URL, swr 120 below), so the
+    // origin cost per render stays one cached API hit; the bare URL is still edge-cached
+    // via CDN-Cache-Control (publicCache.ts), query variants never are.
+    '/changelog': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
     '/about': { swr: 120 },
     '/addons': { swr: 120 },
     '/imprint': { swr: 120 },

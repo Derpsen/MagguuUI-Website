@@ -27,10 +27,37 @@ function loadFeedEntries(): FeedEntry[] {
     }))
 }
 
-export function serveChangelogFeed(event: H3Event, kind: 'rss' | 'atom') {
+type FeedKind = 'rss' | 'atom'
+
+// Bounded in-process memo: at most one rendered body per feed kind (2 entries).
+// Keyed by a hash of the entry data itself, so an admin edit, publish or sync
+// changes the key on the next request and nothing needs explicit invalidation.
+// The DB read stays per request (20 rows, cheap); only the markdown -> HTML
+// rendering and the XML build are skipped while the content is unchanged.
+const feedMemo = new Map<FeedKind, { key: string, body: string, etag: string }>()
+
+function entriesKey(entries: FeedEntry[]): string {
+  const hash = createHash('sha1')
+  for (const e of entries) {
+    hash.update(`${e.id}\u0000${e.version}\u0000${e.publishedAt ? new Date(e.publishedAt).getTime() : ''}\u0000${e.content}\u0001`)
+  }
+  return hash.digest('hex')
+}
+
+function renderFeed(kind: FeedKind): { body: string, etag: string } {
   const entries = loadFeedEntries()
+  const key = entriesKey(entries)
+  const hit = feedMemo.get(kind)
+  if (hit && hit.key === key) return hit
   const body = kind === 'rss' ? buildRss(entries) : buildAtom(entries)
   const etag = `"${createHash('sha1').update(body).digest('hex').slice(0, 20)}"`
+  const fresh = { key, body, etag }
+  feedMemo.set(kind, fresh)
+  return fresh
+}
+
+export function serveChangelogFeed(event: H3Event, kind: FeedKind) {
+  const { body, etag } = renderFeed(kind)
 
   setResponseHeader(event, 'Content-Type', kind === 'rss' ? 'application/rss+xml; charset=utf-8' : 'application/atom+xml; charset=utf-8')
   setResponseHeader(event, 'X-Content-Type-Options', 'nosniff')

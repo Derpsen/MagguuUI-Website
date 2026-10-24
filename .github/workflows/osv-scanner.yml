@@ -56,7 +56,11 @@ jobs:
       - name: Scan package-lock.json (advisory)
         id: osv
         continue-on-error: true
-        run: ./osv-scanner scan source --lockfile=package-lock.json 2>&1 | tee "${RUNNER_TEMP}/osv.txt"
+        # Default `bash -e {0}` has no pipefail: without it `| tee` hides osv-scanner's exit
+        # code and the summary step could never see "failure".
+        run: |
+          set -o pipefail
+          ./osv-scanner scan source --lockfile=package-lock.json 2>&1 | tee "${RUNNER_TEMP}/osv.txt"
 
       - name: Findings to job summary
         if: always()

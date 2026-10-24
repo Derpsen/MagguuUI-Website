@@ -88,7 +88,11 @@ for (const [path, type, root] of [
     const body = await res.text()
     expect(body).toContain(root)
     expect(body).toContain('v0.9.3')
+    // The seed holds an Unreleased row and an unpublished v0.9.4: neither may appear.
     expect(body).not.toContain('Unreleased')
+    expect(body).not.toContain('UNRELEASEDMARK')
+    expect(body).not.toContain('DRAFTMARK')
+    expect(body).not.toContain('v0.9.4')
     const again = await request.get(path, { headers: { 'If-None-Match': etag! } })
     expect(again.status()).toBe(304)
   })

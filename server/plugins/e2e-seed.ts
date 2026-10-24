@@ -33,6 +33,9 @@ const E2E_CHANGELOG = [
   { version: 'v0.9.3', content: '- E2E third release mentions Zebrafish.', at: 3 },
   { version: 'v0.9.2', content: '- E2E second release.', at: 2 },
   { version: 'v0.9.1', content: '- E2E first release mentions Zebrafish.', at: 1 },
+  // Rows that must never reach a feed (tests/changelog-filter.spec.ts asserts it).
+  { version: 'Unreleased', content: '- E2E unreleased sentinel UNRELEASEDMARK.', at: 4 },
+  { version: 'v0.9.4', content: '- E2E draft sentinel DRAFTMARK.', at: 5, published: false },
 ]
 
 function seedChangelog() {
@@ -44,7 +47,7 @@ function seedChangelog() {
         version: row.version,
         content: row.content,
         contentEn: row.content,
-        isPublished: true,
+        isPublished: row.published ?? true,
         publishedAt: new Date(Date.UTC(2020, 0, row.at)),
       }).run()
     }

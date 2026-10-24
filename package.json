@@ -85,7 +85,7 @@
     "esbuild": "0.28.1",
     "fflate": "0.8.3",
     "svgo": "4.1.0",
-    "undici": "8.12.2",
+    "undici": "8.12.3",
     "@vue/server-renderer": "3.5.43",
     "seroval": "1.6.8",
     "js-yaml": "4.3.2",

@@ -398,4 +398,5 @@
 
 ## 2026-10-24 Task A: CI failure alarm
 
-- Added `failure-alarm.yml` (copy of the MagguuUI template + `commit_sha` input + same-commit dedupe lookup), alarm jobs in 6 workflows, `.github/zizmor.yml`, `tools/failure-alarm.test.sh` (runs in quality.yml). One real webhook test was done from a throwaway branch `tmp/escalation-test` (deleted afterwards); see the report for the HTTP code.
+- Added `failure-alarm.yml` (copy of the MagguuUI template + `commit_sha` input + same-commit dedupe lookup), alarm jobs in 6 workflows, `.github/zizmor.yml`, `tools/failure-alarm.test.sh` (runs in quality.yml). One real webhook test was done from the throwaway branch `tmp/escalation-test` (deleted afterwards): HTTP 200, no repeat runs.
+- Follow-ups: feed memo in `changelogFeedResponse.ts`; E2E seed has Unreleased + draft rows; osv-scanner step uses `set -o pipefail`; `/changelog` lost its page swr rule (query variants were cached per URL); undici override 8.12.3.

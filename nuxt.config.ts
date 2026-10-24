@@ -90,6 +90,9 @@ export default defineNuxtConfig({
 
   robots: {
     credits: false,
+    // Value for every disallowed path (/admin/**, /api/** outside the module's own skip list):
+    // adds noarchive to the module default `noindex, nofollow`.
+    robotsDisabledValue: 'noindex, nofollow, noarchive',
     // Same rules as the old public/robots.txt: everything public, no admin, no API.
     groups: [
       { userAgent: ['*'], allow: ['/'], disallow: ['/admin/', '/api/'] },
@@ -370,6 +373,9 @@ export default defineNuxtConfig({
         'X-Robots-Tag': 'noindex, nofollow, noarchive',
       },
     },
+    // The robots module skips /api/* entirely, so API responses get the header here.
+    // Merged with the more specific per-route rules below (headers are deep-merged).
+    '/api/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' } },
     // Public marketing HTML. Auth chrome is client-only, so the cached
     // document is the anonymous page. Same 120s window as the content APIs.
     '/': { swr: 120 },

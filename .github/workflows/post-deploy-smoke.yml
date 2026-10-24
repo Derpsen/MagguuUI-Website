@@ -73,6 +73,7 @@ jobs:
     if: ${{ failure() && github.ref == 'refs/heads/main' }}
     permissions:
       actions: read
+      contents: read
     uses: ./.github/workflows/failure-alarm.yml
     with:
       commit_sha: ${{ github.event.workflow_run.head_sha || github.sha }}

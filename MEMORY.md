@@ -435,3 +435,7 @@
 
 - Upgraded the existing `CommandPalette.vue` instead of adding a second one (no new dependency). Decisions: kept the custom list in UModal (full combobox ARIA added), search is multi-word AND with label-first ranking, tab pages are searchable, Log out is offered as an action but needs Enter on that option (nothing runs on open). Styling made plain (mono mini-label groups, no icon boxes, no hover lift).
 - Gotcha: dialogs teleport out of `.admin-shell`, so `--admin-*` vars were undefined there (no highlight on the active option) -> tokens defined on `.admin-command`. Playwright screenshots of animated dialogs need `animations: 'disabled'`.
+
+## 2026-10-25 Code-review follow-up (alarm redaction, robots headers)
+
+- F1 redaction ported (fail-closed), F2 solved by the ported scrub (keeps text before a match), F3 dedupe restricted to main non-PR runs, F4 conditions test added (all six `if:` fired correctly; real bug found: callers needed `contents: read` once the redaction checkout was added), F5 noarchive via `robotsDisabledValue`, F6 `/api/**` header + 4xx/5xx noindex plugin. Verify robots headers live with GET after deploy.

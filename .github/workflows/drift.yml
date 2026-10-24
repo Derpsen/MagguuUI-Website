@@ -41,6 +41,7 @@ jobs:
     if: ${{ failure() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     permissions:
       actions: read
+      contents: read
     uses: ./.github/workflows/failure-alarm.yml
     secrets:
       ESCALATION_WEBHOOK_URL: ${{ secrets.ESCALATION_WEBHOOK_URL }}

@@ -18,13 +18,17 @@ mkdir "$work/bin"
 cat > "$work/bin/gh" <<GH
 #!/usr/bin/env bash
 case "\$*" in
-  *"/runs?head_sha="*) [ -n "\${FAKE_PRIOR:-}" ] && echo '{"workflow_runs":[{"id":7,"name":"Build","conclusion":"failure"},{"id":42,"name":"Build","conclusion":null}]}' || echo '{"workflow_runs":[{"id":42,"name":"Build","conclusion":null},{"id":8,"name":"Drift","conclusion":"failure"}]}' ;;
+  *"/runs?head_sha="*)
+    if [ -n "\${FAKE_PRIOR:-}" ]; then echo '{"workflow_runs":[{"id":7,"name":"Build","conclusion":"failure","event":"push","head_branch":"main"},{"id":42,"name":"Build","conclusion":null,"event":"push","head_branch":"main"}]}'
+    elif [ -n "\${FAKE_PR_PRIOR:-}" ]; then echo '{"workflow_runs":[{"id":7,"name":"Build","conclusion":"failure","event":"pull_request","head_branch":"feature-x"},{"id":9,"name":"Build","conclusion":"failure","event":"pull_request","head_branch":"main"},{"id":42,"name":"Build","conclusion":null,"event":"push","head_branch":"main"}]}'
+    else echo '{"workflow_runs":[{"id":42,"name":"Build","conclusion":null,"event":"push","head_branch":"main"},{"id":8,"name":"Drift","conclusion":"failure","event":"push","head_branch":"main"}]}'; fi ;;
   *"/attempts/"*) echo '{"jobs":[{"id":11,"name":"validate","conclusion":"failure","steps":[{"name":"Lint","conclusion":"failure"},{"name":"Checkout","conclusion":"success"}]},{"id":12,"name":"ok-job","conclusion":"success","steps":[]},{"id":13,"name":"alarm","conclusion":null,"steps":[]}]}' ;;
   *"/jobs/11/logs"*)
     for i in \$(seq 1 40); do echo "2026-10-24T10:00:00.0000000Z line \$i"; done
     echo "2026-10-24T10:00:01.0000000Z token $TOKEN_FAKE leaked"
     echo "2026-10-24T10:00:02.0000000Z curl -H 'Authorization: Bearer abc.def' x"
     echo "2026-10-24T10:00:03.0000000Z value $BEARER_VAL here"
+    echo "2026-10-24T10:00:03.5000000Z curl -u deploy:hunter2secret https://x.example/y --password swordfish99 pass=letmein77"
     echo "2026-10-24T10:00:04.0000000Z ##[error]Process completed with exit code 1."
     echo "2026-10-24T10:00:05.0000000Z Post job cleanup." ;;
 esac
@@ -71,8 +75,9 @@ body=$(printf '%s' "$req" | jq -r .body)
 [ "$(printf '%s' "$body" | jq -r '.failed_jobs[0].log_tail' | wc -l)" -le 20 ] && check "log tail <= 20 lines" ok || check "log tail <= 20 lines" bad
 printf '%s' "$body" | jq -r '.failed_jobs[0].log_tail' | grep -q 'exit code 1' && check "log ends at the ##[error] line" ok || check "log ends at the ##[error] line" bad
 printf '%s' "$body" | grep -q 'Post job cleanup' && check "post-error noise cut" bad || check "post-error noise cut" ok
-if printf '%s' "$body" | grep -q "$TOKEN_FAKE\|abc.def\|$BEARER_VAL"; then check "secrets masked in payload" bad; else check "secrets masked in payload" ok; fi
-printf '%s' "$body" | grep -q '\*\*\*' && check "mask marker present" ok || check "mask marker present" bad
+if printf '%s' "$body" | grep -q "$TOKEN_FAKE\|abc.def\|$BEARER_VAL\|hunter2secret\|swordfish99\|letmein77"; then check "secrets masked in payload" bad; else check "secrets masked in payload" ok; fi
+printf '%s' "$body" | grep -q 'redacted' && check "mask marker present" ok || check "mask marker present" bad
+printf '%s' "$body" | jq -r '.failed_jobs[0].log_tail' | grep -q 'value .*redacted.* here' && check "text before and after a secret survives (context kept)" ok || check "text before and after a secret survives (context kept)" bad
 if printf '%s' "$out" | grep -q "$BEARER_VAL\|hook-path-secret\|127.0.0.1\|SECRET-RESPONSE-BODY"; then check "script output hides secrets and response body" bad; else check "script output hides secrets and response body" ok; fi
 
 : > "$work/req.jsonl"
@@ -81,12 +86,33 @@ run 2 "$URL" "$BEARER_VAL" > /dev/null; rc=$?
 : > "$work/req.jsonl"
 FAKE_PRIOR=1 run 1 "$URL" "$BEARER_VAL" > /dev/null; rc=$?
 { [ "$rc" = 0 ] && [ ! -s "$work/req.jsonl" ]; } && check "earlier failure of same workflow+commit dedupes" ok || check "earlier failure of same workflow+commit dedupes" bad
+: > "$work/req.jsonl"
+FAKE_PR_PRIOR=1 run 1 "$URL" "$BEARER_VAL" > /dev/null; rc=$?
+{ [ "$rc" = 0 ] && [ "$(wc -l < "$work/req.jsonl")" = 1 ]; } && check "failed PR runs of the same commit do not dedupe a main alarm" ok || check "failed PR runs of the same commit do not dedupe a main alarm" bad
+: > "$work/req.jsonl"
 run 1 "" "$BEARER_VAL" > /dev/null; rc=$?
 { [ "$rc" = 0 ] && [ ! -s "$work/req.jsonl" ]; } && check "empty URL secret skips silently" ok || check "empty URL secret skips silently" bad
 run 1 "$URL" "" > /dev/null; rc=$?
 { [ "$rc" = 0 ] && [ ! -s "$work/req.jsonl" ]; } && check "empty bearer secret skips silently" ok || check "empty bearer secret skips silently" bad
 run 1 "http://127.0.0.1:1/x" "$BEARER_VAL" > /dev/null; rc=$?
 [ "$rc" = 0 ] && check "unreachable webhook still exits 0" ok || check "unreachable webhook still exits 0" bad
+
+# Fail closed: a missing or failing redaction script must send no log text (the alarm itself still goes out).
+for mode in missing failing leaking; do
+    bad_ws="$work/ws-$mode"; mkdir -p "$bad_ws/tools"
+    case "$mode" in
+        failing) printf '#!/usr/bin/env bash\ncat >/dev/null; exit 3\n' > "$bad_ws/tools/redact-log.sh" ;;
+        leaking) printf '#!/usr/bin/env bash\ncat\n' > "$bad_ws/tools/redact-log.sh" ;;
+    esac
+    : > "$work/req.jsonl"
+    GITHUB_WORKSPACE="$bad_ws" run 1 "$URL" "$BEARER_VAL" > /dev/null
+    b=$(jq -r .body < "$work/req.jsonl" 2>/dev/null)
+    if [ -n "$b" ] && ! printf '%s' "$b" | grep -q "$TOKEN_FAKE\|$BEARER_VAL\|hunter2secret" && printf '%s' "$b" | grep -q 'log omitted'; then
+        check "fail closed ($mode redaction script): alarm sent without log text" ok
+    else
+        check "fail closed ($mode redaction script): alarm sent without log text" bad
+    fi
+done
 
 [ "$fails" = 0 ] && echo "failure-alarm: all checks passed" || echo "failure-alarm: $fails check(s) failed"
 exit "$fails"

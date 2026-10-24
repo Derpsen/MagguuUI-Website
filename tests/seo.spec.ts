@@ -44,9 +44,25 @@ test('the unfiltered changelog is indexable, filtered views are noindex', async 
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/)
 })
 
-test('admin login stays noindex', async ({ request }) => {
+test('admin login stays noindex and noarchive', async ({ request }) => {
   const res = await request.get('/admin/login')
   expect(res.headers()['x-robots-tag']).toContain('noindex')
+  expect(res.headers()['x-robots-tag']).toContain('noarchive')
+  const admin = await request.get('/admin')
+  expect(admin.headers()['x-robots-tag']).toContain('noindex')
+  expect(admin.headers()['x-robots-tag']).toContain('noarchive')
+})
+
+test('API responses are noindex, 404 pages never say index', async ({ request }) => {
+  for (const path of ['/api/v1/faqs', '/api/v1/release-stamps', '/api/v1/does-not-exist']) {
+    const res = await request.get(path)
+    expect(res.headers()['x-robots-tag'], path).toContain('noindex')
+  }
+  const missing = await request.get('/this-page-does-not-exist')
+  expect(missing.status()).toBe(404)
+  const tag = missing.headers()['x-robots-tag'] ?? ''
+  expect(tag).toContain('noindex')
+  expect(tag).not.toMatch(/(^|,\s*)index/)
 })
 
 for (const path of ['/guide', '/changelog']) {

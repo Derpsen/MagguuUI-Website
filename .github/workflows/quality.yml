@@ -37,6 +37,12 @@ jobs:
       - name: Failure alarm dry run (fake gh, local server, no real webhook)
         run: bash tools/failure-alarm.test.sh
 
+      - name: Log redaction tests
+        run: bash tools/redact-log.test.sh
+
+      - name: Failure alarm caller conditions (if:, needs, permissions)
+        run: python3 tools/alarm-conditions.test.py
+
       - name: Lighthouse budget checker unit tests
         run: node --test tools/lighthouse-budget.test.mjs
 
@@ -58,6 +64,7 @@ jobs:
     if: ${{ failure() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     permissions:
       actions: read
+      contents: read
     uses: ./.github/workflows/failure-alarm.yml
     secrets:
       ESCALATION_WEBHOOK_URL: ${{ secrets.ESCALATION_WEBHOOK_URL }}

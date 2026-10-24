@@ -405,3 +405,7 @@
 
 - Added @nuxtjs/sitemap, @nuxtjs/robots, nuxt-link-checker (no umbrella, no nuxt-schema-org: existing JSON-LD is enough). Sitemap source `server/api/__sitemap__/urls.ts`, robots via `robots` config; removed `server/routes/sitemap.xml.ts` and `public/robots.txt`. Filtered `/changelog?...` views are noindex. Link check is CI-only (`LINK_CHECK=1`, `link-check.yml`, warning only).
 - Client bundle unchanged (4.8 MB, 271 files in `_nuxt` before and after). See AGENTS.md "SEO modules".
+
+## 2026-10-24 Wave 3: Strings copy, stamps, single-module guide
+
+- The big gradient "Copy String" buttons became a small plain `StringCopyButton` with an aria-live status; `doCopy` used to return true even when `execCommand` failed, now it reports failure. Per-string version/date stamps come from `updatedAt` + published releases (`/api/v1/release-stamps`); no per-string version exists, so the version is an inference (gap reported). Guide got a static "Apply only one module" section verified against the addon source. See AGENTS.md.

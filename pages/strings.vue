@@ -128,12 +128,8 @@
           </Transition>
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
             <div v-if="selectedLayout" class="space-y-4 pt-1">
-              <div class="flex gap-2">
-                <button class="flex-1 py-4 rounded-xl text-white font-semibold text-lg transition-all flex items-center justify-center gap-2"
-                  :class="layoutCopied ? 'btn-gradient-green' : 'btn-gradient'" @click="copyLayout">
-                  <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
-                  {{ layoutCopied ? 'Copied!' : 'Copy String' }}
-                </button>
+              <div class="flex items-center gap-2">
+                <StringCopyButton :copied="layoutCopied" @copy="copyLayout" />
                 <button v-if="isLoggedIn" class="px-4 py-4 rounded-xl transition-all flex items-center justify-center"
                   :class="isDark ? 'bg-white/5 hover:bg-white/10 text-silver-400 hover:text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-900'"
                   aria-label="Edit layout"
@@ -143,7 +139,7 @@
               </div>
               <div class="flex items-center justify-between text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
                 <div class="flex items-center gap-3">
-                  <span v-if="selectedLayout.updatedAt">{{ timeAgo(selectedLayout.updatedAt) }}</span>
+                  <span v-if="stampFor(selectedLayout.updatedAt).label" data-testid="string-stamp" :title="stampTitle(selectedLayout.updatedAt)">{{ stampFor(selectedLayout.updatedAt).label }}</span>
                   <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono" :class="isDark ? 'bg-white/5 text-silver-600 border border-brand-400/10' : 'bg-gray-100 text-gray-400 border border-gray-200'">{{ isMac ? '⌘' : 'Ctrl' }}+C</kbd>
                 </div>
                 <span>{{ stringSizeLabel(layoutSize(selectedLayout)) }}</span>
@@ -215,12 +211,8 @@
           </Transition>
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
             <div v-if="selectedProfile" class="space-y-4 pt-1">
-              <div class="flex gap-2">
-                <button class="flex-1 py-4 rounded-xl text-white font-semibold text-lg transition-all flex items-center justify-center gap-2"
-                  :class="profileCopied ? 'btn-gradient-green' : 'btn-gradient'" @click="copyProfile">
-                  <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
-                  {{ profileCopied ? 'Copied!' : 'Copy String' }}
-                </button>
+              <div class="flex items-center gap-2">
+                <StringCopyButton :copied="profileCopied" @copy="copyProfile" />
                 <button v-if="isLoggedIn" class="px-4 py-4 rounded-xl transition-all flex items-center justify-center"
                   :class="isDark ? 'bg-white/5 hover:bg-white/10 text-silver-400 hover:text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-900'"
                   aria-label="Edit profile"
@@ -230,7 +222,7 @@
               </div>
               <div class="flex items-center justify-between text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
                 <div class="flex items-center gap-3">
-                  <span v-if="selectedProfile.updatedAt">{{ timeAgo(selectedProfile.updatedAt) }}</span>
+                  <span v-if="stampFor(selectedProfile.updatedAt).label" data-testid="string-stamp" :title="stampTitle(selectedProfile.updatedAt)">{{ stampFor(selectedProfile.updatedAt).label }}</span>
                   <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono" :class="isDark ? 'bg-white/5 text-silver-600 border border-brand-400/10' : 'bg-gray-100 text-gray-400 border border-gray-200'">{{ isMac ? '⌘' : 'Ctrl' }}+C</kbd>
                 </div>
                 <span>{{ stringSizeLabel(profileSize(selectedProfile)) }}</span>
@@ -300,12 +292,8 @@
                   </span>
                 </div>
               </div>
-              <div class="flex gap-2">
-                <button class="flex-1 py-4 rounded-xl text-white font-semibold text-lg transition-all flex items-center justify-center gap-2"
-                  :class="wowupCopied ? 'btn-gradient-green' : 'btn-gradient'" @click="copyWowup">
-                  <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L4.09 12.11A1 1 0 005 14h6v6a1 1 0 001.91.59l8.91-10.11A1 1 0 0021 8.89h-6V3a1 1 0 00-1.91-.59L13 2z" /></svg>
-                  {{ wowupCopied ? 'Copied!' : 'Copy String' }}
-                </button>
+              <div class="flex items-center gap-2">
+                <StringCopyButton :copied="wowupCopied" @copy="copyWowup" />
                 <button v-if="isLoggedIn" class="px-4 py-4 rounded-xl transition-all flex items-center justify-center"
                   :class="isDark ? 'bg-white/5 hover:bg-white/10 text-silver-400 hover:text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-900'"
                   aria-label="Edit WowUp package"
@@ -314,7 +302,10 @@
                 </button>
               </div>
               <div class="flex items-center justify-between text-xs" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
-                <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono" :class="isDark ? 'bg-white/5 text-silver-600 border border-brand-400/10' : 'bg-gray-100 text-gray-400 border border-gray-200'">{{ isMac ? '⌘' : 'Ctrl' }}+C</kbd>
+                <div class="flex items-center gap-3">
+                  <span v-if="stampFor(selectedWowup.updatedAt).label" data-testid="string-stamp" :title="stampTitle(selectedWowup.updatedAt)">{{ stampFor(selectedWowup.updatedAt).label }}</span>
+                  <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono" :class="isDark ? 'bg-white/5 text-silver-600 border border-brand-400/10' : 'bg-gray-100 text-gray-400 border border-gray-200'">{{ isMac ? '⌘' : 'Ctrl' }}+C</kbd>
+                </div>
                 <span>{{ stringSizeLabel(wowupStrings[selectedWowup.id]?.length || selectedWowup.stringLength || 0) }}</span>
               </div>
               <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24">
@@ -385,6 +376,8 @@ import {
   wowupLabel,
 } from '~/utils/addonChipMeta'
 import { compareProfileAddons, compareProfileNames, profileAddonLabel } from '~/utils/profileLabels'
+import { buildStringStamp, type ReleaseStamp } from '~/utils/stringStamp'
+import { copyTextToClipboard } from '~/utils/clipboard'
 import { initialStringsTab, queryFromStringsState, queryText } from '~/utils/stringsDeepLink'
 
 const isDark = useIsDark()
@@ -449,6 +442,19 @@ type WowupKeyedPublic = Record<string, PublicWowup>
 const { data: profileData, refresh: refreshProfiles } = useFetch<{ data: ProfileGroupedPublic }>('/api/v1/profiles?view=meta')
 const { data: wowupData, refresh: refreshWowup } = useFetch<{ data: WowupKeyedPublic }>('/api/v1/wowup?view=meta')
 const { data: layoutData, refresh: refreshLayouts } = useFetch<{ data: PublicLayout[] }>('/api/v1/layouts?view=meta')
+
+// Published releases, used to stamp each string with the version that was
+// current when it was last updated (utils/stringStamp.ts). Failure just means
+// the stamp shows the date only.
+const { data: releaseData } = useFetch<{ data: ReleaseStamp[] }>('/api/v1/release-stamps')
+function stampFor(updatedAt: unknown) {
+  return buildStringStamp(updatedAt as string | number | Date | null, releaseData.value?.data)
+}
+function stampTitle(updatedAt: unknown): string {
+  return stampFor(updatedAt).version
+    ? 'Newest MagguuUI release published on or before the day this string was last updated'
+    : 'Day this string was last updated'
+}
 
 const profileStrings = ref<Record<number, string>>({})
 const layoutStrings = ref<Record<number, string>>({})
@@ -611,32 +617,6 @@ function syncUrl() {
 }
 watch([activeTab, selectedClass, selectedSpec, selectedAddon, selectedProfileId, selectedWowupName], syncUrl)
 
-function formatDate(d: string | number | null) {
-  if (!d) return ''
-  const date = typeof d === 'number' ? new Date(d * 1000) : new Date(d)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
-}
-
-const nowMs = ref<number | null>(null)
-
-function timeAgo(d: string | number | null) {
-  if (!d) return ''
-  const date = typeof d === 'number' ? new Date(d * 1000) : new Date(d)
-  // SSR and the hydration pass have no shared clock; show the absolute date
-  // until mounted, then switch to relative time.
-  if (nowMs.value === null) return `Updated ${formatDate(d)}`
-  const seconds = Math.floor((nowMs.value - date.getTime()) / 1000)
-  if (seconds < 60) return 'Updated just now'
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `Updated ${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `Updated ${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 7) return `Updated ${days}d ago`
-  if (days < 30) return `Updated ${Math.floor(days / 7)}w ago`
-  return `Updated ${formatDate(d)}`
-}
-
 function stringSizeLabel(len: number): string {
   return `${len.toLocaleString('en-US')} characters`
 }
@@ -657,7 +637,6 @@ function handleCopyShortcut(e: KeyboardEvent) {
 }
 
 onMounted(() => {
-  nowMs.value = Date.now()
   isMac.value = navigator.platform.toUpperCase().includes('MAC')
   window.addEventListener('keydown', handleCopyShortcut)
 })
@@ -666,7 +645,11 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleCopyShortcut)
 })
 
-async function doCopy(text: string) { try { await navigator.clipboard.writeText(text); return true } catch { const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); return true } }
+async function doCopy(text: string): Promise<boolean> {
+  const ok = await copyTextToClipboard(text)
+  if (!ok) toast.add({ title: 'Could not copy. Select the string and copy it manually.', color: 'error' })
+  return ok
+}
 
 function trackCopy(type: string, id: number) {
   $fetch('/api/v1/copy-event', { method: 'POST', body: { stringType: type, stringId: id } }).catch(() => {})
@@ -763,9 +746,9 @@ async function copyLayout() {
     toast.add({ title: 'Could not copy', color: 'error' })
     return
   }
-  await doCopy(text)
+  if (!(await doCopy(text))) return
   layoutCopied.value = true
-  toast.add({ title: 'Copied!', icon: 'i-heroicons-check-circle', color: 'success', duration: 2000 })
+  toast.add({ title: 'Copied', icon: 'i-heroicons-check-circle', color: 'success', duration: 2000 })
   trackCopy('layout', row.id)
   setTimeout(() => { layoutCopied.value = false }, 2000)
 }
@@ -777,9 +760,9 @@ async function copyProfile() {
     toast.add({ title: 'Could not copy', color: 'error' })
     return
   }
-  await doCopy(text)
+  if (!(await doCopy(text))) return
   profileCopied.value = true
-  toast.add({ title: 'Copied!', icon: 'i-heroicons-check-circle', color: 'success', duration: 2000 })
+  toast.add({ title: 'Copied', icon: 'i-heroicons-check-circle', color: 'success', duration: 2000 })
   trackCopy('profile', row.id)
   setTimeout(() => { profileCopied.value = false }, 2000)
 }
@@ -791,9 +774,9 @@ async function copyWowup() {
     toast.add({ title: 'Could not copy', color: 'error' })
     return
   }
-  await doCopy(text)
+  if (!(await doCopy(text))) return
   wowupCopied.value = true
-  toast.add({ title: 'Copied!', icon: 'i-heroicons-check-circle', color: 'success', duration: 2000 })
+  toast.add({ title: 'Copied', icon: 'i-heroicons-check-circle', color: 'success', duration: 2000 })
   trackCopy('wowup', row.id)
   setTimeout(() => { wowupCopied.value = false }, 2000)
 }

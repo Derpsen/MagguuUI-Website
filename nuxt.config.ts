@@ -398,6 +398,7 @@ export default defineNuxtConfig({
     '/api/v1/faqs': { swr: 120 },
     '/api/v1/search-index': { swr: 120 },
     '/api/v1/changelogs': { swr: 120 },
+    '/api/v1/release-stamps': { swr: 120 },
     '/api/v1/settings': { swr: 300 },
     '/api/v1/latest-change': { swr: 60 },
     '/assets/logo.png': { redirect: '/logo.png' },

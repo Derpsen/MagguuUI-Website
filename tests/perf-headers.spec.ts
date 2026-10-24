@@ -62,9 +62,9 @@ test.describe('lazy import strings', () => {
     expect(fetched).toHaveLength(0)
 
     const one = page.waitForResponse(res => /\/api\/v1\/wowup\/\d+$/.test(new URL(res.url()).pathname))
-    await page.getByRole('button', { name: /Copy String/ }).first().click()
+    await page.getByRole('button', { name: /Copy string/ }).first().click()
     const res = await one
     expect(res.ok()).toBe(true)
-    await expect(page.getByRole('button', { name: /Copied!/ }).first()).toBeVisible()
+    await expect(page.getByRole('button', { name: /Copied/ }).first()).toBeVisible()
   })
 })

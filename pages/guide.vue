@@ -243,6 +243,10 @@
               <span>WowUp packages</span>
               <UIcon name="i-heroicons-arrow-up-right" class="w-3.5 h-3.5 ml-auto opacity-50" />
             </NuxtLink>
+            <a href="#apply-one-module" class="guide-help-link" :class="isDark ? 'guide-help-link--dark' : 'guide-help-link--light'">
+              <UIcon name="i-heroicons-book-open" class="w-4 h-4 flex-shrink-0" />
+              <span>Apply only one module</span>
+            </a>
             <NuxtLink to="/faq" class="guide-help-link" :class="isDark ? 'guide-help-link--dark' : 'guide-help-link--light'">
               <UIcon name="i-heroicons-question-mark-circle" class="w-4 h-4 flex-shrink-0" />
               <span>FAQ</span>
@@ -261,6 +265,37 @@
         Add steps in the editor
       </NuxtLink>
     </div>
+    <!-- Apply only one module (static, verified against the addon: Setup.lua InstallAll, Tools.lua BuildIndividualProfileOptions) -->
+    <section v-if="!editMode" id="apply-one-module" class="mt-14 max-w-3xl scroll-mt-28" aria-labelledby="apply-one-module-title">
+      <p class="section-eyebrow mb-3">Single import</p>
+      <h2 id="apply-one-module-title" class="text-2xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">
+        Apply only one module
+      </h2>
+      <div class="mt-4 space-y-4 text-[15px] leading-relaxed" :class="isDark ? 'text-silver-300' : 'text-gray-600'">
+        <p>
+          <strong :class="isDark ? 'text-white' : 'text-gray-900'">Apply Magguu profiles</strong> is the all-in-one first install for the current character. It has no
+          per-module selection: it imports the EllesmereUI profile, then the profiles for every supported addon you have installed, then the class layouts.
+          The only switch next to it is <em>Include Magguu Settings</em>.
+        </p>
+        <p>To take just one part, open <code>/mui</code>, go to Setup and scroll to the <em>Required</em> and <em>Optional</em> rows. Each button there imports one thing:</p>
+        <ul class="list-disc space-y-1 pl-5">
+          <li><em>Import EllesmereUI profile</em> and <em>Import class layouts</em> (your current class). Always listed.</li>
+          <li>
+            <em>Import BigWigs profile</em>, <em>Import Northern Sky</em>, <em>Import EXBoss</em>, <em>Import Smart Reminders</em> and <em>Import Whisper Messenger</em>.
+            Each one is listed only while that addon is installed.
+          </li>
+          <li><em>Apply Magguu Settings</em> applies only the Magguu Settings (fonts, UI scale and extras) and does not reinstall any profile.</li>
+        </ul>
+        <p>
+          WaypointUI, HandyNotes, Talent Tree Tweaks, GTFO, BugSack and Premade Groups Filter have no single-import button in the Setup page. Their Magguu profiles
+          come only with Apply Magguu profiles.
+        </p>
+        <p>
+          You can also import one profile by hand: copy its string on <NuxtLink to="/strings" class="underline underline-offset-4" :class="isDark ? 'text-white hover:text-brand-200' : 'text-gray-950 hover:text-brand-700'">Strings</NuxtLink>
+          and paste it into that addon's own import window. None of these steps download addons: install them first (see the WowUp packages).
+        </p>
+      </div>
+    </section>
   </div>
 </template>
 

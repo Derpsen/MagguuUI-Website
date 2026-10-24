@@ -1,8 +1,8 @@
 name: Quality
 
-# Product-drift guard + workflow lint/security (actionlint, zizmor).
-# Adapted from the shared magguu-ci draft: no Lua steps (no .lua here),
-# osv-scanner left out (dependency-review + docker-scan cover deps).
+# Workflow lint/security (actionlint, zizmor). The product-drift guard moved to
+# drift.yml (no paths-ignore, so docs-only changes are checked too).
+# osv-scanner runs advisory in osv-scanner.yml; dependency-review covers PRs.
 
 on:
   push:
@@ -33,9 +33,6 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-
-      - name: Drift check
-        run: bash tools/drift-check.sh
 
       - name: actionlint
         run: |

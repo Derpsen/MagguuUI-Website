@@ -1,0 +1,22 @@
+# osv-scanner ignores (package-lock.json). Each entry needs a reason and an
+# ignoreUntil review date; after it the finding shows up again.
+# No upgrades are made for these: TypeScript 7, h3 2, satori >=0.48, js-yaml 5
+# stay locked. The nested h3 2.0.2 (@devframes/agentic, devframe) and
+# @types/node 26 in the lockfile currently have no OSV advisory, so they need
+# no entry. If one appears, add it here with the same reason (transitive, dev
+# tooling, not in .output) and never bump the major to silence it.
+
+[[IgnoredVulns]]
+id = "GHSA-vjh5-4x84-xrqp"
+ignoreUntil = 2026-11-30
+reason = "False positive: affects nuxt / @nuxt/nitro-server < 4.6.2; the lockfile has 4.6.2 (patched). OSV range data lags. Re-check when OSV is corrected."
+
+[[IgnoredVulns]]
+id = "GHSA-86w9-cpqp-85rv"
+ignoreUntil = 2026-11-30
+reason = "node-forge: no patched release exists. Transitive via listhen (Nuxt dev-server HTTPS certs); not in .output. Same allowlist entry as scripts/audit-prod.mjs."
+
+[[IgnoredVulns]]
+id = "GHSA-m5mm-p8h7-m29v"
+ignoreUntil = 2026-11-30
+reason = "serialize-javascript 7.1.2 (low, XSS via unescaped </script in a serialized function body). Transitive build-time only (nitropack > @rollup/plugin-terser); never serializes untrusted input. Fixed in 7.1.3, left to the normal Dependabot update."

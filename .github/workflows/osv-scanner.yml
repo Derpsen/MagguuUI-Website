@@ -1,0 +1,80 @@
+name: osv-scanner
+
+# Advisory lockfile vulnerability scan (package-lock.json against OSV).
+# Never blocks and stays green, like zizmor.yml: the scan step has
+# continue-on-error (findings make osv-scanner exit non-zero) and the result
+# goes to the log and the job summary. The blocking gate for production
+# dependencies remains `npm run audit:prod` in build.yml. Accepted findings
+# live in osv-scanner.toml with a reason and an expiry (ignoreUntil).
+# Runs on lockfile changes and weekly, because advisories appear after merge.
+# osv-scanner is a pinned release with a verified sha256 (same pin as MagguuBot).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - package-lock.json
+      - osv-scanner.toml
+      - .github/workflows/osv-scanner.yml
+  pull_request:
+    paths:
+      - package-lock.json
+      - osv-scanner.toml
+      - .github/workflows/osv-scanner.yml
+  schedule:
+    - cron: '41 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: osv-scanner-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  osv:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    env:
+      OSV_VERSION: "2.7.0"
+      OSV_SHA256: "160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b"
+    steps:
+      - name: Checkout
+        # actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Install osv-scanner (pinned, sha256 verified)
+        run: |
+          curl -sSfL -o osv-scanner "https://github.com/google/osv-scanner/releases/download/v${OSV_VERSION}/osv-scanner_linux_amd64"
+          echo "${OSV_SHA256}  osv-scanner" | sha256sum -c -
+          chmod +x osv-scanner
+
+      - name: Scan package-lock.json (advisory)
+        id: osv
+        continue-on-error: true
+        run: ./osv-scanner scan source --lockfile=package-lock.json 2>&1 | tee "${RUNNER_TEMP}/osv.txt"
+
+      - name: Findings to job summary
+        if: always()
+        env:
+          OUTCOME: ${{ steps.osv.outcome }}
+        run: |
+          out="${RUNNER_TEMP}/osv.txt"
+          {
+            echo "## osv-scanner (advisory, never blocks)"
+            echo
+            echo "scan step outcome: \`${OUTCOME}\` (failure = unignored findings present)"
+            echo
+            if [ -s "$out" ]; then
+              echo '```'
+              sed -E 's/\x1b\[[0-9;]*m//g' "$out"
+              echo '```'
+            else
+              echo "No output captured."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 0

@@ -125,7 +125,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-        run: gh pr merge ${{ steps.pr.outputs.number }} --repo ${{ github.repository }} --squash --delete-branch --match-head-commit "$HEAD_SHA"
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          REPO: ${{ github.repository }}
+        run: gh pr merge "$PR_NUMBER" --repo "$REPO" --squash --delete-branch --match-head-commit "$HEAD_SHA"
 
       # A GITHUB_TOKEN merge fires neither push nor pull_request_target(closed),
       # so dispatch the main workflows from here as well.

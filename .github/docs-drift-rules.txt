@@ -1,7 +1,7 @@
 # docs-drift rules for MagguuUI-Website (read by tools/docs-drift.sh)
 # Format: regex<TAB>reason[<TAB>allow-regex]. ERE, case-sensitive.
 # Banned addon names are written as [W]IM etc. so this file never contains
-# the literal names (tools/drift-check.sh would flag it).
+# the literal names (tools/magguu-drift.py would flag it).
 
 @files AGENTS.md MEMORY.md README*.md CLAUDE.md .github/copilot-instructions.md .cursor/rules/** .grok/**
 

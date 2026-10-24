@@ -390,3 +390,8 @@
 - Gotcha: h3 `handleCacheHeaders({maxAge})` adds `s-maxage`, which `public-cache-invalidate.ts` turns into `max-age=0, must-revalidate`. The feed sets `max-age=600` via `cacheControls` instead.
 - Gotcha: `server/plugins/e2e-seed.ts` used an early `return` when the WowUp pack existed, which would have skipped later seeds. Seeds are now separate functions.
 - Dark and Light checked via screenshots in ~/Projekte/shots (cl-dark.png, cl-light.png).
+
+## 2026-10-24 Quality plan (Website part)
+
+- Hotfix first: undici override 8.11.2 -> 8.12.2 (GHSA-xjj6-f33q-929c high, plus two moderate) because `audit:prod` blocked Build + docker verify on 877f2bf. Fix 738ce95 went live via auto-deploy.
+- `tools/drift-check.sh` replaced by `tools/magguu-drift.py` + new-format `tools/drift-allow.txt`; runs in `drift.yml` without paths-ignore. osv-scanner advisory workflow + `osv-scanner.toml` (3 reasoned ignores). `${{ }}` in dependabot-automerge `run:` moved to env. Details in AGENTS.md.

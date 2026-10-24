@@ -1,19 +1,12 @@
-# Files allowed to name WIM/WindTools/KeystoneLoot: they implement the ban,
-# migrate old rows, or document the retirement. One exact path per line.
-docs/store-descriptions/SUMMARY.md
-nuxt.config.ts
-pages/index.vue
-server/api/v1/admin/wowup/[id].put.ts
-server/api/v1/admin/wowup/index.post.ts
-server/database/addonMetadata.ts
-server/database/defaultAddonChangelog.ts
-server/plugins/init.ts
-server/utils/addonProfileLua.ts
-server/utils/addonProfileSync.ts
-tests/unit/addonGroups.test.ts
-tests/unit/addonProfileLua.test.ts
-tests/unit/featureCardMeta.test.ts
-tests/unit/publicAnchor.test.ts
-tests/unit/stringsDeepLink.test.ts
-tests/unit/wowupPackCopy.test.ts
-utils/addonChipMeta.ts
+# tools/drift-allow.txt (MagguuUI-Website) - <glob>[TAB<line-regex>]  # reason. Narrowed from the old whole-file list.
+# Ban implementation / migration code. Each entry = one reason; new bad copy in these files is still caught.
+docs/store-descriptions/SUMMARY.md	No EXBoss split|Whisper Messenger replaced WIM
+nuxt.config.ts	WIM vs Whisper Messenger
+pages/index.vue	WIM is retired
+server/api/v1/admin/wowup/*.ts	cannot include WIM
+server/database/addonMetadata.ts	WIM is retired|^\s*.(elvui-windtools|wim|wim-elvui-skin|keystoneloot).,?\s*$
+server/database/defaultAddonChangelog.ts	EXBoss, WIM, and Waypoint UI|KeystoneLoot is no longer part
+server/plugins/init.ts	marker:|currentRelease\.content\.includes|SWR-cached HTML
+server/utils/addonProfileLua.ts	.WIM\.lua.
+server/utils/addonProfileSync.ts	WIM
+utils/addonChipMeta.ts	wim

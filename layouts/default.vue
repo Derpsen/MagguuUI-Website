@@ -265,6 +265,10 @@
       </div>
     </footer>
 
+    <ClientOnly>
+      <LazyWhatsNewBanner />
+    </ClientOnly>
+
     <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-4" enter-to-class="opacity-100 translate-y-0"
       leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-4">
         <button v-if="showBackToTop" class="fixed bottom-6 right-6 z-40 inline-flex items-center justify-center w-10 h-10 border text-sm" :class="isDark ? 'border-white/15 bg-brand-950 text-white' : 'border-gray-300 bg-white text-gray-950'" aria-label="Back to top" @click="scrollToTop">

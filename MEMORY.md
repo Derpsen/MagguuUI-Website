@@ -425,3 +425,8 @@
 - `lighthouse-live.yml`: the `manifest` output does exist in the action source (just not in action.yml), so the table was not broken; it now reads `.lighthouseci/manifest.json`, adds `/changelog`, prints the table to the log and is job-level advisory. Kept (live-only value).
 - Search typo fallback implemented in `utils/searchMatch.ts` (see AGENTS.md).
 - Verified on CI after the fix (run 40116422033): /changelog mobile LCP 4.2 s / perf 78 (was 8.4 s / 64), TBT 203 ms; budgets for it tightened to perf >= 74, LCP <= 4.6 s. Live snapshot (run 40116424160): home 75, guide 77, changelog 76 (LCP 4.7 s), strings 80 — the live site never showed the 8 s value, it was a local/CI simulation artifact of the big manifest icon.
+
+## 2026-10-24 Wave 3 (Marco's larger wave): What's new banner
+
+- Added `WhatsNewBanner` + `utils/whatsNew.ts` (see AGENTS.md). Decisions: banner is fixed bottom-left (no layout shift), hides on /changelog and counts that as seen; Dismiss/link/Esc record the newest version; first visitors only get the value stored. Admin layout does not show it.
+- Gotcha: the local dev DB used by Playwright already holds the real releases (v12.1.x), so tests read the newest version from `/api/v1/release-stamps` instead of assuming v0.9.3.

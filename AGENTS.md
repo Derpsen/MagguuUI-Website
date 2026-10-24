@@ -334,3 +334,9 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 ## Search typo fallback (2026-10-24)
 
 - `utils/searchMatch.ts`: only when the strict pass finds nothing, tokens of 4+ characters also match words one edit (insert/delete/replace) away from a word or from its first token-length (+-1) letters. Every token must still match. No dependency, about +0.3 KB gzip.
+
+## What's new banner (2026-10-24)
+
+- `components/WhatsNewBanner.vue` (mounted client-only in `layouts/default.vue`, public pages only) compares the newest published release (`/api/v1/release-stamps`, never Unreleased/drafts) with localStorage `lastSeenVersion`. Logic and tests: `utils/whatsNew.ts`, `tests/unit/whatsNew.test.ts`, `tests/whats-new.spec.ts`.
+- First visit: just records the value, shows nothing. Newer release: small `position: fixed` region ("New release") linking to `/changelog?since=<previous>`, with Dismiss and Esc. Dismiss, following the link or opening /changelog records the newest version. Rollbacks and unreadable values re-record silently.
+- No cookies, not in the server HTML, fixed positioning (no CLS), fade-in only under `prefers-reduced-motion: no-preference`. The release fetch runs on idle after mount. Playwright tests must not assume the E2E seed is the only data: read the newest version from the API.

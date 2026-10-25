@@ -707,7 +707,11 @@ test.describe('anonymous counting (/privacy, admin Routes view)', () => {
   // Counts are told apart from other specs' traffic (same IP) by a referrer host that is unique to each check.
   const HUMAN_UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
   const s = Date.now().toString(36)
-  const host = (n: string) => `${n}-${s}.example.org`
+  // The admin report lists only the top 10 referrers, ties broken by name ascending, so on a reused dev DB
+  // earlier runs' hosts could push this run's out. A host that starts with a decreasing key sorts BEFORE
+  // every earlier run's host, so the newest run always makes the cut.
+  const newestFirst = (Number.MAX_SAFE_INTEGER - Date.now()).toString(36)
+  const host = (n: string) => `${newestFirst}-${n}-${s}.example.org`
   const from = (n: string) => `https://${host(n)}/`
   let profileId = 0
   let anon: BrowserContext

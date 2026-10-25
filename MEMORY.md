@@ -501,3 +501,7 @@
 - Lows done: token bound to boot id (no replay across restart), honeypot answers 201, hashed rate-limit keys described in `s9`. Skipped: preset-string format check (would reject valid profiles).
 - Gotchas: handler logic had to leave the Nitro-only files (auto-imports and `~` do not resolve under `node --test`); pure modules import h3 explicitly. Mutation spot check: GPC, trusted proxy, honeypot, time-trap, origin, body cap mutants are all killed. VACUUM runs once on the first maintenance after deploy (about 5 s after start); check `settings.privacy_vacuum_v1`.
 
+## 2026-10-25 Secret-scanning alert #1 (test fixture)
+
+- `tools/redact-log.test.sh` held literal AKIA/ASIA example ids; they are now assembled from two parts at runtime (test semantics unchanged). Repo tree has no other AKIA/ASIA-shaped literals (the regexes in `redact-log.sh`/`auditRedact.ts` are patterns, not keys). Rule in AGENTS.md. History still contains the old literal, hence the alert is closed as `used_in_tests`, not rewritten. `docker.yml` ignores `tools/**`, so this commit builds no image.
+

@@ -3,8 +3,13 @@
  * AdBanner — Google AdSense display ad.
  *
  * Reads publisher ID and slot from site settings.
- * Only renders when AdSense is enabled and the slot is configured.
- * Loads the AdSense script once on first mount.
+ * Only renders when AdSense is enabled, the slot is configured AND the visitor
+ * has agreed in the cookie banner (consent gate, default off): before that
+ * nothing is requested from Google. Do-Not-Track / Global Privacy Control
+ * count as a refusal. Withdrawing the consent stops further ads on the next
+ * page load (an already loaded script cannot be unloaded).
+ * NOTE: the banner and the Privacy text describe the statistics purpose only.
+ * Before AdSense is switched on, add a separate "advertising" purpose to both.
  */
 
 const props = defineProps<{
@@ -22,7 +27,10 @@ const publisherId = computed(() => settings.value.adsense_publisher_id || '')
 const enabled = computed(() => settings.value.adsense_enabled === 'true')
 const slotId = computed(() => settings.value[`adsense_slot_${props.placement}`] || '')
 
-const shouldShow = computed(() => enabled.value && publisherId.value && slotId.value)
+const consent = useConsent()
+const consented = computed(() => consent.enabled.value && consent.choice.value === true && !consent.optedOut.value)
+
+const shouldShow = computed(() => enabled.value && consented.value && publisherId.value && slotId.value)
 
 // Load AdSense script once
 const scriptLoaded = ref(false)
@@ -46,20 +54,26 @@ interface AdSenseWindow extends Window {
   adsbygoogle?: Array<Record<string, unknown>>
 }
 
-onMounted(() => {
-  if (shouldShow.value) {
-    loadAdSenseScript()
-    nextTick(() => {
-      try {
-        const w = window as AdSenseWindow
-        w.adsbygoogle = w.adsbygoogle || []
-        w.adsbygoogle.push({})
-      } catch {
-        // Ad blocker or script not loaded
-      }
-    })
-  }
-})
+let pushed = false
+function showAd() {
+  loadAdSenseScript()
+  nextTick(() => {
+    try {
+      const w = window as AdSenseWindow
+      w.adsbygoogle = w.adsbygoogle || []
+      w.adsbygoogle.push({})
+    } catch {
+      // Ad blocker or script not loaded
+    }
+  })
+}
+
+// Runs on mount and again when the visitor agrees later (consent.revision / choice change).
+watch(shouldShow, (on) => {
+  if (!import.meta.client || !on || pushed) return
+  pushed = true
+  showAd()
+}, { immediate: true, flush: 'post' })
 </script>
 
 <template>

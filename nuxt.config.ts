@@ -154,7 +154,6 @@ export default defineNuxtConfig({
         /* canonical is set per-page via usePublicPageSeo composable */
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
         { rel: 'manifest', href: '/manifest.json' },
-        { rel: 'dns-prefetch', href: 'https://api.iconify.design' },
       ],
     },
   },

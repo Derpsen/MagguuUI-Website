@@ -34,8 +34,11 @@
 
       <template v-else-if="view === 'banner'">
         <p class="mt-1 max-w-3xl">
-          This site works without cookies. If you agree, it also records detailed visitor statistics so the site owner can see where
-          visitors come from and how they use it: IP address, country, referrer and the pages you visit, linked by random cookies.
+          Without your agreement this site sets no tracking cookie and records no IP address or user agent: it only counts page views,
+          copy clicks and page load speed anonymously, with no identifier, and keeps your theme choice in your browser. Your choice is
+          remembered in one small cookie (mg_consent, 6 months). If you click “Accept all”, it also records detailed visitor
+          statistics so the site owner can see where visitors come from and how they use it: IP address, country, referrer and the pages
+          you visit, linked by two random cookies (30 minutes and 13 months).
           Details are in the <NuxtLink to="/privacy" class="underline underline-offset-4">privacy notice</NuxtLink>.
           <span v-if="reopened && choice !== null" data-testid="consent-current">
             Current choice: {{ choice ? 'visitor statistics allowed' : 'necessary only' }}.

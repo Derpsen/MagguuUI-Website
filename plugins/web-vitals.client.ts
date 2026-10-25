@@ -2,9 +2,15 @@
  * Anonymous real-user Web Vitals → first-party /api/v1/vitals.
  * Loads `web-vitals` lazily after the page is idle, public pages only, and
  * flushes once when the page is hidden (sendBeacon, no cookies needed).
+ * Only path, metric name and value are sent: no cookie, no id, no IP or user
+ * agent storage, which is why it belongs with the anonymous counter. Do-Not-Track
+ * and Global Privacy Control are honoured here as well (the server checks too).
  */
+import { clientOptedOut } from '~/utils/beacon'
+
 export default defineNuxtPlugin(() => {
   if (import.meta.dev) return
+  if (clientOptedOut()) return
   const router = useRouter()
   if (router.currentRoute.value.path.startsWith('/admin')) return
 

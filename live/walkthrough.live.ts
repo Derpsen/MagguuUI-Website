@@ -73,7 +73,7 @@ for (const [vpName, viewport] of Object.entries(VIEWPORTS)) {
           const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
           expect(axe.violations.map(v => `${v.id}: ${v.nodes.slice(0, 3).map(n => n.target.join(' ')).join(' | ')}`), 'axe').toEqual([])
           expect(await ctx.cookies(), 'no cookie after load').toEqual([])
-          expect(issues.filter(i => path !== '/definitely-not-a-page' || !/http 404/.test(i)), 'console / network').toEqual([])
+          expect(issues.filter(i => path !== '/definitely-not-a-page' || !/http 404|status of 404/.test(i)), 'console / network').toEqual([])
           expect(blocked.filter(b => !/page-view|\/vitals|\/cdn-cgi\//.test(b)), 'unexpected writes').toEqual([])
           await ctx.close()
         })
@@ -97,7 +97,7 @@ test.describe('interactions (desktop)', () => {
   })
   test.afterEach(async () => {
     expect(issues, 'console / network').toEqual([])
-    expect(blocked, 'unexpected writes').toEqual([])
+    expect(blocked.filter(b => !/page-view|\/vitals/.test(b)), 'unexpected writes').toEqual([]) // the anonymous counters are aborted on purpose
     await ctx.close()
   })
 
@@ -128,7 +128,7 @@ test.describe('interactions (desktop)', () => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
     await page.getByTestId('public-search-open').click()
-    const box = page.getByRole('combobox', { name: /Search guide, changelog, FAQ and strings/ })
+    const box = page.getByTestId('public-search').getByPlaceholder('Search guide, changelog, FAQ, strings…')
     await expect(box).toBeVisible()
     await box.fill('guide')
     await expect(page.getByRole('option').first()).toBeVisible({ timeout: 15_000 })
@@ -190,6 +190,8 @@ test.describe('interactions (desktop)', () => {
   })
 
   test("what's-new banner shows for an older last-seen version and dismisses locally", async () => {
+    // A stored "necessary only" choice keeps the consent banner (same corner of the screen) out of the way; nothing is sent.
+    await ctx.addCookies([{ name: 'mg_consent', value: encodeURIComponent(JSON.stringify({ v: 1, stats: false, ts: Date.now() })), url: process.env.LIVE_URL || 'https://ui.magguu.xyz' }])
     await page.addInitScript(() => localStorage.setItem('lastSeenVersion', 'v0.0.1'))
     await page.goto('/guide')
     await page.waitForLoadState('networkidle')

@@ -129,6 +129,29 @@ async function verifyEndpoints() {
   }
 }
 
+// Drafts are admin-only: nothing a public page loads (its HTML, payload and initial scripts) may mention the draft
+// storage or the draft endpoints. The admin SPA chunks are loaded lazily by /admin routes and are not scanned here.
+const DRAFT_MARKERS = ['content_drafts', 'admin/content/drafts', 'admin/content/publish', 'useContentDraft']
+
+async function verifyDraftsNotPublic() {
+  for (const path of ['/', '/guide', '/faq', '/strings', '/changelog']) {
+    const response = await fetch(`${baseUrl}${path}`)
+    const html = await response.text()
+    if (response.status !== 200) fail(`Expected ${path} to return 200 for the draft check, got ${response.status}`)
+    const assets = new Set([...html.matchAll(/(?:href|src)="(\/_nuxt\/[^"?#]+\.js)"/g)].map(m => m[1]))
+    const sources = [[path, html]]
+    for (const asset of assets) {
+      const res = await fetch(`${baseUrl}${asset}`)
+      sources.push([asset, await res.text()])
+    }
+    for (const [name, text] of sources) {
+      const hit = DRAFT_MARKERS.find(marker => text.includes(marker))
+      if (hit) fail(`Draft marker "${hit}" is reachable from the public page ${path} (${name})`)
+    }
+    console.log(`[verify] ${path} -> no draft markers in the HTML and ${assets.size} initial scripts`)
+  }
+}
+
 async function verifyHotlinkLogos() {
   for (const path of ['/logo.png', '/logo-300.png']) {
     const response = await fetch(`${baseUrl}${path}`)
@@ -870,6 +893,7 @@ child.stderr.on('data', (chunk) => {
 try {
   await waitForServer()
   await verifyEndpoints()
+  await verifyDraftsNotPublic()
   await verifyHotlinkLogos()
   await verifyPublicApiFlows()
   await verifySyncApiFlow()

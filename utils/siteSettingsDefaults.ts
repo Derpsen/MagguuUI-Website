@@ -43,6 +43,8 @@ export const PUBLIC_SITE_SETTING_KEYS = [
   'meta_description',
   'og_image_url',
   'contact_email',
+  // Public because the privacy page states how long page load measurements are kept (that value is this setting).
+  'data_retention_days',
   'adsense_publisher_id',
   'adsense_enabled',
   'adsense_slot_header',
@@ -62,6 +64,7 @@ export const PUBLIC_SITE_SETTINGS_DEFAULTS = {
   meta_description: SITE_SETTINGS_DEFAULTS.meta_description,
   og_image_url: SITE_SETTINGS_DEFAULTS.og_image_url,
   contact_email: SITE_SETTINGS_DEFAULTS.contact_email,
+  data_retention_days: SITE_SETTINGS_DEFAULTS.data_retention_days,
   adsense_publisher_id: SITE_SETTINGS_DEFAULTS.adsense_publisher_id,
   adsense_enabled: SITE_SETTINGS_DEFAULTS.adsense_enabled,
   adsense_slot_header: SITE_SETTINGS_DEFAULTS.adsense_slot_header,

@@ -117,7 +117,7 @@ describe('banner and privacy text match what the code does', () => {
     const s4 = PRIVACY_DEFAULTS.s4!.body!
     for (const needle of ['mg_consent', 'nuxt-color-mode', 'lastSeenVersion', 'local storage']) assert.ok(s4.includes(needle), needle)
     const s7 = PRIVACY_DEFAULTS.s7!.body!
-    for (const needle of ['page load measurement', 'LCP, INP, CLS and TTFB', '90 days', 'Global Privacy Control']) assert.ok(s7.includes(needle), needle)
+    for (const needle of ['page load measurement', 'LCP, INP, CLS and TTFB', '{{retention_days}} days', 'Global Privacy Control']) assert.ok(s7.includes(needle), needle)
     const s11 = PRIVACY_DEFAULTS.s11!.body!
     for (const needle of ['6 months from the day of your choice', '30 minutes', '13 months (395 days)']) assert.ok(s11.includes(needle), needle)
   })

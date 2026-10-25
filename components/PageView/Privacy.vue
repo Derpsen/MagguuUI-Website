@@ -15,18 +15,23 @@
         :class="index > 0 ? ['border-t pt-8', isDark ? 'border-white/10' : 'border-gray-200'] : []"
       >
         <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ copy[id]?.title }}</h2>
-        <SafeHtml class="page-copy page-copy--privacy" :class="isDark ? 'page-copy--dark' : ''" :html="copy[id]?.body || ''" />
+        <SafeHtml class="page-copy page-copy--privacy" :class="isDark ? 'page-copy--dark' : ''" :html="fill(copy[id]?.body || '')" />
       </section>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
+import { fillCopyTokens } from '~/utils/pageCopyDefaults'
 import type { PageCopyDefaults } from '~/utils/pageCopyDefaults'
 
 defineProps<{
   copy: PageCopyDefaults
 }>()
+
+// {{retention_days}} is the real data_retention_days setting (it also drives the deletion of page load measurements).
+const siteSettings = usePublicSiteSettings()
+const fill = (html: string) => fillCopyTokens(html, { retention_days: siteSettings.value.data_retention_days })
 
 const isDark = useIsDark()
 const sectionIds = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12'] as const

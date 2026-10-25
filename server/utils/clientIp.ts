@@ -43,7 +43,9 @@ export function getClientIp(event: H3Event): string {
     // One-shot hint for ops: forwarded headers arrive from a peer that is not trusted because nothing was configured.
     if (cf && !warnedUnsetProxies && process.env.NODE_ENV === 'production' && trustedProxiesUnset(process.env.NUXT_TRUSTED_PROXIES)) {
       warnedUnsetProxies = true
-      console.warn(`[trusted-proxy] cf-connecting-ip from socket ${socket} ignored: NUXT_TRUSTED_PROXIES is not set (default: loopback only). ` +
+      // A public peer address is a visitor's: never written to the log. A private one is the proxy the operator has to name.
+      const peer = isTrustedProxy(socket, parseTrustedProxies('private')) ? socket : 'a public address'
+      console.warn(`[trusted-proxy] cf-connecting-ip from socket ${peer} ignored: NUXT_TRUSTED_PROXIES is not set (default: loopback only). ` +
         'Set it to the address of your reverse proxy / cloudflared (or "private" for the old behaviour) so visitors are not all counted as one address.')
     }
     return socket || 'unknown'

@@ -571,3 +571,22 @@ describe('beacon rate_limits rows are bounded', () => {
     assert.equal(BEACON_LIMIT_MAX_ROWS, 20_000)
   })
 })
+
+describe('the unset-proxies hint never logs a public address', () => {
+  it('names a private peer, hides a public one', () => {
+    const lines: string[] = []
+    const warn = console.warn
+    const env = process.env.NODE_ENV
+    console.warn = (m: string) => { lines.push(String(m)) }
+    try {
+      ;(process.env as Record<string, string>).NODE_ENV = 'production'
+      delete process.env.NUXT_TRUSTED_PROXIES
+      getClientIp(fakeEvent({ 'cf-connecting-ip': '1.1.1.1' }, '203.0.113.9'))
+      getClientIp(fakeEvent({ 'cf-connecting-ip': '1.1.1.1' }, '10.0.0.7'))
+    } finally { console.warn = warn; (process.env as Record<string, string>).NODE_ENV = env as string }
+    // One-shot per process: the first (public) peer is what was logged, and it is not the address itself.
+    assert.equal(lines.length, 1)
+    assert.ok(!lines[0]!.includes('203.0.113.9'))
+    assert.match(lines[0]!, /a public address/)
+  })
+})

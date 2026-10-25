@@ -17,7 +17,7 @@ import { isHtmlCopyKey } from '../../utils/pageCopyDefaults'
 type Sqlite = Pick<Database.Database, 'prepare' | 'transaction'>
 
 export type AuditAction = 'created' | 'updated' | 'deleted'
-export const AUDIT_TYPES = ['content', 'changelog', 'faq', 'setting', 'profile', 'wowup', 'layout', 'addon', 'status_notice'] as const
+export const AUDIT_TYPES = ['content', 'changelog', 'faq', 'setting', 'profile', 'wowup', 'layout', 'addon', 'status_notice', 'community_preset'] as const
 export type AuditType = typeof AUDIT_TYPES[number]
 export const UNDOABLE_TYPES: readonly string[] = ['content', 'changelog', 'faq']
 

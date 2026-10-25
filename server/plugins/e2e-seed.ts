@@ -4,7 +4,7 @@
  * WowUp string test runs in CI. Never runs in the Docker image.
  */
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
 import { changelogs, wowupStrings } from '~/server/database/schema'
 
 const E2E_WOWUP_PACK = 'E2E Test Pack'
@@ -12,6 +12,7 @@ const E2E_WOWUP_PACK = 'E2E Test Pack'
 export default defineNitroPlugin(() => {
   if (process.env.NUXT_E2E_SEED !== 'true' || process.env.NODE_ENV === 'production') return
   seedWowupPack()
+  seedAddon()
   seedChangelog()
 })
 
@@ -24,6 +25,15 @@ function seedWowupPack() {
     console.info('[E2E] Seeded WowUp test pack')
   } catch (err) {
     console.error('[E2E] WowUp seed failed:', err)
+  }
+}
+
+// Community preset form (tests/community-presets.spec.ts) needs one visible addon to choose.
+function seedAddon() {
+  try {
+    sqlite.prepare("INSERT OR IGNORE INTO addons (slug, name, category, sort_order, is_visible, is_available, source) VALUES ('e2e-test-addon', 'E2E Test Addon', 'optional', 999, 1, 1, 'manual')").run()
+  } catch (err) {
+    console.error('[E2E] Addon seed failed:', err)
   }
 }
 

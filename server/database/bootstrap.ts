@@ -215,6 +215,24 @@ export const DATABASE_BOOTSTRAP_SQL = `
   );
   CREATE INDEX IF NOT EXISTS idx_status_notice_updates_notice ON status_notice_updates(notice_id, id);
 
+  -- Community-submitted presets awaiting moderation (public input; no IP, no user agent, no account);
+  -- see server/utils/communityPresets.ts
+  CREATE TABLE IF NOT EXISTS community_presets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    addon TEXT NOT NULL,
+    preset_string TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    tested_version TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'pending',
+    content_hash TEXT NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    reviewed_at INTEGER,
+    reviewed_by INTEGER
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_community_presets_hash ON community_presets(content_hash);
+  CREATE INDEX IF NOT EXISTS idx_community_presets_status ON community_presets(status, created_at);
+
   CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,

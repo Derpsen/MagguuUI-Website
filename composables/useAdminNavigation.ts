@@ -115,6 +115,14 @@ const adminSections: AdminNavSection[] = [
         hint: 'Organize class and specialization layouts with clearer metadata, visibility states and sorting.',
       },
       {
+        to: '/admin/strings/community',
+        label: 'Community',
+        heading: 'Community presets',
+        icon: 'i-heroicons-users',
+        description: 'Review preset strings submitted by visitors.',
+        hint: 'Approve, reject or delete visitor submissions. Only approved presets are public.',
+      },
+      {
         to: '/admin/data/addons',
         label: 'Addons',
         heading: 'Addon Catalogue',
@@ -243,6 +251,7 @@ const commandActions: Omit<AdminCommandItem, 'id'>[] = [
   { group: 'Actions', to: '/admin/strings/profiles?action=create', label: 'New Addon Profile', icon: 'i-heroicons-plus', description: 'Create a new addon import string.' },
   { group: 'Actions', to: '/admin/content/changelog?action=create', label: 'New Update', icon: 'i-heroicons-plus', description: 'Document the latest release.' },
   { group: 'Actions', to: '/admin/strings/wowup?action=create', label: 'New WowUp String', icon: 'i-heroicons-plus', description: 'Add a new WowUp package string.' },
+  { group: 'Actions', to: '/admin/strings/community?status=pending', label: 'Review community presets', icon: 'i-heroicons-inbox', description: 'Open the queue of visitor-submitted presets.' },
   { group: 'Actions', to: '/admin/system/status?action=create', label: 'New status notice', icon: 'i-heroicons-plus', description: 'Announce maintenance or an incident on the status page.' },
   { group: 'Actions', to: '/', label: 'Open public website', icon: 'i-heroicons-arrow-top-right-on-square', description: 'Leave the admin and view the public site.' },
 ]

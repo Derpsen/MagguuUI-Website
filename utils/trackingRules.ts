@@ -5,7 +5,7 @@
 
 /** Public routes that are counted. Anything else (admin, api, 404s, junk) is ignored. */
 export const TRACKED_ROUTES = [
-  '/', '/strings', '/addons', '/profiles', '/configurator', '/guide', '/changelog', '/faq', '/about', '/imprint', '/privacy', '/status',
+  '/', '/strings', '/addons', '/profiles', '/configurator', '/guide', '/changelog', '/faq', '/about', '/imprint', '/privacy', '/status', '/submit-preset',
 ] as const
 
 const TRACKED = new Set<string>(TRACKED_ROUTES)
@@ -19,8 +19,8 @@ export function normalizeTrackedPath(raw: unknown): string | null {
   return TRACKED.has(path) ? path : null
 }
 
-/** What can be copied, and therefore counted. The server also checks the row is published. */
-export const COPY_TYPES = ['profile', 'wowup', 'layout'] as const
+/** What can be copied, and therefore counted. The server also checks the row is published (community: approved). */
+export const COPY_TYPES = ['profile', 'wowup', 'layout', 'community'] as const
 export type CopyType = typeof COPY_TYPES[number]
 
 export function parseCopyTarget(type: unknown, id: unknown): { type: CopyType, id: number } | null {

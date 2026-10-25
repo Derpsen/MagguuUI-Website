@@ -25,6 +25,6 @@ export function sendCountBeacon(url: string, payload: Record<string, unknown>) {
 }
 
 /** One copy click on an import string (profile, WowUp collection or class layout). */
-export function trackCopy(type: 'profile' | 'wowup' | 'layout', id: number) {
+export function trackCopy(type: 'profile' | 'wowup' | 'layout' | 'community', id: number) {
   sendCountBeacon('/api/v1/copy-event', { stringType: type, stringId: id })
 }

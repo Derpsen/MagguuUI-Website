@@ -381,6 +381,23 @@ export const statusNoticeUpdates = sqliteTable('status_notice_updates', {
   createdAt: integer('created_at').notNull().default(sql`(unixepoch())`),
 })
 
+// ─── Community presets ─────────────────────────────
+// Visitor-submitted import strings in a moderation queue. Public input: no IP,
+// no user agent, no account is stored. Only `approved` rows are ever public.
+export const communityPresets = sqliteTable('community_presets', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  addon: text('addon').notNull(),
+  presetString: text('preset_string').notNull(),
+  note: text('note').notNull().default(''),
+  testedVersion: text('tested_version').notNull().default(''),
+  status: text('status').notNull().default('pending'), // 'pending' | 'approved' | 'rejected'
+  contentHash: text('content_hash').notNull(),
+  createdAt: integer('created_at').notNull().default(sql`(unixepoch())`),
+  reviewedAt: integer('reviewed_at'),
+  reviewedBy: integer('reviewed_by'),
+})
+
 // ─── Web Vitals (anonymous RUM) ────────────────────
 // One row per metric sample: page path, metric name, value. No IP, UA,
 // cookie or user id is stored. Retention follows the page_views setting.

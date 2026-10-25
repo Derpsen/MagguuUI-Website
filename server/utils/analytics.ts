@@ -96,11 +96,13 @@ export function recordView(sqlite: Sqlite, v: ViewInput, now = Math.floor(Date.n
   ).run(v.path, v.referrer, v.device, v.browser, v.os, v.visitor, now)
 }
 
-const COPY_TABLES: Record<CopyType, string> = { profile: 'profiles', wowup: 'wowup_strings', layout: 'character_layouts' }
+const COPY_TABLES: Record<Exclude<CopyType, 'community'>, string> = { profile: 'profiles', wowup: 'wowup_strings', layout: 'character_layouts' }
 
 /** Allowlist: the target must exist and be published. */
 export function isCopyTarget(sqlite: Sqlite, type: CopyType, id: number): boolean {
   if (!COPY_TYPES.includes(type)) return false
+  // Community presets count only once a moderator approved them.
+  if (type === 'community') return !!sqlite.prepare("SELECT 1 AS ok FROM community_presets WHERE id = ? AND status = 'approved'").get(id)
   return !!sqlite.prepare(`SELECT 1 AS ok FROM ${COPY_TABLES[type]} WHERE id = ? AND is_visible = 1`).get(id)
 }
 
@@ -214,6 +216,9 @@ function copyName(sqlite: Sqlite, type: string, id: number): string {
   } else if (type === 'wowup') {
     const w = one<{ name: string }>('SELECT name FROM wowup_strings WHERE id = ?')
     if (w) return w.name
+  } else if (type === 'community') {
+    const c = one<{ addon: string, name: string }>('SELECT addon, name FROM community_presets WHERE id = ?')
+    if (c) return `${c.addon} - ${c.name} (community)`
   } else if (type === 'layout') {
     const l = one<{ name: string, class_name: string | null, spec: string | null }>('SELECT name, class_name, spec FROM character_layouts WHERE id = ?')
     if (l) return l.class_name && l.spec ? `${l.class_name} - ${l.spec}` : l.name

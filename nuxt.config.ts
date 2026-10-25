@@ -379,6 +379,8 @@ export default defineNuxtConfig({
     // /status is public but deliberately not indexed; the header must agree with its robots meta
     // (the robots module would otherwise send the site-wide `index, follow`).
     '/status': { headers: { 'X-Robots-Tag': 'noindex, follow' } },
+    // The submission form has nothing to index either.
+    '/submit-preset': { headers: { 'X-Robots-Tag': 'noindex, follow' } },
     // Public marketing HTML. Auth chrome is client-only, so the cached
     // document is the anonymous page. Same 120s window as the content APIs.
     '/': { swr: 120 },

@@ -143,6 +143,7 @@ const typeOptions = [
   { label: 'WowUp String', value: 'wowup' },
   { label: 'Character Layout', value: 'layout' },
   { label: 'Status notice', value: 'status_notice' },
+  { label: 'Community preset', value: 'community_preset' },
 ]
 const actionOptions = [
   { label: 'All actions', value: 'all' },

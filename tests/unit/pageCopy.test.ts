@@ -16,7 +16,7 @@ describe('editable page copy', () => {
     assert.match(about, /Apply Magguu profiles/)
     assert.match(about, /Whisper Messenger/)
     assert.doesNotMatch(about, /\bWIM\b/)
-    assert.equal(Object.keys(PRIVACY_DEFAULTS).filter(k => /^s\d$/.test(k)).length, 7)
+    assert.equal(Object.keys(PRIVACY_DEFAULTS).filter(k => /^s\d$/.test(k)).length, 8)
   })
 
   it('treats body and step fields as HTML', () => {

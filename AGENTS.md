@@ -146,13 +146,14 @@ Routine „Magguu Audit Allowlist Review“ ~2. Nov; re-check before review-by.
 After Unraid app-image pull / when Buddy asks ("Unraid & Server" owns container pull):
 
 1. Login `/admin/login`
-2. These eight routes must be **200** (from #102):
+2. These nine routes must be **200** (from #102):
    - `/admin` (dashboard overview, shows "Needs attention" and the Content/Publishing/Traffic/Health sections)
    - `/admin/system/activity`
    - `/admin/system/audit`
    - `/admin/system/status` (status notices: list, Add update / Resolve / Edit / Delete; read-only look, do not create live notices)
    - `/admin/strings/profiles`
    - `/admin/strings/layouts`
+   - `/admin/strings/community` (community preset queue: Approve / Reject / View string / Edit label / Delete; read-only look, never approve or delete live submissions)
    - `/admin/data/addons`
    - `/admin/content` (shows the content page list; no redirect anymore)
 3. Report to Buddy **only on FAIL** (or short OK if asked).
@@ -417,6 +418,19 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 - Sampler (`server/plugins/status-sampler.ts`, `server/utils/siteStatus.ts`): one row per 5-minute slot in `status_samples` while the DB answers; finished UTC days roll up into `status_daily` (INSERT OR IGNORE); detail kept 3 days, daily rows 100 days. Availability = answered slots / expected slots since the first sample; a missing slot (restart, outage) counts as downtime; percentages round down; a window (24 h, 7/30/90 days) appears only after that much history, nothing before 24 h ("Collecting data").
 - Notices (item B): see the next section. The registry in `server/utils/statusNotices.ts` (`registerStatusNoticeSource(fn)`, `fn(nowSeconds)` returns raw rows) is fed by `server/plugins/status-notices.ts` from the DB; `toPublicNotice` is the whitelist.
 - SEO: `noindex, follow`, not in the sitemap (a "Down" snapshot has no lasting search value), linked in the footer, counted as a public route in `TRACKED_ROUTES`, not edge-cached.
+
+## Community presets (visitor submissions, moderated)
+
+- Form: `/submit-preset` (page `pages/submit-preset.vue`, `noindex, follow` in meta and `routeRules`, not in the sitemap, counted in `TRACKED_ROUTES`). Linked from the community section on `/strings` (`components/CommunityPresets.vue`, client-side fetch so an approval shows at once). Fields: name (3-60), addon (select of visible + available addons), preset string (20-16000 chars, max 400 lines), optional note (200), optional "tested with" version (pattern `[A-Za-z0-9][A-Za-z0-9 .,+_()/#:-]{0,39}`). The form says: no account, no cookies, no personal data, no IP stored.
+- Storage: table `community_presets` (CREATE IF NOT EXISTS in bootstrap, mirrored in drizzle): name, addon, preset_string, note, tested_version, status (pending | approved | rejected), content_hash (unique), created_at, reviewed_at, reviewed_by. **No IP, no user agent, no contact data**; a unit test fails if such a column appears.
+- Code: `server/utils/communityPresets.ts` (pure, takes a better-sqlite3 handle, relative imports only), `server/utils/communityPresetRuntime.ts` (process-wide limiters, replay guard, secret). Public handlers `server/api/v1/community-presets/` (`index.get` approved list, `[id].get` string of an approved id, `form-token.get`, `index.post`); admin handlers `server/api/v1/admin/community-presets/` (`index.get`, `[id].get/patch/delete`) all start with `requireAdminAccess(event)` (unit test scans the sources).
+- Defences on POST, cheapest first: same-origin (when Origin is sent), body size (48 KB, 413), per-visitor attempt limit (15/h), honeypot field `website` (answers like a success, stores nothing), signed cookie-less form token (HMAC of issue time + nonce with the JWT secret; fetched by the browser after the page rendered; min 5 s, max 2 h, single use via in-memory replay guard), strict zod validation, per-visitor acceptance limit (3/h), known-addon check, duplicate hash (answers like a success), pending queue cap (200) and global daily cap (40). Limiters are in memory and keyed by a daily-salted hash of the IP (`dailySalt` / `anonymousKey`); nothing about the visitor is stored or logged. Under `NUXT_E2E_SEED` (never in production) the per-visitor limits are x1000 so Playwright can submit repeatedly.
+- Text handling: plain text only. Short fields: control and format characters stripped, whitespace collapsed, links and addresses refused. The preset string is rejected (not edited) if it contains control, invisible or unassigned characters. Everything is rendered with Vue interpolation (escaped); there is no Markdown or HTML path for these fields (tests feed `<script>`, `<img onerror>`, Markdown links and `{{ }}`).
+- Moderation: admin page `/admin/strings/community` (sidebar Data -> Community, palette "Review community presets"): filter pending/approved/rejected/all, Approve, Reject (or Unpublish and reject), View string, Edit label (name, note, tested version; the string is never editable), Delete. Every change is audited (`community_preset`, snapshot has size and hash, never the string; no undo). Only `approved` rows are public; the public list is a whitelist (id, name, addon, testedVersion, note, stringLength).
+- Public display: label "Community-submitted, not verified or endorsed by MagguuUI; import at your own risk", never shown as an official Magguu profile. Copy uses `StringCopyButton` and counts as copy type `community` through the existing allowlist (`isCopyTarget` only accepts approved rows).
+- Retention: `prunePresets` runs in the status sampler maintenance tick: pending items are deleted 30 days after submission, rejected ones 30 days after the review; approved ones stay until an admin deletes them.
+- Privacy text: new default section `s8` ("8. Community Preset Submissions") in `utils/pageCopyDefaults.ts`, listed in `sectionIds` of `components/PageView/Privacy.vue`; the s7 default also mentions approved community presets. Defaults are merged by key (`mergePageCopy`), so edits an admin already saved for s1-s7 stay untouched and a saved s7 keeps its text (only the default changed). The address in the s8 default is split with a `<span>` so Cloudflare email obfuscation does not rewrite it. The Imprint is unchanged (no operator data is processed beyond what the privacy page says).
+- E2E: `tests/community-presets.spec.ts` (defences through the API, submit through the form, pending hidden, approve, copy, axe Dark/Light, audit, reject, delete; cleans up after itself) and `tests/unit/communityPresets.test.ts`. Seed: `server/plugins/e2e-seed.ts` adds the addon "E2E Test Addon" (Playwright only). Never submit presets on the live site to test.
 
 ## Status notices (maintenance / incidents, admin-maintained)
 

@@ -7,6 +7,7 @@
 
 import { sqlite } from '~/server/database'
 import { SLOT_SECONDS, recordStatusSample, runStatusMaintenance } from '~/server/utils/siteStatus'
+import { prunePresets } from '~/server/utils/communityPresets'
 import { pruneStatusNotices } from '~/server/utils/statusNoticeStore'
 
 export default defineNitroPlugin(() => {
@@ -25,6 +26,7 @@ export default defineNitroPlugin(() => {
       if (ticks++ % 30 === 0) {
         runStatusMaintenance(sqlite, now)
         pruneStatusNotices(sqlite, now) // resolved notices are kept for a year
+        prunePresets(sqlite, now) // pending / rejected community presets expire after 30 days
       }
     } catch { /* database not ready or unavailable: the missing slot is the signal */ }
   }

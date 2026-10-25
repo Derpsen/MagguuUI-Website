@@ -4,6 +4,7 @@
  */
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
 import { PRIVACY_DEFAULTS } from '../../utils/pageCopyDefaults'
 
@@ -85,6 +86,22 @@ describe('no third-party hints in the document head', () => {
     const c = code('nuxt.config.ts')
     assert.doesNotMatch(c, /dns-prefetch|preconnect/)
     assert.doesNotMatch(c, /api\.iconify\.design/)
+  })
+
+  it('no page, component, layout or plugin adds one either (a prefetch to curseforge/wago/wowinterface contacted them before any click)', async () => {
+    const { readdirSync, readFileSync, statSync } = await import('node:fs')
+    const { join } = await import('node:path')
+    const rootDir = fileURLToPath(root)
+    const offenders: string[] = []
+    const walk = (dir: string) => {
+      for (const name of readdirSync(dir)) {
+        const full = join(dir, name)
+        if (statSync(full).isDirectory()) walk(full)
+        else if (/\.(vue|ts)$/.test(name) && /(dns-prefetch|preconnect|rel:\s*'prefetch')/.test(readFileSync(full, 'utf8'))) offenders.push(full.slice(rootDir.length))
+      }
+    }
+    for (const d of ['pages', 'components', 'layouts', 'plugins', 'composables']) walk(join(rootDir, d))
+    assert.deepEqual(offenders, [])
   })
 })
 

@@ -317,13 +317,6 @@ usePublicPageSeo({
   description: 'Download EllesmereUI 9.0.6+ and MagguuUI from CurseForge, Wago, or WoWInterface, open /mui, and run Apply Magguu profiles.',
   path: '/guide',
 })
-useHead({
-  link: [
-    { rel: 'dns-prefetch', href: 'https://www.curseforge.com' },
-    { rel: 'dns-prefetch', href: 'https://addons.wago.io' },
-    { rel: 'dns-prefetch', href: 'https://www.wowinterface.com' },
-  ],
-})
 const isAdmin = computed(() => {
   if (import.meta.server) return false
   return isLoggedIn.value

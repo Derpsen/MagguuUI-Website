@@ -5,7 +5,8 @@
  * only (Privacy section 9 promises "up to 24 hours"; the cleanup runs every 30 minutes, so the limit is 23 hours). After
  * that the two columns are set to NULL; the row itself (username, parsed browser/OS, outcome, flag) stays until the
  * data-retention period of the admin settings. Nothing here changes who can sign in: the per-address and per-account
- * throttles live in memory (loginThrottle.ts) and the explicit account lock is on the users table.
+ * throttles are rows of the SQLite rate_limits table (loginThrottle.ts, keys `login-fail:ip:` / `login-fail:user:`, thresholds in
+ * loginBackoff.ts) and the explicit account lock is on the users table.
  */
 import type Database from 'better-sqlite3'
 

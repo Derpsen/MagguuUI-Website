@@ -137,6 +137,7 @@ test('"Accept all": consent cookie + session cookie, the visit is recorded in de
   await banner(page).getByTestId('consent-accept').click()
   await expect(banner(page)).toBeHidden()
   await expect.poll(() => sessionsFor(marker).length).toBe(1)
+  await expect.poll(() => names(context)).toEqual(['mg_consent', 'mg_sid', 'mg_vid']) // the row is written before the browser has processed Set-Cookie
 
   const cookies = await context.cookies()
   expect(cookies.map(c => c.name).sort()).toEqual(['mg_consent', 'mg_sid', 'mg_vid'])
@@ -197,7 +198,7 @@ test('Settings: the statistics toggle is off by default; saving it off stores no
   await banner(page).getByTestId('consent-stats-toggle').check()
   await banner(page).getByTestId('consent-save').click()
   await expect.poll(() => sessionsFor(marker).length).toBe(1)
-  expect((await names(context))).toEqual(['mg_consent', 'mg_sid', 'mg_vid'])
+  await expect.poll(() => names(context)).toEqual(['mg_consent', 'mg_sid', 'mg_vid'])
   await context.close()
 })
 
@@ -207,7 +208,7 @@ test('revoking through the footer link removes the session cookie and the record
   await page.goto('/')
   await banner(page).getByTestId('consent-accept').click()
   await expect.poll(() => sessionsFor(marker).length).toBe(1)
-  expect(await names(context)).toEqual(['mg_consent', 'mg_sid', 'mg_vid'])
+  await expect.poll(() => names(context)).toEqual(['mg_consent', 'mg_sid', 'mg_vid']) // the row is written before the browser has processed Set-Cookie
 
   const footerLink = page.getByTestId('cookie-settings')
   await expect(footerLink).toHaveText('Cookie settings')

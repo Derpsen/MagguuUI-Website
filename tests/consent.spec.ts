@@ -362,6 +362,64 @@ test('Global Privacy Control: no banner, no cookie, nothing recorded; the footer
   await context.close()
 })
 
+const COUNTING_CALLS = /\/api\/v1\/(consent|visitor-hit|visitor-event|page-view|vitals|copy-event)/
+
+// L10: the browser flag alone (navigator.globalPrivacyControl, no Sec-GPC header, so the server cannot know) must be enough.
+test('client-side GPC only (no header): no banner, no cookie, not a single counting request, nothing recorded', async ({ browser }) => {
+  const marker = newMarker()
+  const { context, page, setCookieSeen } = await visitor(browser, marker)
+  await page.addInitScript(() => Object.defineProperty(navigator, 'globalPrivacyControl', { value: true }))
+  const calls: string[] = []
+  page.on('request', (r) => { if (r.method() === 'POST' && COUNTING_CALLS.test(r.url())) calls.push(r.url()) })
+  await page.goto('/')
+  await hydrated(page)
+  await settle(page)
+  await expect(banner(page)).toHaveCount(0)
+  await page.goto('/strings')
+  await hydrated(page)
+  await settle(page)
+  await page.mouse.wheel(0, 3000) // web-vitals report on interaction / page hide
+  await page.goto('/guide')
+  await settle(page)
+  await expect(banner(page)).toHaveCount(0)
+  expect(calls).toEqual([])
+  expect(await names(context)).toEqual([])
+  expect(setCookieSeen).toEqual([])
+  expect(sessionsFor(marker)).toEqual([])
+  expect(eventsFor(marker)).toEqual([])
+  await context.close()
+})
+
+test('client-side GPC after an earlier "Accept all": the browser withdraws the choice (records and session/visitor cookies go); with the header too, the consent cookie goes as well', async ({ browser }) => {
+  const marker = newMarker()
+  const { context, page } = await visitor(browser, marker)
+  await page.goto('/')
+  await hydrated(page)
+  await banner(page).getByTestId('consent-accept').click()
+  await expect.poll(() => sessionsFor(marker).length).toBe(1)
+  await expect.poll(() => names(context)).toEqual(['mg_consent', 'mg_sid', 'mg_vid'])
+
+  // Flag only: the server sees an ordinary "no" (no Sec-GPC header), so it keeps a "no" choice and deletes everything else.
+  const flagOnly = await context.newPage()
+  await flagOnly.addInitScript(() => Object.defineProperty(navigator, 'globalPrivacyControl', { value: true }))
+  await flagOnly.goto('/strings')
+  await hydrated(flagOnly)
+  await expect.poll(() => names(context), { timeout: 10_000 }).toEqual(['mg_consent'])
+  expect(JSON.parse(decodeURIComponent((await context.cookies())[0]!.value)).stats).toBe(false)
+  expect(sessionsFor(marker)).toEqual([])
+  await expect(banner(flagOnly)).toHaveCount(0)
+
+  // What a real browser sends: flag and header. The refusal signal wins, nothing at all stays.
+  const both = await context.newPage()
+  await both.setExtraHTTPHeaders({ 'Sec-GPC': '1' })
+  await both.addInitScript(() => Object.defineProperty(navigator, 'globalPrivacyControl', { value: true }))
+  await both.goto('/guide')
+  await hydrated(both)
+  await expect.poll(() => names(context), { timeout: 10_000 }).toEqual([])
+  expect(sessionsFor(marker)).toEqual([])
+  await context.close()
+})
+
 test('Do Not Track is a refusal too', async ({ browser }) => {
   const marker = newMarker()
   const { context, page } = await visitor(browser, marker, { extraHTTPHeaders: { DNT: '1' } })

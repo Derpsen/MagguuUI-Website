@@ -323,6 +323,15 @@ export default defineNuxtConfig({
     // was split into ~25 tiny shared chunks, each its own modulepreload.
     // Client only; SSR chunking stays default.
     $client: {
+      // Dev server only: pre-bundle the dependencies of the admin editor and charts, which are otherwise discovered
+      // when the first admin page opens. A late discovery makes Vite re-optimize and force-reload every open page, and
+      // that reload hit unrelated tests running in the other Playwright worker. No effect on the production build.
+      optimizeDeps: {
+        include: [
+          '@tiptap/extension-link', '@tiptap/extension-text-align', '@tiptap/extension-underline',
+          'echarts/core', 'echarts/charts', 'echarts/components', 'echarts/renderers', 'vue-echarts',
+        ],
+      },
       build: {
         rolldownOptions: {
           output: {

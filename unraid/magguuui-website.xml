@@ -56,6 +56,8 @@
 
   <Config Name="NUXT_FORCE_PASSWORD_RESET" Target="NUXT_FORCE_PASSWORD_RESET" Default="" Mode="" Description="Set to 'true' ONCE to force-reset the admin password to NUXT_ADMIN_PASSWORD on next boot. Unset afterwards." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
+  <Config Name="NUXT_TRUSTED_PROXIES" Target="NUXT_TRUSTED_PROXIES" Default="" Mode="" Description="Address of the reverse proxy / cloudflared (IP or CIDR, comma separated) whose client-IP headers are believed. Empty = loopback only, so every visitor counts as the proxy address. Use &apos;private&apos; to trust any LAN/container address." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
   <Config Name="NODE_ENV" Target="NODE_ENV" Default="production" Mode="" Description="Keep as 'production' on Unraid." Type="Variable" Display="advanced" Required="false" Mask="false">production</Config>
 
   <Config Name="HOST" Target="HOST" Default="0.0.0.0" Mode="" Description="Interface the Nuxt server binds to." Type="Variable" Display="advanced" Required="false" Mask="false">0.0.0.0</Config>

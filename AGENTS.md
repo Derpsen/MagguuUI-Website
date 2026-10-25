@@ -273,8 +273,8 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
   - Nothing sets `isLocked` automatically any more. `getCurrentAuthUser` no longer rejects sessions because of `isLocked` (it only blocks new logins). Revoke sessions explicitly.
   - Passkey login is unchanged.
 - **Client IP:** `getClientIp` trusts `cf-connecting-ip` / `x-real-ip` / `x-forwarded-for` only when the socket peer is in `NUXT_TRUSTED_PROXIES` (`server/utils/trustedProxy.ts`). Otherwise it uses the socket IP. `getClientIp`, `rateLimitIpKey` (/64) and `rateLimitGroupKey` (/48, IPv4 /24) live in `server/utils/clientIp.ts` (pure, no DB).
-  - The setting takes IPs or CIDRs, or the keywords `private` (the default when unset: loopback + RFC1918 + ULA/link-local) or `none`.
-  - The container on br0 (`192.168.178.21:3000`) **is reachable directly from the LAN**. With the default, only LAN hosts can still spoof the header.
+  - The setting takes IPs or CIDRs, or the keywords `loopback` (the default when unset or empty: 127.0.0.0/8 and ::1 only), `private` (loopback + RFC1918 + ULA/link-local, the former default, now opt-in) or `none`.
+  - The container on br0 (`192.168.178.21:3000`) **is reachable directly from the LAN**. With `private`, any LAN host can spoof the header; with the loopback default none can, but then the proxy must be named (an unset variable in production logs `[trusted-proxy] ... ignored` once when a cf-connecting-ip header arrives from an untrusted peer).
   - To close that, set `NUXT_TRUSTED_PROXIES` to the cloudflared address. After a deploy, `docker logs MagguuUI | grep trusted-proxy` prints it once.
 
 ## Changelog feeds, filter and ?since= (2026-10-24)

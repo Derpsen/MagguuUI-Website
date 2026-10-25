@@ -8,14 +8,27 @@
  *
  * NUXT_TRUSTED_PROXIES: comma/space separated IPs or CIDRs, e.g.
  * `192.168.178.30/32` (the cloudflared host). Keywords:
- *   `private` (default when unset): loopback + RFC1918 + IPv6 ULA/link-local
+ *   `loopback` (default when unset): 127.0.0.0/8 and ::1 only
+ *   `private`: loopback + RFC1918 + IPv6 ULA/link-local (any host on the LAN or the container network is believed)
  *   `none`: never trust headers (socket IP only)
+ * The default used to be `private`. Anything that is reachable by LAN peers or other containers could then pick its own
+ * client address (rate-limit key, visitor record). A deployment behind a proxy on another host or container must now
+ * name that proxy (or `private`, to keep the old behaviour).
  */
 
+const LOOPBACK_RANGES = ['127.0.0.0/8', '::1/128']
 const PRIVATE_RANGES = [
-  '127.0.0.0/8', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '169.254.0.0/16',
-  '::1/128', 'fc00::/7', 'fe80::/10',
+  ...LOOPBACK_RANGES, '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '169.254.0.0/16',
+  'fc00::/7', 'fe80::/10',
 ]
+
+/** True when the setting is empty: the default (loopback only) applies. */
+export const trustedProxiesUnset = (value: string | undefined) => (value ?? '').split(/[\s,]+/).filter(Boolean).length === 0
+
+// BigInt() calls, not `0n` literals: the server bundle targets es2019 and esbuild warns about literals.
+const ZERO = BigInt(0)
+const EIGHT = BigInt(8)
+const SIXTEEN = BigInt(16)
 
 interface Cidr { v6: boolean; bits: bigint; prefix: number }
 
@@ -29,7 +42,7 @@ function parseIp(raw: string): { v6: boolean; bits: bigint } | null {
   if (/^\d+\.\d+\.\d+\.\d+$/.test(ip)) {
     const parts = ip.split('.').map(Number)
     if (parts.some(n => !Number.isInteger(n) || n < 0 || n > 255)) return null
-    return { v6: false, bits: parts.reduce((acc, n) => (acc << 8n) | BigInt(n), 0n) }
+    return { v6: false, bits: parts.reduce((acc, n) => (acc << EIGHT) | BigInt(n), ZERO) }
   }
   if (!ip.includes(':') || !/^[0-9a-f:]+$/i.test(ip)) return null
   const halves = ip.split('::')
@@ -40,7 +53,7 @@ function parseIp(raw: string): { v6: boolean; bits: bigint } | null {
   if (halves.length === 1 ? missing !== 0 : missing < 0) return null
   const groups = [...head, ...Array(Math.max(0, missing)).fill('0'), ...tail]
   if (groups.some(g => !/^[0-9a-f]{1,4}$/i.test(g))) return null
-  return { v6: true, bits: groups.reduce((acc, g) => (acc << 16n) | BigInt(parseInt(g, 16)), 0n) }
+  return { v6: true, bits: groups.reduce((acc, g) => (acc << SIXTEEN) | BigInt(parseInt(g, 16)), ZERO) }
 }
 
 function parseCidr(entry: string): Cidr | null {
@@ -55,10 +68,14 @@ function parseCidr(entry: string): Cidr | null {
 
 export function parseTrustedProxies(value: string | undefined): Cidr[] {
   const tokens = (value ?? '').split(/[\s,]+/).filter(Boolean)
-  const list = tokens.length ? tokens : ['private']
+  const list = tokens.length ? tokens : ['loopback']
   const out: Cidr[] = []
   for (const token of list) {
     if (token.toLowerCase() === 'none') continue
+    if (token.toLowerCase() === 'loopback') {
+      out.push(...LOOPBACK_RANGES.map(r => parseCidr(r)!))
+      continue
+    }
     if (token.toLowerCase() === 'private') {
       out.push(...PRIVATE_RANGES.map(r => parseCidr(r)!))
       continue

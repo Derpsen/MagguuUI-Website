@@ -275,7 +275,7 @@ describe('country and https come only from a trusted proxy', () => {
     if (value === undefined) delete process.env.NUXT_TRUSTED_PROXIES; else process.env.NUXT_TRUSTED_PROXIES = value
     try { fn() } finally { if (before === undefined) delete process.env.NUXT_TRUSTED_PROXIES; else process.env.NUXT_TRUSTED_PROXIES = before }
   }
-  it('trusted peer: two-letter code, upper-cased', () => withProxies(undefined, () => {
+  it('trusted peer: two-letter code, upper-cased', () => withProxies('private', () => {
     assert.equal(getClientCountry(fakeEvent({ 'cf-ipcountry': 'DE' }, '192.168.178.30')), 'DE')
     assert.equal(getClientCountry(fakeEvent({ 'cf-ipcountry': 'us' }, '10.0.0.5')), 'US')
   }))
@@ -293,7 +293,7 @@ describe('country and https come only from a trusted proxy', () => {
     for (const v of ['', 'XX', 'T1', 'DEU', 'D', '1A', '<script>', 'de-DE']) assert.equal(getClientCountry(fakeEvent({ 'cf-ipcountry': v }, '10.0.0.5')), 'unknown', v)
     assert.equal(getClientCountry(fakeEvent({}, '10.0.0.5')), 'unknown')
   }))
-  it('https: x-forwarded-proto only from a trusted peer', () => withProxies(undefined, () => {
+  it('https: x-forwarded-proto only from a trusted peer', () => withProxies('private', () => {
     assert.equal(requestIsHttps(fakeEvent({ 'x-forwarded-proto': 'https' }, '10.0.0.5')), true)
     assert.equal(requestIsHttps(fakeEvent({ 'x-forwarded-proto': 'https, http' }, '10.0.0.5')), true)
     assert.equal(requestIsHttps(fakeEvent({ 'x-forwarded-proto': 'http' }, '10.0.0.5')), false)

@@ -74,7 +74,7 @@ describe('client address', () => {
   }
 
   it('believes cf-connecting-ip only from a trusted proxy peer', () => {
-    withProxies(undefined, () => {
+    withProxies('private', () => {
       assert.equal(getClientIp(fakeEvent({ 'cf-connecting-ip': '203.0.113.7' }, '192.168.178.30')), '203.0.113.7')
       // A direct caller from the internet cannot choose its own key.
       assert.equal(getClientIp(fakeEvent({ 'cf-connecting-ip': '203.0.113.7' }, '198.51.100.9')), '198.51.100.9')
@@ -82,12 +82,31 @@ describe('client address', () => {
     })
   })
   it('prefers cf-connecting-ip, then x-real-ip, then the first x-forwarded-for hop, then the socket', () => {
-    withProxies(undefined, () => {
+    withProxies('private', () => {
       const all = { 'cf-connecting-ip': ' 1.1.1.1 ', 'x-real-ip': '2.2.2.2', 'x-forwarded-for': '3.3.3.3, 4.4.4.4' }
       assert.equal(getClientIp(fakeEvent(all, '10.0.0.2')), '1.1.1.1')
       assert.equal(getClientIp(fakeEvent({ 'x-real-ip': ' 2.2.2.2 ', 'x-forwarded-for': '3.3.3.3' }, '10.0.0.2')), '2.2.2.2')
       assert.equal(getClientIp(fakeEvent({ 'x-forwarded-for': '3.3.3.3, 4.4.4.4' }, '10.0.0.2')), '3.3.3.3')
       assert.equal(getClientIp(fakeEvent({}, '10.0.0.2')), '10.0.0.2')
+    })
+  })
+  it('the default (unset) trusts loopback only: a LAN host or another container cannot pick its own address', () => {
+    withProxies(undefined, () => {
+      const spoof = { 'cf-connecting-ip': '1.1.1.1', 'x-real-ip': '2.2.2.2', 'x-forwarded-for': '3.3.3.3' }
+      for (const peer of ['10.0.0.2', '172.17.0.5', '192.168.178.30', '169.254.1.1', 'fd00::5', 'fe80::1', '203.0.113.9']) {
+        assert.equal(getClientIp(fakeEvent(spoof, peer)), peer, peer)
+      }
+      for (const peer of ['127.0.0.1', '::1', '::ffff:127.0.0.1']) assert.equal(getClientIp(fakeEvent(spoof, peer)), '1.1.1.1', peer)
+    })
+    withProxies('', () => assert.equal(getClientIp(fakeEvent({ 'cf-connecting-ip': '1.1.1.1' }, '10.0.0.2')), '10.0.0.2'))
+  })
+  it('"private" keeps the old behaviour on request, "loopback" is the default spelled out, entries combine', () => {
+    withProxies('private', () => assert.equal(getClientIp(fakeEvent({ 'cf-connecting-ip': '1.1.1.1' }, '172.17.0.5')), '1.1.1.1'))
+    withProxies('loopback', () => assert.equal(getClientIp(fakeEvent({ 'cf-connecting-ip': '1.1.1.1' }, '172.17.0.5')), '172.17.0.5'))
+    withProxies('loopback, 192.168.178.30/32', () => {
+      assert.equal(getClientIp(fakeEvent({ 'cf-connecting-ip': '1.1.1.1' }, '192.168.178.30')), '1.1.1.1')
+      assert.equal(getClientIp(fakeEvent({ 'cf-connecting-ip': '1.1.1.1' }, '192.168.178.31')), '192.168.178.31')
+      assert.equal(getClientIp(fakeEvent({ 'cf-connecting-ip': '1.1.1.1' }, '127.0.0.1')), '1.1.1.1')
     })
   })
   it('NUXT_TRUSTED_PROXIES pins the trusted peer; "none" trusts nobody', () => {

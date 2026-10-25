@@ -5,13 +5,13 @@
 
 import type { H3Event } from 'h3'
 import { getHeader } from 'h3'
-import { isTrustedProxy, parseTrustedProxies } from './trustedProxy'
+import { isTrustedProxy, parseTrustedProxies, trustedProxiesUnset } from './trustedProxy'
 
 /**
  * Get client IP from H3 event.
  *
  * Proxy headers are believed only when the TCP peer is a trusted proxy
- * (NUXT_TRUSTED_PROXIES, default `private`; see trustedProxy.ts). The
+ * (NUXT_TRUSTED_PROXIES, default `loopback`; see trustedProxy.ts). The
  * container port is reachable on the LAN, so a direct caller could otherwise
  * spoof `cf-connecting-ip` and choose its own rate-limit key.
  *
@@ -24,6 +24,7 @@ import { isTrustedProxy, parseTrustedProxies } from './trustedProxy'
  */
 let warnedForwardedForFallback = false
 let warnedProxySocket = false
+let warnedUnsetProxies = false
 let trustedCache: { raw: string | undefined; list: ReturnType<typeof parseTrustedProxies> } | null = null
 
 function trustedProxies() {
@@ -39,6 +40,12 @@ export function getClientIp(event: H3Event): string {
   const cf = getHeader(event, 'cf-connecting-ip')
 
   if (!isTrustedProxy(socket, trustedProxies())) {
+    // One-shot hint for ops: forwarded headers arrive from a peer that is not trusted because nothing was configured.
+    if (cf && !warnedUnsetProxies && process.env.NODE_ENV === 'production' && trustedProxiesUnset(process.env.NUXT_TRUSTED_PROXIES)) {
+      warnedUnsetProxies = true
+      console.warn(`[trusted-proxy] cf-connecting-ip from socket ${socket} ignored: NUXT_TRUSTED_PROXIES is not set (default: loopback only). ` +
+        'Set it to the address of your reverse proxy / cloudflared (or "private" for the old behaviour) so visitors are not all counted as one address.')
+    }
     return socket || 'unknown'
   }
 

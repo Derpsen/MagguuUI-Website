@@ -5,7 +5,9 @@
  */
 import type Database from 'better-sqlite3'
 import { runAnalyticsMaintenance } from './analytics'
+import { scrubLoginAttemptIdentifiers } from './loginAttempts'
 import { pruneVisitorRecords } from './visitorLog'
+import { checkpointWal } from './walCheckpoint'
 
 type Sqlite = Database.Database
 
@@ -17,6 +19,8 @@ export function retentionSteps(sqlite: Sqlite, cutoff: number): RetentionStep[] 
     { name: 'analytics maintenance', run: () => runAnalyticsMaintenance(sqlite) },
     // Consent-only visitor log: kept in full for 13 months, then deleted (runs while the flag is off, too).
     { name: 'visitor log retention', run: () => pruneVisitorRecords(sqlite) },
+    // Sign-in protection: address and user agent of attempts go after 23 hours (Privacy s9 says up to 24 hours).
+    { name: 'login attempt identifiers', run: () => scrubLoginAttemptIdentifiers(sqlite) },
     { name: 'web vitals retention', run: () => sqlite.prepare('DELETE FROM web_vitals WHERE created_at < ?').run(cutoff) },
     // Keep the newest 50 revisions per content cell; older ones go.
     {
@@ -31,12 +35,17 @@ export function retentionSteps(sqlite: Sqlite, cutoff: number): RetentionStep[] 
   ]
 }
 
+/** Last step of every run: truncate the WAL so deleted personal data is not left in the log file. */
+export function walCheckpointStep(sqlite: Sqlite, log?: (message: string, error: unknown) => void): RetentionStep {
+  return { name: 'wal checkpoint', run: () => checkpointWal(sqlite, log) }
+}
+
 /** Runs every step; returns the names of the steps that failed (each failure is logged). */
 export function runRetentionCleanup(
   sqlite: Sqlite,
   cutoff: number,
   log: (message: string, error: unknown) => void = (m, e) => console.error(m, e),
-  steps: RetentionStep[] = retentionSteps(sqlite, cutoff),
+  steps: RetentionStep[] = [...retentionSteps(sqlite, cutoff), walCheckpointStep(sqlite, log)],
 ): string[] {
   const failed: string[] = []
   for (const step of steps) {

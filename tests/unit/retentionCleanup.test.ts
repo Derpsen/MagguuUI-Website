@@ -38,8 +38,10 @@ describe('retention cleanup', () => {
   it('the plugin uses it and has no silent catch around the retention work', async () => {
     const { readFileSync } = await import('node:fs')
     const src = readFileSync(new URL('../../server/plugins/session-cleanup.ts', import.meta.url), 'utf8')
-    assert.match(src, /runRetentionCleanup\(sqlite, cutoff\)/)
+    assert.match(src, /runRetentionCleanup\(sqlite, cutoff, undefined, \[/)
+    assert.ok(src.indexOf('...retentionSteps(sqlite, cutoff)') < src.indexOf("name: 'expired sessions'"), 'personal-data retention runs before the housekeeping')
+    assert.ok(src.indexOf("name: 'expired sessions'") < src.indexOf('walCheckpointStep(sqlite)'), 'the WAL checkpoint is the last step')
     assert.doesNotMatch(src, /catch \{ \/\*/)
-    assert.equal(retentionSteps(new Database(':memory:'), 0).length, 4)
+    assert.equal(retentionSteps(new Database(':memory:'), 0).length, 5)
   })
 })

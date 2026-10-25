@@ -9,6 +9,7 @@ import { createHash } from 'crypto'
 import { db, sqlite } from '~/server/database'
 import { sessions, loginAttempts, users } from '~/server/database/schema'
 import { eq, and, desc } from 'drizzle-orm'
+import { detectSuspiciousLogin } from './loginAttempts'
 
 // ─── User-Agent Parsers (shared with page-view.post.ts) ──
 
@@ -160,7 +161,9 @@ export function logLoginAttempt(opts: {
   success: boolean
   failReason?: string
 }) {
-  const flagInfo = opts.success ? { flagged: false, reason: null } : detectSuspicious(opts)
+  const flagInfo = opts.success
+    ? { flagged: false, reason: null }
+    : detectSuspiciousLogin(sqlite, { username: opts.username, ip: opts.ip, browser: parseBrowser(opts.userAgent || ''), os: parseOS(opts.userAgent || '') })
 
   db.insert(loginAttempts).values({
     username: opts.username,
@@ -175,45 +178,6 @@ export function logLoginAttempt(opts: {
   }).run()
 
   return flagInfo
-}
-
-function detectSuspicious(opts: {
-  username: string
-  ip: string
-  userAgent: string
-}): { flagged: boolean; reason: string | null } {
-  const thirtyMinAgo = Math.floor(Date.now() / 1000) - 30 * 60
-
-  // Check brute force: 3+ failed attempts from same IP in last 30 min
-  const recentFails = sqlite.prepare(
-    'SELECT COUNT(*) as count FROM login_attempts WHERE ip_address = ? AND success = 0 AND created_at > ?'
-  ).get(opts.ip, thirtyMinAgo) as { count: number }
-
-  if (recentFails.count >= 3) {
-    return { flagged: true, reason: 'brute_force' }
-  }
-
-  // Check new IP: this username never logged in successfully from this IP
-  const knownIp = sqlite.prepare(
-    'SELECT COUNT(*) as count FROM login_attempts WHERE username = ? AND ip_address = ? AND success = 1'
-  ).get(opts.username, opts.ip) as { count: number }
-
-  if (knownIp.count === 0) {
-    return { flagged: true, reason: 'new_ip' }
-  }
-
-  // Check new device: this username never logged in from this browser+OS combo
-  const browser = parseBrowser(opts.userAgent || '')
-  const os = parseOS(opts.userAgent || '')
-  const knownDevice = sqlite.prepare(
-    'SELECT COUNT(*) as count FROM login_attempts WHERE username = ? AND browser = ? AND os = ? AND success = 1'
-  ).get(opts.username, browser, os) as { count: number }
-
-  if (knownDevice.count === 0) {
-    return { flagged: true, reason: 'new_device' }
-  }
-
-  return { flagged: false, reason: null }
 }
 
 // ─── Account Lockout ──────────────────────────────

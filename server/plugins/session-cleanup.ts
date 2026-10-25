@@ -11,19 +11,24 @@ import { cleanupExpiredChallenges } from '~/server/utils/webauthn'
 import { getDataRetentionDays } from '~/server/utils/settings'
 import { sqlite } from '~/server/database'
 import { cleanupRateLimits } from '~/server/utils/rateLimit'
-import { runRetentionCleanup } from '~/server/utils/retentionCleanup'
+import { retentionSteps, runRetentionCleanup, walCheckpointStep } from '~/server/utils/retentionCleanup'
 
 function runCleanup() {
   const retentionDays = getDataRetentionDays()
   const cutoff = Math.floor(Date.now() / 1000) - retentionDays * 24 * 60 * 60
 
-  cleanupExpiredSessions()
-  cleanupOldLoginAttempts(retentionDays)
-  cleanupExpiredChallenges()
-  cleanupRateLimits()
-
-  // Retention of analytics-style tables: each step is isolated and a failure is logged, not swallowed.
-  runRetentionCleanup(sqlite, cutoff)
+  // Personal-data retention FIRST (visitor log 13 months, sign-in identifiers 23 hours, vitals), then the housekeeping,
+  // then one WAL checkpoint. Every step is isolated and a failure is logged (never swallowed), so a broken housekeeping
+  // step can never keep the retention from running.
+  const failed = runRetentionCleanup(sqlite, cutoff, undefined, [
+    ...retentionSteps(sqlite, cutoff),
+    { name: 'expired sessions', run: () => cleanupExpiredSessions() },
+    { name: 'old login attempts', run: () => cleanupOldLoginAttempts(retentionDays) },
+    { name: 'webauthn challenges', run: () => cleanupExpiredChallenges() },
+    { name: 'rate limits', run: () => cleanupRateLimits() },
+    walCheckpointStep(sqlite),
+  ])
+  if (failed.length) throw new Error(`retention steps failed: ${failed.join(', ')}`)
 }
 
 export default defineNitroPlugin(() => {

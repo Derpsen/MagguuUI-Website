@@ -21,6 +21,7 @@ import { randomBytes } from 'node:crypto'
 import type Database from 'better-sqlite3'
 import { SESSION_MAX_AGE_S, isValidSessionId } from '../../utils/consent'
 import { rateLimitIpKey } from './clientIp'
+import { checkpointWal } from './walCheckpoint'
 import { DWELL_MAX_S, SCROLL_MILESTONES, type ClickKind, type DeviceEnv, type Utm, type UtmKey } from '../../utils/visitorSignals'
 
 type Sqlite = Pick<Database.Database, 'prepare' | 'transaction'>
@@ -171,6 +172,16 @@ export function deleteVisitorRecords(sqlite: Sqlite, ids: { sid?: unknown, vid?:
     for (const r of rows) total += deleteVisitorSession(sqlite, r.id)
   }
   return total
+}
+
+/**
+ * Consent withdrawn or refused: delete as above, then truncate the WAL so the rows are gone from the disk, not only from
+ * the tables (Privacy s12 "deleted right away"). Only when something was deleted.
+ */
+export function withdrawVisitorRecords(sqlite: Sqlite & Pick<Database.Database, 'pragma'>, ids: { sid?: unknown, vid?: unknown }): number {
+  const deleted = deleteVisitorRecords(sqlite, ids)
+  if (deleted > 0) checkpointWal(sqlite)
+  return deleted
 }
 
 /** Everything older than 13 months is deleted in full (sessions by last visit; hits and events by their own time; orphans too). */

@@ -407,6 +407,7 @@ export const visitorSessions = sqliteTable('visitor_sessions', {
   startedAt: integer('started_at').notNull(),
   lastSeen: integer('last_seen').notNull(),
   ip: text('ip'),
+  ipBucket: text('ip_bucket'), // IPv4 address or IPv6 /64 of the visit, for the per-network daily limit
   userAgent: text('user_agent'),
   browser: text('browser').notNull().default('Other'),
   os: text('os').notNull().default('Other'),

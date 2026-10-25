@@ -16,7 +16,7 @@ import { runBeaconGate } from '../../server/utils/beaconGateCore'
 import { getClientCity, getClientCountry, requestIsHttps } from '../../server/utils/clientIp'
 import { handleConsentChange, handleVisitorEvent, handleVisitorHit, type VisitorEventDeps, type VisitorHitDeps } from '../../server/utils/consentRequest'
 import {
-  VISITOR_DELETE_DAYS, VISITOR_EVENTS_PER_SESSION, VISITOR_HITS_PER_DAY, VISITOR_HITS_PER_SESSION, VISITOR_SESSIONS_PER_DAY,
+  VISITOR_DELETE_DAYS, VISITOR_EVENTS_PER_SESSION, VISITOR_HITS_PER_DAY, VISITOR_HITS_PER_IP_DAY, VISITOR_HITS_PER_SESSION, VISITOR_SESSIONS_PER_DAY, VISITOR_SESSIONS_PER_IP_DAY,
   deleteVisitorRecords, deleteVisitorSession, listVisitorSessions, pruneVisitorRecords, recordVisitorEvent, recordVisitorHit, sessionEvents, sessionHits,
   type VisitorHitInput,
 } from '../../server/utils/visitorLog'
@@ -1000,5 +1000,52 @@ describe('F5: a refusal signal withdraws an earlier "yes"', () => {
     const c = readFileSync(new URL('../../composables/useConsent.ts', import.meta.url), 'utf8')
     assert.match(c, /if \(optedOut\.value\) withdrawForSignal\(\)/)
     assert.match(c, /startsWith\('mg_consent='\)/)
+  })
+})
+
+describe('F7: one network cannot fill the daily limits (the consent cookie is forgeable)', () => {
+  it('sessions per network and day: the limit is per IPv4 address, other visitors are unaffected, the next day starts empty', () => {
+    const sqlite = db()
+    for (let i = 0; i < VISITOR_SESSIONS_PER_IP_DAY; i++) assert.ok(recordVisitorHit(sqlite, hit(), NOW + i).recorded, String(i))
+    assert.deepEqual(recordVisitorHit(sqlite, hit(), NOW + 500), { recorded: false, sid: null, reason: 'ip_cap' })
+    assert.ok(recordVisitorHit(sqlite, hit({ ip: '198.51.100.9' }), NOW + 501).recorded, 'a real visitor on another address still gets recorded')
+    assert.ok(recordVisitorHit(sqlite, hit(), NOW + DAY + 5).recorded)
+    assert.equal(count(sqlite, 'visitor_sessions'), VISITOR_SESSIONS_PER_IP_DAY + 2)
+    // The global limits were barely touched by the flood.
+    assert.ok(VISITOR_SESSIONS_PER_IP_DAY * 20 <= VISITOR_SESSIONS_PER_DAY)
+  })
+
+  it('IPv6: every address of one /64 shares the bucket', () => {
+    const sqlite = db()
+    for (let i = 0; i < VISITOR_SESSIONS_PER_IP_DAY; i++) assert.ok(recordVisitorHit(sqlite, hit({ ip: `2001:db8:1:2:${i.toString(16)}::1` }), NOW + i).recorded)
+    assert.equal(recordVisitorHit(sqlite, hit({ ip: '2001:db8:1:2:ffff:ffff:ffff:ffff' }), NOW + 500).recorded, false)
+    assert.ok(recordVisitorHit(sqlite, hit({ ip: '2001:db8:1:3::1' }), NOW + 501).recorded, 'the next /64 is another network')
+  })
+
+  it('hits per network and day: also when an existing session keeps posting, and other networks still record', () => {
+    const sqlite = db()
+    let sid: string | null = null
+    for (let i = 0; i < VISITOR_HITS_PER_IP_DAY; i++) {
+      if (i % VISITOR_HITS_PER_SESSION === 0) sid = null // a new session each time the per-session cap is reached
+      const r = recordVisitorHit(sqlite, hit({ sid }), NOW + (i % 1000))
+      assert.ok(r.recorded, String(i))
+      if (r.recorded) sid = r.sid
+    }
+    const blocked = recordVisitorHit(sqlite, hit({ sid }), NOW + 1001)
+    assert.equal(blocked.recorded, false)
+    assert.ok(!blocked.recorded && blocked.reason === 'ip_cap')
+    assert.ok(recordVisitorHit(sqlite, hit({ ip: '198.51.100.9' }), NOW + 1002).recorded)
+    assert.ok(VISITOR_HITS_PER_IP_DAY * 10 <= VISITOR_HITS_PER_DAY)
+  })
+
+  it('the bucket is stored with the session and the column exists on an older database', () => {
+    const sqlite = db()
+    const r = recordVisitorHit(sqlite, hit({ ip: '2001:db8:1:2:3:4:5:6' }), NOW)
+    assert.ok(r.recorded)
+    assert.equal((sqlite.prepare('SELECT ip_bucket AS b FROM visitor_sessions WHERE id = ?').get(r.sid) as { b: string }).b, '2001:db8:1:2::/64')
+    const old = new Database(':memory:')
+    old.exec('CREATE TABLE visitor_sessions (id TEXT PRIMARY KEY, started_at INTEGER NOT NULL, last_seen INTEGER NOT NULL, landing_path TEXT NOT NULL)')
+    initializeDatabase(old)
+    assert.ok((old.prepare("SELECT name FROM pragma_table_info('visitor_sessions') WHERE name = 'ip_bucket'").get()))
   })
 })

@@ -20,6 +20,7 @@
 import { randomBytes } from 'node:crypto'
 import type Database from 'better-sqlite3'
 import { SESSION_MAX_AGE_S, isValidSessionId } from '../../utils/consent'
+import { rateLimitIpKey } from './clientIp'
 import { DWELL_MAX_S, SCROLL_MILESTONES, type ClickKind, type DeviceEnv, type Utm, type UtmKey } from '../../utils/visitorSignals'
 
 type Sqlite = Pick<Database.Database, 'prepare' | 'transaction'>
@@ -28,6 +29,12 @@ type Sqlite = Pick<Database.Database, 'prepare' | 'transaction'>
 export const VISITOR_DELETE_DAYS = 395
 export const VISITOR_SESSIONS_PER_DAY = 5000
 export const VISITOR_HITS_PER_DAY = 50_000
+/**
+ * Per network (IPv4 address, IPv6 /64) and day. The consent cookie is a plain cookie anyone can set by hand, so one
+ * client could otherwise fill the global daily limits above and shut every real visitor out of the log.
+ */
+export const VISITOR_SESSIONS_PER_IP_DAY = 100
+export const VISITOR_HITS_PER_IP_DAY = 3000
 export const VISITOR_EVENTS_PER_DAY = 50_000
 export const VISITOR_HITS_PER_SESSION = 500
 export const VISITOR_EVENTS_PER_SESSION = 200
@@ -54,7 +61,7 @@ export interface VisitorHitInput {
 
 export type VisitorHitResult =
   | { recorded: true, sid: string, vid: string, created: boolean, newVisitor: boolean }
-  | { recorded: false, sid: string | null, reason: 'day_cap' | 'session_cap' }
+  | { recorded: false, sid: string | null, reason: 'day_cap' | 'ip_cap' | 'session_cap' }
 
 const cap = (value: string | null | undefined, max: number) => (value ? value.slice(0, max) : null)
 export const newSessionId = () => randomBytes(16).toString('hex')
@@ -66,6 +73,9 @@ export function recordVisitorHit(sqlite: Sqlite, input: VisitorHitInput, now = M
     const dayStart = Math.floor(now / DAY_S) * DAY_S
     const hitsToday = (sqlite.prepare('SELECT COUNT(*) AS c FROM visitor_hits WHERE created_at >= ?').get(dayStart) as { c: number }).c
     if (hitsToday >= VISITOR_HITS_PER_DAY) return { recorded: false, sid: null, reason: 'day_cap' }
+    const ipBucket = rateLimitIpKey(input.ip)
+    const hitsFromIp = (sqlite.prepare('SELECT COUNT(*) AS c FROM visitor_hits h JOIN visitor_sessions s ON s.id = h.session_id WHERE s.ip_bucket = ? AND h.created_at >= ?').get(ipBucket, dayStart) as { c: number }).c
+    if (hitsFromIp >= VISITOR_HITS_PER_IP_DAY) return { recorded: false, sid: null, reason: 'ip_cap' }
 
     let sid: string | null = null
     let vid: string | null = null
@@ -83,16 +93,18 @@ export function recordVisitorHit(sqlite: Sqlite, input: VisitorHitInput, now = M
     if (!sid) {
       const sessionsToday = (sqlite.prepare('SELECT COUNT(*) AS c FROM visitor_sessions WHERE started_at >= ?').get(dayStart) as { c: number }).c
       if (sessionsToday >= VISITOR_SESSIONS_PER_DAY) return { recorded: false, sid: null, reason: 'day_cap' }
+      const sessionsFromIp = (sqlite.prepare('SELECT COUNT(*) AS c FROM visitor_sessions WHERE ip_bucket = ? AND started_at >= ?').get(ipBucket, dayStart) as { c: number }).c
+      if (sessionsFromIp >= VISITOR_SESSIONS_PER_IP_DAY) return { recorded: false, sid: null, reason: 'ip_cap' }
       if (isValidSessionId(input.vid) && sqlite.prepare('SELECT 1 AS ok FROM visitor_sessions WHERE visitor_id = ? LIMIT 1').get(input.vid)) vid = input.vid
       if (!vid) { vid = newVisitorId(); newVisitor = true }
       sid = newSessionId()
       created = true
       const utm = (k: UtmKey) => cap(input.utm[k], 100)
       sqlite.prepare(`INSERT INTO visitor_sessions
-        (id, visitor_id, started_at, last_seen, ip, user_agent, browser, os, device, country, city, referrer_url, referrer_host, landing_path, exit_path, hits,
+        (id, visitor_id, started_at, last_seen, ip, ip_bucket, user_agent, browser, os, device, country, city, referrer_url, referrer_host, landing_path, exit_path, hits,
          screen_w, screen_h, language, timezone, utm_source, utm_medium, utm_campaign, utm_term, utm_content)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-        sid, vid, now, now, cap(input.ip, 64), cap(input.userAgent, 400), cap(input.browser, 30) ?? 'Other', cap(input.os, 30) ?? 'Other',
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+        sid, vid, now, now, cap(input.ip, 64), cap(ipBucket, 64), cap(input.userAgent, 400), cap(input.browser, 30) ?? 'Other', cap(input.os, 30) ?? 'Other',
         cap(input.device, 12) ?? 'desktop', /^[A-Z]{2}$/.test(input.country) ? input.country : 'unknown', cap(input.city, 60),
         cap(input.referrerUrl, 500), cap(input.referrerHost, 253), input.path, input.path,
         input.env.screenW, input.env.screenH, cap(input.env.language, 35), cap(input.env.timezone, 64),

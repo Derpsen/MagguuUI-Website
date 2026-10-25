@@ -448,6 +448,9 @@ export const SAFE_COLUMN_MIGRATIONS = [
   'ALTER TABLE visitor_sessions ADD COLUMN utm_campaign TEXT',
   'ALTER TABLE visitor_sessions ADD COLUMN utm_term TEXT',
   'ALTER TABLE visitor_sessions ADD COLUMN utm_content TEXT',
+  // Network bucket (IPv4 address or IPv6 /64) of the visit: per-network daily limit, see visitorLog.ts
+  'ALTER TABLE visitor_sessions ADD COLUMN ip_bucket TEXT',
+  'CREATE INDEX IF NOT EXISTS idx_visitor_sessions_ip_bucket ON visitor_sessions(ip_bucket, started_at)',
   'ALTER TABLE visitor_hits ADD COLUMN dwell_s INTEGER',
   'ALTER TABLE visitor_hits ADD COLUMN scroll_max INTEGER NOT NULL DEFAULT 0',
   'CREATE INDEX IF NOT EXISTS idx_visitor_sessions_visitor ON visitor_sessions(visitor_id)',

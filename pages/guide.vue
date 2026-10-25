@@ -527,7 +527,7 @@ async function saveAll() {
   background: rgba(59, 139, 255, 0.12);
   color: #93bbff;
 }
-:global(html.light) .guide-content :deep(code) {
+html.light .guide-content :deep(code) {
   background: rgba(37, 99, 235, 0.08);
   color: #1d4ed8;
 }
@@ -539,7 +539,7 @@ async function saveAll() {
   background: rgba(4, 10, 20, 0.55);
   border: 1px solid rgba(59, 139, 255, 0.1);
 }
-:global(html.light) .guide-content :deep(pre) {
+html.light .guide-content :deep(pre) {
   background: rgba(241, 245, 249, 0.8);
   border-color: rgba(37, 99, 235, 0.12);
 }

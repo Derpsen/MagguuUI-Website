@@ -787,9 +787,9 @@ html.light .heading-glow::before {
 
 html.light .prose-custom a { color: #0AA882; }
 html.light .prose-custom a:hover { color: #088F6F; }
-html.light .prose-custom code { background: rgba(8, 143, 111, 0.08); color: #088F6F; }
+html.light .prose-custom code { background: rgba(8, 143, 111, 0.08); color: #06694F; }
 html.light .prose-custom li::marker { color: rgba(8, 143, 111, 0.55); }
-html.light .prose-custom blockquote { border-left-color: rgba(8, 143, 111, 0.35); color: #64748b; }
+html.light .prose-custom blockquote { border-left-color: rgba(8, 143, 111, 0.35); color: #566579; }
 html.light .prose-custom hr { border-top-color: rgba(8, 143, 111, 0.15); }
 
 /* ─── Guide Content (rendered HTML from TipTap) ──── */
@@ -1136,7 +1136,7 @@ html.light .section-divider {
 }
 
 html.light .prose-custom h1, html.light .prose-custom h2, html.light .prose-custom h3, html.light .prose-custom h4 { color: #1e293b; }
-html.light .prose-custom p, html.light .prose-custom li { color: #64748b; }
+html.light .prose-custom p, html.light .prose-custom li { color: #566579; }
 html.light .prose-custom strong { color: #334155; }
 
 /* ─── Drag & Drop ──────────────────────────────── */

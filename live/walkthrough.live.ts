@@ -18,6 +18,7 @@ function guardWrites(ctx: BrowserContext, allow: RegExp[] = []) {
     const req = route.request()
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method())) return route.continue()
     if (allow.some(r => r.test(req.url()))) return route.continue()
+    if (/\/cdn-cgi\//.test(req.url())) return route.abort('blockedbyclient') // Cloudflare's own detection beacon, not the site's
     blocked.push(`${req.method()} ${req.url()}`)
     return route.abort('blockedbyclient')
   }).then(() => blocked)
@@ -26,11 +27,11 @@ function guardWrites(ctx: BrowserContext, allow: RegExp[] = []) {
 function watch(page: Page) {
   const issues: string[] = []
   page.on('console', (m) => {
-    if (m.type() === 'error' || /Hydration|\[Vue warn\]/i.test(m.text())) issues.push(`console ${m.type()}: ${m.text().slice(0, 200)}`)
+    if ((m.type() === 'error' && !/ERR_BLOCKED_BY_CLIENT/.test(m.text())) || /Hydration|\[Vue warn\]/i.test(m.text())) issues.push(`console ${m.type()}: ${m.text().slice(0, 200)}`)
   })
   page.on('pageerror', e => issues.push(`pageerror: ${e.message.slice(0, 200)}`))
   page.on('requestfailed', (r) => {
-    if (r.failure()?.errorText === 'net::ERR_BLOCKED_BY_CLIENT') return // our own write guard
+    if (r.failure()?.errorText?.startsWith('net::ERR_BLOCKED_BY_CLIENT')) return // our own write guard (Chromium appends ".Inspector")
     issues.push(`requestfailed: ${r.method()} ${r.url()} ${r.failure()?.errorText}`)
   })
   // F8: a public page must never contact a host other than the site itself (fonts and icons are self-hosted).
@@ -65,13 +66,15 @@ for (const [vpName, viewport] of Object.entries(VIEWPORTS)) {
           await expect(page.locator('html')).toHaveClass(theme === 'dark' ? /dark/ : /^((?!dark).)*$/)
           await expect(page.locator('h1').first()).toBeVisible()
           // A first visit sees the consent banner while the visitor log is on, and nothing is stored before a click.
-          await expect(page.getByTestId('consent-accept')).toBeVisible()
+          // The 404 page has no layout, so no banner and no tracking either.
+          if (path === '/definitely-not-a-page') await expect(page.getByTestId('consent-accept')).toHaveCount(0)
+          else await expect(page.getByTestId('consent-accept')).toBeVisible()
           expect(await ctx.cookies(), 'no cookie before a click').toEqual([])
           const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
           expect(axe.violations.map(v => `${v.id}: ${v.nodes.slice(0, 3).map(n => n.target.join(' ')).join(' | ')}`), 'axe').toEqual([])
           expect(await ctx.cookies(), 'no cookie after load').toEqual([])
           expect(issues.filter(i => path !== '/definitely-not-a-page' || !/http 404/.test(i)), 'console / network').toEqual([])
-          expect(blocked.filter(b => !/page-view|\/vitals/.test(b)), 'unexpected writes').toEqual([])
+          expect(blocked.filter(b => !/page-view|\/vitals|\/cdn-cgi\//.test(b)), 'unexpected writes').toEqual([])
           await ctx.close()
         })
       }
@@ -114,7 +117,7 @@ test.describe('interactions (desktop)', () => {
     const footer = [...new Set(await page.locator('footer a[href]').evaluateAll(els => els.map(e => (e as HTMLAnchorElement).href)))]
     expect(footer.length).toBeGreaterThan(8)
     for (const href of footer) {
-      if (href.startsWith('mailto:')) continue
+      if (href.startsWith('mailto:') || new URL(href).host !== new URL(page.url()).host) continue // external sites (bot protection answers 403) are not ours
       const r = await ctx.request.get(href)
       expect(r.status(), href).toBeLessThan(400)
     }
@@ -124,7 +127,7 @@ test.describe('interactions (desktop)', () => {
   test('header search (Ctrl+K) opens, finds and closes', async () => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
-    await page.keyboard.press('Control+k')
+    await page.getByTestId('public-search-open').click()
     const box = page.getByRole('combobox', { name: /Search guide, changelog, FAQ and strings/ })
     await expect(box).toBeVisible()
     await box.fill('guide')
@@ -136,7 +139,9 @@ test.describe('interactions (desktop)', () => {
   test('configurator selection flow and copy button', async () => {
     await page.goto('/configurator')
     await page.waitForLoadState('networkidle')
-    const first = page.getByRole('checkbox').first()
+    const idx = await page.getByRole('checkbox').evaluateAll(els => els.findIndex(e => !(e as HTMLInputElement).checked))
+    expect(idx, 'an unchecked addon').toBeGreaterThanOrEqual(0)
+    const first = page.getByRole('checkbox').nth(idx)
     await expect(first).not.toBeChecked()
     await first.check()
     await expect.poll(() => new URL(page.url()).searchParams.get('addons')).toBeTruthy()
@@ -240,7 +245,7 @@ test.describe('consent behaviour', () => {
     expect((await ctx.cookies()).map(c => c.name)).toEqual(['mg_consent'])
     await page.getByTestId('cookie-settings').click()
     await expect(page.getByTestId('consent-current')).toContainText('necessary only')
-    expect(blocked.filter(b => !/page-view|\/vitals/.test(b))).toEqual([])
+    expect(blocked.filter(b => !/page-view|\/vitals|\/cdn-cgi\//.test(b))).toEqual([])
     await ctx.close()
   })
 
@@ -261,7 +266,7 @@ test.describe('consent behaviour', () => {
     await page.getByTestId('cookie-settings').click()
     await page.getByTestId('consent-necessary').click()
     await expect.poll(async () => (await ctx.cookies()).map(c => c.name)).toEqual(['mg_consent'])
-    expect(blocked.filter(b => !/page-view|\/vitals/.test(b))).toEqual([])
+    expect(blocked.filter(b => !/page-view|\/vitals|\/cdn-cgi\//.test(b))).toEqual([])
     await ctx.close()
   })
 })

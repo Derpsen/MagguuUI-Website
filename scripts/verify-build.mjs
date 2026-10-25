@@ -152,6 +152,21 @@ async function verifyDraftsNotPublic() {
   }
 }
 
+// A scoped `:global(html.light) .x :deep(y)` compiles to a bare `html.light{...}` rule that restyles the whole page.
+async function verifyNoBareThemeRules() {
+  for (const path of ['/', '/guide', '/faq', '/strings', '/changelog', '/about']) {
+    const html = await (await fetch(`${baseUrl}${path}`)).text()
+    const sheets = [...html.matchAll(/href="(\/_nuxt\/[^"?#]+\.css)"/g)].map(m => m[1])
+    const sources = [[path, html]]
+    for (const sheet of sheets) sources.push([sheet, await (await fetch(`${baseUrl}${sheet}`)).text()])
+    for (const [name, text] of sources) {
+      const bare = text.match(/(?:^|[}>])\s*html\.(?:light|dark)\s*\{[^}]*\}/)
+      if (bare) fail(`A bare theme rule "${bare[0].trim().slice(0, 80)}" in ${name} (public page ${path}) restyles the whole page`)
+    }
+    console.log(`[verify] ${path} -> no bare html.light / html.dark rules in ${sheets.length} stylesheets and the inline styles`)
+  }
+}
+
 async function verifyHotlinkLogos() {
   for (const path of ['/logo.png', '/logo-300.png']) {
     const response = await fetch(`${baseUrl}${path}`)
@@ -894,6 +909,7 @@ try {
   await waitForServer()
   await verifyEndpoints()
   await verifyDraftsNotPublic()
+  await verifyNoBareThemeRules()
   await verifyHotlinkLogos()
   await verifyPublicApiFlows()
   await verifySyncApiFlow()

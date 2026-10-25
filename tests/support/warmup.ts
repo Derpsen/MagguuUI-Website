@@ -1,4 +1,6 @@
 import { chromium } from '@playwright/test'
+import Database from 'better-sqlite3'
+import { join } from 'node:path'
 
 /**
  * Dev-server warm-up before any test. On a cold `nuxt dev`, Vite discovers
@@ -29,4 +31,20 @@ export default async function warmup() {
     clean = ok ? clean + 1 : 0
   }
   await browser.close()
+  resetReferrers()
+}
+
+/**
+ * The server stores at most 100 distinct referrer hosts per day (everything beyond that is "(other)"). A persistent dev
+ * database that has seen many runs today would hit the cap and the counting spec's unique referrer would be folded into
+ * "(other)". Clear the referrer history here: the server's own host set is seeded lazily from page_views on the first
+ * referrer it sees, which only happens after this point. This is the Playwright dev database, never production.
+ */
+function resetReferrers() {
+  const db = new Database(join(process.cwd(), 'data', 'magguuui.db'), { fileMustExist: true })
+  try {
+    db.pragma('busy_timeout = 5000')
+    db.prepare("DELETE FROM stats_daily WHERE kind = 'referrer'").run()
+    db.prepare("UPDATE page_views SET referrer = NULL WHERE referrer IS NOT NULL").run()
+  } finally { db.close() }
 }

@@ -144,7 +144,7 @@
                 </div>
                 <span>{{ stringSizeLabel(layoutSize(selectedLayout)) }}</span>
               </div>
-              <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24">
+              <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24" tabindex="0" role="region" aria-label="String preview">
                 <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
                   {{ layoutPreview(selectedLayout) }}{{ layoutShowsEllipsis(selectedLayout) ? '...' : '' }}
                 </p>
@@ -227,7 +227,7 @@
                 </div>
                 <span>{{ stringSizeLabel(profileSize(selectedProfile)) }}</span>
               </div>
-              <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24">
+              <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24" tabindex="0" role="region" aria-label="String preview">
                 <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
                   {{ profilePreview(selectedProfile) }}{{ profileShowsEllipsis(selectedProfile) ? '...' : '' }}
                 </p>
@@ -308,7 +308,7 @@
                 </div>
                 <span>{{ stringSizeLabel(wowupStrings[selectedWowup.id]?.length || selectedWowup.stringLength || 0) }}</span>
               </div>
-              <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24">
+              <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24" tabindex="0" role="region" aria-label="String preview">
                 <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
                   {{ selectedWowup.preview || '' }}{{ (selectedWowup.stringLength || 0) > 200 ? '...' : '' }}
                 </p>

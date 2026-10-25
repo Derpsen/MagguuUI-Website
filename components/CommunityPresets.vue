@@ -7,7 +7,7 @@
     <p class="mt-1 text-sm leading-relaxed" :class="muted">
       These are not official Magguu profiles. Each one was sent in by a visitor and approved only after a quick look at its label.
       An import string can change your addon settings, so use ones you trust.
-      <NuxtLink to="/submit-preset" class="underline underline-offset-2" :class="isDark ? 'text-brand-300' : 'text-brand-700'" data-testid="community-submit-link">Submit your own preset</NuxtLink>.
+      <NuxtLink to="/submit-preset" data-cta="submit-preset" class="underline underline-offset-2" :class="isDark ? 'text-brand-300' : 'text-brand-700'" data-testid="community-submit-link">Submit your own preset</NuxtLink>.
     </p>
 
     <p v-if="!loaded" class="mt-6 text-sm" :class="faint">Loading...</p>

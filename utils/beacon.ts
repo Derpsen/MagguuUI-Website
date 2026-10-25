@@ -14,12 +14,12 @@ export function clientOptedOut(): boolean {
   return isOptedOut({ dnt, gpc: nav.globalPrivacyControl ? '1' : null })
 }
 
-export function sendCountBeacon(url: string, payload: Record<string, unknown>) {
+export function sendCountBeacon(url: string, payload: Record<string, unknown>, opts: { credentials?: boolean } = {}) {
   if (clientOptedOut()) return
   try {
     const body = JSON.stringify(payload)
     if (!navigator.sendBeacon?.(url, new Blob([body], { type: 'text/plain' }))) {
-      void fetch(url, { method: 'POST', body, keepalive: true, credentials: 'omit' }).catch(() => {})
+      void fetch(url, { method: 'POST', body, keepalive: true, credentials: opts.credentials ? 'same-origin' : 'omit' }).catch(() => {})
     }
   } catch { /* counting must never break the page */ }
 }

@@ -26,7 +26,7 @@
           :html="content?.hero?.description || 'Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface, open <code>/mui</code>, and run <strong>Apply Magguu profiles</strong>.'"
         />
         <div class="mt-8 flex flex-wrap gap-3">
-          <NuxtLink to="/guide" class="btn-gradient px-5 py-2.5 rounded-md text-white text-sm font-semibold">
+          <NuxtLink to="/guide" data-cta="hero-setup" class="btn-gradient px-5 py-2.5 rounded-md text-white text-sm font-semibold">
             Install &amp; Setup
           </NuxtLink>
           <NuxtLink to="/strings"

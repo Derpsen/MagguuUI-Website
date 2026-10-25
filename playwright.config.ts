@@ -2,6 +2,10 @@ import { defineConfig, devices } from '@playwright/test'
 
 const isCI = !!process.env.CI
 
+// The consent banner (shown while NUXT_VISITOR_LOG is on, see webServer.env) would sit over every page in the
+// other specs, so they start with a stored "necessary only" choice. tests/consent.spec.ts starts clean instead.
+const consentCookie = encodeURIComponent(JSON.stringify({ v: 1, stats: false, ts: Date.now() }))
+
 export default defineConfig({
   testDir: 'tests',
   // Dev-server warm-up (see tests/support/warmup.ts)
@@ -13,6 +17,10 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     screenshot: 'only-on-failure',
+    storageState: {
+      cookies: [{ name: 'mg_consent', value: consentCookie, domain: 'localhost', path: '/', expires: Math.floor(Date.now() / 1000) + 86400, httpOnly: false, secure: false, sameSite: 'Lax' }],
+      origins: [],
+    },
   },
 
   projects: [
@@ -34,6 +42,8 @@ export default defineConfig({
       NUXT_FORCE_PASSWORD_RESET: 'true',
       // Seeds one WowUp pack (server/plugins/e2e-seed.ts) for the lazy-strings test.
       NUXT_E2E_SEED: 'true',
+      // Detailed visitor log (banner, consent, capture): off by default in production, on for tests/consent.spec.ts.
+      NUXT_VISITOR_LOG: 'true',
       NUXT_JWT_SECRET: process.env.NUXT_JWT_SECRET || 'playwright-dummy-jwt-secret-32-chars-long-XXXXXXXX',
     },
     // Health probe: a cold SSR probe on / could hang past the timeout while

@@ -62,7 +62,7 @@
           </button>
           <NuxtLink v-if="isLoggedIn" to="/admin" class="hidden sm:inline text-sm" :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-950'">Admin</NuxtLink>
           <NuxtLink v-else to="/admin/login" class="hidden sm:inline text-sm" :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-950'">Login</NuxtLink>
-          <NuxtLink :to="primaryAction.to" class="hidden sm:inline text-sm font-semibold" :class="isDark ? 'text-brand-300 hover:text-white' : 'text-brand-700 hover:text-brand-900'">
+          <NuxtLink :to="primaryAction.to" data-cta="header-setup" class="hidden sm:inline text-sm font-semibold" :class="isDark ? 'text-brand-300 hover:text-white' : 'text-brand-700 hover:text-brand-900'">
             {{ primaryAction.label }}
           </NuxtLink>
           <button class="lg:hidden inline-flex items-center justify-center w-8 h-8"
@@ -222,9 +222,20 @@
                   :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.04]' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'">
                   {{ link.label }}
                 </NuxtLink>
+                <button
+                  v-else-if="link.consent"
+                  type="button"
+                  class="px-1.5 py-0.5 rounded-md transition-colors"
+                  :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.04]' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'"
+                  data-testid="cookie-settings"
+                  @click="consentUi.reopen"
+                >
+                  {{ link.label }}
+                </button>
                 <a
                   v-else-if="link.contact"
                   :href="contactMailto"
+                  data-cta="footer-contact"
                   class="px-1.5 py-0.5 rounded-md transition-colors"
                   :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.04]' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'"
                 >
@@ -266,6 +277,7 @@
     </footer>
 
     <ClientOnly>
+      <ConsentBanner v-if="consentUi.enabled.value" />
       <LazyWhatsNewBanner />
     </ClientOnly>
 
@@ -294,6 +306,7 @@ const siteSettings = usePublicSiteSettings()
 const siteName = computed(() => siteSettings.value.site_name || 'MagguuUI')
 
 usePageTracking()
+const consentUi = useConsent()
 const searchOpen = ref(false)
 const searchMounted = ref(false)
 function openSearch() {
@@ -353,6 +366,8 @@ const footerLinks = computed(() => [
   { label: 'Privacy', to: '/privacy' },
   { label: 'Status', to: '/status' },
   { label: 'Contact', contact: true },
+  // Only while the detailed visitor log is switched on (NUXT_VISITOR_LOG); reopens the consent choice.
+  ...(consentUi.enabled.value ? [{ label: 'Cookie settings', consent: true }] : []),
 ])
 const bannerText = computed(() => siteSettings.value.banner_text || '')
 const maintenanceMode = computed(() => siteSettings.value.maintenance_mode === 'true')

@@ -593,3 +593,112 @@ test.describe('profile previews (/profiles)', () => {
     expect(JSON.stringify(await previews())).not.toContain('e2e-preview')
   })
 })
+
+test.describe('profile configurator (/configurator)', () => {
+  const s = Date.now().toString(36)
+  const nameA = `Cfg A ${s}`
+  const nameB = `Cfg B ${s}`
+  const profileIds: number[] = []
+  const packIds: number[] = []
+  let hiddenId = 0
+
+  const b64 = (names: string[]) => Buffer.from(JSON.stringify({ addons: names.map(name => ({ name })) })).toString('base64')
+
+  test.beforeAll(async () => {
+    const make = async (addon: string, profile: string, string: string) =>
+      profileIds.push((await json<{ id: number }>(await api.post('/api/v1/admin/profiles', { data: { addon, profile, string } }))).id)
+    await make('BigWigs', nameA, 'e2e-cfg-bigwigs-a')
+    await make('BigWigs', nameB, 'e2e-cfg-bigwigs-b')
+    await make('GTFO', `Cfg G ${s}`, 'e2e-cfg-gtfo')
+    hiddenId = profileIds[1]!
+    // Starter/Optional collections: only created when the dev DB has none (and removed again).
+    const existing = await json<Record<string, unknown>>(await api.get('/api/v1/wowup?view=meta'))
+    const packs: Array<[string, string[]]> = [['Required', ['EllesmereUI', 'MagguuUI', 'BigWigs (Boss Timers & Tools)']], ['Optional', ['GTFO', 'Auctionator']]]
+    for (const [name, names] of packs) {
+      if (existing[name]) continue
+      packIds.push((await json<{ id: number }>(await api.post('/api/v1/admin/wowup', { data: { name, string: b64(names) } }))).id)
+    }
+  })
+
+  test.afterAll(async () => {
+    for (const id of profileIds) await api.delete(`/api/v1/admin/profiles/${id}`)
+    for (const id of packIds) await api.delete(`/api/v1/admin/wowup/${id}`)
+  })
+
+  test('public data carries no import strings and only published rows', async () => {
+    const body = JSON.stringify(await json(await api.get('/api/v1/configurator')))
+    expect(body).toContain(nameA)
+    expect(body).not.toContain('e2e-cfg-')
+  })
+
+  test('selection in the URL drives packs, profile strings and the honest in-game notes', async () => {
+    await page.goto(`/configurator?addons=bigwigs,gtfo&exclude=${encodeURIComponent(`bigwigs:${nameB}`)}`)
+    await expect(page.getByRole('heading', { level: 1, name: 'Profile configurator' })).toBeVisible()
+    const ellesmere = page.getByRole('checkbox', { name: 'EllesmereUI', exact: true })
+    await expect(ellesmere).toBeChecked()
+    await expect(ellesmere).toBeDisabled()
+    await expect(page.getByRole('checkbox', { name: 'BigWigs', exact: true })).toBeChecked()
+    await expect(page.getByRole('checkbox', { name: nameA })).toBeChecked()
+    await expect(page.getByRole('checkbox', { name: nameB })).not.toBeChecked()
+
+    const bigwigs = page.getByTestId('cfg-profile-bigwigs')
+    await expect(bigwigs).toContainText(nameA)
+    await expect(bigwigs).not.toContainText(nameB)
+    await expect(bigwigs).toContainText('Single import in Setup')
+    await expect(page.getByTestId('cfg-profile-gtfo')).toContainText('No single import button')
+    await expect(page.getByTestId('cfg-pack-starter')).toContainText('BigWigs')
+    await expect(page.getByTestId('cfg-pack-optional')).toContainText('GTFO')
+    const ingame = page.getByTestId('cfg-ingame')
+    await expect(ingame).toContainText('Apply Magguu profiles')
+    await expect(ingame).toContainText('You cannot pick modules there')
+    await expect(page.getByTestId('cfg-addon-list')).toContainText('GTFO')
+    await expect(page.locator('body')).not.toContainText(/naowh/i)
+  })
+
+  test('checkboxes work with the keyboard, update the URL and survive a reload', async () => {
+    await page.goto('/configurator')
+    await page.waitForLoadState('networkidle') // hydrated
+    expect(new URL(page.url()).search).toBe('')
+    const gtfo = page.getByRole('checkbox', { name: 'GTFO', exact: true })
+    await expect(gtfo).not.toBeChecked()
+    await gtfo.focus()
+    await page.keyboard.press('Space')
+    await expect(gtfo).toBeChecked()
+    await expect.poll(() => new URL(page.url()).searchParams.get('addons')).toBe('gtfo')
+    await expect(page.getByTestId('cfg-profile-gtfo')).toBeVisible()
+    await page.reload()
+    await page.waitForLoadState('networkidle') // hydrated again
+    await expect(page.getByRole('checkbox', { name: 'GTFO', exact: true })).toBeChecked()
+    await expect(page.getByTestId('cfg-profile-gtfo')).toBeVisible()
+    await page.getByRole('checkbox', { name: 'GTFO', exact: true }).press('Space')
+    await expect.poll(() => new URL(page.url()).searchParams.has('addons')).toBe(false)
+    await expect(page.getByTestId('cfg-profile-gtfo')).toHaveCount(0)
+
+    // Per-profile choice appears for addons with several profiles.
+    await page.getByRole('checkbox', { name: 'BigWigs', exact: true }).check()
+    await page.getByRole('checkbox', { name: nameB }).uncheck()
+    await expect.poll(() => new URL(page.url()).searchParams.get('exclude')).toBe(`bigwigs:${nameB}`)
+    await page.getByRole('checkbox', { name: nameB }).check()
+    await expect.poll(() => new URL(page.url()).searchParams.has('exclude')).toBe(false)
+  })
+
+  test('copy buttons put the real string on the clipboard', async () => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.goto('/configurator?addons=bigwigs')
+    await page.waitForLoadState('networkidle')
+    const copyA = page.getByRole('button', { name: `Copy string: BigWigs, ${nameA}` })
+    await copyA.click()
+    await expect(copyA).toHaveText('Copied')
+    await expect(page.getByRole('status').filter({ hasText: 'Copied to clipboard' })).toHaveCount(1)
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('e2e-cfg-bigwigs-a')
+    await page.getByRole('button', { name: 'Copy list: addons to install' }).click()
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('EllesmereUI\nBigWigs')
+  })
+
+  test('an unpublished profile never shows up', async () => {
+    await json(await api.patch(`/api/v1/admin/profiles/${hiddenId}`, { data: { isVisible: false } }))
+    await page.goto('/configurator?addons=bigwigs')
+    await expect(page.getByTestId('cfg-profile-bigwigs')).toContainText(nameA)
+    await expect(page.locator('body')).not.toContainText(nameB)
+  })
+})

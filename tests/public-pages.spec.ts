@@ -60,7 +60,7 @@ test('public settings expose no imprint name/address keys', async ({ request }) 
   expect(body).not.toMatch(/imprint_|Germany/)
 })
 
-for (const path of ['/changelog', '/addons', '/profiles', '/about', '/imprint', '/privacy']) {
+for (const path of ['/changelog', '/addons', '/profiles', '/configurator', '/about', '/imprint', '/privacy']) {
   test(`${path} loads without HTTP 500`, async ({ page }) => {
     const response = await visitWithoutConsoleErrors(page, path)
     expect(response?.status(), `HTTP status for ${path}`).not.toBe(500)

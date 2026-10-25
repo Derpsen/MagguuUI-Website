@@ -345,6 +345,7 @@ const footerLinks = computed(() => [
   { label: 'Guide', to: '/guide' },
   { label: 'Addons', to: '/addons' },
   { label: 'Previews', to: '/profiles' },
+  { label: 'Configurator', to: '/configurator' },
   { label: 'Changelog', to: '/changelog' },
   { label: 'FAQ', to: '/faq' },
   { label: 'About', to: '/about' },

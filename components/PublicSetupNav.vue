@@ -36,6 +36,7 @@ const isDark = useIsDark()
 const links = [
   { to: '/guide', label: 'Guide', icon: 'i-heroicons-book-open' },
   { to: '/strings', label: 'Import Strings', icon: 'i-heroicons-bolt' },
+  { to: '/configurator', label: 'Configurator', icon: 'i-heroicons-adjustments-horizontal' },
 ]
 
 function isActive(path: string): boolean {

@@ -240,7 +240,7 @@ export default defineNuxtConfig({
       ? {
           prerender: {
             failOnError: false,
-            routes: ['/', '/guide', '/faq', '/changelog', '/about', '/addons', '/profiles', '/imprint', '/privacy', '/strings'],
+            routes: ['/', '/guide', '/faq', '/changelog', '/about', '/addons', '/profiles', '/configurator', '/imprint', '/privacy', '/strings'],
           },
         }
       : {}),
@@ -393,6 +393,8 @@ export default defineNuxtConfig({
     // No swr: the previews folder is read live (a dropped-in image appears at once) and the
     // page is cheap; the bare URL is still edge-cached via CDN-Cache-Control (publicCache.ts).
     '/profiles': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
+    // Selection lives in the query string, so no swr (the route cache would key every variant).
+    '/configurator': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
     '/imprint': { swr: 120 },
     '/privacy': { swr: 120 },
     '/api/v1/catalog-summary': { swr: 120 },

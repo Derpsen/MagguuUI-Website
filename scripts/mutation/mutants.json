@@ -448,5 +448,47 @@
   "file": "utils/consent.ts",
   "find": "['0', 'false', 'off', 'no', 'disabled']",
   "repl": "['0', 'off', 'no', 'disabled']"
+ },
+ {
+  "name": "retention: 13 months becomes 10 years",
+  "file": "server/utils/visitorLog.ts",
+  "find": "export const VISITOR_DELETE_DAYS = 395",
+  "repl": "export const VISITOR_DELETE_DAYS = 3650"
+ },
+ {
+  "name": "login: identifiers kept 230 h",
+  "file": "server/utils/loginAttempts.ts",
+  "find": "LOGIN_ATTEMPT_IDENTIFIER_HOURS = 23",
+  "repl": "LOGIN_ATTEMPT_IDENTIFIER_HOURS = 230"
+ },
+ {
+  "name": "login: IP threshold 50",
+  "file": "server/utils/loginBackoff.ts",
+  "find": "  freeFailures: 5,",
+  "repl": "  freeFailures: 50,"
+ },
+ {
+  "name": "login: account threshold 100",
+  "file": "server/utils/loginBackoff.ts",
+  "find": "  freeFailures: 10,",
+  "repl": "  freeFailures: 100,"
+ },
+ {
+  "name": "route: consent does not delete",
+  "file": "server/api/v1/consent.post.ts",
+  "find": "deleteRecords: ids => withdrawVisitorRecords(sqlite, ids),",
+  "repl": "deleteRecords: () => 0,"
+ },
+ {
+  "name": "route: visitor-hit does not delete",
+  "file": "server/api/v1/visitor-hit.post.ts",
+  "find": "deleteRecords: ids => withdrawVisitorRecords(sqlite, ids),",
+  "repl": "deleteRecords: () => 0,"
+ },
+ {
+  "name": "cleanup: retention after housekeeping",
+  "file": "server/plugins/session-cleanup.ts",
+  "find": "    ...retentionSteps(sqlite, cutoff),\n    { name: 'expired sessions', run: () => cleanupExpiredSessions() },",
+  "repl": "    { name: 'expired sessions', run: () => cleanupExpiredSessions() },\n    ...retentionSteps(sqlite, cutoff),"
  }
 ]

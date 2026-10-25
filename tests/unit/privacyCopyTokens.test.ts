@@ -65,3 +65,21 @@ describe('s7 (anonymous counting) names the real numbers', () => {
     assert.ok(s7.includes('up to 400 days'))
   })
 })
+
+describe('s9 describes the sign-in protection records as they are kept', () => {
+  const s9 = PRIVACY_DEFAULTS.s9!.body!
+  it('names the 24 h counters, the 23 h identifiers and the data-retention period', async () => {
+    const { LOGIN_ATTEMPT_IDENTIFIER_HOURS } = await import('../../server/utils/loginAttempts')
+    assert.equal(LOGIN_ATTEMPT_IDENTIFIER_HOURS, 23)
+    assert.ok(s9.includes('removed from that log after 23 hours'))
+    assert.ok(s9.includes('about 24 hours after the last attempt'))
+    assert.ok(s9.includes('for {{retention_days}} days'))
+    assert.ok(/user name/.test(s9) && /browser family/.test(s9) && /first 64 bits/.test(s9))
+    assert.ok(!/may keep a network address for up to 24 hours/.test(s9), 'the old one-line claim is gone')
+  })
+  it('the rate-limit cleanup default really is 24 hours, and the plugin passes the data-retention setting to the attempts log', () => {
+    assert.match(read('server/utils/rateLimit.ts'), /cleanupRateLimits\(retentionMs: number = 24 \* 60 \* 60 \* 1000\)/)
+    assert.match(read('server/plugins/session-cleanup.ts'), /cleanupOldLoginAttempts\(retentionDays\)/)
+    assert.match(read('server/plugins/session-cleanup.ts'), /cleanupRateLimits\(\)/)
+  })
+})

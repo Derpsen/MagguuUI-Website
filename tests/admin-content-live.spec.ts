@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, rmSync, writeFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import Database from 'better-sqlite3'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext, BrowserContext, Page } from '@playwright/test'
 
@@ -731,6 +732,15 @@ test.describe('anonymous counting (/privacy, admin Routes view)', () => {
     ctx.request.post('/api/v1/page-view', { data: { path, referrer: from(n) } })
 
   test.beforeAll(async ({ browser }) => {
+    // The copied list shows only the top 20. A development database that has collected copy clicks over many runs
+    // (community presets, packs) would push this spec's brand-new item out of the list, so start from an empty copy history.
+    // This is the Playwright dev database (never production); the visitor and page-view tables are not touched.
+    const db = new Database(join(process.cwd(), 'data', 'magguuui.db'), { fileMustExist: true })
+    try {
+      db.pragma('busy_timeout = 5000')
+      db.prepare('DELETE FROM copy_events').run()
+      db.prepare("DELETE FROM stats_daily WHERE kind IN ('copy', 'copy-site')").run()
+    } finally { db.close() }
     profileId = (await json<{ id: number }>(await api.post('/api/v1/admin/profiles', { data: { addon: 'BigWigs', profile: `Count ${s}`, string: 'e2e-count' } }))).id
     anon = await browser.newContext({ userAgent: HUMAN_UA })
     await anon.grantPermissions(['clipboard-read', 'clipboard-write'])

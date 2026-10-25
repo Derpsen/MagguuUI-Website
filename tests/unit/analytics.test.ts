@@ -142,6 +142,16 @@ describe('storage: no identifiers, published copy targets only', () => {
 })
 
 describe('daily roll-up and report', () => {
+  it('the copied list breaks ties by newest numeric id, so a new item is never cut off behind 20 older ones (flaky "copy click is counted")', () => {
+    const sqlite = freshDb()
+    for (let id = 1; id <= 120; id++) {
+      sqlite.prepare("INSERT INTO profiles (id, addon, profile, string) VALUES (?, 'Plater', ?, 's')").run(id, `P${id}`)
+      recordCopy(sqlite, 'profile', id, TODAY + 10)
+    }
+    const r = trafficReport(sqlite, 7, NOW)
+    assert.equal(r.copied.length, 20)
+    assert.deepEqual(r.copied.slice(0, 3).map(c => c.id), [120, 119, 118]) // string order would have put 100, 101, 102 first
+  })
   it('rolls finished days up once, idempotently, and reports routes, copies and uniques', () => {
     const sqlite = freshDb()
     sqlite.prepare("INSERT INTO profiles (id, addon, profile, string) VALUES (7, 'Plater', 'Main', 's')").run()

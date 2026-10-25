@@ -329,6 +329,16 @@ const bump = (m: Map<string, number>, k: string, n: number) => m.set(k, (m.get(k
 const top = (m: Map<string, number>, limit: number) => [...m].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, limit)
 
 /**
+ * Top copied items. Ties are broken by type, then by NUMERIC id, newest first. (The plain string order of keys like "profile:105" and
+ * "profile:37" put a freshly created item behind older ones, so with more than 20 items at the same count a new item dropped out of the list.)
+ */
+const topCopied = (m: Map<string, number>, limit: number) => [...m].sort((a, b) => {
+  const [ta = '', ia = '0'] = a[0].split(':')
+  const [tb = '', ib = '0'] = b[0].split(':')
+  return b[1] - a[1] || ta.localeCompare(tb) || Number(ib) - Number(ia)
+}).slice(0, limit)
+
+/**
  * Per-route views, top copied items and daily totals for the last `days` UTC days
  * (today included). Completed days come from stats_daily; days not rolled up yet
  * (today) are aggregated live from the detail rows. Visitors are the SUM of daily
@@ -375,7 +385,7 @@ export function trafficReport(sqlite: Sqlite, days: number, now = Math.floor(Dat
     totals,
     perDay: [...perDay].map(([day, v]) => ({ day, ...v })),
     routes: [...routes].map(([path, v]) => ({ path, ...v })).sort((a, b) => b.views - a.views || a.path.localeCompare(b.path)).slice(0, 50),
-    copied: top(copied, 20).map(([key, copies]) => {
+    copied: topCopied(copied, 20).map(([key, copies]) => {
       const [type = '', rawId = '0'] = key.split(':')
       const id = Number(rawId)
       return { type, id, name: copyName(sqlite, type, id), copies }

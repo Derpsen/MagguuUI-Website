@@ -7,7 +7,7 @@ import { sqlite } from '~/server/database'
 import { visitorLogEnabled } from '../../../utils/consent'
 import { parseBrowser, parseDeviceType, parseOS } from '~/server/utils/session'
 import { isPageViewTrackingEnabled } from '~/server/utils/settings'
-import { recordVisitorHit } from '~/server/utils/visitorLog'
+import { deleteVisitorRecords, recordVisitorHit } from '~/server/utils/visitorLog'
 
 export default defineEventHandler(event => handleVisitorHit(event, {
   enabled: () => visitorLogEnabled(process.env.NUXT_VISITOR_LOG) && isPageViewTrackingEnabled(),
@@ -16,4 +16,5 @@ export default defineEventHandler(event => handleVisitorHit(event, {
   country: getClientCountry,
   city: getClientCity,
   record: input => recordVisitorHit(sqlite, input),
+  deleteRecords: ids => deleteVisitorRecords(sqlite, ids),
 }))

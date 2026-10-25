@@ -46,6 +46,15 @@ export function clearConsentBoundCookies(event: H3Event) {
   if (getCookie(event, VISITOR_COOKIE) !== undefined) deleteCookie(event, VISITOR_COOKIE, { ...cookieOptions(event), httpOnly: true })
 }
 
+/**
+ * A refusal signal (Global Privacy Control / Do Not Track) ends everything the browser holds: both consent-bound
+ * cookies AND the stored choice itself, so an old "yes" cannot start applying again once the signal is switched off.
+ */
+export function clearAllConsentCookies(event: H3Event) {
+  clearConsentBoundCookies(event)
+  if (getCookie(event, CONSENT_COOKIE) !== undefined) deleteCookie(event, CONSENT_COOKIE, cookieOptions(event))
+}
+
 /** The consent as the cookie says it, validated; null when absent, malformed, expired or from the future. */
 export function consentFromEvent(event: H3Event, nowMs = Date.now()) {
   return parseConsent(getCookie(event, CONSENT_COOKIE), nowMs)
@@ -72,13 +81,17 @@ export async function handleConsentChange(event: H3Event, deps: ConsentDeps) {
   const body = await readBeaconBody(event, 256)
   if (!body || typeof body.stats !== 'boolean') throw createError({ statusCode: 400, message: 'Invalid consent' })
 
-  // A refusal signal wins over any click: no consent cookie, nothing kept.
-  const stats = body.stats && !optedOutByHeaders(event)
+  // A refusal signal wins over any click, also over an earlier "yes": the records and all three cookies go, no new choice is stored.
+  if (optedOutByHeaders(event)) {
+    deps.deleteRecords({ sid: getCookie(event, SESSION_COOKIE), vid: getCookie(event, VISITOR_COOKIE) })
+    clearAllConsentCookies(event)
+    return null
+  }
+  const stats = body.stats
   if (!stats) {
     deps.deleteRecords({ sid: getCookie(event, SESSION_COOKIE), vid: getCookie(event, VISITOR_COOKIE) })
     clearConsentBoundCookies(event)
   }
-  if (optedOutByHeaders(event)) return null
   setCookie(event, CONSENT_COOKIE, consentValue(stats, deps.now?.()), { ...cookieOptions(event), maxAge: CONSENT_MAX_AGE_S })
   return null
 }
@@ -93,14 +106,20 @@ export interface VisitorHitDeps {
   country: (event: H3Event) => string
   city: (event: H3Event) => string | null
   record: (input: VisitorHitInput) => VisitorHitResult
+  /** With a refusal signal: delete the records of this browser (same as a withdrawal). */
+  deleteRecords?: (ids: { sid?: string, vid?: string }) => number
   now?: () => number
 }
 
 export async function handleVisitorHit(event: H3Event, deps: VisitorHitDeps) {
   const gate = deps.gate(event)
   if (!gate.ok) {
-    // A refusal signal also ends a session cookie that an earlier consent left behind.
-    if (optedOutByHeaders(event)) clearConsentBoundCookies(event)
+    // A refusal signal also ends what an earlier consent left behind: its records, its cookies and the stored "yes".
+    if (optedOutByHeaders(event)) {
+      const ids = { sid: getCookie(event, SESSION_COOKIE), vid: getCookie(event, VISITOR_COOKIE) }
+      if (ids.sid !== undefined || ids.vid !== undefined) deps.deleteRecords?.(ids)
+      clearAllConsentCookies(event)
+    }
     return null
   }
   if (!deps.enabled()) return null

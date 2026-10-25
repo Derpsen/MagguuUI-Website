@@ -26,10 +26,25 @@ export function useConsent() {
     return c
   }
 
+  /**
+   * A refusal signal ends an earlier "yes": ask the server (it sees the signal and the HttpOnly cookies) to delete the
+   * records and all three cookies. Silent: the visitor did not click anything. Nothing is sent without a stored choice.
+   */
+  function withdrawForSignal() {
+    if (!import.meta.client || !document.cookie.split(';').some(p => p.trim().startsWith('mg_consent='))) return
+    void fetch('/api/v1/consent', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ stats: false }),
+      credentials: 'same-origin',
+    }).catch(() => {})
+  }
+
   /** Once after mount: decide whether the banner opens by itself. */
   function init(path: string) {
     if (!import.meta.client || !enabled.value) return
     optedOut.value = clientOptedOut()
+    if (optedOut.value) withdrawForSignal()
     const c = readCookie()
     reopened.value = false
     open.value = !optedOut.value && !c && !path.startsWith('/admin')

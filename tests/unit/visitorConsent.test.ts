@@ -3,6 +3,7 @@
  * Real h3 app on a loopback port, in-memory database (same approach as requestDefences.test.ts).
  */
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import http, { IncomingMessage, ServerResponse } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { Socket } from 'node:net'
@@ -456,9 +457,10 @@ describe('POST visitor-hit: consent is checked on the server', () => {
     for (const h of [{ 'sec-gpc': '1' }, { dnt: '1' }] as Array<Record<string, string>>) {
       const r = await post(port, { path: '/' }, { cookie: `${cookieHeader(true)}; ${SESSION_COOKIE}=${'a'.repeat(32)}; ${VISITOR_COOKIE}=${'c'.repeat(32)}`, ...h })
       assert.equal(r.status, 204)
-      assert.equal(r.setCookie.length, 2) // session and visitor cookie, only because the browser sent both
+      assert.equal(r.setCookie.length, 3) // session, visitor and the stored choice, only because the browser sent all three
       assert.match(r.setCookie[0] ?? '', new RegExp(`^${SESSION_COOKIE}=;`))
       assert.match(r.setCookie[1] ?? '', new RegExp(`^${VISITOR_COOKIE}=;`))
+      assert.match(r.setCookie[2] ?? '', new RegExp(`^${CONSENT_COOKIE}=;`))
       for (const c of r.setCookie) assert.match(c, /Max-Age=0|Expires=Thu, 01 Jan 1970/)
     }
     assert.equal(rows(sqlite), 0)
@@ -932,5 +934,71 @@ describe('POST visitor-hit / visitor-event: the extended signals', () => {
     assert.ok(r.setCookie.some(c => c.startsWith(`${CONSENT_COOKIE}=`)))
     assert.equal(count(sqlite, 'visitor_sessions'), 0)
     assert.equal(count(sqlite, 'visitor_hits'), 0)
+  })
+})
+
+describe('F5: a refusal signal withdraws an earlier "yes"', () => {
+  const sidOf = (r: Reply) => r.setCookie.find(c => c.startsWith(`${SESSION_COOKIE}=`))?.match(/=([0-9a-f]{32});/)?.[1] ?? ''
+  const gone = (c: string) => /Max-Age=0|Expires=Thu, 01 Jan 1970/.test(c)
+
+  it('visitor-hit with GPC deletes the stored records of that browser and all three cookies', async () => {
+    const sqlite = db()
+    const calls: Array<{ sid?: string, vid?: string }> = []
+    const port = await serve(e => handleVisitorHit(e, hitDeps(sqlite, { deleteRecords: ids => { calls.push(ids); return deleteVisitorRecords(sqlite, ids) } })))
+    const first = await post(port, { path: '/' }, { cookie: cookieHeader(true) })
+    const sid = sidOf(first)
+    const vid = first.setCookie.find(c => c.startsWith(`${VISITOR_COOKIE}=`))?.match(/=([0-9a-f]{32});/)?.[1] ?? ''
+    assert.equal(count(sqlite, 'visitor_sessions'), 1)
+    const r = await post(port, { path: '/guide' }, { cookie: `${cookieHeader(true)}; ${SESSION_COOKIE}=${sid}; ${VISITOR_COOKIE}=${vid}`, 'sec-gpc': '1' })
+    assert.equal(r.setCookie.length, 3)
+    assert.ok(r.setCookie.every(gone))
+    assert.deepEqual(calls, [{ sid, vid }])
+    assert.equal(count(sqlite, 'visitor_sessions'), 0)
+    assert.equal(count(sqlite, 'visitor_hits'), 0)
+    // The signal is switched off again: the old "yes" is gone from the browser, so nothing starts again by itself.
+    const later = await post(port, { path: '/' })
+    assert.deepEqual(later.setCookie, [])
+    assert.equal(count(sqlite, 'visitor_sessions'), 0)
+  })
+
+  it('visitor-hit with GPC and no cookies of the visitor does not touch the database', async () => {
+    const sqlite = db()
+    const calls: unknown[] = []
+    const port = await serve(e => handleVisitorHit(e, hitDeps(sqlite, { deleteRecords: ids => { calls.push(ids); return 0 } })))
+    const r = await post(port, { path: '/' }, { 'sec-gpc': '1' })
+    assert.deepEqual(r.setCookie, [])
+    assert.deepEqual(calls, [])
+  })
+
+  it('consent POST with GPC and an old "yes": records deleted, mg_consent, mg_sid and mg_vid cleared, no new choice stored', async () => {
+    const sqlite = db()
+    const a = recordVisitorHit(sqlite, hit(), NOW)
+    assert.ok(a.recorded)
+    const port = await serve(e => handleConsentChange(e, { enabled: () => true, allow: () => true, deleteRecords: ids => deleteVisitorRecords(sqlite, ids) }))
+    for (const h of [{ 'sec-gpc': '1' }, { dnt: '1' }] as Array<Record<string, string>>) {
+      const r = await post(port, { stats: false }, { cookie: `${cookieHeader(true)}; ${SESSION_COOKIE}=${a.sid}; ${VISITOR_COOKIE}=${a.vid}`, ...h })
+      assert.equal(r.status, 204)
+      assert.equal(r.setCookie.length, 3)
+      assert.ok(r.setCookie.every(gone))
+      assert.ok(r.setCookie.some(c => c.startsWith(`${CONSENT_COOKIE}=;`)))
+    }
+    assert.equal(count(sqlite, 'visitor_sessions'), 0)
+  })
+
+  it('without a signal a "no" still stores the choice, and a "yes" still works', async () => {
+    const sqlite = db()
+    const port = await serve(e => handleConsentChange(e, { enabled: () => true, allow: () => true, deleteRecords: ids => deleteVisitorRecords(sqlite, ids) }))
+    for (const stats of [true, false]) {
+      const r = await post(port, { stats }, { cookie: cookieHeader(!stats) })
+      const c = r.setCookie.find(x => x.startsWith(`${CONSENT_COOKIE}=`)) ?? ''
+      assert.ok(c && !gone(c))
+      assert.equal(parseConsent(decodeURIComponent((c.split(';')[0] ?? '').slice(CONSENT_COOKIE.length + 1)))?.stats, stats)
+    }
+  })
+
+  it('the client asks the server to withdraw only when a stored choice exists and a signal is present', () => {
+    const c = readFileSync(new URL('../../composables/useConsent.ts', import.meta.url), 'utf8')
+    assert.match(c, /if \(optedOut\.value\) withdrawForSignal\(\)/)
+    assert.match(c, /startsWith\('mg_consent='\)/)
   })
 })

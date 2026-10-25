@@ -17,7 +17,7 @@ import type Database from 'better-sqlite3'
 import {
   worstState, type PublicStatus, type StatusComponent, type StatusState, type StatusUptimeWindow,
 } from '../../utils/publicStatus'
-import { listActiveStatusNotices } from './statusNotices'
+import { listActiveStatusNotices, listStatusHistory } from './statusNotices'
 
 type Sqlite = Pick<Database.Database, 'prepare'>
 
@@ -162,6 +162,7 @@ export function buildPublicStatus(sqlite: Sqlite, now: number = Math.floor(Date.
     components,
     uptime,
     notices: listActiveStatusNotices(now),
+    history: listStatusHistory(now),
   }
 }
 

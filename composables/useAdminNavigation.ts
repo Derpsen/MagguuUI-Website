@@ -203,6 +203,14 @@ const adminSections: AdminNavSection[] = [
         hint: 'Audit changes without turning the log into a dashboard of its own.',
       },
       {
+        to: '/admin/system/status',
+        label: 'Status notices',
+        heading: 'Status notices',
+        icon: 'i-heroicons-signal',
+        description: 'Maintenance and incident notices for the public status page.',
+        hint: 'Announce planned work, post incident updates and resolve them; resolved notices stay in the public history.',
+      },
+      {
         to: '/admin/system/audit',
         label: 'Audit log',
         heading: 'Audit log',
@@ -235,6 +243,7 @@ const commandActions: Omit<AdminCommandItem, 'id'>[] = [
   { group: 'Actions', to: '/admin/strings/profiles?action=create', label: 'New Addon Profile', icon: 'i-heroicons-plus', description: 'Create a new addon import string.' },
   { group: 'Actions', to: '/admin/content/changelog?action=create', label: 'New Update', icon: 'i-heroicons-plus', description: 'Document the latest release.' },
   { group: 'Actions', to: '/admin/strings/wowup?action=create', label: 'New WowUp String', icon: 'i-heroicons-plus', description: 'Add a new WowUp package string.' },
+  { group: 'Actions', to: '/admin/system/status?action=create', label: 'New status notice', icon: 'i-heroicons-plus', description: 'Announce maintenance or an incident on the status page.' },
   { group: 'Actions', to: '/', label: 'Open public website', icon: 'i-heroicons-arrow-top-right-on-square', description: 'Leave the admin and view the public site.' },
 ]
 

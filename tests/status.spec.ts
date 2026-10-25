@@ -9,6 +9,7 @@ type Payload = {
   components: Array<{ id: string, name: string, state: string, note: string | null }>
   uptime: { ready: boolean, windows: Array<{ days: number, percent: number }>, note: string }
   notices: Array<Record<string, unknown>>
+  history: Array<Record<string, unknown>>
 }
 
 const fake = (over: Partial<Payload> = {}): { success: true, data: Payload } => ({
@@ -22,7 +23,18 @@ const fake = (over: Partial<Payload> = {}): { success: true, data: Payload } => 
       { id: 'content', name: 'Data freshness', state: 'operational', note: 'Latest release note: 2026-10-20' },
     ],
     uptime: { ready: true, windows: [{ days: 1, percent: 99.3 }, { days: 7, percent: 99.95 }], note: 'Measured by the site itself.' },
-    notices: [{ id: 'n1', kind: 'maintenance', title: 'Planned work', message: 'Short break at 08:00 UTC.', startsAt: '2026-10-26T08:00:00.000Z', endsAt: null }],
+    notices: [{
+      id: 'n1', kind: 'maintenance', status: 'scheduled', title: 'Planned work', bodyHtml: '<p>Short break at <strong>08:00 UTC</strong>.</p>',
+      component: 'database', startsAt: '2026-10-26T08:00:00.000Z', endsAt: '2026-10-26T09:00:00.000Z', resolvedAt: null, updates: [],
+    }],
+    history: [{
+      id: 'h1', kind: 'incident', status: 'resolved', title: 'Slow responses', bodyHtml: '<p>Pages loaded slowly.</p>', component: 'website',
+      startsAt: '2026-10-20T10:00:00.000Z', endsAt: null, resolvedAt: '2026-10-20T11:30:00.000Z',
+      updates: [
+        { at: '2026-10-20T10:20:00.000Z', status: 'monitoring', bodyHtml: '<p>A fix is out.</p>' },
+        { at: '2026-10-20T11:30:00.000Z', status: 'resolved', bodyHtml: '<p>Back to normal.</p>' },
+      ],
+    }],
     ...over,
   },
 })
@@ -33,7 +45,7 @@ test('the status endpoint exposes only the whitelisted coarse fields and is cach
   expect(res.headers()['cache-control']).toContain('max-age=30')
   expect(res.headers()['set-cookie']).toBeUndefined()
   const first = (await res.json() as { data: Payload }).data
-  expect(Object.keys(first).sort()).toEqual(['checkedAt', 'components', 'notices', 'status', 'uptime'])
+  expect(Object.keys(first).sort()).toEqual(['checkedAt', 'components', 'history', 'notices', 'status', 'uptime'])
   expect(first.components.map(c => c.id)).toEqual(['website', 'database', 'content'])
   for (const c of first.components) expect(Object.keys(c).sort()).toEqual(['id', 'name', 'note', 'state'])
   expect(['operational', 'degraded', 'down']).toContain(first.status)
@@ -63,7 +75,7 @@ test('the page renders its state on the server, without JavaScript', async ({ br
   const collecting = await page.getByTestId('status-collecting').count()
   if (collecting) await expect(page.getByTestId('status-collecting')).toContainText('Collecting data')
   else await expect(page.getByTestId('status-uptime')).toContainText(/\d+\.\d{2}%/)
-  await expect(page.getByTestId('status-notices')).toHaveCount(0)
+  await expect(page.getByTestId('status-history')).toContainText('History')
   await ctx.close()
 })
 
@@ -97,6 +109,15 @@ for (const mode of ['dark', 'light'] as const) {
     await expect(page.getByTestId('status-uptime-7')).toContainText('99.95%')
     await expect(page.getByTestId('status-notices')).toContainText('Planned work')
     await expect(page.getByTestId('status-notices')).toContainText('Short break at 08:00 UTC.')
+    await expect(page.getByTestId('status-notices')).toContainText('Maintenance · Scheduled · Database')
+    await expect(page.getByTestId('status-notices')).toContainText('Planned 2026-10-26 08:00 UTC to 2026-10-26 09:00 UTC')
+    // History: resolved notices with their timeline (collapsed by default, readable text either way).
+    const hist = page.getByTestId('status-history-h1')
+    await expect(hist).toContainText('Slow responses')
+    await expect(hist).toContainText('resolved 2026-10-20 11:30 UTC')
+    await hist.locator('summary').click()
+    await expect(page.getByTestId('status-history-h1-timeline')).toContainText('A fix is out.')
+    await expect(page.getByTestId('status-history-h1-timeline')).toContainText('Back to normal.')
     await expect(page.locator('html')).toHaveClass(mode === 'dark' ? /dark/ : /light/)
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze()
     expect(results.violations.map(v => `${v.id}: ${v.nodes.length}`)).toEqual([])
@@ -114,6 +135,7 @@ test('a down state is spelled out in words, not only by colour', async ({ page }
       ],
       uptime: { ready: false, windows: [], note: 'Measured by the site itself.' },
       notices: [],
+      history: [],
     }),
   }))
   await page.goto('/privacy')
@@ -122,4 +144,5 @@ test('a down state is spelled out in words, not only by colour', async ({ page }
   await expect(page.getByTestId('status-overall')).toContainText('The website is down')
   await expect(page.getByTestId('status-component-database')).toContainText('Down')
   await expect(page.getByTestId('status-collecting')).toContainText('Collecting data')
+  await expect(page.getByTestId('status-history-empty')).toContainText('No resolved notices')
 })

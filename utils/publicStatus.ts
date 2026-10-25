@@ -21,14 +21,61 @@ export interface StatusUptimeWindow {
   percent: number
 }
 
-/** Extension point for item B (admin-written notices). Plain text only. */
+export type StatusNoticeKind = 'maintenance' | 'incident'
+export type StatusNoticeStatus = 'scheduled' | 'in_progress' | 'monitoring' | 'resolved'
+
+export const NOTICE_KINDS: readonly StatusNoticeKind[] = ['maintenance', 'incident']
+export const NOTICE_STATUSES: readonly StatusNoticeStatus[] = ['scheduled', 'in_progress', 'monitoring', 'resolved']
+export const NOTICE_COMPONENT_IDS: readonly StatusComponentId[] = ['website', 'database', 'content']
+
+export const NOTICE_KIND_LABEL: Record<StatusNoticeKind, string> = { maintenance: 'Maintenance', incident: 'Incident' }
+export const NOTICE_STATUS_LABEL: Record<StatusNoticeStatus, string> = {
+  scheduled: 'Scheduled',
+  in_progress: 'In progress',
+  monitoring: 'Monitoring',
+  resolved: 'Resolved',
+}
+export const NOTICE_COMPONENT_LABEL: Record<StatusComponentId, string> = {
+  website: 'Website',
+  database: 'Database',
+  content: 'Data freshness',
+}
+
+/**
+ * Allowed status moves. Incidents are never `scheduled`; a resolved notice can only be reopened.
+ * Shared so the admin form offers exactly what the server accepts.
+ */
+const NOTICE_TRANSITIONS: Record<StatusNoticeStatus, StatusNoticeStatus[]> = {
+  scheduled: ['in_progress', 'resolved'],
+  in_progress: ['monitoring', 'resolved'],
+  monitoring: ['in_progress', 'resolved'],
+  resolved: ['in_progress'],
+}
+export const canTransition = (from: StatusNoticeStatus, to: StatusNoticeStatus): boolean =>
+  NOTICE_TRANSITIONS[from]?.includes(to) ?? false
+export const nextNoticeStatuses = (from: StatusNoticeStatus): StatusNoticeStatus[] => [...(NOTICE_TRANSITIONS[from] ?? [])]
+
+/** One append-only timeline entry. `bodyHtml` is already sanitized (limited Markdown, no raw HTML). */
+export interface StatusNoticeUpdate {
+  at: string
+  status: StatusNoticeStatus
+  bodyHtml: string
+}
+
+/** Admin-written maintenance / incident notice (item B). Everything public is listed here. */
 export interface StatusNotice {
   id: string
-  kind: 'maintenance' | 'incident'
+  kind: StatusNoticeKind
+  status: StatusNoticeStatus
   title: string
-  message: string
+  /** Sanitized HTML from limited Markdown; empty when the notice has no description. */
+  bodyHtml: string
+  component: StatusComponentId | null
   startsAt: string
   endsAt: string | null
+  resolvedAt: string | null
+  /** Oldest first. */
+  updates: StatusNoticeUpdate[]
 }
 
 export interface PublicStatus {
@@ -36,7 +83,10 @@ export interface PublicStatus {
   checkedAt: string
   components: StatusComponent[]
   uptime: { ready: boolean, windows: StatusUptimeWindow[], note: string }
+  /** Scheduled and ongoing notices. */
   notices: StatusNotice[]
+  /** Resolved notices of the last 90 days, newest first. */
+  history: StatusNotice[]
 }
 
 export const STATUS_LABEL: Record<StatusState, string> = {

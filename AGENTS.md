@@ -146,10 +146,11 @@ Routine „Magguu Audit Allowlist Review“ ~2. Nov; re-check before review-by.
 After Unraid app-image pull / when Buddy asks ("Unraid & Server" owns container pull):
 
 1. Login `/admin/login`
-2. These seven routes must be **200** (from #102):
+2. These eight routes must be **200** (from #102):
    - `/admin` (dashboard overview, shows "Needs attention" and the Content/Publishing/Traffic/Health sections)
    - `/admin/system/activity`
    - `/admin/system/audit`
+   - `/admin/system/status` (status notices: list, Add update / Resolve / Edit / Delete; read-only look, do not create live notices)
    - `/admin/strings/profiles`
    - `/admin/strings/layouts`
    - `/admin/data/addons`
@@ -410,9 +411,20 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 ## Public status page `/status` (2026-10-25)
 
 - Page `pages/status.vue` (SSR, light refresh every 60 s while visible) reads `GET /api/v1/status`. `/api/health` is unchanged and separate (it carries SHA/build/uptime, the public payload never does).
-- Payload (whole public surface, type in `utils/publicStatus.ts`): `status`, `checkedAt`, `components[] {id, name, state, note}` (Website, Database, Data freshness), `uptime {ready, windows[] {days, percent}, note}`, `notices[]`. `tests/unit/siteStatus.test.ts` has a whitelist test; adding a field means updating type, test and this list on purpose.
+- Payload (whole public surface, type in `utils/publicStatus.ts`): `status`, `checkedAt`, `components[] {id, name, state, note}` (Website, Database, Data freshness), `uptime {ready, windows[] {days, percent }, note}`, `notices[]` (scheduled / ongoing), `history[]` (resolved, last 90 days). `tests/unit/siteStatus.test.ts` has a whitelist test; adding a field means updating type, test and this list on purpose.
 - States: Website is Operational whenever the request is answered; Database is Degraded above 500 ms and Down when `SELECT 1` fails; Data freshness is Degraded when the newest published release note is older than 180 days (none yet = Operational). Overall = worst. Always HTTP 200.
 - Cache: `getPublicStatus` keeps the payload 45 s in memory (+ `Cache-Control: public, max-age=30`), so the DB is touched at most once per window. `clearPublicStatusCache()` for writers.
 - Sampler (`server/plugins/status-sampler.ts`, `server/utils/siteStatus.ts`): one row per 5-minute slot in `status_samples` while the DB answers; finished UTC days roll up into `status_daily` (INSERT OR IGNORE); detail kept 3 days, daily rows 100 days. Availability = answered slots / expected slots since the first sample; a missing slot (restart, outage) counts as downtime; percentages round down; a window (24 h, 7/30/90 days) appears only after that much history, nothing before 24 h ("Collecting data").
-- Item B hook: `server/utils/statusNotices.ts`, `registerStatusNoticeSource(fn)` where `fn(nowSeconds)` returns active notices; output goes through the `toPublicNotice` whitelist (kind, title, message, startsAt, endsAt; plain text, length caps, max 5). B only adds a table, admin endpoints and a source registration, then calls `clearPublicStatusCache()`. Not implemented yet.
+- Notices (item B): see the next section. The registry in `server/utils/statusNotices.ts` (`registerStatusNoticeSource(fn)`, `fn(nowSeconds)` returns raw rows) is fed by `server/plugins/status-notices.ts` from the DB; `toPublicNotice` is the whitelist.
 - SEO: `noindex, follow`, not in the sitemap (a "Down" snapshot has no lasting search value), linked in the footer, counted as a public route in `TRACKED_ROUTES`, not edge-cached.
+
+## Status notices (maintenance / incidents, admin-maintained)
+
+- Admin page `/admin/system/status` (sidebar System, palette "New status notice" = `?action=create`). Endpoints `server/api/v1/admin/status-notices/` (`index.get/post`, `[id].put/delete`, `[id]/updates.post`); every handler starts with `requireAdminAccess(event)` (a unit test scans the sources for that, for audit and for `clearPublicStatusCache()`). Adding a handler there means updating that test.
+- Tables `status_notices` and `status_notice_updates` (CREATE IF NOT EXISTS in bootstrap, mirrored in drizzle). Store, validation (zod) and transitions: `server/utils/statusNoticeStore.ts`; transitions are shared with the UI via `utils/publicStatus.ts` (`canTransition`).
+- Fields: kind (maintenance | incident), status (scheduled, in_progress, monitoring, resolved), title (120), Markdown body (2000), component (website | database | content | none), start, optional end, timeline entries (1000 each, max 50, append-only: no edit or delete path, a source scan guards it). Status moves are forward only; an incident cannot be scheduled; resolving sets `resolved_at`. Edit changes fields, never the status (that is a timeline entry).
+- Markdown: `utils/noticeMarkdown.ts` (marked + sanitize-html): only p, br, strong, em, del, code, pre, ul, ol, li, blockquote and links (http, https, mailto; rel/target forced). Raw HTML is shown as escaped text, images are text, headings become paragraphs. `toPublicNotice` re-renders on every public read, so a bad source cannot bypass it; display goes through `SafeHtml`. A paragraph that starts with a tag is an HTML block for marked and is shown whole as text (put links in other paragraphs).
+- Public `/status`: notices on top (ongoing incident, ongoing maintenance, scheduled soonest first, max 10), History below (resolved within 90 days, newest first, max 25, `<details>` with the timeline). Whitelist: id, kind, status, title, bodyHtml, component, startsAt, endsAt, resolvedAt, updates[{at, status, bodyHtml}]; no author, no user ids. `siteStatus.test.ts` and `statusNotices.test.ts` guard it.
+- Audit: each write calls `recordAuditSafe` with entity type `status_notice` (snapshot includes the timeline, redacted by the common rules; no undo for this type). Retention: resolved notices are deleted after 365 days by the sampler maintenance tick; max 500 rows.
+- Limits: a scheduled notice is not started automatically (the admin moves it to in progress); admin times are entered in local time, the public page shows UTC; notices do not change the derived component states; no feed.
+- E2E: `tests/status-notices.spec.ts` creates, updates, resolves and deletes a notice through the admin UI and cleans up after itself. Never create notices on the live site to test.

@@ -480,3 +480,10 @@
 - Decisions: noindex + not in sitemap (stated in page code); uptime from in-process sampling only, no external probes, so a database outage cannot be stored and shows as a gap (counts as downtime, which is the honest reading); percentages floor to two decimals; windows appear only after enough history, otherwise "Collecting data". Notices extension point for item B in `server/utils/statusNotices.ts` (tested, nothing registered).
 - Gotchas: deploy restarts create small gaps (at most a slot or two per deploy); `formatStatusTime` is deterministic UTC to avoid SSR/hydration mismatch; Playwright mocks `/api/v1/status` via `page.route`, which only affects client-side navigation (SSR fetch is server-side), so those tests navigate from /privacy via the footer link.
 - Limits: freshness only looks at the changelog; sampler checks the DB, not the HTTP layer; first 24 h after a fresh DB show no percentage.
+
+## 2026-10-25 Item B: admin-managed status notices and history
+
+- `/admin/system/status` (create/edit/resolve/delete, timeline entries append-only), tables `status_notices` + `status_notice_updates` (idempotent, tested on a prod-like schema), public `/status` shows active/scheduled notices on top and resolved ones (90 days) as History with timeline. Every write: `requireAdminAccess` in the handler, audit entry (`status_notice`, redacted), `clearPublicStatusCache()`.
+- Decisions: limited Markdown (no raw HTML, no images/headings) sanitized on the admin preview and again on every public read; forward-only status moves; edit cannot change status (timeline entries do); no auto-start of scheduled notices, no feed, no undo; retention 365 days for resolved.
+- Gotchas: a paragraph starting with a tag is an HTML block for marked (shown whole as text), so tests that also want neighbouring links parsed keep them in other paragraphs; the audit redactor only catches URL-shaped secrets (`?token=`), not free text like `token=...`, and notices are public text anyway, so never paste secrets; `node --test` needs `--import tsx`.
+- Limits: admin times local vs public UTC; notices do not alter derived component states.

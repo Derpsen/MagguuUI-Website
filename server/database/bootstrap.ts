@@ -187,6 +187,34 @@ export const DATABASE_BOOTSTRAP_SQL = `
     first_slot INTEGER NOT NULL
   );
 
+  -- Admin-written maintenance / incident notices for /status; see server/utils/statusNoticeStore.ts
+  CREATE TABLE IF NOT EXISTS status_notices (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind TEXT NOT NULL,
+    status TEXT NOT NULL,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL DEFAULT '',
+    component TEXT,
+    starts_at INTEGER NOT NULL,
+    ends_at INTEGER,
+    resolved_at INTEGER,
+    created_by INTEGER,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+  CREATE INDEX IF NOT EXISTS idx_status_notices_status ON status_notices(status, starts_at);
+
+  -- Append-only timeline of a notice (rows are only inserted; deleted together with their notice)
+  CREATE TABLE IF NOT EXISTS status_notice_updates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    notice_id INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    body TEXT NOT NULL DEFAULT '',
+    created_by INTEGER,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+  CREATE INDEX IF NOT EXISTS idx_status_notice_updates_notice ON status_notice_updates(notice_id, id);
+
   CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,

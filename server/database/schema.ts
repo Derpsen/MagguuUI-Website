@@ -355,6 +355,32 @@ export const statusDaily = sqliteTable('status_daily', {
   firstSlot: integer('first_slot').notNull(),
 })
 
+// Admin-written maintenance / incident notices for /status (see server/utils/statusNoticeStore.ts).
+// The timeline table is append-only: rows are inserted, never edited.
+export const statusNotices = sqliteTable('status_notices', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  kind: text('kind').notNull(),
+  status: text('status').notNull(),
+  title: text('title').notNull(),
+  body: text('body').notNull().default(''),
+  component: text('component'),
+  startsAt: integer('starts_at').notNull(),
+  endsAt: integer('ends_at'),
+  resolvedAt: integer('resolved_at'),
+  createdBy: integer('created_by'),
+  createdAt: integer('created_at').notNull().default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at').notNull().default(sql`(unixepoch())`),
+})
+
+export const statusNoticeUpdates = sqliteTable('status_notice_updates', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  noticeId: integer('notice_id').notNull(),
+  status: text('status').notNull(),
+  body: text('body').notNull().default(''),
+  createdBy: integer('created_by'),
+  createdAt: integer('created_at').notNull().default(sql`(unixepoch())`),
+})
+
 // ─── Web Vitals (anonymous RUM) ────────────────────
 // One row per metric sample: page path, metric name, value. No IP, UA,
 // cookie or user id is stored. Retention follows the page_views setting.

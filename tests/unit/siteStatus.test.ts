@@ -157,7 +157,7 @@ describe('public payload', () => {
   it('builds the whitelisted shape from the database', () => {
     const sqlite = freshDb()
     const status = buildPublicStatus(sqlite, START)
-    assert.deepEqual(Object.keys(status).sort(), ['checkedAt', 'components', 'notices', 'status', 'uptime'])
+    assert.deepEqual(Object.keys(status).sort(), ['checkedAt', 'components', 'history', 'notices', 'status', 'uptime'])
     assert.equal(status.status, 'operational')
     assert.equal(status.checkedAt, new Date(START * 1000).toISOString())
     assert.deepEqual(status.uptime.windows, [])
@@ -185,7 +185,7 @@ describe('public payload', () => {
     addSamples(sqlite, slots(START - 3 * DAY, 288 * 3 + 1))
     const status = buildPublicStatus(sqlite, START + 30)
     const allowed = {
-      top: ['checkedAt', 'components', 'notices', 'status', 'uptime'],
+      top: ['checkedAt', 'components', 'history', 'notices', 'status', 'uptime'],
       component: ['id', 'name', 'note', 'state'],
       uptime: ['note', 'ready', 'windows'],
       window: ['days', 'percent'],
@@ -218,15 +218,17 @@ describe('public payload', () => {
   })
 })
 
-describe('notice extension point (item B)', () => {
+describe('notice registry', () => {
   it('shows nothing until a source is registered', () => {
-    assert.deepEqual(buildPublicStatus(freshDb(), START).notices, [])
+    const status = buildPublicStatus(freshDb(), START)
+    assert.deepEqual(status.notices, [])
+    assert.deepEqual(status.history, [])
   })
 
-  it('keeps only whitelisted, valid notice fields, newest first, capped', () => {
+  it('keeps only whitelisted, valid notice fields; ongoing first, then upcoming; capped', () => {
     registerStatusNoticeSource(() => [
-      { id: 'a', kind: 'maintenance', title: 'Planned work', message: 'Short break', startsAt: '2026-10-26T08:00:00Z', endsAt: '2026-10-26T09:00:00Z', adminNote: 'secret', createdBy: 7 },
-      { id: 'b', kind: 'incident', title: 'Slow responses', message: 'x'.repeat(2000), startsAt: START },
+      { id: 'a', kind: 'maintenance', status: 'scheduled', title: 'Planned work', body: 'Short break', startsAt: '2026-10-26T08:00:00Z', endsAt: '2026-10-26T09:00:00Z', adminNote: 'secret', createdBy: 7 },
+      { id: 'b', kind: 'incident', status: 'in_progress', title: 'Slow responses', body: 'x'.repeat(5000), startsAt: START },
       { id: 'c', kind: 'weird', title: 'bad kind', startsAt: START },
       { id: 'd', kind: 'incident', title: '', startsAt: START },
       null,
@@ -235,8 +237,7 @@ describe('notice extension point (item B)', () => {
     registerStatusNoticeSource(() => { throw new Error('broken source') })
     const list = listActiveStatusNotices(START)
     assert.deepEqual(list.map(n => n.id), ['b', 'a'])
-    assert.deepEqual(Object.keys(list[1]!).sort(), ['endsAt', 'id', 'kind', 'message', 'startsAt', 'title'])
-    assert.equal(list[0]!.message.length, 600)
+    assert.deepEqual(Object.keys(list[1]!).sort(), ['bodyHtml', 'component', 'endsAt', 'id', 'kind', 'resolvedAt', 'startsAt', 'status', 'title', 'updates'])
     assert.equal(list[0]!.endsAt, null)
     assert.equal(buildPublicStatus(freshDb(), START).notices.length, 2)
   })

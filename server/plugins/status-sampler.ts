@@ -7,6 +7,7 @@
 
 import { sqlite } from '~/server/database'
 import { SLOT_SECONDS, recordStatusSample, runStatusMaintenance } from '~/server/utils/siteStatus'
+import { pruneStatusNotices } from '~/server/utils/statusNoticeStore'
 
 export default defineNitroPlugin(() => {
   let lastSlot = 0
@@ -21,7 +22,10 @@ export default defineNitroPlugin(() => {
         recordStatusSample(sqlite, now)
         lastSlot = slot
       }
-      if (ticks++ % 30 === 0) runStatusMaintenance(sqlite, now)
+      if (ticks++ % 30 === 0) {
+        runStatusMaintenance(sqlite, now)
+        pruneStatusNotices(sqlite, now) // resolved notices are kept for a year
+      }
     } catch { /* database not ready or unavailable: the missing slot is the signal */ }
   }
 

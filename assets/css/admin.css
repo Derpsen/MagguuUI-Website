@@ -579,6 +579,33 @@ html.dark .admin-shell {
   color: var(--admin-fg-faint);
 }
 
+/* Plain native controls (status notices form). Explicit colours: modals are teleported out of .admin-shell. */
+.admin-native-input,
+.admin-native-select {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(203 213 225);
+  background: #fff;
+  color: #0f172a;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.admin-native-input:focus-visible,
+.admin-native-select:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 1px;
+}
+
+html.dark .admin-native-input,
+html.dark .admin-native-select {
+  border-color: rgb(255 255 255 / 0.16);
+  background: rgb(255 255 255 / 0.05);
+  color: #f1f5f9;
+  color-scheme: dark;
+}
+
 /* Subtle focus ring for admin inputs */
 .admin-shell input:focus,
 .admin-shell textarea:focus,

@@ -142,6 +142,7 @@ const typeOptions = [
   { label: 'Addon Profile', value: 'profile' },
   { label: 'WowUp String', value: 'wowup' },
   { label: 'Character Layout', value: 'layout' },
+  { label: 'Status notice', value: 'status_notice' },
 ]
 const actionOptions = [
   { label: 'All actions', value: 'all' },

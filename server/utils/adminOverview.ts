@@ -7,6 +7,7 @@
 
 import type Database from 'better-sqlite3'
 import { trafficReport } from './analytics'
+import { visitorSummary } from './visitorReport'
 
 type Sqlite = Pick<Database.Database, 'prepare' | 'transaction'>
 
@@ -60,10 +61,20 @@ export interface Overview {
     auditRows: number
     activityRows: number
   }
+  /** Consented visitor log (visitor_sessions) next to the anonymous referrer counts, 30 days. Labelled by source in the UI. */
+  visitors: {
+    enabled: boolean
+    sessions30d: number
+    countries: Array<{ code: string, sessions: number }>
+    referrers: Array<{ name: string, sessions: number }>
+    anonymousReferrers: Array<{ name: string, views: number }>
+  }
   recent: OverviewChange[]
 }
 
 export interface OverviewEnv {
+  /** NUXT_VISITOR_LOG is on. */
+  visitorLog?: boolean
   now?: number
   dbSizeBytes?: number | null
   uptimeSeconds?: number
@@ -94,6 +105,7 @@ export function buildOverview(sqlite: Sqlite, env: OverviewEnv = {}): Overview {
   const week7 = trafficReport(sqlite, 7, now)
   const prev7 = trafficReport(sqlite, 7, now - week)
   const month = trafficReport(sqlite, 30, now)
+  const consented = visitorSummary(sqlite, 30, 5, now)
 
   let database: 'ok' | 'unavailable' = 'ok'
   try { sqlite.prepare('SELECT 1').get() } catch { database = 'unavailable' }
@@ -167,6 +179,13 @@ export function buildOverview(sqlite: Sqlite, env: OverviewEnv = {}): Overview {
       build: env.build ?? { shortSha: 'dev', buildTime: 'dev' },
       auditRows: num(sqlite, 'SELECT COUNT(*) AS n FROM audit_changes'),
       activityRows: num(sqlite, 'SELECT COUNT(*) AS n FROM activity_log'),
+    },
+    visitors: {
+      enabled: env.visitorLog === true,
+      sessions30d: consented.sessions,
+      countries: consented.countries,
+      referrers: consented.referrers,
+      anonymousReferrers: month.referrers.slice(0, 5).map(r => ({ name: r.name, views: r.views })),
     },
     recent,
   }

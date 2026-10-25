@@ -70,15 +70,15 @@ describe('country display', () => {
 
 describe('parseVisitorFilters', () => {
   it('validates every field and never throws', () => {
-    const f = parseVisitorFilters({ country: 'de', days: '7', page: '/guide', referrer: ' Google.COM ', utm: 'news', visitor: 'returning' })
+    const f = parseVisitorFilters({ country: 'de', days: '7', path: '/guide', referrer: ' Google.COM ', utm: 'news', visitor: 'returning' })
     assert.deepEqual(f, { country: 'DE', days: 7, page: '/guide', referrer: 'google.com', utm: 'news', visitor: 'returning' })
     assert.deepEqual(parseVisitorFilters({}), EMPTY_FILTERS)
-    const bad = parseVisitorFilters({ country: 'Germany', days: '9999', page: 'guide', visitor: 'x', referrer: 'a'.repeat(500) })
+    const bad = parseVisitorFilters({ country: 'Germany', days: '9999', path: 'guide', visitor: 'x', referrer: 'a'.repeat(500) })
     assert.equal(bad.country, ''); assert.equal(bad.days, EMPTY_FILTERS.days); assert.equal(bad.page, ''); assert.equal(bad.visitor, '')
     assert.equal(bad.referrer.length, 100)
     assert.equal(parseVisitorFilters({ days: '0' }).days, 0)
     assert.equal(parseVisitorFilters({ country: 'unknown' }).country, 'unknown')
-    assert.doesNotThrow(() => parseVisitorFilters({ country: ['a'], days: {}, page: 5 } as never))
+    assert.doesNotThrow(() => parseVisitorFilters({ country: ['a'], days: {}, path: 5 } as never))
   })
 })
 

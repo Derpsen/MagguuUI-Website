@@ -99,6 +99,42 @@
           <p v-else class="admin-dash__muted">No copies yet.</p>
         </section>
 
+        <section class="admin-dash__section" aria-labelledby="dash-countries" data-testid="dash-countries">
+          <div class="admin-dash__sectionhead">
+            <h2 id="dash-countries" class="admin-dash__label">Top countries, consented visits, 30 days</h2>
+            <NuxtLink to="/admin/system/visitors" class="admin-dash__link">Visitor log</NuxtLink>
+          </div>
+          <ul v-if="overview.visitors.countries.length" class="admin-dash__rows">
+            <li v-for="c in overview.visitors.countries" :key="c.code" class="admin-dash__row" :data-testid="`dash-country-${c.code}`">
+              <span><span aria-hidden="true">{{ countryFlag(c.code) }}</span> {{ countryName(c.code) }}</span>
+              <span class="admin-dash__value">{{ c.sessions }}</span>
+            </li>
+          </ul>
+          <p v-else class="admin-dash__muted" data-testid="dash-countries-empty">
+            No consented visits yet. The visitor log is {{ overview.visitors.enabled ? 'on' : 'off' }}; it only records visitors who agree in the cookie banner.
+          </p>
+        </section>
+
+        <section class="admin-dash__section" aria-labelledby="dash-referrers" data-testid="dash-referrers">
+          <h2 id="dash-referrers" class="admin-dash__label">Top referrers, 30 days</h2>
+          <p class="admin-dash__label admin-dash__label--sub">Consented visits (visitor log)</p>
+          <ul v-if="overview.visitors.referrers.length" class="admin-dash__rows" data-testid="dash-referrers-consented">
+            <li v-for="r in overview.visitors.referrers" :key="`c-${r.name}`" class="admin-dash__row">
+              <span class="admin-dash__name">{{ r.name }}</span>
+              <span class="admin-dash__value">{{ r.sessions }}<span class="admin-dash__muted"> sessions</span></span>
+            </li>
+          </ul>
+          <p v-else class="admin-dash__muted">No consented visits with a referrer yet.</p>
+          <p class="admin-dash__label admin-dash__label--sub">Anonymous counter (all visitors, no cookies)</p>
+          <ul v-if="overview.visitors.anonymousReferrers.length" class="admin-dash__rows" data-testid="dash-referrers-anonymous">
+            <li v-for="r in overview.visitors.anonymousReferrers" :key="`a-${r.name}`" class="admin-dash__row">
+              <span class="admin-dash__name">{{ r.name }}</span>
+              <span class="admin-dash__value">{{ r.views }}<span class="admin-dash__muted"> views</span></span>
+            </li>
+          </ul>
+          <p v-else class="admin-dash__muted">No referrers counted yet.</p>
+        </section>
+
         <section class="admin-dash__section" aria-labelledby="dash-health" data-testid="dash-health">
           <h2 id="dash-health" class="admin-dash__label">Health, this site</h2>
           <ul class="admin-dash__rows">

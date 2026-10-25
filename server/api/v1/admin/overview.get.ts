@@ -10,6 +10,7 @@ import { statSync } from 'node:fs'
 import { sqlite } from '~/server/database'
 import { readBuildInfo } from '~/utils/buildInfo'
 import { getOverview } from '~/server/utils/adminOverview'
+import { visitorLogEnabled } from '../../../../utils/consent'
 
 function dbSize(): number | null {
   try {
@@ -28,6 +29,7 @@ export default defineEventHandler((event) => {
   return apiSuccess(getOverview(sqlite, {
     dbSizeBytes: dbSize(),
     uptimeSeconds: Math.round(process.uptime()),
+    visitorLog: visitorLogEnabled(process.env.NUXT_VISITOR_LOG),
     build: { shortSha: build.shortSha, buildTime: build.buildTime },
   }, fresh))
 })

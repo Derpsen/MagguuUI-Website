@@ -8,14 +8,16 @@
 import type Database from 'better-sqlite3'
 import { csvLine } from '../../utils/csvSafe'
 import { isValidSessionId } from '../../utils/consent'
+import {
+  VISITOR_EXPORT_MAX_ROWS, VISITOR_MAX_OFFSET, VISITOR_PAGE_SIZE, VISITOR_PAGE_SIZE_MAX,
+  type VisitorDetail, type VisitorListRow,
+} from '../../utils/visitorView'
 import { VISITOR_DELETE_DAYS } from './visitorLog'
 
 type Sqlite = Pick<Database.Database, 'prepare' | 'transaction'>
 
-export const VISITOR_PAGE_SIZE = 25
-export const VISITOR_PAGE_SIZE_MAX = 100
-export const VISITOR_MAX_OFFSET = 10_000
-export const VISITOR_EXPORT_MAX_ROWS = 50_000
+export { VISITOR_EXPORT_MAX_ROWS, VISITOR_MAX_OFFSET, VISITOR_PAGE_SIZE, VISITOR_PAGE_SIZE_MAX }
+export type { VisitorDetail, VisitorListRow }
 export const VISITOR_PERIODS = [1, 7, 30, 90, VISITOR_DELETE_DAYS] as const
 const DAY_S = 86400
 
@@ -24,7 +26,7 @@ export interface VisitorFilters {
   country: string
   /** Last N days; 0 = everything that is stored. */
   days: number
-  /** Exact visited path, e.g. /guide. */
+  /** Exact visited path, e.g. /guide (query parameter `path`). */
   page: string
   /** Referrer host contains this text. */
   referrer: string
@@ -43,7 +45,7 @@ export function parseVisitorFilters(q: Record<string, unknown>): VisitorFilters 
   const country = text(q.country, 7)
   const days = Number(q.days)
   const visitor = text(q.visitor, 10)
-  const page = text(q.page, 200)
+  const page = text(q.path, 200)
   return {
     country: /^[A-Za-z]{2}$/.test(country) ? country.toUpperCase() : country === 'unknown' ? 'unknown' : '',
     days: days === 0 ? 0 : (VISITOR_PERIODS as readonly number[]).includes(days) ? days : EMPTY_FILTERS.days,
@@ -71,14 +73,6 @@ function whereClause(f: VisitorFilters, now: number): { sql: string, args: unkno
   if (f.visitor === 'returning') parts.push(`(${earlier})`)
   if (f.visitor === 'new') parts.push(`NOT (${earlier})`)
   return { sql: parts.length ? `WHERE ${parts.join(' AND ')}` : '', args }
-}
-
-export interface VisitorListRow {
-  id: string, startedAt: number, lastSeen: number, durationS: number, ip: string | null, userAgent: string | null,
-  browser: string, os: string, device: string, country: string, city: string | null, referrerUrl: string | null, referrerHost: string | null,
-  utm: string, utmSource: string | null, utmMedium: string | null, utmCampaign: string | null, utmTerm: string | null, utmContent: string | null,
-  landingPath: string, exitPath: string | null, pages: number, returning: boolean,
-  screen: string | null, language: string | null, timezone: string | null,
 }
 
 const SELECT = `SELECT s.id AS id, s.started_at AS startedAt, s.last_seen AS lastSeen, s.ip AS ip, s.user_agent AS userAgent, s.browser AS browser,
@@ -116,11 +110,6 @@ export function queryVisitorSessions(sqlite: Sqlite, filters: VisitorFilters, pa
   const current = Math.min(Math.max(1, Math.floor(page) || 1), pages, Math.floor(VISITOR_MAX_OFFSET / size) + 1)
   const rows = sqlite.prepare(`${SELECT} ${w.sql} ORDER BY s.started_at DESC, s.id DESC LIMIT ? OFFSET ?`).all(...w.args, size, (current - 1) * size) as RawRow[]
   return { rows: rows.map(toRow), total, page: current, pageSize: size, pages }
-}
-
-export interface VisitorDetail {
-  hits: Array<{ path: string, at: number, dwellS: number | null, scrollMax: number }>
-  events: Array<{ path: string, kind: string, target: string, at: number }>
 }
 
 /** Path of one session: pages in order with dwell and scroll depth, plus its clicks. */

@@ -30,6 +30,21 @@ describe('buildOverview', () => {
     assert.deepEqual(attentionItems(o), [])
   })
 
+  it('reports consented visitors next to the anonymous referrers, labelled by source, empty by default', () => {
+    const empty = buildOverview(freshDb(), { now: NOW })
+    assert.deepEqual(empty.visitors, { enabled: false, sessions30d: 0, countries: [], referrers: [], anonymousReferrers: [] })
+    const sqlite = freshDb()
+    const ins = sqlite.prepare("INSERT INTO visitor_sessions (id, started_at, last_seen, country, referrer_host, landing_path) VALUES (?, ?, ?, ?, ?, '/')")
+    ins.run('a'.repeat(32), NOW - DAY, NOW - DAY, 'DE', 'news.example'); ins.run('b'.repeat(32), NOW - DAY, NOW - DAY, 'DE', null)
+    ins.run('c'.repeat(32), NOW - 2 * DAY, NOW - 2 * DAY, 'US', 'news.example'); ins.run('d'.repeat(32), NOW - 60 * DAY, NOW - 60 * DAY, 'JP', 'old.example')
+    const o = buildOverview(sqlite, { now: NOW, visitorLog: true })
+    assert.equal(o.visitors.enabled, true)
+    assert.equal(o.visitors.sessions30d, 3)
+    assert.deepEqual(o.visitors.countries, [{ code: 'DE', sessions: 2 }, { code: 'US', sessions: 1 }])
+    assert.deepEqual(o.visitors.referrers, [{ name: 'news.example', sessions: 2 }])
+    assert.ok(Array.isArray(o.visitors.anonymousReferrers))
+  })
+
   it('counts content, changelog, FAQ, strings and drafts', () => {
     const sqlite = freshDb()
     const cell = sqlite.prepare("INSERT INTO site_content (page, section, key, locale, value, type) VALUES (?, ?, ?, 'en', 'v', 'text')")

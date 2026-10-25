@@ -162,6 +162,7 @@ const adminSections: AdminNavSection[] = [
           { to: '/admin/system/stats?tab=visitors', label: 'Visitors', icon: 'i-heroicons-eye', description: 'Page views and visitor breakdown.' },
           { to: '/admin/system/stats?tab=copies', label: 'Copies', icon: 'i-heroicons-clipboard-document', description: 'Copy events and top strings.' },
           { to: '/admin/system/stats?tab=api', label: 'API', icon: 'i-heroicons-server', description: 'API endpoint usage.' },
+          { to: '/admin/system/visitors', label: 'Visitor log', icon: 'i-heroicons-eye', description: 'Consented visits: sessions, paths, filters, CSV export.' },
           { to: '/admin/system/vitals', label: 'Web Vitals', icon: 'i-heroicons-bolt', description: 'Real-user LCP, INP, CLS and TTFB (p75).' },
         ],
       },

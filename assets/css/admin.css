@@ -1789,3 +1789,40 @@ a.admin-dash__name:hover, .admin-dash__link:hover { text-decoration: underline; 
 .admin-dash__bad { color: #b91c1c; font-weight: 600; }
 .dark .admin-dash__bad { color: #fca5a5; }
 .admin-dash__type + .admin-dash__name { margin-left: 0.6rem; }
+
+/* Visitors view: plain filter form, plain tables, no cards. */
+.admin-vfilters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.75rem 1rem; }
+.admin-vfield { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.8125rem; min-width: 9rem; }
+.admin-vfield input,
+.admin-vfield select {
+  font: inherit; color: inherit; background: transparent; padding: 0.3rem 0.5rem; border-radius: 4px;
+  border: 1px solid var(--admin-border, rgba(128, 128, 128, 0.4)); min-height: 2rem;
+}
+.dark .admin-vfield select { color-scheme: dark; }
+.dark .admin-vfield select option { background: #111827; color: #f3f4f6; }
+.admin-vfilters__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.admin-vbtn {
+  font: inherit; font-size: 0.8125rem; color: inherit; background: transparent; cursor: pointer; text-decoration: none;
+  padding: 0.3rem 0.7rem; border-radius: 4px; border: 1px solid var(--admin-border, rgba(128, 128, 128, 0.4)); min-height: 2rem;
+  display: inline-flex; align-items: center;
+}
+.admin-vbtn:hover:not(:disabled) { border-color: var(--color-brand-600, #059669); }
+.admin-vbtn:disabled { opacity: 0.45; cursor: default; }
+.admin-vbtn--primary { border-color: var(--color-brand-700, #047857); font-weight: 600; }
+.admin-vbtn--link { border: 0; padding: 0.2rem 0.1rem; min-height: 0; color: var(--color-brand-700); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+.dark .admin-vbtn--link { color: var(--color-brand-300); }
+.admin-vbtn:focus-visible, .admin-vfield input:focus-visible, .admin-vfield select:focus-visible { outline: 2px solid var(--color-brand-600, #059669); outline-offset: 2px; }
+.admin-vtable-wrap { overflow-x: auto; }
+.admin-vtable { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+.admin-vtable caption { text-align: left; }
+.admin-vtable th, .admin-vtable td { text-align: left; vertical-align: top; padding: 0.4rem 0.75rem 0.4rem 0; border-top: 1px solid var(--admin-border, rgba(128, 128, 128, 0.2)); }
+.admin-vtable thead th { font-weight: 600; white-space: nowrap; }
+.admin-vtable__num { text-align: right !important; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.admin-vtable__wrap { overflow-wrap: anywhere; }
+.admin-vtable__detail > td { padding: 0.5rem 0 1rem; }
+.admin-vtable--inner { margin-top: 0.75rem; max-width: 52rem; }
+.admin-vpager { display: flex; align-items: center; gap: 1rem; margin-top: 0.75rem; }
+.admin-vempty { padding: 0.5rem 0; max-width: 46rem; }
+.admin-vempty p + p { margin-top: 0.4rem; }
+/* Visitor log: muted text stays at full opacity so it keeps AA contrast on the light theme. */
+[data-testid='visitors-page'] .admin-dash__muted { opacity: 1; }

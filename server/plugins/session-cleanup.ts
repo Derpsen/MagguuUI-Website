@@ -11,8 +11,7 @@ import { cleanupExpiredChallenges } from '~/server/utils/webauthn'
 import { getDataRetentionDays } from '~/server/utils/settings'
 import { sqlite } from '~/server/database'
 import { cleanupRateLimits } from '~/server/utils/rateLimit'
-import { runAnalyticsMaintenance } from '~/server/utils/analytics'
-import { pruneVisitorRecords } from '~/server/utils/visitorLog'
+import { runRetentionCleanup } from '~/server/utils/retentionCleanup'
 
 function runCleanup() {
   const retentionDays = getDataRetentionDays()
@@ -23,22 +22,8 @@ function runCleanup() {
   cleanupExpiredChallenges()
   cleanupRateLimits()
 
-  // Clean up old page views & copy events based on data retention setting
-  try {
-    // Anonymous counting: roll up finished days, scrub legacy identifiers, prune detail rows
-    // (RAW_DETAIL_DAYS) and old aggregates. Independent of the retention setting.
-    runAnalyticsMaintenance(sqlite)
-    // Consent-only visitor log: everything is kept in full for 13 months, then deleted (runs while the flag is off, too).
-    pruneVisitorRecords(sqlite)
-    sqlite.prepare('DELETE FROM web_vitals WHERE created_at < ?').run(cutoff)
-    // Keep the newest 50 revisions per content cell; older ones go.
-    sqlite.prepare(`DELETE FROM content_revisions WHERE id IN (
-      SELECT id FROM (
-        SELECT id, ROW_NUMBER() OVER (PARTITION BY page, section, key, locale ORDER BY id DESC) AS rn
-        FROM content_revisions
-      ) WHERE rn > 50
-    )`).run()
-  } catch { /* tables may not exist yet */ }
+  // Retention of analytics-style tables: each step is isolated and a failure is logged, not swallowed.
+  runRetentionCleanup(sqlite, cutoff)
 }
 
 export default defineNitroPlugin(() => {

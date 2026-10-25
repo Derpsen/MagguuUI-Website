@@ -249,7 +249,7 @@ for (const mode of ['dark', 'light'] as const) {
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze()
     expect(results.violations.map(v => `${v.id}: ${v.nodes.length}`)).toEqual([])
     // No cookie is set by visiting or reading the form.
-    expect(await visitor.cookies()).toEqual([])
+    expect((await visitor.cookies()).map(c => c.name)).toEqual(['mg_consent']) // the stored "necessary only" choice from playwright.config.ts, nothing new
     await visitor.close()
   })
 }

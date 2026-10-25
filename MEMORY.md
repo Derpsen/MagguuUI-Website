@@ -505,3 +505,9 @@
 
 - `tools/redact-log.test.sh` held literal AKIA/ASIA example ids; they are now assembled from two parts at runtime (test semantics unchanged). Repo tree has no other AKIA/ASIA-shaped literals (the regexes in `redact-log.sh`/`auditRedact.ts` are patterns, not keys). Rule in AGENTS.md. History still contains the old literal, hence the alert is closed as `used_in_tests`, not rewritten. `docker.yml` ignores `tools/**`, so this commit builds no image.
 
+
+## 2026-10-25 Consent + visitor log, part 1 (flag `NUXT_VISITOR_LOG`, default off)
+
+- Built per order: consent banner (three equal buttons, Settings toggle off by default, footer "Cookie settings" to revoke, GPC/DNT = refusal, none on /admin), `mg_consent` (6 months), consent-bound `mg_sid` (30 min) and `mg_vid` (13 months), server-side consent check per beacon, tables `visitor_sessions/hits/events`, 13-month full retention then delete (amended: NO 30-day anonymization), extended signals (utm, screen, language, time zone, entry/exit, dwell, scroll, clicks, country, city from CF headers via trusted proxies). Details in AGENTS.md "Consent and visitor log".
+- Privacy gap handled with the env flag (safer than a minimal s10): production collects nothing until `NUXT_VISITOR_LOG=true` is set, to be done after part 2 (Privacy text, admin tab, CSV, live walkthrough).
+- Gotchas: Playwright's `use.storageState` also feeds `browser.newContext()`, so the global "necessary only" cookie keeps other specs banner-free; `nuxt dev` has no trusted socket, so CF-header country/city is unit-only; killing a Playwright run leaves the dev server running, kill it before restarting.

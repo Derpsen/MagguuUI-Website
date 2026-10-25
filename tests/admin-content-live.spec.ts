@@ -750,7 +750,8 @@ test.describe('anonymous counting (/privacy, admin Routes view)', () => {
     await expect(p.locator('body')).toContainText('No cookies')
     await expect(p.locator('body')).toContainText('deleted after 14 days')
     await p.close()
-    expect((await anon.cookies()).length).toBe(0)
+    // Only the stored "necessary only" choice that playwright.config.ts gives every context; visiting sets nothing.
+    expect((await anon.cookies()).map(c => c.name)).toEqual(['mg_consent'])
     const stored = await anon.storageState()
     expect(JSON.stringify(stored.origins)).not.toMatch(/visitor|session|uuid/i)
   })

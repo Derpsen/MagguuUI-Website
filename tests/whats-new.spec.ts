@@ -16,7 +16,7 @@ test('first-time visitors see nothing; the newest version is just recorded', asy
   await page.goto('/guide')
   await expect.poll(() => lastSeen(page)).toBe(LATEST)
   await expect(banner(page)).toHaveCount(0)
-  expect(await page.context().cookies()).toEqual([])
+  expect((await page.context().cookies()).map(c => c.name)).toEqual(['mg_consent']) // only the stored choice from playwright.config.ts
 })
 
 test('a newer release shows the banner, linking to the changelog since the previous version', async ({ page }) => {

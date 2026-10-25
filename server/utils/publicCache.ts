@@ -53,6 +53,7 @@ export const CDN_CACHEABLE_PATHS = new Set([
   '/changelog',
   '/about',
   '/addons',
+  '/profiles',
   '/imprint',
   '/privacy',
   '/api/v1/catalog-summary',

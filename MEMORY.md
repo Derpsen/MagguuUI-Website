@@ -454,3 +454,9 @@
 
 - Rewrote `/admin` in place as plain sections (Marco dislikes cards/icon boxes) on top of ONE new endpoint `GET /api/v1/admin/overview` (10 s cache, `?fresh=1` bypass). Decisions: dropped the GitHub release/alerts cards and the Chart widgets (external/bot-adjacent data); latest changelog uses `version LIKE 'v%'` like the feeds (dev DB holds leftover entries like `auto`); last publish comes from audit rows named `... published`; recent changes never include snapshots.
 - Limits: traffic counters are the site's own `page_views`/`copy_events` (no bots filtered beyond what is collected); cache means numbers can be up to 10 s old.
+
+## 2026-10-25 Item 1: public profile preview page
+
+- New `/profiles` + `GET /api/v1/profile-previews` (addons catalogue + visible profiles, no new tables). Image slots read `public/previews/<addon-slug>.<ext>` at request time; missing file → clearly marked placeholder. Decisions: slug = addon catalogue slug; fixed 16:10 frame (no CLS, crops other ratios); webp > avif > png > jpg; class layouts get no slot; no swr on the page so a dev drop-in shows immediately (CDN header still caches the bare URL); header nav breakpoint md → lg.
+- Gotcha: Nitro serves `public/` from a manifest built at build time, so a file copied into `.output/public` afterwards 404s (the folder listing would show it, the static handler would not). Real flow: commit → build → deploy. Verified with a real prod build run from a different cwd.
+- Limits: profile-less addons and class layouts have no slot; needed images listed in `docs/preview-images.md` (12 at time of writing).

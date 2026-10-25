@@ -1,3 +1,5 @@
+import { existsSync, mkdirSync, rmSync, writeFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext, BrowserContext, Page } from '@playwright/test'
 
@@ -528,5 +530,66 @@ test.describe('admin command palette (Ctrl/Cmd+K)', () => {
     await expect(page.getByRole('option').first()).toContainText('Log out')
     await page.keyboard.press('Escape')
     await expect(page).toHaveURL(/\/admin\/system\/fields/)
+  })
+})
+
+test.describe('profile previews (/profiles)', () => {
+  const PREVIEW_DIR = join(process.cwd(), 'public', 'previews')
+  // 1×1 lossless WebP: a real, decodable image for the browser.
+  const TINY_WEBP = Buffer.from('UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==', 'base64')
+  let profileId = 0
+  const profileName = `Preview ${Date.now().toString(36)}`
+  let wroteFile = ''
+
+  type PreviewItem = { slug: string, profiles: string[], image: { src: string } | null }
+  const previews = async () => json<PreviewItem[]>(await api.get(`/api/v1/profile-previews?t=${Date.now()}`))
+
+  test.afterAll(async () => {
+    if (wroteFile) rmSync(wroteFile, { force: true })
+    if (profileId) await api.delete(`/api/v1/admin/profiles/${profileId}`)
+  })
+
+  test('a visible profile shows up with a placeholder, a dropped-in file replaces it, hiding removes it', async () => {
+    const created = await json<{ id: number }>(await api.post('/api/v1/admin/profiles', { data: { addon: 'EllesmereUI', profile: profileName, string: 'e2e-preview', isVisible: true } }))
+    profileId = created.id
+
+    // Placeholder first (only when no real screenshot has been committed yet).
+    const existingFile = existsSync(PREVIEW_DIR) && readdirSync(PREVIEW_DIR).some(f => /^ellesmereui\.(webp|avif|png|jpe?g)$/i.test(f))
+    let item = (await previews()).find(i => i.slug === 'ellesmereui')
+    expect(item?.profiles).toContain(profileName)
+    await page.goto(`/profiles?e2e=${Date.now()}`)
+    const card = page.getByTestId('profile-preview-ellesmereui')
+    await expect(card.getByTestId('profile-preview-names')).toContainText(profileName)
+
+    if (!existingFile) {
+      expect(item?.image).toBeNull()
+      await expect(card.getByTestId('profile-preview-placeholder')).toContainText('Preview image to be added')
+      await expect(card.locator('img')).toHaveCount(0)
+
+      // Drop a file in: the same page now renders it, with dimensions and alt text.
+      mkdirSync(PREVIEW_DIR, { recursive: true })
+      wroteFile = join(PREVIEW_DIR, 'ellesmereui.webp')
+      writeFileSync(wroteFile, TINY_WEBP)
+      item = (await previews()).find(i => i.slug === 'ellesmereui')
+      expect(item?.image?.src).toBe('/previews/ellesmereui.webp')
+      await page.goto(`/profiles?e2e=${Date.now()}`)
+      const img = page.getByTestId('profile-preview-ellesmereui').locator('img')
+      await expect(img).toHaveAttribute('src', '/previews/ellesmereui.webp')
+      await expect(img).toHaveAttribute('width', '1600')
+      await expect(img).toHaveAttribute('height', '1000')
+      await expect(img).toHaveAttribute('alt', /EllesmereUI/)
+      await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth)).toBe(1)
+
+      // Remove the file again: back to the placeholder.
+      rmSync(wroteFile, { force: true })
+      wroteFile = ''
+      expect((await previews()).find(i => i.slug === 'ellesmereui')?.image).toBeNull()
+    }
+
+    // Unpublished profiles never appear publicly.
+    await json(await api.patch(`/api/v1/admin/profiles/${profileId}`, { data: { isVisible: false } }))
+    const hidden = (await previews()).find(i => i.slug === 'ellesmereui')
+    expect(hidden?.profiles ?? []).not.toContain(profileName)
+    expect(JSON.stringify(await previews())).not.toContain('e2e-preview')
   })
 })

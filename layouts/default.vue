@@ -19,7 +19,7 @@
           <span class="text-sm font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">MagguuUI</span>
         </NuxtLink>
 
-        <nav class="hidden md:flex items-center gap-4 min-w-0 overflow-x-auto text-sm" aria-label="Primary">
+        <nav class="hidden lg:flex items-center gap-4 min-w-0 overflow-x-auto text-sm" aria-label="Primary">
           <NuxtLink
             v-for="link in navLinks" :key="link.to" :to="link.to"
             class="shrink-0 py-1 border-b"
@@ -65,7 +65,7 @@
           <NuxtLink :to="primaryAction.to" class="hidden sm:inline text-sm font-semibold" :class="isDark ? 'text-brand-300 hover:text-white' : 'text-brand-700 hover:text-brand-900'">
             {{ primaryAction.label }}
           </NuxtLink>
-          <button class="md:hidden inline-flex items-center justify-center w-8 h-8"
+          <button class="lg:hidden inline-flex items-center justify-center w-8 h-8"
             :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-700 hover:text-gray-950'"
             :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
             @click="mobileOpen = !mobileOpen">
@@ -95,7 +95,7 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-if="mobileOpen" class="fixed inset-0 z-[65] md:hidden" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+      <div v-if="mobileOpen" class="fixed inset-0 z-[65] lg:hidden" role="dialog" aria-modal="true" aria-label="Mobile navigation">
         <button
           class="absolute inset-0 bg-brand-950/55 backdrop-blur-sm"
           aria-label="Close mobile menu"
@@ -325,6 +325,7 @@ const navLinks = [
   { to: '/', label: 'Home', icon: 'i-heroicons-home' },
   { to: '/strings', label: 'Import Strings', icon: 'i-heroicons-bolt' },
   { to: '/addons', label: 'Addons', icon: 'i-heroicons-puzzle-piece' },
+  { to: '/profiles', label: 'Previews', icon: 'i-heroicons-photo' },
   { to: '/guide', label: 'Guides', icon: 'i-heroicons-book-open' },
   { to: '/changelog', label: 'Changelog', icon: 'i-heroicons-sparkles' },
   { to: '/faq', label: 'FAQ', icon: 'i-heroicons-question-mark-circle' },
@@ -343,6 +344,7 @@ const footerLinks = computed(() => [
   { label: 'Strings', to: '/strings' },
   { label: 'Guide', to: '/guide' },
   { label: 'Addons', to: '/addons' },
+  { label: 'Previews', to: '/profiles' },
   { label: 'Changelog', to: '/changelog' },
   { label: 'FAQ', to: '/faq' },
   { label: 'About', to: '/about' },

@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 
-const PUBLIC = ['/', '/guide', '/faq', '/strings', '/addons', '/changelog', '/about', '/imprint', '/privacy']
+const PUBLIC = ['/', '/guide', '/faq', '/strings', '/addons', '/profiles', '/changelog', '/about', '/imprint', '/privacy']
 
 test.describe('health endpoint', () => {
   test('/api/health reports status, build and start time without secrets', async ({ request }) => {

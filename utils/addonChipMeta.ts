@@ -10,7 +10,7 @@ export interface AddonChip {
   subtitle?: string
 }
 
-const PROFILE_KEY_BY_SLUG: Record<string, string> = {
+export const PROFILE_KEY_BY_SLUG: Record<string, string> = {
   ellesmereui: 'EllesmereUI',
   bigwigs: 'BigWigs',
   'northern-sky-raid-tools': 'NorthernSkyRaidTools',

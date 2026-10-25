@@ -12,11 +12,11 @@ test('sitemap.xml lists the public pages, never admin, api, feeds or query varia
   expect(res.headers()['content-type']).toContain('xml')
   const xml = await res.text()
   // Dev answers with the request origin; production uses site.url (checked live).
-  for (const path of ['/', '/strings', '/guide', '/addons', '/changelog', '/faq', '/about', '/imprint', '/privacy']) {
+  for (const path of ['/', '/strings', '/guide', '/addons', '/profiles', '/changelog', '/faq', '/about', '/imprint', '/privacy']) {
     expect(xml).toMatch(new RegExp(`<loc>https?://[^/<]+${path}</loc>`))
   }
   const locs = [...xml.matchAll(/<loc>([^<]*)<\/loc>/g)].map(m => m[1]!)
-  expect(locs).toHaveLength(9)
+  expect(locs).toHaveLength(10)
   expect(locs.join('\n')).not.toMatch(/\/admin|\/api\/|feed\.xml|atom\.xml|\?/)
   expect(xml.toLowerCase()).not.toContain('nuxtjs/sitemap')
   expect(xml).not.toContain('<xhtml:link')

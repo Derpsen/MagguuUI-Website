@@ -599,6 +599,33 @@ describe('POST consent', () => {
     assert.equal(count(sqlite, 'visitor_sessions'), 0)
   })
 
+  it('switched off by the flag: a withdrawal and a refusal signal still delete the records and the cookies, a "yes" stores nothing', async () => {
+    const sqlite = db()
+    const a = recordVisitorHit(sqlite, hit(), NOW)
+    const b = recordVisitorHit(sqlite, hit({ ip: '198.51.100.9' }), NOW)
+    assert.ok(a.recorded && b.recorded)
+    const port = await serve(e => handleConsentChange(e, consentDeps(sqlite, { enabled: () => false })))
+    const yes = await post(port, { stats: true }, { cookie: `${SESSION_COOKIE}=${a.sid}` })
+    assert.deepEqual(yes.setCookie, [])
+    assert.equal(count(sqlite, 'visitor_sessions'), 2)
+    const no = await post(port, { stats: false }, { cookie: `${cookieHeader(true)}; ${SESSION_COOKIE}=${a.sid}` })
+    assert.equal(no.status, 204)
+    assert.equal(consentCookieOf(no), '', 'no new choice is stored while the log is off')
+    assert.match(no.setCookie.find(c => c.startsWith(`${SESSION_COOKIE}=`)) ?? '', /Max-Age=0|Expires=Thu, 01 Jan 1970/)
+    assert.deepEqual(listVisitorSessions(sqlite).map(x => x.id), [b.sid])
+    const gpc = await post(port, { stats: true }, { cookie: `${cookieHeader(true)}; ${SESSION_COOKIE}=${b.sid}`, 'sec-gpc': '1' })
+    assert.match(gpc.setCookie.find(c => c.startsWith(`${CONSENT_COOKIE}=`)) ?? '', /Max-Age=0|Expires=Thu, 01 Jan 1970/)
+    assert.equal(count(sqlite, 'visitor_sessions'), 0)
+  })
+
+  it('switched off: visitor-hit removes a leftover consent-bound cookie and stores nothing', async () => {
+    const sqlite = db()
+    const port = await serve(e => handleVisitorHit(e, hitDeps(sqlite, { enabled: () => false })))
+    const r = await post(port, { path: '/' }, { cookie: `${cookieHeader(true)}; ${SESSION_COOKIE}=${'a'.repeat(32)}` })
+    assert.match(r.setCookie.find(c => c.startsWith(`${SESSION_COOKIE}=`)) ?? '', /Max-Age=0|Expires=Thu, 01 Jan 1970/)
+    assert.equal(count(sqlite, 'visitor_sessions'), 0)
+  })
+
   it('invalid bodies are 400 and set nothing', async () => {
     const sqlite = db()
     const port = await serve(e => handleConsentChange(e, consentDeps(sqlite)))

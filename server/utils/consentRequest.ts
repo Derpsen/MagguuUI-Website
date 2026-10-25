@@ -9,7 +9,8 @@
  *   POST /api/v1/visitor-event {type:'leave'|'click', ...}  dwell time, scroll depth, clicks of an existing visit.
  *
  * Do-Not-Track / Global Privacy Control are a refusal: no consent cookie is written, nothing is captured.
- * Both endpoints are off (204, no cookie) while NUXT_VISITOR_LOG is switched off (false/0); it is on by default.
+ * Both capture endpoints are off (204, no cookie) while NUXT_VISITOR_LOG is switched off (false/0); it is on by default.
+ * The consent endpoint still honours a withdrawal and a refusal signal then (deletes the records and the cookies).
  */
 import type { H3Event } from 'h3'
 import { createError, deleteCookie, getCookie, getRequestHost, setCookie, setResponseHeader, setResponseStatus } from 'h3'
@@ -75,11 +76,25 @@ export async function handleConsentChange(event: H3Event, deps: ConsentDeps) {
   setResponseStatus(event, 204)
   setResponseHeader(event, 'Cache-Control', 'no-store')
   assertSameOriginIfPresent(event)
-  if (!deps.enabled()) return null
+  const enabled = deps.enabled()
   if (!deps.allow(event)) throw createError({ statusCode: 429, message: 'Too many requests' })
 
   const body = await readBeaconBody(event, 256)
   if (!body || typeof body.stats !== 'boolean') throw createError({ statusCode: 400, message: 'Invalid consent' })
+
+  // Switched off (NUXT_VISITOR_LOG=false): nothing new is stored and no choice is recorded, but a withdrawal or a refusal
+  // signal still deletes what an earlier consent left behind and removes the cookies. Turning the log off must never
+  // make it impossible to take data back.
+  if (!enabled) {
+    if (optedOutByHeaders(event)) {
+      deps.deleteRecords({ sid: getCookie(event, SESSION_COOKIE), vid: getCookie(event, VISITOR_COOKIE) })
+      clearAllConsentCookies(event)
+    } else if (!body.stats) {
+      deps.deleteRecords({ sid: getCookie(event, SESSION_COOKIE), vid: getCookie(event, VISITOR_COOKIE) })
+      clearConsentBoundCookies(event)
+    }
+    return null
+  }
 
   // A refusal signal wins over any click, also over an earlier "yes": the records and all three cookies go, no new choice is stored.
   if (optedOutByHeaders(event)) {
@@ -122,7 +137,10 @@ export async function handleVisitorHit(event: H3Event, deps: VisitorHitDeps) {
     }
     return null
   }
-  if (!deps.enabled()) return null
+  if (!deps.enabled()) {
+    clearConsentBoundCookies(event) // log switched off: no consent-bound cookie stays behind
+    return null
+  }
   assertSameOriginIfPresent(event)
 
   const sid = getCookie(event, SESSION_COOKIE)

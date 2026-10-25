@@ -20,3 +20,13 @@ test.describe('content draft endpoints require auth', () => {
     expect((await request.post('/api/v1/admin/content/bulk', { data: { items: body.items } })).status()).toBe(401)
   })
 })
+
+/** The audit log and its undo are admin-only too. */
+test.describe('audit endpoints require auth', () => {
+  test('GET audit → 401', async ({ request }) => {
+    expect((await request.get('/api/v1/admin/audit')).status()).toBe(401)
+  })
+  test('POST audit undo → 401', async ({ request }) => {
+    expect((await request.post('/api/v1/admin/audit/1/undo')).status()).toBe(401)
+  })
+})

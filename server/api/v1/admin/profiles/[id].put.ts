@@ -5,13 +5,14 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
+import { recordAuditSafe, rowSnapshot } from '~/server/utils/auditLog'
 import { profiles } from '~/server/database/schema'
 import { validateBody, profileUpdateSchema } from '~/server/utils/validation'
 import { parseRouteId } from '~/server/utils/adminCrud'
 
 export default defineEventHandler(async (event) => {
-  requireAdminAccess(event)
+  const auth = requireAdminAccess(event)
   const id = parseRouteId(event)
 
   const existing = db.select().from(profiles).where(eq(profiles.id, id)).get()
@@ -37,7 +38,8 @@ export default defineEventHandler(async (event) => {
     .returning()
     .get()
 
-  logActivity({ action: 'updated', entityType: 'profile', entityId: id, entityName: `${result.addon} — ${result.profile}`, autoChangelog: true })
+  recordAuditSafe(sqlite, { action: 'updated', entityType: 'profile', entityId: id, entityName: `${result.addon} — ${result.profile}`, before: rowSnapshot(existing), after: rowSnapshot(result), userId: auth.userId })
+  logActivity({ action: 'updated', entityType: 'profile', entityId: id, entityName: `${result.addon} — ${result.profile}`, autoChangelog: true, userId: auth.userId })
   triggerGitHubSync(`profile-updated: ${result.addon} — ${result.profile}`).catch(() => {})
   return apiSuccess(result)
 })

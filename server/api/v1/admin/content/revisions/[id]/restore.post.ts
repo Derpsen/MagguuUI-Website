@@ -10,6 +10,7 @@ import { db, sqlite } from '~/server/database'
 import { contentRevisions, siteContent } from '~/server/database/schema'
 import { parseRouteId } from '~/server/utils/adminCrud'
 import { isHtmlCopyKey } from '~/utils/pageCopyDefaults'
+import { recordContentAudit } from '~/server/utils/auditLog'
 
 export default defineEventHandler((event) => {
   const auth = requireAdminAccess(event)
@@ -17,6 +18,7 @@ export default defineEventHandler((event) => {
   const rev = db.select().from(contentRevisions).where(eq(contentRevisions.id, id)).get()
   if (!rev) throw createError({ statusCode: 404, message: 'Revision not found' })
 
+  let previousValue: string | null = null
   sqlite.transaction(() => {
     const where = and(
       eq(siteContent.page, rev.page),
@@ -25,6 +27,7 @@ export default defineEventHandler((event) => {
       eq(siteContent.locale, rev.locale),
     )
     const existing = db.select().from(siteContent).where(where).get()
+    previousValue = existing?.value ?? null
     db.insert(contentRevisions).values({
       page: rev.page, section: rev.section, key: rev.key, locale: rev.locale,
       value: existing?.value ?? null, userId: auth.userId,
@@ -41,6 +44,9 @@ export default defineEventHandler((event) => {
     }
   })()
 
+  try {
+    recordContentAudit(sqlite, previousValue === rev.value ? [] : [{ page: rev.page, section: rev.section, key: rev.key, locale: rev.locale, before: previousValue, after: rev.value }], `${rev.page} restore`, auth.userId)
+  } catch (e) { console.error('[Audit] content restore', e) }
   logActivity({
     action: 'updated',
     entityType: 'content',

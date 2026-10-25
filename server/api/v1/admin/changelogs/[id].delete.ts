@@ -3,7 +3,8 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
+import { changelogSnapshot, recordAuditSafe } from '~/server/utils/auditLog'
 import { changelogs } from '~/server/database/schema'
 
 export default defineEventHandler(async (event) => {
@@ -16,6 +17,7 @@ export default defineEventHandler(async (event) => {
 
   db.delete(changelogs).where(eq(changelogs.id, id)).run()
 
+  recordAuditSafe(sqlite, { action: 'deleted', entityType: 'changelog', entityId: id, entityName: existing.version, before: changelogSnapshot(existing), after: null, userId: auth.userId })
   logActivity({
     action: 'deleted',
     entityType: 'changelog',

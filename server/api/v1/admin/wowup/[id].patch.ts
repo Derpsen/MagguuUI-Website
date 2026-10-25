@@ -3,13 +3,14 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
+import { recordAuditSafe, rowSnapshot } from '~/server/utils/auditLog'
 import { wowupStrings } from '~/server/database/schema'
 import { parseRouteId } from '~/server/utils/adminCrud'
 import { validateBody, visibilityToggleSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  requireAdminAccess(event)
+  const auth = requireAdminAccess(event)
   const id = parseRouteId(event)
 
   const existing = db.select().from(wowupStrings).where(eq(wowupStrings.id, id)).get()
@@ -26,7 +27,8 @@ export default defineEventHandler(async (event) => {
     .where(eq(wowupStrings.id, id))
     .returning().get()
 
-  logActivity({ action: 'updated', entityType: 'wowup', entityId: id, entityName: existing.name, details: 'visibility toggled' })
+  recordAuditSafe(sqlite, { action: 'updated', entityType: 'wowup', entityId: id, entityName: existing.name, before: rowSnapshot(existing), after: rowSnapshot(result), userId: auth.userId })
+  logActivity({ action: 'updated', entityType: 'wowup', entityId: id, entityName: existing.name, details: 'visibility toggled', userId: auth.userId })
   triggerGitHubSync(`wowup-toggled: ${existing.name}`).catch(() => {})
   return apiSuccess(result)
 })

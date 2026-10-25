@@ -7,12 +7,16 @@
  */
 import { sqlite } from '~/server/database'
 import { publishDrafts } from '~/server/utils/contentDrafts'
+import type { ContentChange } from '~/server/utils/contentDrafts'
+import { recordContentAudit } from '~/server/utils/auditLog'
 import { validateBody, contentDraftPagesSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const auth = requireAdminAccess(event)
   const data = validateBody(contentDraftPagesSchema, await readBody(event))
-  const published = publishDrafts(sqlite, data.pages, auth.userId)
+  const changes: ContentChange[] = []
+  const published = publishDrafts(sqlite, data.pages, auth.userId, changes)
+  try { recordContentAudit(sqlite, changes, `${data.pages.join(', ')} published`, auth.userId) } catch (e) { console.error('[Audit] content publish', e) }
   if (published) {
     logActivity({
       action: 'updated',

@@ -1697,3 +1697,35 @@ html.dark .admin-shell .admin-activity-action--updated { color: #fcd34d; }
 @media (min-width: 1280px) {
   .admin-draft-preview { position: sticky; top: 1rem; align-self: start; }
 }
+
+/* ── Audit log (plain list, mono mini-labels, no cards) ───────────────── */
+.admin-audit__note { font-size: 0.8125rem; color: var(--admin-fg-muted, inherit); max-width: 52rem; }
+.admin-audit { list-style: none; margin: 0; padding: 0; }
+.admin-audit__item { border-top: 1px solid var(--admin-border, rgba(128, 128, 128, 0.2)); padding: 0.7rem 0; }
+.admin-audit__row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; }
+.admin-audit__action,
+.admin-audit__fieldname,
+.admin-audit__type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.admin-audit__action { width: 5.5rem; color: var(--color-brand-700); }
+.dark .admin-audit__action { color: var(--color-brand-300); }
+.admin-audit__action--deleted { color: #b91c1c; }
+.dark .admin-audit__action--deleted { color: #fca5a5; }
+.admin-audit__name { font-weight: 600; overflow-wrap: anywhere; }
+.admin-audit__id { font-weight: 400; font-size: 0.75rem; opacity: 0.6; margin-left: 0.25rem; }
+.admin-audit__meta { font-size: 0.75rem; color: var(--admin-fg-muted, inherit); opacity: 0.85; }
+.admin-audit__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; }
+.admin-audit__diff { margin: 0.6rem 0 0 0; padding-left: 0.85rem; border-left: 2px solid var(--admin-border, rgba(128, 128, 128, 0.3)); }
+.admin-audit__field + .admin-audit__field { margin-top: 0.75rem; }
+.admin-audit__fieldname { color: var(--color-brand-700); margin-bottom: 0.25rem; }
+.dark .admin-audit__fieldname { color: var(--color-brand-300); }
+.admin-audit__fieldname span { opacity: 0.6; margin-left: 0.5rem; letter-spacing: 0.08em; }
+.admin-audit__lines { margin: 0; font-size: 0.78rem; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 22rem; overflow: auto; }
+.admin-audit__line { display: block; padding: 0 0.35rem; }
+.admin-audit__line--add { background: rgba(22, 163, 74, 0.14); }
+.admin-audit__line--del { background: rgba(220, 38, 38, 0.13); text-decoration: line-through; text-decoration-color: rgba(220, 38, 38, 0.5); }
+.admin-audit__line--same { opacity: 0.65; }

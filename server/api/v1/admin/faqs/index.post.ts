@@ -2,12 +2,13 @@
  * POST /api/v1/admin/faqs
  */
 
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
+import { faqSnapshot, recordAuditSafe } from '~/server/utils/auditLog'
 import { faqs } from '~/server/database/schema'
 import { validateBody, faqCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  requireAdminAccess(event)
+  const auth = requireAdminAccess(event)
   const body = await readBody(event)
   const data = validateBody(faqCreateSchema, body)
 
@@ -19,6 +20,7 @@ export default defineEventHandler(async (event) => {
     isVisible: data.isVisible ?? true,
   }).returning().get()
 
+  recordAuditSafe(sqlite, { action: 'created', entityType: 'faq', entityId: result.id, entityName: data.question.substring(0, 60), before: null, after: faqSnapshot(result), userId: auth.userId })
   logActivity({
     action: 'created',
     entityType: 'faq',

@@ -4,12 +4,13 @@
  * Create a new addon profile.
  */
 
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
+import { recordAuditSafe, rowSnapshot } from '~/server/utils/auditLog'
 import { profiles } from '~/server/database/schema'
 import { validateBody, profileCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  requireAdminAccess(event)
+  const auth = requireAdminAccess(event)
   const body = await readBody(event)
   const data = validateBody(profileCreateSchema, body)
 
@@ -24,7 +25,8 @@ export default defineEventHandler(async (event) => {
   }).returning().get()
 
   setResponseStatus(event, 201)
-  logActivity({ action: 'created', entityType: 'profile', entityId: result.id, entityName: `${data.addon} — ${data.profile}`, autoChangelog: true })
+  recordAuditSafe(sqlite, { action: 'created', entityType: 'profile', entityId: result.id, entityName: `${data.addon} — ${data.profile}`, before: null, after: rowSnapshot(result), userId: auth.userId })
+  logActivity({ action: 'created', entityType: 'profile', entityId: result.id, entityName: `${data.addon} — ${data.profile}`, autoChangelog: true, userId: auth.userId })
   triggerGitHubSync(`profile-created: ${data.addon} — ${data.profile}`).catch(() => {})
   return apiSuccess(result)
 })

@@ -3,7 +3,8 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
+import { changelogSnapshot, recordAuditSafe } from '~/server/utils/auditLog'
 import { changelogs } from '~/server/database/schema'
 import { validateBody, changelogUpdateSchema } from '~/server/utils/validation'
 
@@ -35,6 +36,7 @@ export default defineEventHandler(async (event) => {
     .where(eq(changelogs.id, id))
     .returning().get()
 
+  recordAuditSafe(sqlite, { action: 'updated', entityType: 'changelog', entityId: id, entityName: result.version, before: changelogSnapshot(existing), after: changelogSnapshot(result), userId: auth.userId })
   logActivity({
     action: 'updated',
     entityType: 'changelog',

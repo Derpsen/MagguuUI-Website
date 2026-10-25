@@ -322,6 +322,71 @@ test('Pages draft: live preview shows it, the public site does not, Publish prom
   }
 })
 
+test('Audit log: diff, Undo restores, newer edits block Undo, secrets are never stored', async () => {
+  test.setTimeout(120_000)
+  const tag = stamp()
+  const secret = `E2Esecret${Date.now().toString(36)}`
+  type Entry = { id: number, action: string, entityType: string, undoable: boolean, before: Record<string, unknown> | null, after: Record<string, unknown> | null }
+  const audit = async (search: string) => (await json<{ items: Entry[] }>(await api.get(`/api/v1/admin/audit?search=${encodeURIComponent(search)}`))).items
+  let faqId = 0
+  try {
+    const created = await json<{ id: number }>(await api.post('/api/v1/admin/faqs', { data: { category: 'general', question: `Audit ${tag}`, answer: 'First answer' } }))
+    faqId = created.id
+    await json(await api.put(`/api/v1/admin/faqs/${faqId}`, { data: { answer: 'Second answer' } }))
+
+    let entries = await audit(tag)
+    expect(entries.map(e => e.action)).toEqual(['updated', 'created'])
+    const updated = entries[0]!
+
+    // Readable diff in the admin page.
+    await page.goto('/admin/system/audit')
+    await page.getByTestId('audit-search').fill(tag)
+    await expect(page.getByTestId(`audit-entry-${updated.id}`)).toBeVisible()
+    await page.getByTestId(`audit-toggle-${updated.id}`).click()
+    const diff = page.getByTestId(`audit-diff-${updated.id}`)
+    await expect(diff.locator('[data-diff="del"]', { hasText: 'First answer' })).toBeVisible()
+    await expect(diff.locator('[data-diff="add"]', { hasText: 'Second answer' })).toBeVisible()
+
+    // Undo (with confirmation) restores the before-state as a new audited action.
+    await page.getByTestId(`audit-undo-${updated.id}`).click()
+    await page.getByTestId(`audit-undo-confirm-${updated.id}`).click()
+    await expect(page.getByText('Restored', { exact: true }).first()).toBeVisible()
+    const faqs = await json<Array<{ id: number, answer: string }>>(await api.get('/api/v1/admin/faqs'))
+    expect(faqs.find(f => f.id === faqId)?.answer).toBe('First answer')
+    entries = await audit(tag)
+    expect(entries[0]!.entityType).toBe('faq')
+    expect(entries.find(e => e.id === updated.id)!.undoable).toBe(false)
+
+    // A newer edit blocks the undo of an older one (409), and nothing changes.
+    await json(await api.put(`/api/v1/admin/faqs/${faqId}`, { data: { answer: 'Third answer' } }))
+    await json(await api.put(`/api/v1/admin/faqs/${faqId}`, { data: { answer: 'Fourth answer' } }))
+    const [fourth, third] = (await audit(tag)).filter(e => e.action === 'updated' && e.undoable)
+    const blocked = await api.post(`/api/v1/admin/audit/${third!.id}/undo`)
+    expect(blocked.status()).toBe(409)
+    expect(fourth!.id).toBeGreaterThan(third!.id)
+    const still = await json<Array<{ id: number, answer: string }>>(await api.get('/api/v1/admin/faqs'))
+    expect(still.find(f => f.id === faqId)?.answer).toBe('Fourth answer')
+
+    // Content publish is audited and undoable.
+    const value = `${tag} content`
+    await bulk([{ page: 'about', section: 'intro', key: 'title', value }])
+    const contentEntry = (await audit(value))[0]!
+    expect(contentEntry.entityType).toBe('content')
+    await json(await api.post(`/api/v1/admin/audit/${contentEntry.id}/undo`))
+    expect(await publicContent('about')).not.toContain(value)
+
+    // Secrets never reach the log: a webhook URL written through Settings is redacted.
+    await json(await api.put('/api/v1/admin/settings', { data: { e2e_audit_webhook_url: `https://discord.com/api/webhooks/1/${secret}` } }))
+    const raw = await (await api.get('/api/v1/admin/audit?type=setting&limit=100')).text()
+    expect(raw).not.toContain(secret)
+    expect(raw).toContain('[redacted]')
+  } finally {
+    await api.put('/api/v1/admin/settings', { data: { e2e_audit_webhook_url: '' } })
+    await bulk([{ page: 'about', section: 'intro', key: 'title', value: '' }])
+    if (faqId) await api.delete(`/api/v1/admin/faqs/${faqId}`)
+  }
+})
+
 test('admin Web Vitals view lists beaconed p75 per page', async () => {
   const beacon = JSON.stringify({ path: '/faq', metrics: [{ name: 'LCP', value: 1234 }, { name: 'CLS', value: 0.02 }] })
   const res = await page.request.post('/api/v1/vitals', { data: beacon, headers: { 'content-type': 'text/plain' } })

@@ -444,3 +444,8 @@
 
 - New `content_drafts` table (bootstrap SQL, idempotent) + `/api/v1/admin/content/drafts` and `/publish`; Home, Guide and Pages editors now "Save draft" → Publish/Discard in `AdminDraftBar`. Decisions: separate table (public reads untouched), drafts global per page, only changed cells stored, real-component preview only on Pages (About/Imprint/Privacy extracted to `components/PageView/*`), changelog/FAQ keep their visibility toggles.
 - Gotcha: `stamp()` in Playwright can return the same value twice within one millisecond, so a "second edit" was a no-op and the Save bar never appeared (looked like a hang). Editors reload after Publish; wait for the fresh form.
+
+## 2026-10-25 Item 6: admin audit log with diff + undo
+
+- New `audit_changes` table (bootstrap SQL, idempotent), `/admin/system/audit`, `GET /api/v1/admin/audit` + `POST .../:id/undo`. Decisions: separate table instead of altering `activity_log`; central `auditRedact.ts` (key-name + value-shape + size caps, on write and read); undo only for content/changelog/FAQ with a strict conflict check (current must equal stored after-state); settings/profiles/WowUp/layouts audited only; retention 5000 rows / 90 days on every insert; audit writes are best effort.
+- Limits: FAQ reorder is unaudited so an older FAQ undo then conflicts (safe); snapshots with redacted/truncated fields are not undoable.

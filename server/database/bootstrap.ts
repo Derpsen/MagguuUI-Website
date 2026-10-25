@@ -265,6 +265,24 @@ export const DATABASE_BOOTSTRAP_SQL = `
   );
   CREATE UNIQUE INDEX IF NOT EXISTS idx_content_drafts_cell ON content_drafts(page, section, key, locale);
 
+  CREATE TABLE IF NOT EXISTS audit_changes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    action TEXT NOT NULL,
+    entity_type TEXT NOT NULL,
+    entity_id INTEGER,
+    entity_key TEXT,
+    entity_name TEXT NOT NULL,
+    before_json TEXT,
+    after_json TEXT,
+    user_id INTEGER,
+    actor_name TEXT,
+    undo_of INTEGER,
+    undone_by INTEGER,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+  CREATE INDEX IF NOT EXISTS idx_audit_changes_created_at ON audit_changes(created_at);
+  CREATE INDEX IF NOT EXISTS idx_audit_changes_entity ON audit_changes(entity_type, entity_id);
+
   CREATE TABLE IF NOT EXISTS addons (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     slug TEXT NOT NULL UNIQUE,

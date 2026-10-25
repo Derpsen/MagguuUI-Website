@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { db, sqlite } from '~/server/database'
 import { settings } from '~/server/database/schema'
 import { invalidateSettingsCache } from '~/server/utils/settings'
+import { recordAuditSafe } from '~/server/utils/auditLog'
 import { validateBody } from '~/server/utils/validation'
 
 // Any setting whose key ends in `_url` must be a http(s) URL. Prevents a
@@ -38,6 +39,17 @@ export default defineEventHandler(async (event) => {
   // Protected keys — managed by version-check/webhook, not editable via settings
   const protectedKeys = ['addon_version', 'github_latest_version', 'github_last_check']
 
+  // Audit: previous values of the keys being written (redacted by key name and value shape).
+  const auditBefore: Record<string, string | null> = {}
+  const auditAfter: Record<string, string | null> = {}
+  for (const [key, value] of Object.entries(data)) {
+    if (protectedKeys.includes(key)) continue
+    const prev = sqlite.prepare('SELECT value FROM settings WHERE key = ?').get(key) as { value: string } | undefined
+    if ((prev?.value ?? null) === value) continue
+    auditBefore[key] = prev?.value ?? null
+    auditAfter[key] = value
+  }
+
   // Single-statement upsert per key inside one transaction (one fsync, one query per key).
   sqlite.transaction(() => {
     for (const [key, value] of Object.entries(data)) {
@@ -54,6 +66,10 @@ export default defineEventHandler(async (event) => {
 
   // Clear settings cache so changes take effect immediately
   invalidateSettingsCache()
+
+  if (Object.keys(auditAfter).length > 0) {
+    recordAuditSafe(sqlite, { action: 'updated', entityType: 'setting', entityName: `${Object.keys(auditAfter).length} settings`, entityKey: Object.keys(auditAfter).join(', ').slice(0, 200), before: auditBefore, after: auditAfter, userId: auth.userId })
+  }
 
   const changedKeys = Object.keys(data).filter((k) => !protectedKeys.includes(k))
   if (changedKeys.length > 0) {

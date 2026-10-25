@@ -35,7 +35,17 @@ const placeholders = (n: number) => Array.from({ length: n }, () => '?').join(',
  * Upsert content cells like the legacy bulk save: an empty value deletes the
  * cell, and the previous value of every changed cell goes to content_revisions.
  */
-export function applyContentItems(sqlite: Sqlite, items: ContentItem[], userId?: number): void {
+export interface ContentChange {
+  page: string
+  section: string
+  key: string
+  locale: string
+  before: string | null
+  after: string | null
+}
+
+export function applyContentItems(sqlite: Sqlite, items: ContentItem[], userId?: number): ContentChange[] {
+  const changes: ContentChange[] = []
   const find = sqlite.prepare('SELECT id, value FROM site_content WHERE page = ? AND section = ? AND key = ? AND locale = ?')
   const revise = sqlite.prepare('INSERT INTO content_revisions (page, section, key, locale, value, user_id) VALUES (?, ?, ?, ?, ?, ?)')
   const remove = sqlite.prepare('DELETE FROM site_content WHERE id = ?')
@@ -48,7 +58,10 @@ export function applyContentItems(sqlite: Sqlite, items: ContentItem[], userId?:
       const existing = find.get(item.page, item.section, item.key, locale) as { id: number, value: string } | undefined
       const previous = existing?.value ?? null
       const next = item.value || null
-      if (previous !== next) revise.run(item.page, item.section, item.key, locale, previous, userId ?? null)
+      if (previous !== next) {
+        revise.run(item.page, item.section, item.key, locale, previous, userId ?? null)
+        changes.push({ page: item.page, section: item.section, key: item.key, locale, before: previous, after: next })
+      }
 
       if (!item.value) {
         if (existing) remove.run(existing.id)
@@ -58,6 +71,7 @@ export function applyContentItems(sqlite: Sqlite, items: ContentItem[], userId?:
       else insert.run(item.page, item.section, item.key, item.value, locale, item.type || 'text')
     }
   })()
+  return changes
 }
 
 export function listDrafts(sqlite: Sqlite, pages: string[]): DraftRow[] {
@@ -96,11 +110,12 @@ export function discardDrafts(sqlite: Sqlite, pages: string[]): number {
 }
 
 /** Promote the drafts of `pages` into site_content and drop them. Atomic. */
-export function publishDrafts(sqlite: Sqlite, pages: string[], userId?: number): number {
+export function publishDrafts(sqlite: Sqlite, pages: string[], userId?: number, changesOut?: ContentChange[]): number {
   const drafts = listDrafts(sqlite, pages)
   if (!drafts.length) return 0
   sqlite.transaction(() => {
-    applyContentItems(sqlite, drafts, userId)
+    const changes = applyContentItems(sqlite, drafts, userId)
+    if (changesOut) changesOut.push(...changes)
     discardDrafts(sqlite, pages)
   })()
   return drafts.length

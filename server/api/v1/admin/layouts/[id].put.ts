@@ -3,13 +3,14 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
+import { recordAuditSafe, rowSnapshot } from '~/server/utils/auditLog'
 import { characterLayouts } from '~/server/database/schema'
 import { validateBody, layoutUpdateSchema } from '~/server/utils/validation'
 import { parseRouteId } from '~/server/utils/adminCrud'
 
 export default defineEventHandler(async (event) => {
-  requireAdminAccess(event)
+  const auth = requireAdminAccess(event)
   const id = parseRouteId(event)
 
   const existing = db.select().from(characterLayouts).where(eq(characterLayouts.id, id)).get()
@@ -34,7 +35,8 @@ export default defineEventHandler(async (event) => {
     .where(eq(characterLayouts.id, id))
     .returning().get()
 
-  logActivity({ action: 'updated', entityType: 'layout', entityId: id, entityName: `${result.className || ''} ${result.spec || result.name}`.trim(), autoChangelog: true })
+  recordAuditSafe(sqlite, { action: 'updated', entityType: 'layout', entityId: id, entityName: `${result.className || ''} ${result.spec || result.name}`.trim(), before: rowSnapshot(existing), after: rowSnapshot(result), userId: auth.userId })
+  logActivity({ action: 'updated', entityType: 'layout', entityId: id, entityName: `${result.className || ''} ${result.spec || result.name}`.trim(), autoChangelog: true, userId: auth.userId })
   triggerGitHubSync(`layout-updated: ${result.className || ''} ${result.spec || result.name}`.trim()).catch(() => {})
   return apiSuccess(result)
 })

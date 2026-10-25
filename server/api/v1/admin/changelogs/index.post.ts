@@ -2,7 +2,8 @@
  * POST /api/v1/admin/changelogs
  */
 
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
+import { changelogSnapshot, recordAuditSafe } from '~/server/utils/auditLog'
 import { changelogs } from '~/server/database/schema'
 import { validateBody, changelogCreateSchema } from '~/server/utils/validation'
 
@@ -19,6 +20,7 @@ export default defineEventHandler(async (event) => {
     publishedAt: data.isPublished ? new Date() : null,
   }).returning().get()
 
+  recordAuditSafe(sqlite, { action: 'created', entityType: 'changelog', entityId: result.id, entityName: result.version, before: null, after: changelogSnapshot(result), userId: auth.userId })
   logActivity({
     action: 'created',
     entityType: 'changelog',

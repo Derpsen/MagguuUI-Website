@@ -146,8 +146,9 @@ Routine „Magguu Audit Allowlist Review“ ~2. Nov; re-check before review-by.
 After Unraid app-image pull / when Buddy asks ("Unraid & Server" owns container pull):
 
 1. Login `/admin/login`
-2. These five routes must be **200** (from #102):
+2. These six routes must be **200** (from #102):
    - `/admin/system/activity`
+   - `/admin/system/audit`
    - `/admin/strings/profiles`
    - `/admin/strings/layouts`
    - `/admin/data/addons`
@@ -361,3 +362,13 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 - Client: `useContentDraft(pages)` + `AdminDraftBar` (mono mini-label "Unpublished changes", Publish, Discard draft with a two-step confirm). Editors send only cells that differ from the published values (`utils/contentDrafts.ts`), so the draft count is the number of really changed fields. The editor button is "Save draft" (test ids `*-save` unchanged); Publish also saves unsaved edits first.
 - Live preview: only the Pages editor renders the real public markup (`components/PageView/{About,Imprint,Privacy}.vue`, also used by `pages/about|imprint|privacy.vue`; HTML goes through `SafeHtml`). The Home/Guide previews remain the older approximations. Changelog (`isPublished`/Unreleased) and FAQ (`isVisible`) keep their own per-entry toggles, no content drafts.
 - Drafts are global per page (shared by admins). Tests: `tests/unit/contentDrafts.test.ts`, `tests/content-drafts-public.spec.ts` (unauth 401), and the draft → preview → publish → public flow in `tests/admin-content-live.spec.ts` (gotcha: the editor reloads after Publish/Discard, wait for the form before typing).
+
+## Admin audit log with diff + undo (2026-10-25)
+
+- Table `audit_changes` (id, action, entity_type, entity_id, entity_key, entity_name, before_json, after_json, user_id, actor_name, undo_of, undone_by, created_at), created by `CREATE TABLE IF NOT EXISTS` in `server/database/bootstrap.ts` (additive, idempotent). It is separate from `activity_log` (that stays the plain event feed on `/admin/system/activity`) and from `content_revisions` (still the per-cell history).
+- Code: `server/utils/auditRedact.ts` (central redaction), `server/utils/auditLog.ts` (record, list, prune, undo; takes a `sqlite` handle, unit-tested in memory), `utils/auditDiff.ts` (line diff for the UI), `pages/admin/system/audit.vue`. API (both `requireAdminAccess`): `GET /api/v1/admin/audit` (filters type/action/actor/search/dateFrom/dateTo/page) and `POST /api/v1/admin/audit/:id/undo`.
+- Audited: content cells (bulk save, publish, revision restore), changelog, FAQ, settings (key level), profiles, WowUp strings, layouts. Not audited on purpose: users, API keys, custom fields, addons, FAQ reorder, bulk deletes. A new audited write path should call `recordAuditSafe` (best effort, never fails the admin action).
+- Redaction: key names (password, hash, token, secret, api key, passkey/webauthn, session, cookie, webhook, ...) become `[redacted]`, string values are scrubbed by shape (webhook URLs, Bearer/JWT, private keys, bcrypt/argon2, GitHub/Slack/AWS tokens, URL credentials, long hex), oversize snapshots are truncated. Applied on write and again on read. Entries whose before-state contains a marker/truncation are not undoable. Content cells use neutral key names (`redactKeys=false`) so copy such as "cookies" is not mangled, values are still scrubbed. Never put raw rows or request bodies into an audit snapshot without going through this helper.
+- Undo is only for content, changelog and FAQ. It runs in one transaction, refuses if the current state differs from the stored after-state (409 `conflict`), refuses repeat undo and undo of an undo (422), re-inserts deleted changelog/FAQ rows under their old id, and writes a new audit row (`undo_of`) while the original gets `undone_by`. The page asks for a second confirm ("Restore before-state").
+- Retention: newest 5000 rows and 90 days (`AUDIT_MAX_ROWS`, `AUDIT_MAX_AGE_DAYS`), pruned on every insert.
+- Tests: `tests/unit/auditLog.test.ts`, unauth 401 in `tests/content-drafts-public.spec.ts`, full flow (diff, undo, conflict, secret never stored) in `tests/admin-content-live.spec.ts`.

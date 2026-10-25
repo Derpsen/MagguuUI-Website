@@ -10,6 +10,7 @@
 
 import { sqlite } from '~/server/database'
 import { applyContentItems } from '~/server/utils/contentDrafts'
+import { recordContentAudit } from '~/server/utils/auditLog'
 import { validateBody, contentBulkSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
@@ -18,9 +19,10 @@ export default defineEventHandler(async (event) => {
   const data = validateBody(contentBulkSchema, body)
 
   // One transaction for all upserts (single fsync); revisions are written per changed cell.
-  applyContentItems(sqlite, data.items, auth.userId)
+  const changes = applyContentItems(sqlite, data.items, auth.userId)
 
   const pages = Array.from(new Set(data.items.map((i) => i.page)))
+  try { recordContentAudit(sqlite, changes, `${pages.join(', ') || 'bulk'} saved`, auth.userId) } catch (e) { console.error('[Audit] content bulk', e) }
   logActivity({
     action: 'updated',
     entityType: 'content',

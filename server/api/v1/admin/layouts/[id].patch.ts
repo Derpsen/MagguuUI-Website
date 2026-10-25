@@ -4,13 +4,14 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
+import { recordAuditSafe, rowSnapshot } from '~/server/utils/auditLog'
 import { characterLayouts } from '~/server/database/schema'
 import { parseRouteId } from '~/server/utils/adminCrud'
 import { validateBody, entityToggleSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  requireAdminAccess(event)
+  const auth = requireAdminAccess(event)
   const id = parseRouteId(event)
 
   const existing = db.select().from(characterLayouts).where(eq(characterLayouts.id, id)).get()
@@ -31,7 +32,8 @@ export default defineEventHandler(async (event) => {
     .returning()
     .get()
 
-  logActivity({ action: 'updated', entityType: 'layout', entityId: id, entityName: `${existing.className || ''} ${existing.spec || existing.name}`.trim(), details: 'visibility toggled' })
+  recordAuditSafe(sqlite, { action: 'updated', entityType: 'layout', entityId: id, entityName: `${existing.className || ''} ${existing.spec || existing.name}`.trim(), before: rowSnapshot(existing), after: rowSnapshot(result), userId: auth.userId })
+  logActivity({ action: 'updated', entityType: 'layout', entityId: id, entityName: `${existing.className || ''} ${existing.spec || existing.name}`.trim(), details: 'visibility toggled', userId: auth.userId })
   triggerGitHubSync(`layout-toggled: ${existing.className || ''} ${existing.spec || existing.name}`.trim()).catch(() => {})
   return apiSuccess(result)
 })

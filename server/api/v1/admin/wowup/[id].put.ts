@@ -3,14 +3,15 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
+import { recordAuditSafe, rowSnapshot } from '~/server/utils/auditLog'
 import { wowupStrings } from '~/server/database/schema'
 import { validateBody, wowupUpdateSchema } from '~/server/utils/validation'
 import { wowupPackContainsWim } from '~/utils/addonChipMeta'
 import { parseRouteId } from '~/server/utils/adminCrud'
 
 export default defineEventHandler(async (event) => {
-  requireAdminAccess(event)
+  const auth = requireAdminAccess(event)
   const id = parseRouteId(event)
 
   const existing = db.select().from(wowupStrings).where(eq(wowupStrings.id, id)).get()
@@ -35,7 +36,8 @@ export default defineEventHandler(async (event) => {
     .where(eq(wowupStrings.id, id))
     .returning().get()
 
-  logActivity({ action: 'updated', entityType: 'wowup', entityId: id, entityName: result.name, autoChangelog: true })
+  recordAuditSafe(sqlite, { action: 'updated', entityType: 'wowup', entityId: id, entityName: result.name, before: rowSnapshot(existing), after: rowSnapshot(result), userId: auth.userId })
+  logActivity({ action: 'updated', entityType: 'wowup', entityId: id, entityName: result.name, autoChangelog: true, userId: auth.userId })
   triggerGitHubSync(`wowup-updated: ${result.name}`).catch(() => {})
   return apiSuccess(result)
 })

@@ -5,13 +5,14 @@
  */
 
 import { eq } from 'drizzle-orm'
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
+import { recordAuditSafe, rowSnapshot } from '~/server/utils/auditLog'
 import { profiles } from '~/server/database/schema'
 import { parseRouteId } from '~/server/utils/adminCrud'
 import { validateBody, entityToggleSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  requireAdminAccess(event)
+  const auth = requireAdminAccess(event)
   const id = parseRouteId(event)
 
   const existing = db.select().from(profiles).where(eq(profiles.id, id)).get()
@@ -32,7 +33,8 @@ export default defineEventHandler(async (event) => {
     .returning()
     .get()
 
-  logActivity({ action: 'updated', entityType: 'profile', entityId: id, entityName: `${existing.addon} — ${existing.profile}`, details: 'visibility toggled' })
+  recordAuditSafe(sqlite, { action: 'updated', entityType: 'profile', entityId: id, entityName: `${existing.addon} — ${existing.profile}`, before: rowSnapshot(existing), after: rowSnapshot(result), userId: auth.userId })
+  logActivity({ action: 'updated', entityType: 'profile', entityId: id, entityName: `${existing.addon} — ${existing.profile}`, details: 'visibility toggled', userId: auth.userId })
   triggerGitHubSync(`profile-toggled: ${existing.addon} — ${existing.profile}`).catch(() => {})
   return apiSuccess(result)
 })

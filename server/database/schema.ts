@@ -363,6 +363,30 @@ export const contentRevisions = sqliteTable('content_revisions', {
   pageCreatedIdx: index('idx_content_revisions_page_created_at').on(table.page, table.createdAt),
 }))
 
+// ─── Audit changes ─────────────────────────────────
+// Redacted before/after snapshots of admin writes (see server/utils/auditLog.ts).
+// Retention: last 5000 rows / 90 days, pruned on every insert.
+export const auditChanges = sqliteTable('audit_changes', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  action: text('action').notNull(),
+  entityType: text('entity_type').notNull(),
+  entityId: integer('entity_id'),
+  entityKey: text('entity_key'),
+  entityName: text('entity_name').notNull(),
+  beforeJson: text('before_json'),
+  afterJson: text('after_json'),
+  userId: integer('user_id'),
+  actorName: text('actor_name'),
+  undoOf: integer('undo_of'),
+  undoneBy: integer('undone_by'),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+}, (table) => ({
+  createdIdx: index('idx_audit_changes_created_at').on(table.createdAt),
+  entityIdx: index('idx_audit_changes_entity').on(table.entityType, table.entityId),
+}))
+
 // ─── Content drafts ────────────────────────────────
 // Unpublished admin edits of site_content cells. Only cells that differ from
 // the published value are stored. `value` '' = "delete the cell on publish".

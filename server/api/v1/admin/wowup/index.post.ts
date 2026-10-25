@@ -2,13 +2,14 @@
  * POST /api/v1/admin/wowup
  */
 
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
+import { recordAuditSafe, rowSnapshot } from '~/server/utils/auditLog'
 import { wowupStrings } from '~/server/database/schema'
 import { validateBody, wowupCreateSchema } from '~/server/utils/validation'
 import { wowupPackContainsWim } from '~/utils/addonChipMeta'
 
 export default defineEventHandler(async (event) => {
-  requireAdminAccess(event)
+  const auth = requireAdminAccess(event)
   const body = await readBody(event)
   const data = validateBody(wowupCreateSchema, body)
   if (wowupPackContainsWim(data.string)) {
@@ -25,7 +26,8 @@ export default defineEventHandler(async (event) => {
   }).returning().get()
 
   setResponseStatus(event, 201)
-  logActivity({ action: 'created', entityType: 'wowup', entityId: result.id, entityName: data.name, autoChangelog: true })
+  recordAuditSafe(sqlite, { action: 'created', entityType: 'wowup', entityId: result.id, entityName: data.name, before: null, after: rowSnapshot(result), userId: auth.userId })
+  logActivity({ action: 'created', entityType: 'wowup', entityId: result.id, entityName: data.name, autoChangelog: true, userId: auth.userId })
   triggerGitHubSync(`wowup-created: ${data.name}`).catch(() => {})
   return apiSuccess(result)
 })

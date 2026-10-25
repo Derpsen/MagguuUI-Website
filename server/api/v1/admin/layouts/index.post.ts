@@ -2,12 +2,13 @@
  * POST /api/v1/admin/layouts
  */
 
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
+import { recordAuditSafe, rowSnapshot } from '~/server/utils/auditLog'
 import { characterLayouts } from '~/server/database/schema'
 import { validateBody, layoutCreateSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
-  requireAdminAccess(event)
+  const auth = requireAdminAccess(event)
   const body = await readBody(event)
   const data = validateBody(layoutCreateSchema, body)
 
@@ -24,7 +25,8 @@ export default defineEventHandler(async (event) => {
   }).returning().get()
 
   setResponseStatus(event, 201)
-  logActivity({ action: 'created', entityType: 'layout', entityId: result.id, entityName: `${data.className || ''} ${data.spec || data.name}`.trim(), autoChangelog: true })
+  recordAuditSafe(sqlite, { action: 'created', entityType: 'layout', entityId: result.id, entityName: `${data.className || ''} ${data.spec || data.name}`.trim(), before: null, after: rowSnapshot(result), userId: auth.userId })
+  logActivity({ action: 'created', entityType: 'layout', entityId: result.id, entityName: `${data.className || ''} ${data.spec || data.name}`.trim(), autoChangelog: true, userId: auth.userId })
   triggerGitHubSync(`layout-created: ${data.className || ''} ${data.spec || data.name}`.trim()).catch(() => {})
   return apiSuccess(result)
 })

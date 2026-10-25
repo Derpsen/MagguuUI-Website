@@ -202,6 +202,14 @@ const adminSections: AdminNavSection[] = [
         description: 'Audit trail of administrative activity.',
         hint: 'Audit changes without turning the log into a dashboard of its own.',
       },
+      {
+        to: '/admin/system/audit',
+        label: 'Audit log',
+        heading: 'Audit log',
+        icon: 'i-heroicons-document-magnifying-glass',
+        description: 'Before/after diffs of admin changes, with undo where it is safe.',
+        hint: 'Redacted snapshots of content, changelog, FAQ, settings and strings edits.',
+      },
     ],
   },
 ]

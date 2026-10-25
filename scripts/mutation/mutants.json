@@ -1,0 +1,446 @@
+[
+ {
+  "name": "consent: flag check removed",
+  "file": "server/utils/consentRequest.ts",
+  "find": "  if (!deps.enabled()) return null\n  if (!deps.allow(event))",
+  "repl": "  if (!deps.allow(event))"
+ },
+ {
+  "name": "hit: flag check removed",
+  "file": "server/utils/consentRequest.ts",
+  "find": "  if (!deps.enabled()) return null\n  assertSameOriginIfPresent(event)\n\n  const sid",
+  "repl": "  assertSameOriginIfPresent(event)\n\n  const sid"
+ },
+ {
+  "name": "consent: same-origin removed",
+  "file": "server/utils/consentRequest.ts",
+  "find": "  setResponseHeader(event, 'Cache-Control', 'no-store')\n  assertSameOriginIfPresent(event)\n  if (!deps.enabled()) return null\n  if (!deps.allow",
+  "repl": "  setResponseHeader(event, 'Cache-Control', 'no-store')\n  if (!deps.enabled()) return null\n  if (!deps.allow"
+ },
+ {
+  "name": "hit: same-origin removed",
+  "file": "server/utils/consentRequest.ts",
+  "find": "  if (!deps.enabled()) return null\n  assertSameOriginIfPresent(event)\n\n  const sid",
+  "repl": "  if (!deps.enabled()) return null\n\n  const sid"
+ },
+ {
+  "name": "hit: stats check weakened",
+  "file": "server/utils/consentRequest.ts",
+  "find": "if (!consent?.stats) {\n    clearConsentBoundCookies(event) // consent-bound",
+  "repl": "if (!consent) {\n    clearConsentBoundCookies(event) // consent-bound"
+ },
+ {
+  "name": "consent: GPC branch disabled",
+  "file": "server/utils/consentRequest.ts",
+  "find": "  if (optedOutByHeaders(event)) {\n    deps.deleteRecords",
+  "repl": "  if (false as boolean) {\n    deps.deleteRecords"
+ },
+ {
+  "name": "hit: GPC delete disabled",
+  "file": "server/utils/consentRequest.ts",
+  "find": "    if (optedOutByHeaders(event)) {\n      const ids",
+  "repl": "    if (false as boolean) {\n      const ids"
+ },
+ {
+  "name": "hit: GPC deletes without ids guard",
+  "file": "server/utils/consentRequest.ts",
+  "find": "if (ids.sid !== undefined || ids.vid !== undefined) deps.deleteRecords?.(ids)",
+  "repl": "deps.deleteRecords?.(ids)"
+ },
+ {
+  "name": "hit: body cap 2048 -> huge",
+  "file": "server/utils/consentRequest.ts",
+  "find": "readBeaconBody(event, 2048)\n  const path",
+  "repl": "readBeaconBody(event, 2048000)\n  const path"
+ },
+ {
+  "name": "consent: body cap 256 -> huge",
+  "file": "server/utils/consentRequest.ts",
+  "find": "readBeaconBody(event, 256)",
+  "repl": "readBeaconBody(event, 256000)"
+ },
+ {
+  "name": "hit: own host not dropped",
+  "file": "server/utils/consentRequest.ts",
+  "find": "ref && ref.host !== own && ref.host !== 'localhost' ? ref : null",
+  "repl": "ref ? ref : null"
+ },
+ {
+  "name": "consent: maxAge changed",
+  "file": "server/utils/consentRequest.ts",
+  "find": "maxAge: CONSENT_MAX_AGE_S })\n  return null",
+  "repl": "maxAge: 60 })\n  return null"
+ },
+ {
+  "name": "consent: 429 removed",
+  "file": "server/utils/consentRequest.ts",
+  "find": "  if (!deps.allow(event)) throw createError({ statusCode: 429, message: 'Too many requests' })\n",
+  "repl": ""
+ },
+ {
+  "name": "consent: withdraw keeps records",
+  "file": "server/utils/consentRequest.ts",
+  "find": "  if (!stats) {\n    deps.deleteRecords(",
+  "repl": "  if (false as boolean) {\n    deps.deleteRecords("
+ },
+ {
+  "name": "hit: new visitor cookie always",
+  "file": "server/utils/consentRequest.ts",
+  "find": "if (result.newVisitor) setVisitorCookie",
+  "repl": "if (true) setVisitorCookie"
+ },
+ {
+  "name": "gate: GPC/DNT ignored",
+  "file": "server/utils/beaconGateCore.ts",
+  "find": "  if (optedOutByHeaders(event)) return { ok: false }\n  const ua",
+  "repl": "  const ua"
+ },
+ {
+  "name": "gate: bots allowed",
+  "file": "server/utils/beaconGateCore.ts",
+  "find": "  if (isBotUserAgent(ua)) return { ok: false }\n",
+  "repl": ""
+ },
+ {
+  "name": "gate: admin session counted",
+  "file": "server/utils/beaconGateCore.ts",
+  "find": "  if (deps.hasLoginSession(event)) return { ok: false }\n",
+  "repl": ""
+ },
+ {
+  "name": "gate: rate limit ignored",
+  "file": "server/utils/beaconGateCore.ts",
+  "find": "  if (!deps.allow(name, deps.visitorKey(salt, ip), max)) return { ok: false }\n",
+  "repl": ""
+ },
+ {
+  "name": "gate: no-store dropped",
+  "file": "server/utils/beaconGateCore.ts",
+  "find": "  setResponseHeader(event, 'Cache-Control', 'no-store')\n  if (optedOut",
+  "repl": "  if (optedOut"
+ },
+ {
+  "name": "gate: array body accepted",
+  "file": "server/utils/beaconGateCore.ts",
+  "find": "parsed && typeof parsed === 'object' && !Array.isArray(parsed)",
+  "repl": "parsed && typeof parsed === 'object'"
+ },
+ {
+  "name": "isOptedOut: dnt accepts any",
+  "file": "utils/trackingRules.ts",
+  "find": "signals.dnt === '1' || signals.gpc === '1'",
+  "repl": "!!signals.dnt || signals.gpc === '1'"
+ },
+ {
+  "name": "isOptedOut: gpc ignored",
+  "file": "utils/trackingRules.ts",
+  "find": "signals.dnt === '1' || signals.gpc === '1'",
+  "repl": "signals.dnt === '1'"
+ },
+ {
+  "name": "bodyCap: declared > cap -> >=",
+  "file": "server/utils/bodyCap.ts",
+  "find": "declared > maxBytes",
+  "repl": "declared >= maxBytes"
+ },
+ {
+  "name": "bodyCap: size > cap -> >=",
+  "file": "server/utils/bodyCap.ts",
+  "find": "size > maxBytes",
+  "repl": "size >= maxBytes"
+ },
+ {
+  "name": "bodyCap: declared check removed",
+  "file": "server/utils/bodyCap.ts",
+  "find": "if (Number.isFinite(declared) && declared > maxBytes) return Promise.resolve({ ok: false, reason: 'too_large' })\n",
+  "repl": ""
+ },
+ {
+  "name": "bodyCap: streaming cap removed",
+  "file": "server/utils/bodyCap.ts",
+  "find": "if (size > maxBytes) return finish({ ok: false, reason: 'too_large' })\n",
+  "repl": ""
+ },
+ {
+  "name": "ip: untrusted peer believed",
+  "file": "server/utils/clientIp.ts",
+  "find": "if (!isTrustedProxy(socket, trustedProxies())) {\n    return socket",
+  "repl": "if (false as boolean) {\n    return socket"
+ },
+ {
+  "name": "ip: cf header ignored",
+  "file": "server/utils/clientIp.ts",
+  "find": "  if (cf) {\n    if (process.env.NODE_ENV",
+  "repl": "  if (false as boolean) {\n    if (process.env.NODE_ENV"
+ },
+ {
+  "name": "ip: x-real-ip ignored",
+  "file": "server/utils/clientIp.ts",
+  "find": "  if (real) return real.trim()\n",
+  "repl": ""
+ },
+ {
+  "name": "ip: xff first hop -> last",
+  "file": "server/utils/clientIp.ts",
+  "find": "(forwarded.split(',')[0] ?? forwarded).trim()",
+  "repl": "(forwarded.split(',').pop() ?? forwarded).trim()"
+ },
+ {
+  "name": "ip: env cache never refreshed",
+  "file": "server/utils/clientIp.ts",
+  "find": "if (!trustedCache || trustedCache.raw !== raw) {",
+  "repl": "if (!trustedCache) {"
+ },
+ {
+  "name": "ip: country trusted-check removed",
+  "file": "server/utils/clientIp.ts",
+  "find": "  if (!isTrustedSocket(event)) return 'unknown'\n  const raw = getHeader(event, 'cf-ipcountry')",
+  "repl": "  const raw = getHeader(event, 'cf-ipcountry')"
+ },
+ {
+  "name": "ip: city trusted-check removed",
+  "file": "server/utils/clientIp.ts",
+  "find": "  if (!isTrustedSocket(event)) return null\n  let raw = getHeader(event, 'cf-ipcity')",
+  "repl": "  let raw = getHeader(event, 'cf-ipcity')"
+ },
+ {
+  "name": "ip: country XX accepted",
+  "file": "server/utils/clientIp.ts",
+  "find": "&& raw !== 'XX' && raw !== 'T1'",
+  "repl": "&& raw !== 'T1'"
+ },
+ {
+  "name": "ip: country T1 accepted",
+  "file": "server/utils/clientIp.ts",
+  "find": "&& raw !== 'XX' && raw !== 'T1'",
+  "repl": "&& raw !== 'XX'"
+ },
+ {
+  "name": "ip: https from untrusted proto header",
+  "file": "server/utils/clientIp.ts",
+  "find": "  if (!isTrustedSocket(event)) return false\n  return (getHeader(event, 'x-forwarded-proto')",
+  "repl": "  return (getHeader(event, 'x-forwarded-proto')"
+ },
+ {
+  "name": "ip: /64 key -> 32 bits",
+  "file": "server/utils/clientIp.ts",
+  "find": "return groups.slice(0, 4).join(':') + '::/64'",
+  "repl": "return groups.slice(0, 2).join(':') + '::/64'"
+ },
+ {
+  "name": "ip: /48 key -> /64",
+  "file": "server/utils/clientIp.ts",
+  "find": "return groups.slice(0, 3).join(':') + '::/48'",
+  "repl": "return groups.slice(0, 4).join(':') + '::/48'"
+ },
+ {
+  "name": "proxy: none ignored",
+  "file": "server/utils/trustedProxy.ts",
+  "find": "    if (token.toLowerCase() === 'none') continue\n",
+  "repl": ""
+ },
+ {
+  "name": "proxy: family mismatch allowed",
+  "file": "server/utils/trustedProxy.ts",
+  "find": "if (c.v6 !== ip.v6) return false\n",
+  "repl": ""
+ },
+ {
+  "name": "proxy: prefix shift wrong",
+  "file": "server/utils/trustedProxy.ts",
+  "find": "const shift = width - BigInt(c.prefix)",
+  "repl": "const shift = width - BigInt(c.prefix) - 1n"
+ },
+ {
+  "name": "proxy: empty socket trusted",
+  "file": "server/utils/trustedProxy.ts",
+  "find": "if (!socketIp) return false\n",
+  "repl": "if (!socketIp) return true\n"
+ },
+ {
+  "name": "proxy: default not private",
+  "file": "server/utils/trustedProxy.ts",
+  "find": "const list = tokens.length ? tokens : ['private']",
+  "repl": "const list = tokens.length ? tokens : []"
+ },
+ {
+  "name": "preset: honeypot removed",
+  "file": "server/utils/presetSubmission.ts",
+  "find": "if (typeof trap === 'string' && trap.trim() !== '') {",
+  "repl": "if (false as boolean) {"
+ },
+ {
+  "name": "preset: honeypot trims nothing",
+  "file": "server/utils/presetSubmission.ts",
+  "find": "trap.trim() !== ''",
+  "repl": "trap !== ''"
+ },
+ {
+  "name": "preset: same-origin removed",
+  "file": "server/utils/presetSubmission.ts",
+  "find": "  setResponseHeader(event, 'Cache-Control', 'no-store')\n  assertSameOriginIfPresent(event)\n\n  const declared",
+  "repl": "  setResponseHeader(event, 'Cache-Control', 'no-store')\n\n  const declared"
+ },
+ {
+  "name": "origin: host compare removed",
+  "file": "server/utils/presetSubmission.ts",
+  "find": "if (host !== getRequestHost(event)) fail(403, 'Cross-origin request blocked')",
+  "repl": ""
+ },
+ {
+  "name": "origin: invalid origin accepted",
+  "file": "server/utils/presetSubmission.ts",
+  "find": "catch { fail(403, 'Invalid Origin header') }",
+  "repl": "catch { return }"
+ },
+ {
+  "name": "preset: declared cap removed",
+  "file": "server/utils/presetSubmission.ts",
+  "find": "  if (declared > BODY_MAX_BYTES) fail(413, 'The submission is too large.')\n",
+  "repl": ""
+ },
+ {
+  "name": "preset: token check skipped",
+  "file": "server/utils/presetSubmission.ts",
+  "find": "if (!token.ok) {\n    fail(400, token.problem",
+  "repl": "if (false as boolean) {\n    fail(400, token.problem"
+ },
+ {
+  "name": "preset: replay guard skipped",
+  "file": "server/utils/presetSubmission.ts",
+  "find": "if (!deps.replay.consume(token.nonce)) fail(",
+  "repl": "if (false as boolean) fail("
+ },
+ {
+  "name": "preset: attempts limit skipped",
+  "file": "server/utils/presetSubmission.ts",
+  "find": "if (!deps.attempts.hit(keys.client) || !deps.attemptsGroup.hit(keys.group)) {",
+  "repl": "if (false as boolean) {"
+ },
+ {
+  "name": "token: too_fast check weakened",
+  "file": "server/utils/communityPresets.ts",
+  "find": "if (age < minSeconds) return",
+  "repl": "if (age < 0) return"
+ },
+ {
+  "name": "token: expiry check removed",
+  "file": "server/utils/communityPresets.ts",
+  "find": "  if (age > maxSeconds) return { ok: false, problem: 'expired' }\n",
+  "repl": ""
+ },
+ {
+  "name": "token: signature not compared",
+  "file": "server/utils/communityPresets.ts",
+  "find": "if (!timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return",
+  "repl": "if (false as boolean) return"
+ },
+ {
+  "name": "token: length cap removed",
+  "file": "server/utils/communityPresets.ts",
+  "find": "|| token.length > 200",
+  "repl": ""
+ },
+ {
+  "name": "wiring: hit route drops flag",
+  "file": "server/api/v1/visitor-hit.post.ts",
+  "find": "visitorLogEnabled(process.env.NUXT_VISITOR_LOG) && isPageViewTrackingEnabled()",
+  "repl": "isPageViewTrackingEnabled()"
+ },
+ {
+  "name": "wiring: hit route flag OR switch",
+  "file": "server/api/v1/visitor-hit.post.ts",
+  "find": "visitorLogEnabled(process.env.NUXT_VISITOR_LOG) && isPageViewTrackingEnabled()",
+  "repl": "visitorLogEnabled(process.env.NUXT_VISITOR_LOG) || isPageViewTrackingEnabled()"
+ },
+ {
+  "name": "wiring: hit route gate limit",
+  "file": "server/api/v1/visitor-hit.post.ts",
+  "find": "beaconGate(e, 'visitor-hit', 120)",
+  "repl": "beaconGate(e, 'visitor-hit', 100000)"
+ },
+ {
+  "name": "wiring: event route drops flag",
+  "file": "server/api/v1/visitor-event.post.ts",
+  "find": "visitorLogEnabled(process.env.NUXT_VISITOR_LOG) && isPageViewTrackingEnabled()",
+  "repl": "isPageViewTrackingEnabled()"
+ },
+ {
+  "name": "wiring: event route gate limit",
+  "file": "server/api/v1/visitor-event.post.ts",
+  "find": "beaconGate(e, 'visitor-event', 240)",
+  "repl": "beaconGate(e, 'visitor-event', 100000)"
+ },
+ {
+  "name": "wiring: consent route drops flag",
+  "file": "server/api/v1/consent.post.ts",
+  "find": "enabled: () => visitorLogEnabled(process.env.NUXT_VISITOR_LOG)",
+  "repl": "enabled: () => true"
+ },
+ {
+  "name": "wiring: plugin publishes true",
+  "file": "plugins/visitor-log.ts",
+  "find": "import.meta.server ? visitorLogEnabled(process.env.NUXT_VISITOR_LOG) : false",
+  "repl": "true"
+ },
+ {
+  "name": "wiring: plugin reads env in browser",
+  "file": "plugins/visitor-log.ts",
+  "find": "import.meta.server ? visitorLogEnabled(process.env.NUXT_VISITOR_LOG) : false",
+  "repl": "visitorLogEnabled(process.env.NUXT_VISITOR_LOG)"
+ },
+ {
+  "name": "wiring: page-view ignores gate",
+  "file": "server/api/v1/page-view.post.ts",
+  "find": "if (!gate.ok || !isPageViewTrackingEnabled()) return null",
+  "repl": "if (!isPageViewTrackingEnabled()) return null"
+ },
+ {
+  "name": "wiring: page-view ignores switch",
+  "file": "server/api/v1/page-view.post.ts",
+  "find": "if (!gate.ok || !isPageViewTrackingEnabled()) return null",
+  "repl": "if (!gate.ok) return null"
+ },
+ {
+  "name": "wiring: copy-event ignores gate",
+  "file": "server/api/v1/copy-event.post.ts",
+  "find": "if (!gate.ok || !isCopyEventTrackingEnabled()) return null",
+  "repl": "if (!isCopyEventTrackingEnabled()) return null"
+ },
+ {
+  "name": "wiring: copy-event ignores switch",
+  "file": "server/api/v1/copy-event.post.ts",
+  "find": "if (!gate.ok || !isCopyEventTrackingEnabled()) return null",
+  "repl": "if (!gate.ok) return null"
+ },
+ {
+  "name": "wiring: vitals ignores opt-out",
+  "file": "server/api/v1/vitals.post.ts",
+  "find": "if (!isPageViewTrackingEnabled() || requestOptedOut(event)) return null",
+  "repl": "if (!isPageViewTrackingEnabled()) return null"
+ },
+ {
+  "name": "wiring: vitals ignores switch",
+  "file": "server/api/v1/vitals.post.ts",
+  "find": "if (!isPageViewTrackingEnabled() || requestOptedOut(event)) return null",
+  "repl": "if (requestOptedOut(event)) return null"
+ },
+ {
+  "name": "wiring: vitals body cap",
+  "file": "server/api/v1/vitals.post.ts",
+  "find": "readBeaconJson(event, 4096)",
+  "repl": "readBeaconJson(event, 4096000)"
+ },
+ {
+  "name": "flag: default off again",
+  "file": "utils/consent.ts",
+  "find": "return !['0', 'false', 'off', 'no', 'disabled'].includes(v)",
+  "repl": "return v === '1' || v === 'true'"
+ },
+ {
+  "name": "flag: off list loses false",
+  "file": "utils/consent.ts",
+  "find": "['0', 'false', 'off', 'no', 'disabled']",
+  "repl": "['0', 'off', 'no', 'disabled']"
+ }
+]

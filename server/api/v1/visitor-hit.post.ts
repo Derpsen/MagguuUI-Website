@@ -1,6 +1,6 @@
 /**
  * POST /api/v1/visitor-hit — detailed visitor record, ONLY with the visitor's statistics consent
- * (verified here from the consent cookie) and only while NUXT_VISITOR_LOG is set.
+ * (verified here from the consent cookie) and only while NUXT_VISITOR_LOG is not switched off (on by default).
  * Separate from /api/v1/page-view, which stays the cookieless anonymous counter. Always 204.
  */
 import { sqlite } from '~/server/database'

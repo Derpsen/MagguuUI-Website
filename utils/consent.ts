@@ -64,9 +64,13 @@ export function isValidSessionId(value: unknown): value is string {
   return typeof value === 'string' && /^[0-9a-f]{32}$/.test(value)
 }
 
-/** NUXT_VISITOR_LOG: the detailed visitor log (banner, consent, capture) stays off unless this is set. */
+/**
+ * NUXT_VISITOR_LOG: the detailed visitor log (banner, consent, capture) is ON by default. Nothing is stored without
+ * the visitor's consent either way. An operator switches the whole feature off with 0, false, off, no or disabled.
+ */
 export function visitorLogEnabled(value: string | undefined | null): boolean {
-  return value === '1' || value === 'true'
+  const v = (value ?? '').trim().toLowerCase()
+  return !['0', 'false', 'off', 'no', 'disabled'].includes(v)
 }
 
 /** The referrer URL as it is stored with consent: http(s) only, no fragment, at most `max` characters. */

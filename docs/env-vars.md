@@ -21,6 +21,7 @@ Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` 
 | `NUXT_GITHUB_WEBHOOK_SECRET` | empty | HMAC secret for `/api/v1/webhooks/github` |
 | `NUXT_WEBAUTHN_RP_ID` | request hostname | Passkey relying party ID. Required for production passkeys. |
 | `NUXT_WEBAUTHN_ORIGIN` | inferred | Passkey origin. Required for production passkeys. |
+| `NUXT_VISITOR_LOG` | on | Optional detailed visitor log (cookie banner, consent, consented visitor records, Admin → Analytics → Visitor log). **On by default**; nothing is stored without the visitor's consent. Set `false` or `0` (also `off`, `no`, `disabled`) to switch the whole feature off: no banner, no footer link, no capture. Stored records are kept 13 months and are deleted by the cleanup job even while it is off. |
 | `NUXT_FORCE_PASSWORD_RESET` | empty | Set to `true` once to force admin password reset on startup |
 | `NUXT_SYNC_SEEDED_CONTENT` | empty | Set to `true` to re-sync default content on startup |
 | `NUXT_OG_IMAGE_SECRET` | empty | Signing secret for dynamic `nuxt-og-image` generation URLs |

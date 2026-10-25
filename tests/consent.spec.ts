@@ -5,7 +5,7 @@ import Database from 'better-sqlite3'
 import { join } from 'node:path'
 
 /**
- * Part 1 of the consent feature (needs NUXT_VISITOR_LOG, set in playwright.config.ts):
+ * Part 1 of the consent feature (the visitor log is on by default, nothing is set in playwright.config.ts):
  * first visit shows the banner and sets NO cookie; "Necessary only" sets only the consent cookie and stores
  * nothing; "Accept all" adds the session cookie and detailed rows; the footer link revokes (cookie and rows gone);
  * Global Privacy Control means no banner and no rows; /admin has no banner.

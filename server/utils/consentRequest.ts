@@ -9,7 +9,7 @@
  *   POST /api/v1/visitor-event {type:'leave'|'click', ...}  dwell time, scroll depth, clicks of an existing visit.
  *
  * Do-Not-Track / Global Privacy Control are a refusal: no consent cookie is written, nothing is captured.
- * Both endpoints are off (204, no cookie) while NUXT_VISITOR_LOG is not set.
+ * Both endpoints are off (204, no cookie) while NUXT_VISITOR_LOG is switched off (false/0); it is on by default.
  */
 import type { H3Event } from 'h3'
 import { createError, deleteCookie, getCookie, getRequestHost, setCookie, setResponseHeader, setResponseStatus } from 'h3'

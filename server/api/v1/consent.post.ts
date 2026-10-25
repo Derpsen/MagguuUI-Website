@@ -1,6 +1,6 @@
 /**
  * POST /api/v1/consent — the visitor's choice from the cookie banner (see server/utils/consentRequest.ts).
- * Only ever called after a click. Off (204, no cookie) unless NUXT_VISITOR_LOG is set.
+ * Only ever called after a click. Off (204, no cookie) when NUXT_VISITOR_LOG is set to false/0.
  */
 import { sqlite } from '~/server/database'
 import { visitorLogEnabled } from '../../../utils/consent'

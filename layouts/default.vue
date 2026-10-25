@@ -366,7 +366,7 @@ const footerLinks = computed(() => [
   { label: 'Privacy', to: '/privacy' },
   { label: 'Status', to: '/status' },
   { label: 'Contact', contact: true },
-  // Only while the detailed visitor log is switched on (NUXT_VISITOR_LOG); reopens the consent choice.
+  // Unless the operator switched the detailed visitor log off (NUXT_VISITOR_LOG=false); reopens the consent choice.
   ...(consentUi.enabled.value ? [{ label: 'Cookie settings', consent: true }] : []),
 ])
 const bannerText = computed(() => siteSettings.value.banner_text || '')

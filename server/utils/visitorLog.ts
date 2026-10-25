@@ -1,6 +1,6 @@
 /**
  * Detailed visitor log: ONLY for visitors who gave statistics consent (see utils/consent.ts) and only while
- * NUXT_VISITOR_LOG is on. Pure functions on a `sqlite` handle (unit tested in memory, relative imports only).
+ * NUXT_VISITOR_LOG is on (the default). Pure functions on a `sqlite` handle (unit tested in memory, relative imports only).
  *
  * visitor_sessions: one row per visit (random 128-bit id held in the consent-bound mg_sid cookie, 30 minutes
  * rolling) with the full IP, the full user agent, parsed browser/OS/device family, country (CF-IPCountry) and city

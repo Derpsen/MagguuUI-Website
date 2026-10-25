@@ -3,7 +3,7 @@
  *
  * 1. Anonymous counting (everyone): sends the route (path only, no query) once per navigation via sendBeacon,
  *    plus the referrer host on the landing view. No cookies, no storage, no identifiers.
- * 2. Detailed record (ONLY with statistics consent, and only while the server runs with NUXT_VISITOR_LOG), all
+ * 2. Detailed record (ONLY with statistics consent, and only while the visitor log is not switched off with NUXT_VISITOR_LOG=false), all
  *    first-party, to /api/v1/visitor-hit and /api/v1/visitor-event:
  *    - each visited route (the page sequence), the full referrer URL once, UTM parameters of the landing URL,
  *      screen size, language and time zone

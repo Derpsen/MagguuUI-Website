@@ -31,6 +31,18 @@ describe('route files: the flag and the tracking switch gate every capture endpo
   })
 })
 
+describe('default on', () => {
+  it('the e2e server does not set the flag, so the tests run against the default', () => {
+    assert.doesNotMatch(code('playwright.config.ts'), /NUXT_VISITOR_LOG\s*:/)
+  })
+  it('docs/env-vars.md documents the flag as on by default and how to switch it off', () => {
+    const row = src('docs/env-vars.md').split('\n').find(l => l.includes('`NUXT_VISITOR_LOG`')) ?? ''
+    assert.match(row, /\| on \|/)
+    assert.match(row, /On by default/)
+    assert.match(row, /`false`/)
+  })
+})
+
 describe('plugin wiring', () => {
   it('the visitor-log plugin publishes the flag from the server env only (never read in the browser)', () => {
     const c = code('plugins/visitor-log.ts')

@@ -88,13 +88,13 @@ describe('consent cookie', () => {
     assert.ok(isValidSessionId('0123456789abcdef0123456789abcdef'))
     for (const v of ['', 'ABCDEF0123456789ABCDEF0123456789', '0123456789abcdef', '0123456789abcdef0123456789abcdeg', null, 5]) assert.equal(isValidSessionId(v), false)
   })
-  it('the flag is off unless set to 1 or true', () => {
-    assert.equal(visitorLogEnabled(undefined), false)
-    assert.equal(visitorLogEnabled(''), false)
-    assert.equal(visitorLogEnabled('0'), false)
-    assert.equal(visitorLogEnabled('false'), false)
+  it('the flag is ON by default and only an explicit off value disables it', () => {
+    assert.equal(visitorLogEnabled(undefined), true)
+    assert.equal(visitorLogEnabled(null), true)
+    assert.equal(visitorLogEnabled(''), true)
     assert.equal(visitorLogEnabled('1'), true)
     assert.equal(visitorLogEnabled('true'), true)
+    for (const off of ['0', 'false', 'FALSE', ' false ', 'off', 'no', 'disabled']) assert.equal(visitorLogEnabled(off), false, off)
   })
   it('referrer URLs: http(s) only, no fragment, capped, host extracted', () => {
     assert.deepEqual(cleanReferrerUrl('https://Example.org/a?b=1#frag'), { url: 'https://example.org/a?b=1', host: 'example.org' })

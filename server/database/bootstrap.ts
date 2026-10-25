@@ -233,7 +233,7 @@ export const DATABASE_BOOTSTRAP_SQL = `
   CREATE UNIQUE INDEX IF NOT EXISTS idx_community_presets_hash ON community_presets(content_hash);
   CREATE INDEX IF NOT EXISTS idx_community_presets_status ON community_presets(status, created_at);
 
-  -- Detailed visitor records, ONLY with the visitor's statistics consent (and NUXT_VISITOR_LOG);
+  -- Detailed visitor records, ONLY with the visitor's statistics consent (on by default, NUXT_VISITOR_LOG=false switches it off);
   -- see server/utils/visitorLog.ts. Kept in full (IP, user agent) for 13 months, then deleted.
   CREATE TABLE IF NOT EXISTS visitor_sessions (
     id TEXT PRIMARY KEY,

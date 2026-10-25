@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 const isCI = !!process.env.CI
 
-// The consent banner (shown while NUXT_VISITOR_LOG is on, see webServer.env) would sit over every page in the
+// The consent banner (shown while the visitor log is on, which is the default) would sit over every page in the
 // other specs, so they start with a stored "necessary only" choice. tests/consent.spec.ts starts clean instead.
 const consentCookie = encodeURIComponent(JSON.stringify({ v: 1, stats: false, ts: Date.now() }))
 
@@ -42,8 +42,8 @@ export default defineConfig({
       NUXT_FORCE_PASSWORD_RESET: 'true',
       // Seeds one WowUp pack (server/plugins/e2e-seed.ts) for the lazy-strings test.
       NUXT_E2E_SEED: 'true',
-      // Detailed visitor log (banner, consent, capture): off by default in production, on for tests/consent.spec.ts.
-      NUXT_VISITOR_LOG: 'true',
+      // NUXT_VISITOR_LOG is deliberately NOT set: the detailed visitor log (banner, consent, capture) is on by default
+      // and tests/consent.spec.ts exercises exactly that default. (NUXT_VISITOR_LOG=false switches it off.)
       NUXT_JWT_SECRET: process.env.NUXT_JWT_SECRET || 'playwright-dummy-jwt-secret-32-chars-long-XXXXXXXX',
     },
     // Health probe: a cold SSR probe on / could hang past the timeout while

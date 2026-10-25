@@ -91,7 +91,7 @@
             <p class="admin-dash__muted">
               Visitors appear here only after they agree to statistics in the cookie banner; refusals, Global Privacy Control and Do Not Track are never recorded.
               The visitor log is <strong>{{ data.enabled ? 'on' : 'off' }}</strong>.
-              <template v-if="!data.enabled">While it is off, no banner is shown and nothing is recorded. It is switched on with the container setting <span class="admin-dash__mono">NUXT_VISITOR_LOG=1</span> (see AGENTS.md).</template>
+              <template v-if="!data.enabled">While it is off, no banner is shown and nothing is recorded. It is on by default and was switched off with the container setting <span class="admin-dash__mono">NUXT_VISITOR_LOG</span>; remove that setting (or set it to <span class="admin-dash__mono">true</span>) to switch it on again (see AGENTS.md).</template>
               <template v-else>The banner is live; the first agreeing visitor will show up here.</template>
             </p>
           </template>

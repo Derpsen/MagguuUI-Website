@@ -1,12 +1,12 @@
 <template>
   <div class="space-y-6">
-    <AdminStickyBar :show="hasChanges" description="Homepage changes are ready to publish.">
+    <AdminStickyBar :show="hasChanges" description="Save your edits as a draft. Nothing goes live until you publish.">
       <template #actions>
         <UButton variant="ghost" color="neutral" icon="i-heroicons-eye" data-testid="home-review" @click="reviewOpen = true">
           Review changes
         </UButton>
-        <UButton icon="i-heroicons-check" :loading="saving" @click="save">
-          Save
+        <UButton icon="i-heroicons-check" :loading="saving" data-testid="home-save" @click="save">
+          Save draft
         </UButton>
       </template>
     </AdminStickyBar>
@@ -40,6 +40,16 @@
         </div>
       </template>
     </AdminPageHeader>
+
+    <AdminDraftBar
+      :count="draft.draftCount.value"
+      :updated-at="draft.draftUpdatedAt.value"
+      :dirty="hasChanges"
+      :publishing="draft.publishing.value"
+      :discarding="draft.discarding.value"
+      @publish="publishDraft"
+      @discard="discardDraft"
+    />
 
     <AdminPanel v-if="loading" title="Homepage" description="Loading homepage content." icon="i-heroicons-home">
       <div class="py-12 text-center">
@@ -224,6 +234,7 @@
 <script setup lang="ts">
 import { diffContentForms, type ContentForm } from "~/utils/contentChanges"
 import { HOME_HERO_EXTRA_DEFAULTS } from "~/utils/pageCopyDefaults"
+import type { DraftItem } from "~/utils/contentDrafts"
 
 definePageMeta({ layout: "admin" })
 
@@ -234,6 +245,7 @@ const isDark = useIsDark()
 const loading = ref(true)
 const saving = ref(false)
 const tab = ref<"edit" | "preview">("edit")
+const draft = useContentDraft(["home"])
 
 const previewAddons = ["EllesmereUI", "BigWigs", "Northern Sky Raid Tools"]
 const featureIndices = [1, 2, 3] as const
@@ -265,6 +277,8 @@ const form = reactive({
     feature_3_text: "Names and colors, QoL, Smart Tab, Quick Focus, audio device switcher, Boiling Point, and Targeted Spell Bars. Services stay untouched.",
   } as Record<string, string>,
 })
+
+const formDefaults = JSON.parse(JSON.stringify(form)) as typeof form
 
 const originalData = ref("")
 const reviewOpen = ref(false)
@@ -308,8 +322,16 @@ function featureText(index: typeof featureIndices[number]) {
   return form.features[`feature_${index}_text`]
 }
 
+const sections = ["hero", "addons", "features_heading", "features"] as const
+
+function buildItems(): DraftItem[] {
+  return sections.flatMap(section =>
+    Object.entries(form[section]).map(([key, value]) => ({ page: "home", section, key, value, locale: "en" })))
+}
+
 async function load() {
   loading.value = true
+  for (const section of sections) Object.assign(form[section], formDefaults[section])
 
   try {
     const data = await apiFetch<Record<string, Record<string, Record<string, string>>>>("/api/v1/admin/content/home")
@@ -321,43 +343,58 @@ async function load() {
     if (source?.features) Object.assign(form.features, source.features)
   } catch {
     // Keep defaults.
-  } finally {
-    loading.value = false
-    nextTick(() => snapshotOriginal())
   }
+
+  // What the live site shows now; a draft only stores the cells that differ from it.
+  draft.setPublished(buildItems())
+  for (const item of await draft.fetchDrafts()) {
+    if (item.page !== "home" || (item.locale || "en") !== "en") continue
+    const target = (form as Record<string, Record<string, string>>)[item.section]
+    if (target) target[item.key] = item.value
+  }
+
+  loading.value = false
+  nextTick(() => snapshotOriginal())
 }
 
 async function save() {
   saving.value = true
 
-  const items: Array<{ page: string; section: string; key: string; value: string; locale: string }> = []
-
-  for (const [key, value] of Object.entries(form.hero)) {
-    items.push({ page: "home", section: "hero", key, value, locale: "en" })
-  }
-
-  for (const [key, value] of Object.entries(form.addons)) {
-    items.push({ page: "home", section: "addons", key, value, locale: "en" })
-  }
-
-  for (const [key, value] of Object.entries(form.features_heading)) {
-    items.push({ page: "home", section: "features_heading", key, value, locale: "en" })
-  }
-
-  for (const [key, value] of Object.entries(form.features)) {
-    items.push({ page: "home", section: "features", key, value, locale: "en" })
-  }
-
   try {
-    await apiFetch("/api/v1/admin/content/bulk", { method: "POST", body: { items } })
-    toast.add({ title: "Homepage saved", color: "success" })
+    await draft.saveDraft(buildItems())
+    toast.add({ title: "Draft saved", description: "Not live yet. Publish to show it to visitors.", color: "success" })
     reviewOpen.value = false
     nextTick(() => snapshotOriginal())
-    void history.value?.load()
   } catch {
     toast.add({ title: "Error", color: "error" })
   } finally {
     saving.value = false
+  }
+}
+
+async function publishDraft() {
+  saving.value = true
+  try {
+    if (hasChanges.value) await draft.saveDraft(buildItems())
+    const n = await draft.publish()
+    toast.add({ title: "Published", description: `${n} ${n === 1 ? "field is" : "fields are"} live now.`, color: "success" })
+    reviewOpen.value = false
+    await load()
+    void history.value?.load()
+  } catch {
+    toast.add({ title: "Publish failed", color: "error" })
+  } finally {
+    saving.value = false
+  }
+}
+
+async function discardDraft() {
+  try {
+    await draft.discard()
+    toast.add({ title: "Draft discarded", color: "success" })
+    await load()
+  } catch {
+    toast.add({ title: "Error", color: "error" })
   }
 }
 

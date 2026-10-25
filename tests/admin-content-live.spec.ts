@@ -27,6 +27,15 @@ async function bulk(items: Array<{ page: string, section: string, key: string, v
   await json(await api.post('/api/v1/admin/content/bulk', { data: { items: items.map(i => ({ ...i, locale: 'en' })) } }))
 }
 
+/** Leftover drafts would leak into later specs: drop them. */
+async function discardDrafts(...pages: string[]) {
+  await json(await api.delete(`/api/v1/admin/content/drafts?pages=${pages.join(',')}`))
+}
+
+async function publicContent(pageKey: string) {
+  return JSON.stringify(await json(await api.get(`/api/v1/content/${pageKey}`)))
+}
+
 async function adminContent(pageKey: string) {
   return json<Record<string, Record<string, Record<string, string>>>>(await api.get(`/api/v1/admin/content/${pageKey}`))
 }
@@ -67,10 +76,15 @@ test('home hero eyebrow + step (admin form) is live on /', async () => {
   await page.waitForLoadState('networkidle')
   const field = page.locator('input#home-hero-eyebrow')
   await field.fill(value)
-  await page.getByRole('button', { name: 'Save' }).click()
-  await expect(page.getByText('Homepage saved').first()).toBeVisible()
+  await page.getByTestId('home-save').click()
+  await expect(page.getByText('Draft saved').first()).toBeVisible()
+  // A draft is not public until it is published.
+  expect(await publicContent('home')).not.toContain(value)
+  await page.getByTestId('draft-publish').click()
+  await expect(page.getByText('Published', { exact: true }).first()).toBeVisible()
   await expectLive('/', value)
   } finally {
+    await discardDrafts('home')
     await bulk([{ page: 'home', section: 'hero', key: 'eyebrow', value: prevEyebrow }])
   }
 })
@@ -181,7 +195,10 @@ for (const target of [
     const input = page.locator(`#page-${target.key}-${target.section}-${target.field}`)
     await input.fill(value)
     await page.getByTestId('pages-save').click()
-    await expect(page.getByText('Pages saved').first()).toBeVisible()
+    await expect(page.getByText('Draft saved').first()).toBeVisible()
+    expect(await publicContent(target.key)).not.toContain(value)
+    await page.getByTestId('draft-publish').click()
+    await expect(page.getByText('Published', { exact: true }).first()).toBeVisible()
     await expectLive(target.path, value)
     // Restore: an empty value deletes the row, the page falls back to the default text.
     await bulk([{ page: target.key, section: target.section, key: target.field, value: '' }])
@@ -219,7 +236,9 @@ test('review changes before saving, then restore from history (home eyebrow)', a
     await expect(preview).toContainText('hero · eyebrow')
     await expect(preview).toContainText(value)
     await page.getByTestId('change-preview-save').click()
-    await expect(page.getByText('Homepage saved').first()).toBeVisible()
+    await expect(page.getByText('Draft saved').first()).toBeVisible()
+    await page.getByTestId('draft-publish').click()
+    await expect(page.getByText('Published', { exact: true }).first()).toBeVisible()
     await expectLive('/', value)
 
     // The previous eyebrow is now a revision; restoring it puts it back live.
@@ -231,7 +250,75 @@ test('review changes before saving, then restore from history (home eyebrow)', a
     const after = (await adminContent('home')).en?.hero?.eyebrow ?? ''
     expect(after).toBe(prev)
   } finally {
+    await discardDrafts('home')
     await bulk([{ page: 'home', section: 'hero', key: 'eyebrow', value: prev }])
+  }
+})
+
+test('Pages draft: live preview shows it, the public site does not, Publish promotes it, Discard drops it', async () => {
+  test.setTimeout(120_000)
+  const value = stamp()
+  const second = `${stamp()} second`
+  try {
+    await page.goto('/about')
+    await page.goto('/admin/content/pages?page=about')
+    await page.waitForLoadState('networkidle')
+    const input = page.locator('#page-about-intro-title')
+    await expect(page.getByTestId('draft-bar')).toHaveCount(0)
+
+    // Typing updates the live preview (the public About component) before anything is saved.
+    await input.fill(value)
+    await expect(page.getByTestId('pages-preview')).toContainText(value)
+    await expect(page.getByTestId('draft-bar')).toContainText('not saved as a draft')
+
+    await page.getByTestId('pages-save').click()
+    await expect(page.getByText('Draft saved').first()).toBeVisible()
+    await expect(page.getByTestId('draft-status')).toContainText('1 field differs')
+
+    // Draft is invisible to visitors, feeds, search and the public content API.
+    expect(await publicContent('about')).not.toContain(value)
+    const publicPage = await (await context.browser()!.newContext()).newPage()
+    try {
+      await publicPage.goto('/about')
+      await expect(publicPage.locator('body')).not.toContainText(value)
+      for (const url of ['/api/v1/search-index', '/sitemap.xml', '/api/v1/content/about']) {
+        const res = await publicPage.request.get(url)
+        expect(await res.text(), url).not.toContain(value)
+      }
+
+      // The draft survives a reload and is still unpublished.
+      await page.reload()
+      await page.waitForLoadState('networkidle')
+      await expect(input).toHaveValue(value)
+      await expect(page.getByTestId('draft-status')).toContainText('1 field differs')
+
+      // Publish: now public.
+      await page.getByTestId('draft-publish').click()
+      await expect(page.getByText('Published', { exact: true }).first()).toBeVisible()
+      await expect(page.getByTestId('draft-bar')).toHaveCount(0)
+      await publicPage.goto('/about')
+      await expect(publicPage.locator('body')).toContainText(value)
+
+      // A second draft, discarded: the form returns to the live text and the public page is unchanged.
+      // The editor reloads after Publish: wait for the fresh form before typing.
+      await expect(page.getByText('Loading page content.')).toHaveCount(0)
+      await expect(input).toHaveValue(value)
+      await input.fill(second)
+      await page.getByTestId('pages-save').click()
+      await expect(page.getByTestId('draft-status')).toContainText('1 field differs')
+      await page.getByTestId('draft-discard').click()
+      await page.getByTestId('draft-discard-confirm').click()
+      await expect(page.getByText('Draft discarded').first()).toBeVisible()
+      await expect(input).toHaveValue(value)
+      await expect(page.getByTestId('draft-bar')).toHaveCount(0)
+      await publicPage.goto('/about')
+      await expect(publicPage.locator('body')).not.toContainText(second)
+    } finally {
+      await publicPage.context().close()
+    }
+  } finally {
+    await discardDrafts('about')
+    await bulk([{ page: 'about', section: 'intro', key: 'title', value: '' }])
   }
 })
 

@@ -363,6 +363,26 @@ export const contentRevisions = sqliteTable('content_revisions', {
   pageCreatedIdx: index('idx_content_revisions_page_created_at').on(table.page, table.createdAt),
 }))
 
+// ─── Content drafts ────────────────────────────────
+// Unpublished admin edits of site_content cells. Only cells that differ from
+// the published value are stored. `value` '' = "delete the cell on publish".
+// Never read by public endpoints, feeds, search index or sitemap.
+export const contentDrafts = sqliteTable('content_drafts', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  page: text('page').notNull(),
+  section: text('section').notNull(),
+  key: text('key').notNull(),
+  locale: text('locale').notNull().default('en'),
+  value: text('value').notNull(),
+  type: text('type').notNull().default('text'),
+  userId: integer('user_id'),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+}, (table) => ({
+  cellIdx: uniqueIndex('idx_content_drafts_cell').on(table.page, table.section, table.key, table.locale),
+}))
+
 // ─── Addons ────────────────────────────────────────
 // Supported WoW addons surfaced on /addons page.
 // Auto-synced from MagguuUI.toc OptionalDeps + RequiredDeps via webhook.

@@ -1,13 +1,15 @@
 /**
  * POST /api/v1/admin/content/bulk
  *
- * Bulk upsert site content. Receives { items: [{ page, section, key, value, locale? }] }
- * Default locale is 'en'.
+ * Bulk upsert site content straight into the published content (no draft).
+ * Receives { items: [{ page, section, key, value, locale? }] }
+ * Default locale is 'en'. The admin editors save drafts instead
+ * (POST /api/v1/admin/content/drafts) and promote them with
+ * POST /api/v1/admin/content/publish; this endpoint stays for API clients.
  */
 
-import { eq, and } from 'drizzle-orm'
-import { db, sqlite } from '~/server/database'
-import { contentRevisions, siteContent } from '~/server/database/schema'
+import { sqlite } from '~/server/database'
+import { applyContentItems } from '~/server/utils/contentDrafts'
 import { validateBody, contentBulkSchema } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
@@ -15,57 +17,8 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const data = validateBody(contentBulkSchema, body)
 
-  // Wrap all upserts in a single transaction to avoid N separate fsync round-trips.
-  sqlite.transaction(() => {
-    for (const item of data.items) {
-      const locale = item.locale || 'en'
-
-      const existing = db.select().from(siteContent)
-        .where(and(
-          eq(siteContent.page, item.page),
-          eq(siteContent.section, item.section),
-          eq(siteContent.key, item.key),
-          eq(siteContent.locale, locale),
-        )).get()
-
-      // Revision history: keep the previous value of every cell that changes.
-      const previous = existing?.value ?? null
-      const next = item.value || null
-      if (previous !== next) {
-        db.insert(contentRevisions).values({
-          page: item.page,
-          section: item.section,
-          key: item.key,
-          locale,
-          value: previous,
-          userId: auth.userId,
-        }).run()
-      }
-
-      // Delete if value is empty (cleanup removed steps etc.)
-      if (!item.value && existing) {
-        db.delete(siteContent).where(eq(siteContent.id, existing.id)).run()
-        continue
-      }
-      if (!item.value) continue
-
-      if (existing) {
-        db.update(siteContent)
-          .set({ value: item.value, updatedAt: new Date() })
-          .where(eq(siteContent.id, existing.id))
-          .run()
-      } else {
-        db.insert(siteContent).values({
-          page: item.page,
-          section: item.section,
-          key: item.key,
-          value: item.value,
-          locale,
-          type: item.type || 'text',
-        }).run()
-      }
-    }
-  })()
+  // One transaction for all upserts (single fsync); revisions are written per changed cell.
+  applyContentItems(sqlite, data.items, auth.userId)
 
   const pages = Array.from(new Set(data.items.map((i) => i.page)))
   logActivity({

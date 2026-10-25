@@ -1,9 +1,9 @@
 <template>
   <div class="space-y-6">
-    <AdminStickyBar :show="hasChanges" description="Guide changes are ready to publish.">
+    <AdminStickyBar :show="hasChanges" description="Save your edits as a draft. Nothing goes live until you publish.">
       <template #actions>
-        <UButton icon="i-heroicons-check" :loading="saving" @click="save">
-          Save
+        <UButton icon="i-heroicons-check" :loading="saving" data-testid="guide-save" @click="save">
+          Save draft
         </UButton>
       </template>
     </AdminStickyBar>
@@ -25,6 +25,16 @@
         </div>
       </template>
     </AdminPageHeader>
+
+    <AdminDraftBar
+      :count="draft.draftCount.value"
+      :updated-at="draft.draftUpdatedAt.value"
+      :dirty="hasChanges"
+      :publishing="draft.publishing.value"
+      :discarding="draft.discarding.value"
+      @publish="publishDraft"
+      @discard="discardDraft"
+    />
 
     <AdminPanel v-if="loading" title="Guide" description="Loading guide content." icon="i-heroicons-book-open">
       <div class="py-12 text-center">
@@ -130,6 +140,8 @@
 </template>
 
 <script setup lang="ts">
+import type { ContentTree, DraftItem } from "~/utils/contentDrafts"
+import { overlayDrafts } from "~/utils/contentDrafts"
 
 definePageMeta({ layout: "admin" })
 
@@ -140,6 +152,7 @@ const isDark = useIsDark()
 const loading = ref(true)
 const saving = ref(false)
 const tab = ref<"edit" | "preview">("edit")
+const draft = useContentDraft(["guide"])
 
 let nextStepId = 1
 let originalStepKeys: string[] = []
@@ -210,47 +223,83 @@ function moveStep(index: number, direction: number) {
   form.steps.splice(targetIndex, 0, item)
 }
 
+type Source = Record<string, Record<string, string>> | undefined
+
+function applySource(source: Source) {
+  form.introTitle = ""
+  form.introText = ""
+  form.steps = []
+
+  if (source?.intro) {
+    form.introTitle = stripHtml(source.intro.title || "")
+    form.introText = stripHtml(source.intro.text || "")
+  }
+
+  if (source?.steps) {
+    const keys = Object.keys(source.steps)
+    const stepNumbers = [...new Set(keys
+      .map(key => {
+        const match = key.match(/^step_(\d+)/)
+        return match ? Number.parseInt(match[1]) : 0
+      })
+      .filter(number => number > 0))]
+      .sort((a, b) => a - b)
+
+    form.steps = stepNumbers
+      .map(number => {
+        const content = source.steps[`step_${number}`] || source.steps[`step_${number}_content`] || ""
+        const title = source.steps[`step_${number}_title`] || ""
+        const id = nextStepId++
+        return { id, title: stripHtml(title), content }
+      })
+      .filter(step => step.content || step.title)
+  }
+
+  if (!form.steps.length) {
+    form.steps = [{ id: nextStepId++, title: "", content: "" }]
+  }
+
+  // Auto-expand first step
+  if (form.steps.length) expandedSteps[form.steps[0].id] = true
+}
+
+/** Items the form would store; cells of removed published steps are emptied (= deleted on publish). */
+function buildItems(): DraftItem[] {
+  const items: DraftItem[] = [
+    { page: "guide", section: "intro", key: "title", value: form.introTitle, locale: "en" },
+    { page: "guide", section: "intro", key: "text", value: form.introText, locale: "en" },
+  ]
+
+  form.steps.forEach((step, index) => {
+    const number = index + 1
+    items.push({ page: "guide", section: "steps", key: `step_${number}_title`, value: step.title, locale: "en" })
+    items.push({ page: "guide", section: "steps", key: `step_${number}`, value: step.content, locale: "en" })
+  })
+
+  const currentKeys = new Set(items.filter(item => item.section === "steps").map(item => item.key))
+  for (const key of originalStepKeys) {
+    if (!currentKeys.has(key)) {
+      items.push({ page: "guide", section: "steps", key, value: "", locale: "en" })
+    }
+  }
+  return items
+}
+
 async function load() {
   loading.value = true
 
   try {
-    const data = await apiFetch<Record<string, Record<string, Record<string, string>>>>("/api/v1/admin/content/guide")
-    const source = data?.en || data?.de || data
+    const data = await apiFetch<ContentTree>("/api/v1/admin/content/guide")
+    const tree = (data?.en ? data : { en: data?.de || (data as unknown as Record<string, Record<string, string>>) || {} }) as ContentTree
 
-    if (source?.intro) {
-      form.introTitle = stripHtml(source.intro.title || "")
-      form.introText = stripHtml(source.intro.text || "")
-    }
+    // Live content first: its step keys and values are the baseline a draft is compared with.
+    applySource(tree.en)
+    originalStepKeys = []
+    draft.setPublished(buildItems())
+    originalStepKeys = Object.keys(tree.en?.steps || {})
 
-    if (source?.steps) {
-      originalStepKeys = Object.keys(source.steps)
-
-      const stepNumbers = [...new Set(originalStepKeys
-        .map(key => {
-          const match = key.match(/^step_(\d+)/)
-          return match ? Number.parseInt(match[1]) : 0
-        })
-        .filter(number => number > 0))]
-        .sort((a, b) => a - b)
-
-      if (stepNumbers.length) {
-        form.steps = stepNumbers
-          .map(number => {
-            const content = source.steps[`step_${number}`] || source.steps[`step_${number}_content`] || ""
-            const title = source.steps[`step_${number}_title`] || ""
-            const id = nextStepId++
-            return { id, title: stripHtml(title), content }
-          })
-          .filter(step => step.content || step.title)
-      }
-    }
-
-    if (!form.steps.length) {
-      form.steps = [{ id: nextStepId++, title: "", content: "" }]
-    }
-
-    // Auto-expand first step
-    if (form.steps.length) expandedSteps[form.steps[0].id] = true
+    const drafts = await draft.fetchDrafts()
+    if (drafts.length) applySource(overlayDrafts(tree, "guide", drafts).en)
   } catch {
     form.steps = [{ id: nextStepId++, title: "", content: "" }]
   } finally {
@@ -263,33 +312,37 @@ async function save() {
   saving.value = true
 
   try {
-    const items: Array<{ page: string; section: string; key: string; value: string; locale: string }> = [
-      { page: "guide", section: "intro", key: "title", value: form.introTitle, locale: "en" },
-      { page: "guide", section: "intro", key: "text", value: form.introText, locale: "en" },
-    ]
-
-    form.steps.forEach((step, index) => {
-      const number = index + 1
-      items.push({ page: "guide", section: "steps", key: `step_${number}_title`, value: step.title, locale: "en" })
-      items.push({ page: "guide", section: "steps", key: `step_${number}`, value: step.content, locale: "en" })
-    })
-
-    const currentKeys = new Set(items.filter(item => item.section === "steps").map(item => item.key))
-
-    for (const key of originalStepKeys) {
-      if (!currentKeys.has(key)) {
-        items.push({ page: "guide", section: "steps", key, value: "", locale: "en" })
-      }
-    }
-
-    await apiFetch("/api/v1/admin/content/bulk", { method: "POST", body: { items } })
-    originalStepKeys = items.filter(item => item.section === "steps" && item.value).map(item => item.key)
-    toast.add({ title: "Guide saved", color: "success" })
+    await draft.saveDraft(buildItems())
+    toast.add({ title: "Draft saved", description: "Not live yet. Publish to show it to visitors.", color: "success" })
     nextTick(() => snapshotOriginal())
   } catch {
     toast.add({ title: "Error saving", color: "error" })
   } finally {
     saving.value = false
+  }
+}
+
+async function publishDraft() {
+  saving.value = true
+  try {
+    if (hasChanges.value) await draft.saveDraft(buildItems())
+    const n = await draft.publish()
+    toast.add({ title: "Published", description: `${n} ${n === 1 ? "field is" : "fields are"} live now.`, color: "success" })
+    await load()
+  } catch {
+    toast.add({ title: "Publish failed", color: "error" })
+  } finally {
+    saving.value = false
+  }
+}
+
+async function discardDraft() {
+  try {
+    await draft.discard()
+    toast.add({ title: "Draft discarded", color: "success" })
+    await load()
+  } catch {
+    toast.add({ title: "Error", color: "error" })
   }
 }
 

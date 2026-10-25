@@ -1,16 +1,17 @@
 <template>
   <div class="space-y-6">
-    <AdminStickyBar :show="hasChanges" description="Page text changes are ready to publish.">
+    <AdminStickyBar :show="hasChanges" description="Save your edits as a draft. Nothing goes live until you publish.">
       <template #actions>
         <UButton variant="ghost" color="neutral" icon="i-heroicons-eye" data-testid="pages-review" @click="reviewOpen = true">
           Review changes
         </UButton>
         <UButton icon="i-heroicons-check" :loading="saving" data-testid="pages-save" @click="save">
-          Save
+          Save draft
         </UButton>
       </template>
     </AdminStickyBar>
     <AdminChangePreview v-model:open="reviewOpen" :changes="pendingChanges" :saving="saving" @confirm="save" />
+
 
     <AdminPageHeader
       icon="i-heroicons-document-duplicate"
@@ -19,6 +20,16 @@
       description="About, Legal notice and Privacy text. Empty fields fall back to the built-in default. The contact email comes from Settings."
     >
       <template #actions>
+        <UButton
+          variant="ghost"
+          color="neutral"
+          size="sm"
+          :icon="previewOpen ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
+          data-testid="pages-preview-toggle"
+          @click="previewOpen = !previewOpen"
+        >
+          {{ previewOpen ? 'Hide preview' : 'Live preview' }}
+        </UButton>
         <div class="admin-segmented" role="tablist" aria-label="Page">
           <button
             v-for="p in pageTabs"
@@ -37,13 +48,24 @@
       </template>
     </AdminPageHeader>
 
+    <AdminDraftBar
+      :count="draft.draftCount.value"
+      :updated-at="draft.draftUpdatedAt.value"
+      :dirty="hasChanges"
+      :publishing="draft.publishing.value"
+      :discarding="draft.discarding.value"
+      @publish="publishDraft"
+      @discard="discardDraft"
+    />
+
     <AdminPanel v-if="loading" title="Pages" description="Loading page content." icon="i-heroicons-document-duplicate">
       <div class="py-12 text-center">
         <UIcon name="i-heroicons-arrow-path" class="mx-auto h-8 w-8 animate-spin text-blue-500" />
       </div>
     </AdminPanel>
 
-    <template v-else>
+    <div v-else class="grid gap-6" :class="previewOpen ? 'xl:grid-cols-2' : ''">
+      <div class="space-y-6">
       <AdminPanel
         v-for="(keys, section) in forms[page]"
         :key="`${page}-${section}`"
@@ -77,7 +99,17 @@
           </div>
         </div>
       </AdminPanel>
-    </template>
+      </div>
+
+      <aside v-if="previewOpen" class="admin-draft-preview" aria-label="Live preview" data-testid="pages-preview">
+        <p class="admin-draft-preview__label">Live preview · {{ currentPath }} · draft</p>
+        <div class="admin-draft-preview__frame public-shell" :class="isDark ? 'text-silver-200' : 'text-gray-800'">
+          <PageViewAbout v-if="page === 'about'" :copy="previewCopy" :contact-email="contactEmail" />
+          <PageViewImprint v-else-if="page === 'imprint'" :copy="previewCopy" :contact-email="contactEmail" />
+          <PageViewPrivacy v-else :copy="previewCopy" />
+        </div>
+      </aside>
+    </div>
     <AdminContentHistory v-if="!loading" ref="history" :pages="[page]" :label="currentPath" @restored="load" />
   </div>
 </template>
@@ -85,6 +117,7 @@
 <script setup lang="ts">
 import { EDITABLE_PAGE_DEFAULTS, isHtmlCopyKey, mergePageCopy } from '~/utils/pageCopyDefaults'
 import { diffContentForms, type ContentForm } from '~/utils/contentChanges'
+import { overlayDrafts, type ContentTree, type DraftItem } from '~/utils/contentDrafts'
 import type { EditablePageKey, PageCopyDefaults } from '~/utils/pageCopyDefaults'
 
 definePageMeta({ layout: 'admin' })
@@ -105,6 +138,11 @@ const currentPath = computed(() => pageTabs.find(p => p.key === page.value)?.pat
 
 const loading = ref(true)
 const saving = ref(false)
+const isDark = useIsDark()
+const siteSettings = usePublicSiteSettings()
+const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguu.xyz')
+const previewOpen = ref(true)
+const draft = useContentDraft(pageTabs.map(p => p.key))
 
 function cloneDefaults(defaults: PageCopyDefaults): PageCopyDefaults {
   return JSON.parse(JSON.stringify(defaults))
@@ -115,6 +153,8 @@ const forms = reactive<Record<EditablePageKey, PageCopyDefaults>>({
   imprint: cloneDefaults(EDITABLE_PAGE_DEFAULTS.imprint),
   privacy: cloneDefaults(EDITABLE_PAGE_DEFAULTS.privacy),
 })
+
+const previewCopy = computed(() => mergePageCopy(EDITABLE_PAGE_DEFAULTS[page.value], forms[page.value]))
 
 const originalData = ref('')
 const serialize = () => JSON.stringify(forms)
@@ -153,17 +193,37 @@ function fieldId(section: string, key: string) {
   return `page-${page.value}-${section}-${key}`
 }
 
+/** Items the form would store right now (default text is not stored: empty value = default). */
+function buildItems(): DraftItem[] {
+  const items: DraftItem[] = []
+  for (const { key: pageKey } of pageTabs) {
+    const defaults = EDITABLE_PAGE_DEFAULTS[pageKey]
+    for (const [section, keys] of Object.entries(forms[pageKey])) {
+      for (const [key, value] of Object.entries(keys)) {
+        const stored = value.trim() === (defaults[section]?.[key] ?? '').trim() ? '' : value
+        items.push({ page: pageKey, section, key, value: stored, locale: 'en', type: isHtmlCopyKey(key) ? 'html' : 'text' })
+      }
+    }
+  }
+  return items
+}
+
 async function load() {
   loading.value = true
   try {
+    const published: Partial<Record<EditablePageKey, ContentTree>> = {}
     await Promise.all(pageTabs.map(async ({ key }) => {
       try {
-        const data = await apiFetch<Record<string, Record<string, Record<string, string>>>>(`/api/v1/admin/content/${key}`)
-        forms[key] = mergePageCopy(EDITABLE_PAGE_DEFAULTS[key], data?.en)
+        published[key] = await apiFetch<ContentTree>(`/api/v1/admin/content/${key}`)
       } catch {
         // Keep defaults.
       }
     }))
+    // What the live site shows: used to store only the cells a draft changes.
+    for (const { key } of pageTabs) forms[key] = mergePageCopy(EDITABLE_PAGE_DEFAULTS[key], published[key]?.en)
+    draft.setPublished(buildItems())
+    const drafts = await draft.fetchDrafts()
+    for (const { key } of pageTabs) forms[key] = mergePageCopy(EDITABLE_PAGE_DEFAULTS[key], overlayDrafts(published[key], key, drafts).en)
   } finally {
     loading.value = false
     nextTick(() => { originalData.value = serialize() })
@@ -172,27 +232,41 @@ async function load() {
 
 async function save() {
   saving.value = true
-  const items: Array<{ page: string, section: string, key: string, value: string, locale: string, type: string }> = []
-  for (const { key: pageKey } of pageTabs) {
-    const defaults = EDITABLE_PAGE_DEFAULTS[pageKey]
-    for (const [section, keys] of Object.entries(forms[pageKey])) {
-      for (const [key, value] of Object.entries(keys)) {
-        // Default text is not stored: an empty value deletes the row and the page shows the default.
-        const stored = value.trim() === (defaults[section]?.[key] ?? '').trim() ? '' : value
-        items.push({ page: pageKey, section, key, value: stored, locale: 'en', type: isHtmlCopyKey(key) ? 'html' : 'text' })
-      }
-    }
-  }
   try {
-    await apiFetch('/api/v1/admin/content/bulk', { method: 'POST', body: { items } })
-    toast.add({ title: 'Pages saved', color: 'success' })
+    await draft.saveDraft(buildItems())
+    toast.add({ title: 'Draft saved', description: 'Not live yet. Publish to show it to visitors.', color: 'success' })
     reviewOpen.value = false
     nextTick(() => { originalData.value = serialize() })
-    void history.value?.load()
   } catch {
     toast.add({ title: 'Error', color: 'error' })
   } finally {
     saving.value = false
+  }
+}
+
+async function publishDraft() {
+  saving.value = true
+  try {
+    if (hasChanges.value) await draft.saveDraft(buildItems())
+    const n = await draft.publish()
+    toast.add({ title: 'Published', description: `${n} ${n === 1 ? 'field is' : 'fields are'} live now.`, color: 'success' })
+    reviewOpen.value = false
+    await load()
+    void history.value?.load()
+  } catch {
+    toast.add({ title: 'Publish failed', color: 'error' })
+  } finally {
+    saving.value = false
+  }
+}
+
+async function discardDraft() {
+  try {
+    await draft.discard()
+    toast.add({ title: 'Draft discarded', color: 'success' })
+    await load()
+  } catch {
+    toast.add({ title: 'Error', color: 'error' })
   }
 }
 

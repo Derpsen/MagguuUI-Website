@@ -439,3 +439,8 @@
 ## 2026-10-25 Code-review follow-up (alarm redaction, robots headers)
 
 - F1 redaction ported (fail-closed), F2 solved by the ported scrub (keeps text before a match), F3 dedupe restricted to main non-PR runs, F4 conditions test added (all six `if:` fired correctly; real bug found: callers needed `contents: read` once the redaction checkout was added), F5 noarchive via `robotsDisabledValue`, F6 `/api/**` header + 4xx/5xx noindex plugin. Verify robots headers live with GET after deploy.
+
+## 2026-10-25 Item 7: admin drafts, live preview, Publish
+
+- New `content_drafts` table (bootstrap SQL, idempotent) + `/api/v1/admin/content/drafts` and `/publish`; Home, Guide and Pages editors now "Save draft" → Publish/Discard in `AdminDraftBar`. Decisions: separate table (public reads untouched), drafts global per page, only changed cells stored, real-component preview only on Pages (About/Imprint/Privacy extracted to `components/PageView/*`), changelog/FAQ keep their visibility toggles.
+- Gotcha: `stamp()` in Playwright can return the same value twice within one millisecond, so a "second edit" was a no-op and the Save bar never appeared (looked like a hang). Editors reload after Publish; wait for the fresh form.

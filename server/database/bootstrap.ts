@@ -252,6 +252,19 @@ export const DATABASE_BOOTSTRAP_SQL = `
   );
   CREATE INDEX IF NOT EXISTS idx_content_revisions_page_created_at ON content_revisions(page, created_at);
 
+  CREATE TABLE IF NOT EXISTS content_drafts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    page TEXT NOT NULL,
+    section TEXT NOT NULL,
+    key TEXT NOT NULL,
+    locale TEXT NOT NULL DEFAULT 'en',
+    value TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'text',
+    user_id INTEGER,
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_content_drafts_cell ON content_drafts(page, section, key, locale);
+
   CREATE TABLE IF NOT EXISTS addons (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     slug TEXT NOT NULL UNIQUE,

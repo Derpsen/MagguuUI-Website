@@ -146,6 +146,18 @@ export const contentBulkSchema = z.object({
   items: z.array(contentItemSchema).min(1).max(200),
 })
 
+const draftPageSchema = z.string().min(1).max(100).regex(/^[a-z0-9_-]+$/i)
+
+/** Replace the drafts of `pages` with `items` (cells that differ from published). */
+export const contentDraftSaveSchema = z.object({
+  pages: z.array(draftPageSchema).min(1).max(10),
+  items: z.array(contentItemSchema).max(400),
+})
+
+export const contentDraftPagesSchema = z.object({
+  pages: z.array(draftPageSchema).min(1).max(10),
+})
+
 // ─── API Keys ─────────────────────────────────────
 
 export const apiKeyCreateSchema = z.object({

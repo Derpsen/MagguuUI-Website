@@ -343,6 +343,18 @@ export const statsDaily = sqliteTable('stats_daily', {
   pk: primaryKey({ columns: [table.day, table.kind, table.key] }),
 }))
 
+// ─── Public status sampler ────────────────────────
+// One row per 5-minute slot the site answered its own database; finished days roll up into status_daily.
+export const statusSamples = sqliteTable('status_samples', {
+  slot: integer('slot').primaryKey(),
+})
+
+export const statusDaily = sqliteTable('status_daily', {
+  day: text('day').primaryKey(),
+  seen: integer('seen').notNull(),
+  firstSlot: integer('first_slot').notNull(),
+})
+
 // ─── Web Vitals (anonymous RUM) ────────────────────
 // One row per metric sample: page path, metric name, value. No IP, UA,
 // cookie or user id is stored. Retention follows the page_views setting.

@@ -351,6 +351,7 @@ const footerLinks = computed(() => [
   { label: 'About', to: '/about' },
   { label: 'Legal notice', to: '/imprint' },
   { label: 'Privacy', to: '/privacy' },
+  { label: 'Status', to: '/status' },
   { label: 'Contact', contact: true },
 ])
 const bannerText = computed(() => siteSettings.value.banner_text || '')

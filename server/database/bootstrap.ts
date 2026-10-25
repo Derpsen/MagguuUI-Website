@@ -176,6 +176,17 @@ export const DATABASE_BOOTSTRAP_SQL = `
     PRIMARY KEY (day, kind, key)
   );
 
+  -- Public status sampler (coarse, no per-visitor data); see server/utils/siteStatus.ts
+  CREATE TABLE IF NOT EXISTS status_samples (
+    slot INTEGER PRIMARY KEY
+  );
+
+  CREATE TABLE IF NOT EXISTS status_daily (
+    day TEXT PRIMARY KEY,
+    seen INTEGER NOT NULL,
+    first_slot INTEGER NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,

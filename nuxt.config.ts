@@ -376,6 +376,9 @@ export default defineNuxtConfig({
     // The robots module skips /api/* entirely, so API responses get the header here.
     // Merged with the more specific per-route rules below (headers are deep-merged).
     '/api/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow, noarchive' } },
+    // /status is public but deliberately not indexed; the header must agree with its robots meta
+    // (the robots module would otherwise send the site-wide `index, follow`).
+    '/status': { headers: { 'X-Robots-Tag': 'noindex, follow' } },
     // Public marketing HTML. Auth chrome is client-only, so the cached
     // document is the anonymous page. Same 120s window as the content APIs.
     '/': { swr: 120 },

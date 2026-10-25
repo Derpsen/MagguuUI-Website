@@ -70,6 +70,8 @@ test('the page renders its state on the server, without JavaScript', async ({ br
 test('noindex, not in the sitemap, linked in the footer', async ({ page, request }) => {
   await page.goto('/status')
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/)
+  const head = await request.get('/status')
+  expect(head.headers()['x-robots-tag']).toMatch(/noindex/)
   await expect(page).toHaveTitle(/Website status/)
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /database/i)
   const xml = await (await request.get('/sitemap.xml')).text()

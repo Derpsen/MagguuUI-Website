@@ -108,7 +108,7 @@ describe('no third-party hints in the document head', () => {
 describe('banner and privacy text match what the code does', () => {
   it('the banner names what happens without a click and with a click', () => {
     const t = src('components/ConsentBanner.vue').replace(/\s+/g, ' ')
-    for (const needle of ['Without your agreement', 'no tracking cookie', 'anonymously', 'one small cookie (mg_consent, 6 months)', 'Accept all', 'two random cookies (30 minutes and 13 months)']) {
+    for (const needle of ['Without your agreement', 'no tracking cookie', 'anonymously (at most a daily-changing code that cannot be traced back to you)', 'one small cookie (mg_consent, 6 months)', 'Accept all', 'two random cookies (30 minutes and 13 months)']) {
       assert.ok(t.includes(needle), needle)
     }
     assert.ok(!t.includes('works without cookies'), 'the old claim is gone: a click always sets mg_consent')
@@ -117,7 +117,7 @@ describe('banner and privacy text match what the code does', () => {
     const s4 = PRIVACY_DEFAULTS.s4!.body!
     for (const needle of ['mg_consent', 'nuxt-color-mode', 'lastSeenVersion', 'local storage']) assert.ok(s4.includes(needle), needle)
     const s7 = PRIVACY_DEFAULTS.s7!.body!
-    for (const needle of ['page load measurement', 'LCP, INP, CLS and TTFB', '{{retention_days}} days', 'Global Privacy Control']) assert.ok(s7.includes(needle), needle)
+    for (const needle of ['page load measurement', 'LCP, INP, CLS and TTFB', '{{retention_days}} days', 'up to 400 days (about 13 months)', 'Global Privacy Control']) assert.ok(s7.includes(needle), needle)
     const s11 = PRIVACY_DEFAULTS.s11!.body!
     for (const needle of ['6 months from the day of your choice', '30 minutes', '13 months (395 days)']) assert.ok(s11.includes(needle), needle)
   })

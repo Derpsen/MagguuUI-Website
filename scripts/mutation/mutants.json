@@ -2,26 +2,26 @@
  {
   "name": "consent: flag check removed",
   "file": "server/utils/consentRequest.ts",
-  "find": "  if (!deps.enabled()) return null\n  if (!deps.allow(event))",
-  "repl": "  if (!deps.allow(event))"
+  "find": "  const enabled = deps.enabled()\n",
+  "repl": "  const enabled = true\n"
  },
  {
   "name": "hit: flag check removed",
   "file": "server/utils/consentRequest.ts",
-  "find": "  if (!deps.enabled()) return null\n  assertSameOriginIfPresent(event)\n\n  const sid",
-  "repl": "  assertSameOriginIfPresent(event)\n\n  const sid"
+  "find": "  if (!deps.enabled()) {\n    clearConsentBoundCookies(event) // log",
+  "repl": "  if (false as boolean) {\n    clearConsentBoundCookies(event) // log"
  },
  {
   "name": "consent: same-origin removed",
   "file": "server/utils/consentRequest.ts",
-  "find": "  setResponseHeader(event, 'Cache-Control', 'no-store')\n  assertSameOriginIfPresent(event)\n  if (!deps.enabled()) return null\n  if (!deps.allow",
-  "repl": "  setResponseHeader(event, 'Cache-Control', 'no-store')\n  if (!deps.enabled()) return null\n  if (!deps.allow"
+  "find": "  setResponseHeader(event, 'Cache-Control', 'no-store')\n  assertSameOriginIfPresent(event)\n  const enabled",
+  "repl": "  setResponseHeader(event, 'Cache-Control', 'no-store')\n  const enabled"
  },
  {
   "name": "hit: same-origin removed",
   "file": "server/utils/consentRequest.ts",
-  "find": "  if (!deps.enabled()) return null\n  assertSameOriginIfPresent(event)\n\n  const sid",
-  "repl": "  if (!deps.enabled()) return null\n\n  const sid"
+  "find": "    return null\n  }\n  assertSameOriginIfPresent(event)\n\n  const sid",
+  "repl": "    return null\n  }\n\n  const sid"
  },
  {
   "name": "hit: stats check weakened",
@@ -164,8 +164,8 @@
  {
   "name": "ip: untrusted peer believed",
   "file": "server/utils/clientIp.ts",
-  "find": "if (!isTrustedProxy(socket, trustedProxies())) {\n    return socket",
-  "repl": "if (false as boolean) {\n    return socket"
+  "find": "if (!isTrustedProxy(socket, trustedProxies())) {",
+  "repl": "if (false as boolean) {"
  },
  {
   "name": "ip: cf header ignored",
@@ -258,10 +258,16 @@
   "repl": "if (!socketIp) return true\n"
  },
  {
-  "name": "proxy: default not private",
+  "name": "proxy: default is private again",
   "file": "server/utils/trustedProxy.ts",
-  "find": "const list = tokens.length ? tokens : ['private']",
-  "repl": "const list = tokens.length ? tokens : []"
+  "find": "tokens : ['loopback']",
+  "repl": "tokens : ['private']"
+ },
+ {
+  "name": "proxy: default trusts nobody",
+  "file": "server/utils/trustedProxy.ts",
+  "find": "tokens : ['loopback']",
+  "repl": "tokens : []"
  },
  {
   "name": "preset: honeypot removed",

@@ -55,3 +55,13 @@ describe('L4: section 4 does not call the IP address anonymized', () => {
     }
   })
 })
+
+describe('s7 (anonymous counting) names the real numbers', () => {
+  it('14 days for detail rows and the aggregate length from analytics.ts', async () => {
+    const { RAW_DETAIL_DAYS, AGGREGATE_DAYS } = await import('../../server/utils/analytics')
+    const s7 = PRIVACY_DEFAULTS.s7!.body!
+    assert.ok(s7.includes(`deleted after ${RAW_DETAIL_DAYS} days`))
+    assert.equal(AGGREGATE_DAYS, 400)
+    assert.ok(s7.includes('up to 400 days'))
+  })
+})

@@ -233,6 +233,58 @@ export const DATABASE_BOOTSTRAP_SQL = `
   CREATE UNIQUE INDEX IF NOT EXISTS idx_community_presets_hash ON community_presets(content_hash);
   CREATE INDEX IF NOT EXISTS idx_community_presets_status ON community_presets(status, created_at);
 
+  -- Detailed visitor records, ONLY with the visitor's statistics consent (and NUXT_VISITOR_LOG);
+  -- see server/utils/visitorLog.ts. Kept in full (IP, user agent) for 13 months, then deleted.
+  CREATE TABLE IF NOT EXISTS visitor_sessions (
+    id TEXT PRIMARY KEY,
+    visitor_id TEXT,
+    started_at INTEGER NOT NULL,
+    last_seen INTEGER NOT NULL,
+    ip TEXT,
+    user_agent TEXT,
+    browser TEXT NOT NULL DEFAULT 'Other',
+    os TEXT NOT NULL DEFAULT 'Other',
+    device TEXT NOT NULL DEFAULT 'desktop',
+    country TEXT NOT NULL DEFAULT 'unknown',
+    city TEXT,
+    referrer_url TEXT,
+    referrer_host TEXT,
+    landing_path TEXT NOT NULL,
+    exit_path TEXT,
+    hits INTEGER NOT NULL DEFAULT 0,
+    screen_w INTEGER,
+    screen_h INTEGER,
+    language TEXT,
+    timezone TEXT,
+    utm_source TEXT,
+    utm_medium TEXT,
+    utm_campaign TEXT,
+    utm_term TEXT,
+    utm_content TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_visitor_sessions_started ON visitor_sessions(started_at);
+  CREATE INDEX IF NOT EXISTS idx_visitor_sessions_last_seen ON visitor_sessions(last_seen);
+  CREATE TABLE IF NOT EXISTS visitor_hits (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    path TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    dwell_s INTEGER,
+    scroll_max INTEGER NOT NULL DEFAULT 0
+  );
+  CREATE INDEX IF NOT EXISTS idx_visitor_hits_session ON visitor_hits(session_id, created_at);
+  CREATE INDEX IF NOT EXISTS idx_visitor_hits_created ON visitor_hits(created_at);
+  CREATE TABLE IF NOT EXISTS visitor_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    path TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    target TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_visitor_events_session ON visitor_events(session_id, created_at);
+  CREATE INDEX IF NOT EXISTS idx_visitor_events_created ON visitor_events(created_at);
+
   CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -383,6 +435,22 @@ export const SAFE_COLUMN_MIGRATIONS = [
   'ALTER TABLE users ADD COLUMN is_locked INTEGER NOT NULL DEFAULT 0',
   'ALTER TABLE users ADD COLUMN locked_until INTEGER',
   'ALTER TABLE page_views ADD COLUMN visitor TEXT',
+  // Visitor log columns (a development database may hold an earlier shape of these tables)
+  'ALTER TABLE visitor_sessions ADD COLUMN visitor_id TEXT',
+  'ALTER TABLE visitor_sessions ADD COLUMN city TEXT',
+  'ALTER TABLE visitor_sessions ADD COLUMN exit_path TEXT',
+  'ALTER TABLE visitor_sessions ADD COLUMN screen_w INTEGER',
+  'ALTER TABLE visitor_sessions ADD COLUMN screen_h INTEGER',
+  'ALTER TABLE visitor_sessions ADD COLUMN language TEXT',
+  'ALTER TABLE visitor_sessions ADD COLUMN timezone TEXT',
+  'ALTER TABLE visitor_sessions ADD COLUMN utm_source TEXT',
+  'ALTER TABLE visitor_sessions ADD COLUMN utm_medium TEXT',
+  'ALTER TABLE visitor_sessions ADD COLUMN utm_campaign TEXT',
+  'ALTER TABLE visitor_sessions ADD COLUMN utm_term TEXT',
+  'ALTER TABLE visitor_sessions ADD COLUMN utm_content TEXT',
+  'ALTER TABLE visitor_hits ADD COLUMN dwell_s INTEGER',
+  'ALTER TABLE visitor_hits ADD COLUMN scroll_max INTEGER NOT NULL DEFAULT 0',
+  'CREATE INDEX IF NOT EXISTS idx_visitor_sessions_visitor ON visitor_sessions(visitor_id)',
   // Performance indexes added 2026-04
   'CREATE INDEX IF NOT EXISTS idx_activity_log_entity_type_created_at ON activity_log(entity_type, created_at)',
   'CREATE INDEX IF NOT EXISTS idx_activity_log_user_id_created_at ON activity_log(user_id, created_at)',

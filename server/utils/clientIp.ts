@@ -108,3 +108,40 @@ export function rateLimitGroupKey(ip: string): string {
   const groups = [...headGroups, ...Array(Math.max(0, missing)).fill('0'), ...tailGroups]
   return groups.slice(0, 3).join(':') + '::/48'
 }
+
+/** True when the TCP peer is a trusted proxy (NUXT_TRUSTED_PROXIES), i.e. its forwarded headers may be believed. */
+export function isTrustedSocket(event: H3Event): boolean {
+  return isTrustedProxy(event.node?.req?.socket?.remoteAddress, trustedProxies())
+}
+
+/**
+ * Country of the visitor from Cloudflare's CF-IPCountry header, believed only from a trusted proxy (anyone
+ * reaching the container port directly could send any value). Two letters only; Cloudflare's "XX" (unknown)
+ * and "T1" (Tor) are not countries. No GeoIP lookup, no external service.
+ */
+export function getClientCountry(event: H3Event): string {
+  if (!isTrustedSocket(event)) return 'unknown'
+  const raw = getHeader(event, 'cf-ipcountry')?.trim().toUpperCase()
+  return raw && /^[A-Z]{2}$/.test(raw) && raw !== 'XX' && raw !== 'T1' ? raw : 'unknown'
+}
+
+/**
+ * City from a Cloudflare header, ONLY if a trusted proxy supplied it (the "Add visitor location headers" managed
+ * transform sends `cf-ipcity`; without it this is null). No GeoIP lookup of our own. Letters, spaces and a few
+ * punctuation marks only, capped; the value may be percent-encoded.
+ */
+export function getClientCity(event: H3Event): string | null {
+  if (!isTrustedSocket(event)) return null
+  let raw = getHeader(event, 'cf-ipcity')?.trim()
+  if (!raw) return null
+  try { raw = decodeURIComponent(raw) } catch { /* keep as sent */ }
+  return /^[\p{L}\p{M}][\p{L}\p{M} .'’-]{0,59}$/u.test(raw) ? raw : null
+}
+
+/** https as seen by the visitor: a TLS socket, or `x-forwarded-proto: https` from a trusted proxy. */
+export function requestIsHttps(event: H3Event): boolean {
+  const socket = event.node?.req?.socket as { encrypted?: boolean } | undefined
+  if (socket?.encrypted) return true
+  if (!isTrustedSocket(event)) return false
+  return (getHeader(event, 'x-forwarded-proto') || '').split(',')[0]?.trim().toLowerCase() === 'https'
+}

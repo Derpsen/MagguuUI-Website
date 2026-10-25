@@ -398,6 +398,56 @@ export const communityPresets = sqliteTable('community_presets', {
   reviewedBy: integer('reviewed_by'),
 })
 
+// ─── Visitor log (consent only) ────────────────────
+// Detailed records, written only with the visitor's statistics consent. Full IP and user agent are kept
+// for 13 months and then everything is deleted (server/utils/visitorLog.ts).
+export const visitorSessions = sqliteTable('visitor_sessions', {
+  id: text('id').primaryKey(), // random 128-bit hex, also the value of the consent-bound mg_sid cookie
+  visitorId: text('visitor_id'), // random 128-bit hex of the consent-bound mg_vid cookie (returning visitor)
+  startedAt: integer('started_at').notNull(),
+  lastSeen: integer('last_seen').notNull(),
+  ip: text('ip'),
+  userAgent: text('user_agent'),
+  browser: text('browser').notNull().default('Other'),
+  os: text('os').notNull().default('Other'),
+  device: text('device').notNull().default('desktop'),
+  country: text('country').notNull().default('unknown'),
+  city: text('city'),
+  referrerUrl: text('referrer_url'),
+  referrerHost: text('referrer_host'),
+  landingPath: text('landing_path').notNull(),
+  exitPath: text('exit_path'),
+  hits: integer('hits').notNull().default(0),
+  screenW: integer('screen_w'),
+  screenH: integer('screen_h'),
+  language: text('language'),
+  timezone: text('timezone'),
+  utmSource: text('utm_source'),
+  utmMedium: text('utm_medium'),
+  utmCampaign: text('utm_campaign'),
+  utmTerm: text('utm_term'),
+  utmContent: text('utm_content'),
+})
+
+export const visitorHits = sqliteTable('visitor_hits', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  sessionId: text('session_id').notNull(),
+  path: text('path').notNull(),
+  createdAt: integer('created_at').notNull(),
+  dwellS: integer('dwell_s'), // seconds on the page (visible time), reported when the page is left
+  scrollMax: integer('scroll_max').notNull().default(0), // 0, 25, 50, 75 or 100
+})
+
+// Clicks on marked calls to action, downloads and external links: a fixed kind and a short target, no free text.
+export const visitorEvents = sqliteTable('visitor_events', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  sessionId: text('session_id').notNull(),
+  path: text('path').notNull(),
+  kind: text('kind').notNull(), // 'cta' | 'external' | 'download'
+  target: text('target').notNull(),
+  createdAt: integer('created_at').notNull(),
+})
+
 // ─── Web Vitals (anonymous RUM) ────────────────────
 // One row per metric sample: page path, metric name, value. No IP, UA,
 // cookie or user id is stored. Retention follows the page_views setting.

@@ -12,6 +12,7 @@ import { getDataRetentionDays } from '~/server/utils/settings'
 import { sqlite } from '~/server/database'
 import { cleanupRateLimits } from '~/server/utils/rateLimit'
 import { runAnalyticsMaintenance } from '~/server/utils/analytics'
+import { pruneVisitorRecords } from '~/server/utils/visitorLog'
 
 function runCleanup() {
   const retentionDays = getDataRetentionDays()
@@ -27,6 +28,8 @@ function runCleanup() {
     // Anonymous counting: roll up finished days, scrub legacy identifiers, prune detail rows
     // (RAW_DETAIL_DAYS) and old aggregates. Independent of the retention setting.
     runAnalyticsMaintenance(sqlite)
+    // Consent-only visitor log: everything is kept in full for 13 months, then deleted (runs while the flag is off, too).
+    pruneVisitorRecords(sqlite)
     sqlite.prepare('DELETE FROM web_vitals WHERE created_at < ?').run(cutoff)
     // Keep the newest 50 revisions per content cell; older ones go.
     sqlite.prepare(`DELETE FROM content_revisions WHERE id IN (

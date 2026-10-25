@@ -276,7 +276,7 @@ export function runAnalyticsMaintenance(sqlite: Sqlite, now = Math.floor(Date.no
 export const BEACON_LIMIT_KEEP_MS = 10 * 60_000
 /** Hard ceiling for beacon rows in rate_limits (login limiter rows are never touched). */
 export const BEACON_LIMIT_MAX_ROWS = 20_000
-const BEACON_KEY = "(key LIKE 'page-view:%' OR key LIKE 'copy-event:%' OR key LIKE 'vitals:%')"
+const BEACON_KEY = "(key LIKE 'page-view:%' OR key LIKE 'copy-event:%' OR key LIKE 'vitals:%' OR key LIKE 'visitor-hit:%' OR key LIKE 'visitor-event:%' OR key LIKE 'consent:%')"
 
 /**
  * Anonymous beacons write one rate_limits row per visitor key; a scripted client rotating

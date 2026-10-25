@@ -273,6 +273,9 @@ test('the public list is whitelisted and the privacy page describes submissions'
   await expect(page.getByTestId('privacy-s8')).toContainText('30 days')
   await expect(page.getByTestId('privacy-s7')).toContainText('approved community preset')
   await expect(page.getByTestId('privacy-s9')).toContainText('Backups of the database')
+  await expect(page.getByTestId('privacy-s10')).toContainText('Article 6(1)(a) GDPR')
+  await expect(page.getByTestId('privacy-s11')).toContainText('mg_vid')
+  await expect(page.getByTestId('privacy-s12')).toContainText('13 months')
 })
 
 test('every change is audited, without the string', async () => {

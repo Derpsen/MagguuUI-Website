@@ -328,6 +328,22 @@ describe('privacy text', () => {
     assert.equal(merged.s7!.body, '<p>My edited text</p>')
     assert.equal(merged.s8!.body, PRIVACY_DEFAULTS.s8!.body)
   })
+  it('s10 to s12 describe the optional visitor statistics, and never overwrite stored edits of s1 to s9', () => {
+    const all = ['s10', 's11', 's12'].map(k => PRIVACY_DEFAULTS[k]!.body!).join(' ').toLowerCase()
+    for (const needle of [
+      'cookie settings', 'article 6(1)(a) gdpr', 'section 25', 'tdddg', 'reach', '13 months', 'mg_consent', 'mg_sid', 'mg_vid', 'complete ip address',
+      'user-agent', 'cloudflare', 'referring website', 'utm_source', 'time zone', 'scroll', 'withdraw', 'global privacy control', 'backups',
+      'no third-party script', 'contact<span>&#64;</span>magguu.xyz',
+    ]) assert.ok(all.includes(needle), needle)
+    // Honest about full data: no claim of anonymization for this part.
+    assert.ok(!all.includes('anonymized'))
+    const merged = mergePageCopy(PRIVACY_DEFAULTS, { s7: { body: '<p>edited</p>' }, s9: { body: '<p>edited</p>' } })
+    for (const k of ['s10', 's11', 's12']) assert.equal(merged[k]!.body, PRIVACY_DEFAULTS[k]!.body)
+    assert.equal(mergePageCopy(PRIVACY_DEFAULTS, { s11: { body: '<p>mine</p>' } }).s11!.body, '<p>mine</p>')
+    // The anonymous counting text stays accurate for visitors who do not consent.
+    assert.ok(PRIVACY_DEFAULTS.s7!.body!.includes('No cookies'))
+    assert.ok(PRIVACY_DEFAULTS.s7!.body!.includes('Without your agreement, only what this section describes happens'))
+  })
   it('s9 (temporary records and backups) is its own section, so edited s7 / s8 texts never hide it', () => {
     const body = PRIVACY_DEFAULTS.s9!.body!
     for (const needle of ['about ten minutes', 'first 64 bits', 'backups', 'before this clean-up', '24 hours']) assert.ok(body.toLowerCase().includes(needle.toLowerCase()), needle)

@@ -23,3 +23,13 @@ export function requireAdminAccess(event: H3Event): JwtPayload {
   event.context.adminAuth = auth
   return auth
 }
+
+/**
+ * requireAdminAccess PLUS no viewer role, even for GET. For admin data that is personal data in full
+ * (the consented visitor log with IP addresses): only editors and admins may read or export it.
+ */
+export function requireAdminNoViewer(event: H3Event): JwtPayload {
+  const auth = requireAdminAccess(event)
+  if (auth.role === 'viewer') throw createError({ statusCode: 403, message: 'Insufficient permissions' })
+  return auth
+}

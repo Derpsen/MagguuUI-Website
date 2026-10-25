@@ -99,7 +99,7 @@ definePageMeta({ layout: 'admin' })
 
 interface AuditEntry {
   id: number
-  action: 'created' | 'updated' | 'deleted'
+  action: 'created' | 'updated' | 'deleted' | 'exported'
   entityType: string
   entityId: number | null
   entityName: string
@@ -144,12 +144,14 @@ const typeOptions = [
   { label: 'Character Layout', value: 'layout' },
   { label: 'Status notice', value: 'status_notice' },
   { label: 'Community preset', value: 'community_preset' },
+  { label: 'Visitor export', value: 'visitor_export' },
 ]
 const actionOptions = [
   { label: 'All actions', value: 'all' },
   { label: 'Created', value: 'created' },
   { label: 'Updated', value: 'updated' },
   { label: 'Deleted', value: 'deleted' },
+  { label: 'Exported', value: 'exported' },
 ]
 const typeLabel = (t: string) => typeOptions.find(o => o.value === t)?.label || t
 

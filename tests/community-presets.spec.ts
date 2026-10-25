@@ -276,6 +276,7 @@ test('the public list is whitelisted and the privacy page describes submissions'
   await expect(page.getByTestId('privacy-s10')).toContainText('Article 6(1)(a) GDPR')
   await expect(page.getByTestId('privacy-s11')).toContainText('mg_vid')
   await expect(page.getByTestId('privacy-s12')).toContainText('13 months')
+  await expect(page.getByTestId('privacy-s12')).toContainText('Cloudflare Tunnel')
 })
 
 test('every change is audited, without the string', async () => {

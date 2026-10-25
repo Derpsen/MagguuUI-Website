@@ -332,7 +332,7 @@ describe('privacy text', () => {
     const all = ['s10', 's11', 's12'].map(k => PRIVACY_DEFAULTS[k]!.body!).join(' ').toLowerCase()
     for (const needle of [
       'cookie settings', 'article 6(1)(a) gdpr', 'section 25', 'tdddg', 'reach', '13 months', 'mg_consent', 'mg_sid', 'mg_vid', 'complete ip address',
-      'user-agent', 'cloudflare', 'referring website', 'utm_source', 'time zone', 'scroll', 'withdraw', 'global privacy control', 'backups',
+      'user-agent', 'cloudflare tunnel', 'processor', 'transport', 'country and city headers', 'only external service', 'referring website', 'utm_source', 'time zone', 'scroll', 'withdraw', 'global privacy control', 'backups',
       'no third-party script', 'contact<span>&#64;</span>magguu.xyz',
     ]) assert.ok(all.includes(needle), needle)
     // Honest about full data: no claim of anonymization for this part.

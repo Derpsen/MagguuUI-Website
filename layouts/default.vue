@@ -326,8 +326,14 @@ useHead({
   script: [{ type: 'speculationrules', innerHTML: JSON.stringify(SPECULATION_RULES), key: 'speculationrules' }],
 })
 
-function setTheme(mode: 'light' | 'dark') {
+// Colour classes flip instantly while the shell background used to fade for 300 ms, so frames in between showed light text
+// on a light page (or the reverse). Transitions are off for the frames of the switch (`html.theme-switching`, main.css).
+async function setTheme(mode: 'light' | 'dark') {
+  const root = document.documentElement
+  root.classList.add('theme-switching')
   colorMode.preference = mode
+  await nextTick()
+  requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-switching')))
 }
 
 function handleLogout() {
@@ -403,8 +409,9 @@ function isActive(path: string): boolean {
 }
 
 const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguu.xyz')
-// Built after mount so Cloudflare Email Obfuscation has no mailto: to rewrite.
-const contactMailto = ref<string | undefined>(undefined)
+// The mailto: is built after mount so Cloudflare Email Obfuscation has no address to rewrite. Until then (server HTML,
+// no JavaScript, crawlers) the link points to the legal notice, so it always has a real href.
+const contactMailto = ref<string>('/imprint')
 onMounted(() => { contactMailto.value = `mailto:${contactEmail.value}` })
 watch(contactEmail, (value) => { if (contactMailto.value) contactMailto.value = `mailto:${value}` })
 

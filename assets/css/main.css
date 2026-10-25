@@ -1228,3 +1228,10 @@ html.light .public-setup-nav__shell {
   background: rgba(255, 255, 255, 0.96);
   border-color: #cbd5e1;
 }
+
+/* Theme switch: all colours change in the same frame, no half-faded text on a half-faded background. */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: none !important;
+}

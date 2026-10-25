@@ -88,6 +88,21 @@ test('first visit: the banner shows and nothing at all is set before a click', a
   await context.close()
 })
 
+// A real first visit: empty storage (no pre-seeded mg_consent), no GPC/DNT, on "/". The banner must be on screen, inside the viewport.
+for (const [name, viewport] of [['desktop 1280x800', { width: 1280, height: 800 }], ['mobile 390', { width: 390, height: 844 }]] as const) {
+  test(`first visit on / (${name}, fresh context): the banner is visible inside the viewport`, async ({ browser }) => {
+    const { context, page } = await visitor(browser, newMarker(), { viewport })
+    await page.goto('/')
+    await expect(banner(page)).toBeVisible()
+    expect(await page.evaluate(() => [navigator.doNotTrack, (navigator as unknown as { globalPrivacyControl?: boolean }).globalPrivacyControl])).toEqual([null, undefined])
+    const box = await banner(page).boundingBox()
+    expect(box!.y).toBeGreaterThanOrEqual(0)
+    expect(box!.y + box!.height).toBeLessThanOrEqual(viewport.height + 1)
+    expect(await names(context)).toEqual([])
+    await context.close()
+  })
+}
+
 test('the three actions are equal: same size and style, and Escape is not a choice', async ({ browser }) => {
   const { context, page } = await visitor(browser, newMarker())
   await page.goto('/')

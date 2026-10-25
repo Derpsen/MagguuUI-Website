@@ -32,6 +32,7 @@ export default async function warmup() {
   }
   await browser.close()
   resetReferrers()
+  resetVisitorLog()
 }
 
 /**
@@ -46,5 +47,18 @@ function resetReferrers() {
     db.pragma('busy_timeout = 5000')
     db.prepare("DELETE FROM stats_daily WHERE kind = 'referrer'").run()
     db.prepare("UPDATE page_views SET referrer = NULL WHERE referrer IS NOT NULL").run()
+  } finally { db.close() }
+}
+
+/**
+ * The visitor log records at most 100 sessions per network and day (VISITOR_SESSIONS_PER_IP_DAY). Every Playwright visitor
+ * comes from the same address, so a persistent dev database that has seen many runs today stops recording and the consent
+ * specs find no row. Clear the (test-only) visitor log before the specs run. This is the Playwright dev database.
+ */
+function resetVisitorLog() {
+  const db = new Database(join(process.cwd(), 'data', 'magguuui.db'), { fileMustExist: true })
+  try {
+    db.pragma('busy_timeout = 5000')
+    for (const table of ['visitor_events', 'visitor_hits', 'visitor_sessions']) db.prepare(`DELETE FROM ${table}`).run()
   } finally { db.close() }
 }

@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test'
 import type { BrowserContext, Page } from '@playwright/test'
 import Database from 'better-sqlite3'
 import { join } from 'node:path'
+import { hydrated } from './support/hydrated'
 
 /**
  * Part 1 of the consent feature (the visitor log is on by default, nothing is set in playwright.config.ts):
@@ -242,12 +243,16 @@ test('a returning visitor with consent is recorded without a banner', async ({ b
   const marker = newMarker()
   const { context, page } = await visitor(browser, marker)
   await page.goto('/')
+  await hydrated(page) // the banner buttons act only after hydration
   await banner(page).getByTestId('consent-accept').click()
   await expect.poll(() => sessionsFor(marker).length).toBe(1)
   // session cookie expired (30 min), consent cookie still valid: a new session starts on the next visit
   await context.clearCookies({ name: 'mg_sid' })
+  // The visit is recorded by the page's own beacon after hydration: wait for that response, not for a 5 s guess.
+  const recorded = page.waitForResponse(r => r.url().endsWith('/api/v1/visitor-hit') && r.request().method() === 'POST')
   await page.goto('/about')
   await expect(banner(page)).toHaveCount(0)
+  await recorded
   await expect.poll(() => sessionsFor(marker).length).toBe(2)
   const ids = sessionsFor(marker).map(x => x.visitor_id)
   expect(ids[0]).toMatch(/^[0-9a-f]{32}$/)
@@ -261,6 +266,7 @@ test('extended signals with consent: utm, screen, language, time zone, sequence,
     locale: 'de-DE', timezoneId: 'Europe/Berlin', viewport: { width: 1280, height: 800 },
   })
   await page.goto('/?utm_source=newsletter&utm_medium=email&utm_campaign=autumn&utm_term=&secret=nope')
+  await hydrated(page)
   await banner(page).getByTestId('consent-accept').click()
   await expect.poll(() => sessionsFor(marker).length).toBe(1)
   const [s] = sessionsFor(marker)
@@ -295,11 +301,12 @@ test('extended signals with consent: utm, screen, language, time zone, sequence,
   ])
   await page.getByRole('link', { name: 'Strings', exact: true }).first().click()
   await expect(page).toHaveURL(/\/strings$/)
+  // Leaving /guide sends the dwell report and the /strings hit as two separate requests; each is checked by waiting
+  // for its own stored state, never by assuming the second has landed because the first has.
   await expect.poll(() => detailFor(marker).find(h => h.path === '/guide')?.dwell_s ?? 0).toBeGreaterThanOrEqual(1)
-  const guide = detailFor(marker).find(h => h.path === '/guide')!
-  expect(guide.scroll_max).toBeGreaterThanOrEqual(25)
-  expect(detailFor(marker).map(h => h.path)).toEqual(['/', '/guide', '/strings'])
-  expect(sessionsFor(marker)[0]!.exit_path).toBe('/strings')
+  await expect.poll(() => detailFor(marker).find(h => h.path === '/guide')?.scroll_max ?? 0).toBeGreaterThanOrEqual(25)
+  await expect.poll(() => detailFor(marker).map(h => h.path)).toEqual(['/', '/guide', '/strings'])
+  await expect.poll(() => sessionsFor(marker)[0]?.exit_path).toBe('/strings')
   expect(JSON.stringify(eventsFor(marker))).not.toContain('free text')
 
   // revoking removes the cookies and everything recorded for this browser

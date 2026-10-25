@@ -1,9 +1,10 @@
 import { expect, test } from '@playwright/test'
+import { hydrated } from './support/hydrated'
 
 /** The admin Ctrl/Cmd+K palette must not exist on public pages or the login screen. */
 test('Ctrl+K on the public site opens the public search, never the admin palette', async ({ page }) => {
   await page.goto('/guide')
-  await page.waitForLoadState('networkidle')
+  await hydrated(page) // the shortcut listener exists only after hydration
   await page.keyboard.press('Control+k')
   await expect(page.getByTestId('public-search')).toBeVisible()
   await expect(page.getByTestId('admin-command')).toHaveCount(0)

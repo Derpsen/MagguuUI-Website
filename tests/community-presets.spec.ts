@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext, BrowserContext, Page } from '@playwright/test'
+import { hydrated } from './support/hydrated'
 
 /**
  * Item A, community presets: a visitor submits -> it is pending and invisible -> an admin approves
@@ -215,7 +216,10 @@ for (const mode of ['dark', 'light'] as const) {
     const visitor = await browser.newContext({ permissions: ['clipboard-read', 'clipboard-write'] })
     const page = await visitor.newPage()
     await page.addInitScript(m => localStorage.setItem('nuxt-color-mode', m), mode)
+    // The list is fetched after hydration; wait for that response instead of hoping a cold dev server is fast enough.
+    const listed = page.waitForResponse(r => r.url().endsWith('/api/v1/community-presets') && r.request().method() === 'GET')
     await page.goto('/strings')
+    await listed
     const item = page.getByTestId(`community-item-${presetId}`)
     await expect(item).toBeVisible()
     await expect(item.getByTestId('community-name')).toHaveText(hostile())
@@ -226,6 +230,7 @@ for (const mode of ['dark', 'light'] as const) {
     await expect(page.getByTestId('community-presets')).not.toContainText('Official')
     await expect(page.getByTestId('community-submit-link')).toHaveAttribute('href', '/submit-preset')
 
+    await hydrated(page) // no navigation or re-render may run into axe
     // Axe before the click: while it says "Copied" the visible text differs from the accessible name by design.
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze()
     expect(results.violations.map(v => `${v.id}: ${v.nodes.length}`)).toEqual([])

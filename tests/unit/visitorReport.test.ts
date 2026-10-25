@@ -232,7 +232,7 @@ describe('handlers', () => {
   let server: http.Server | null = null
   afterEach(() => { server?.close(); server = null })
 
-  async function start(sqlite: Database.Database, opts: { admin?: boolean, enabled?: boolean } = {}) {
+  async function start(sqlite: Database.Database, opts: { admin?: boolean, enabled?: boolean, failAudit?: boolean } = {}) {
     const audits: Array<{ userId: number | null, rows: number, filters: string[] }> = []
     const deps: VisitorAdminDeps = {
       requireAdmin: () => {
@@ -241,7 +241,7 @@ describe('handlers', () => {
       },
       sqlite,
       enabled: () => opts.enabled ?? true,
-      audit: e => audits.push(e),
+      audit: (e) => { if (opts.failAudit) throw new Error('disk full'); audits.push(e) },
       now: () => NOW,
     }
     const app = createApp()
@@ -291,6 +291,30 @@ describe('handlers', () => {
     assert.equal(ok.status, 200); assert.equal(ok.headers.get('cache-control'), 'no-store')
     assert.equal((await fetch(`${base}/api/v1/admin/visitors/${sid(9)}`)).status, 404)
     assert.equal((await fetch(`${base}/api/v1/admin/visitors/..%2f..%2fetc`)).status, 404)
+  })
+
+  it('export fails closed: when the audit entry cannot be written, no CSV leaves', async () => {
+    const sqlite = db()
+    seed(sqlite, { n: 1, country: 'DE' })
+    const { base, audits } = await start(sqlite, { failAudit: true })
+    const res = await fetch(`${base}/api/v1/admin/visitors/export`)
+    assert.equal(res.status, 500)
+    assert.doesNotMatch(res.headers.get('content-type') || '', /csv/)
+    assert.equal(res.headers.get('content-disposition'), null)
+    const text = await res.text()
+    assert.ok(!text.includes('203.0.113.7') && !text.includes(VISITOR_CSV_COLUMNS[0]!))
+    assert.equal(audits.length, 0)
+  })
+
+  it('the export route writes the audit with the throwing recorder', async () => {
+    const { readFileSync } = await import('node:fs')
+    const route = readFileSync(new URL('../../server/api/v1/admin/visitors/export.get.ts', import.meta.url), 'utf8')
+    assert.match(route, /recordAuditChange\(/)
+    assert.doesNotMatch(route, /recordAuditSafe/)
+    for (const f of ['index.get.ts', '[id].get.ts', 'export.get.ts']) {
+      const src = readFileSync(new URL(`../../server/api/v1/admin/visitors/${f}`, import.meta.url), 'utf8')
+      assert.match(src, /requireAdmin,/, `${f} needs the admin role (editors and viewers are refused)`)
+    }
   })
 
   it('export: CSV headers, no-store, audit entry with counts and filter names only', async () => {

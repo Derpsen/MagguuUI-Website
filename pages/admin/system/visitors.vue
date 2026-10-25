@@ -4,7 +4,7 @@
       icon="i-heroicons-eye"
       eyebrow="Analytics"
       title="Visitors"
-      description="Visits of people who agreed to statistics in the cookie banner. Full IP address and user agent, so this page and its CSV export are for admins and editors only."
+      description="Visits of people who agreed to statistics in the cookie banner. Full IP address and user agent, so this page and its CSV export are for the admin role only."
     >
       <template #actions>
         <UButton icon="i-heroicons-arrow-path" variant="ghost" color="neutral" :loading="loading" @click="load">

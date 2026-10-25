@@ -199,6 +199,37 @@ test('without a login every visitors endpoint is refused and leaks nothing', asy
   await anon.dispose()
 })
 
+test('viewer and editor accounts are refused on every visitors endpoint (full IPs are admin-only), the admin is not', async ({ playwright, baseURL }) => {
+  const paths = ['/api/v1/admin/visitors', `/api/v1/admin/visitors/${IDS[0]}`, '/api/v1/admin/visitors/export']
+  const created: number[] = []
+  try {
+    for (const role of ['viewer', 'editor'] as const) {
+      const username = `e2e-${role}-${marker}`.slice(0, 40)
+      const password = `Pw-${marker}-Aa1!`
+      const make = await api.post('/api/v1/admin/users', { data: { username, password, role: 'viewer' } }) // the API only creates admin/viewer
+      expect(make.status(), `create ${role}`).toBe(201)
+      const id = (await make.json()).data.id as number
+      created.push(id)
+      if (role === 'editor') withDb(db => db.prepare('UPDATE users SET role = ? WHERE id = ?').run('editor', id)) // role is read from the database on every request
+      const ctx = await playwright.request.newContext({ baseURL })
+      try {
+        const login = await ctx.post('/api/v1/auth/login', { data: { username, password } })
+        expect(login.ok(), `${role} login → ${login.status()}`).toBe(true)
+        for (const path of paths) {
+          const res = await ctx.get(path)
+          expect(res.status(), `${role} ${path}`).toBe(403)
+          expect(await res.text()).not.toContain('198.51.100')
+        }
+        // the same account can still use the admin area it is meant for
+        expect((await ctx.get('/api/v1/admin/faqs')).status(), `${role} still reads normal admin data`).toBeLessThan(400)
+      } finally { await ctx.dispose() }
+    }
+    for (const path of paths) expect((await api.get(path)).status(), `admin ${path}`).toBe(200)
+  } finally {
+    for (const id of created) await api.delete(`/api/v1/admin/users/${id}`)
+  }
+})
+
 test('dashboard shows Top countries and Top referrers as labelled plain sections', async () => {
   await page.goto('/admin')
   await expect(page.getByTestId('dash-countries')).toBeVisible({ timeout: 30_000 })

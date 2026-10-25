@@ -4,7 +4,7 @@ import { visitorLogEnabled } from '../../../../../utils/consent'
 import { handleVisitorList } from '../../../../utils/visitorAdminRequest'
 
 export default defineEventHandler(event => handleVisitorList(event, {
-  requireAdmin: requireAdminNoViewer,
+  requireAdmin,
   sqlite,
   enabled: () => visitorLogEnabled(process.env.NUXT_VISITOR_LOG),
   audit: () => {},

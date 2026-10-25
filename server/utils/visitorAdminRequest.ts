@@ -23,7 +23,7 @@ export interface VisitorAdminDeps {
   sqlite: Pick<Database.Database, 'prepare' | 'transaction'>
   /** Whether NUXT_VISITOR_LOG is on (shown in the empty state). */
   enabled: () => boolean
-  /** Best-effort audit entry; called with counts and the NAMES of the active filters only. */
+  /** Audit entry for an export; counts and the NAMES of the active filters only. MUST throw when it cannot be written: the export then fails closed. */
   audit: (entry: { userId: number | null, rows: number, filters: string[] }) => void
   now?: () => number
 }
@@ -65,13 +65,19 @@ export function handleVisitorExport(event: H3Event, deps: VisitorAdminDeps) {
   const admin = deps.requireAdmin(event)
   const filters = parseVisitorFilters(getQuery(event))
   noStore(event)
+  // The audit entry is written BEFORE any data leaves, with the row count (never the data itself). If it cannot be
+  // written the export is refused (fail closed), and no CSV header has been set yet.
+  const total = queryVisitorSessions(deps.sqlite, filters, 1, 1, nowS(deps)).total
+  try {
+    deps.audit({ userId: admin.userId ?? null, rows: Math.min(total, VISITOR_EXPORT_MAX_ROWS), filters: activeFilterNames(filters) })
+  } catch (e) {
+    console.error('[Visitors] export refused, audit entry not written:', e instanceof Error ? e.message : e)
+    throw createError({ statusCode: 500, message: 'Export refused: the audit entry could not be written' })
+  }
   const stamp = new Date(nowS(deps) * 1000).toISOString().slice(0, 10)
   setResponseHeader(event, 'Content-Type', 'text/csv; charset=utf-8')
   setResponseHeader(event, 'Content-Disposition', `attachment; filename="visitors-${stamp}.csv"`)
   setResponseHeader(event, 'X-Content-Type-Options', 'nosniff')
-  // The audit entry is written when the export starts, with the row count once it is known (never the data itself).
-  const total = queryVisitorSessions(deps.sqlite, filters, 1, 1, nowS(deps)).total
-  deps.audit({ userId: admin.userId ?? null, rows: Math.min(total, VISITOR_EXPORT_MAX_ROWS), filters: activeFilterNames(filters) })
   // UTF-8 BOM so Excel opens non-ASCII city names correctly.
   const stream = Readable.from((function* () { yield '\uFEFF'; yield* visitorCsvChunks(deps.sqlite, filters, nowS(deps)) })())
   return sendStream(event, stream)

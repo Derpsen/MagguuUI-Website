@@ -4,7 +4,7 @@
       icon="i-heroicons-chart-bar"
       eyebrow="System"
       title="Analytics"
-      description="Traffic, copies and API usage at a glance."
+      description="Anonymous, cookieless counters: page views and copy clicks. No IP or user agent is stored."
     >
       <template #meta>
         <span v-if="lastUpdatedText && !loading" class="admin-pill">{{ lastUpdatedText }}</span>
@@ -127,7 +127,7 @@
           </AdminPanel>
         </div>
 
-        <AdminPanel title="Hourly Page Views" description="Average pattern across the last 30 days" icon="i-heroicons-clock">
+        <AdminPanel title="Hourly Page Views" description="Average pattern across the last 14 days (detail rows)" icon="i-heroicons-clock">
           <AdminChartsBarChart :data="hourlyPageViewsData" color="#3b8bff" />
         </AdminPanel>
       </template>
@@ -154,10 +154,53 @@
           </AdminPanel>
         </div>
 
-        <AdminPanel title="Hourly Copies" description="Average hourly copy pattern across the last 30 days" icon="i-heroicons-clock">
+        <AdminPanel title="Hourly Copies" description="Average hourly copy pattern across the last 14 days (detail rows)" icon="i-heroicons-clock">
           <AdminChartsBarChart :data="hourlyCopiesData" color="#10b981" />
         </AdminPanel>
       </template>
+
+      <!-- Routes tab: per-route views + top copied items over a selectable range -->
+      <section v-else-if="activeTab === 'routes'" class="admin-dash" data-testid="traffic-tab" aria-labelledby="traffic-heading">
+        <fieldset class="flex flex-wrap items-center gap-4" data-testid="traffic-range">
+          <legend id="traffic-heading" class="admin-dash__label">Range</legend>
+          <label v-for="r in ranges" :key="r" class="inline-flex items-center gap-2 text-sm">
+            <input v-model.number="range" type="radio" name="traffic-range" :value="r" @change="loadTraffic">
+            <span>{{ r }} days</span>
+          </label>
+        </fieldset>
+        <p class="admin-dash__muted" data-testid="traffic-note">
+          UTC days, today included. Visitors are daily uniques added up: the visitor hash changes every day, so nobody is followed across days.
+          Detail rows are kept 14 days, daily totals longer.
+        </p>
+        <p v-if="!traffic" class="admin-dash__muted">Loading…</p>
+        <template v-else>
+          <p class="admin-dash__muted" data-testid="traffic-totals">
+            {{ traffic.from }} to {{ traffic.to }}: {{ traffic.totals.views }} views, {{ traffic.totals.visitors }} daily visitors, {{ traffic.totals.copies }} copies.
+          </p>
+          <div class="admin-dash__grid">
+            <div data-testid="traffic-routes">
+              <h2 class="admin-dash__label">Views per route</h2>
+              <ul v-if="traffic.routes.length" class="admin-dash__rows">
+                <li v-for="r in traffic.routes" :key="r.path" class="admin-dash__row" :data-testid="`traffic-route-${r.path}`">
+                  <span class="admin-dash__mono">{{ r.path }}</span>
+                  <span class="admin-dash__value">{{ r.views }}<span class="admin-dash__muted"> views · {{ r.visitors }} visitors</span></span>
+                </li>
+              </ul>
+              <p v-else class="admin-dash__muted">No views counted in this range yet.</p>
+            </div>
+            <div data-testid="traffic-copied">
+              <h2 class="admin-dash__label">Top copied items</h2>
+              <ul v-if="traffic.copied.length" class="admin-dash__rows">
+                <li v-for="c in traffic.copied" :key="`${c.type}-${c.id}`" class="admin-dash__row">
+                  <span>{{ c.name }} <span class="admin-dash__muted">({{ c.type }})</span></span>
+                  <span class="admin-dash__value">{{ c.copies }}</span>
+                </li>
+              </ul>
+              <p v-else class="admin-dash__muted">No copies counted in this range yet.</p>
+            </div>
+          </div>
+        </template>
+      </section>
 
       <!-- API Tab -->
       <template v-else>
@@ -204,7 +247,7 @@ definePageMeta({ layout: 'admin' })
 
 const { apiFetch } = useApi()
 
-type TabId = 'overview' | 'visitors' | 'copies' | 'api'
+type TabId = 'overview' | 'visitors' | 'copies' | 'routes' | 'api'
 
 interface DailyPoint { day: string; count: number }
 interface HourlyPoint { hour: number; views?: number; copies?: number }
@@ -217,8 +260,8 @@ interface StatsData {
   pageViewTrend?: number
   totalCopies?: number
   copiesLast7Days?: number
-  uniqueVisitors?: number
-  uniqueVisitorsLast7Days?: number
+  copiesLast30Days?: number
+  copiedItems30Days?: number
   copyTrend?: number
   totalApiCalls?: number
   apiCallsLast7Days?: number
@@ -241,6 +284,20 @@ interface StatsData {
   avgStringSizes?: Array<{ addon: string; avg_size: number; count: number }>
 }
 
+interface TrafficReport {
+  from: string
+  to: string
+  totals: { views: number, visitors: number, copies: number }
+  routes: Array<{ path: string, views: number, visitors: number }>
+  copied: Array<{ type: string, id: number, name: string, copies: number }>
+}
+const ranges = [7, 30, 90]
+const range = ref(7)
+const traffic = ref<TrafficReport | null>(null)
+async function loadTraffic() {
+  traffic.value = null
+  traffic.value = await apiFetch<TrafficReport>(`/api/v1/admin/stats/traffic?days=${range.value}`)
+}
 const route = useRoute()
 const router = useRouter()
 const loading = ref(true)
@@ -249,6 +306,7 @@ const tabs: Array<{ id: TabId; label: string }> = [
   { id: 'overview', label: 'Overview' },
   { id: 'visitors', label: 'Visitors' },
   { id: 'copies', label: 'Copies' },
+  { id: 'routes', label: 'Routes' },
   { id: 'api', label: 'API' },
 ]
 const validTabs = tabs.map(t => t.id) as string[]
@@ -278,6 +336,7 @@ function updateLastUpdatedText() {
 
 async function refresh() {
   loading.value = true
+  void loadTraffic()
   try {
     stats.value = await apiFetch('/api/v1/admin/stats')
     lastLoaded.value = new Date()
@@ -368,10 +427,10 @@ const activeMetrics = computed(() => {
 
   if (activeTab.value === 'overview') {
     return [
-      { label: 'Page Views', value: v.totalPageViews || 0, icon: 'i-heroicons-eye', tone: 'brand' as const, trend: v.pageViewTrend ?? null },
-      { label: 'Visitors', value: v.uniquePageVisitors || 0, icon: 'i-heroicons-user-group', tone: 'success' as const, trend: null },
+      { label: 'Views 90d', value: v.totalPageViews || 0, icon: 'i-heroicons-eye', tone: 'brand' as const, trend: v.pageViewTrend ?? null },
+      { label: 'Daily visitors 30d', value: v.uniquePageVisitors || 0, icon: 'i-heroicons-user-group', tone: 'success' as const, trend: null },
       { label: 'Views 7d', value: v.pageViewsLast7Days || 0, icon: 'i-heroicons-calendar-days', tone: 'violet' as const, trend: v.pageViewTrend ?? null },
-      { label: 'Visitors 7d', value: v.uniquePageVisitorsLast7Days || 0, icon: 'i-heroicons-users', tone: 'warning' as const, trend: null },
+      { label: 'Daily visitors 7d', value: v.uniquePageVisitorsLast7Days || 0, icon: 'i-heroicons-users', tone: 'warning' as const, trend: null },
     ]
   }
 
@@ -380,18 +439,20 @@ const activeMetrics = computed(() => {
       { label: 'Devices', value: v.deviceBreakdown?.length || 0, icon: 'i-heroicons-device-phone-mobile', tone: 'brand' as const, trend: null },
       { label: 'Browsers', value: v.browserBreakdown?.length || 0, icon: 'i-heroicons-window', tone: 'success' as const, trend: null },
       { label: 'Operating Systems', value: v.osBreakdown?.length || 0, icon: 'i-heroicons-circle-stack', tone: 'violet' as const, trend: null },
-      { label: 'Visitors 30d', value: v.uniquePageVisitors || 0, icon: 'i-heroicons-user-group', tone: 'warning' as const, trend: null },
+      { label: 'Daily visitors 30d', value: v.uniquePageVisitors || 0, icon: 'i-heroicons-user-group', tone: 'warning' as const, trend: null },
     ]
   }
 
   if (activeTab.value === 'copies') {
     return [
-      { label: 'Total Copies', value: v.totalCopies || 0, icon: 'i-heroicons-clipboard-document', tone: 'brand' as const, trend: v.copyTrend ?? null },
+      { label: 'Copies 90d', value: v.totalCopies || 0, icon: 'i-heroicons-clipboard-document', tone: 'brand' as const, trend: v.copyTrend ?? null },
       { label: 'Copies 7d', value: v.copiesLast7Days || 0, icon: 'i-heroicons-calendar', tone: 'success' as const, trend: null },
-      { label: 'Copy Visitors', value: v.uniqueVisitors || 0, icon: 'i-heroicons-finger-print', tone: 'violet' as const, trend: null },
-      { label: 'Copy Visitors 7d', value: v.uniqueVisitorsLast7Days || 0, icon: 'i-heroicons-signal', tone: 'warning' as const, trend: null },
+      { label: 'Copies 30d', value: v.copiesLast30Days || 0, icon: 'i-heroicons-finger-print', tone: 'violet' as const, trend: null },
+      { label: 'Copied items 30d', value: v.copiedItems30Days || 0, icon: 'i-heroicons-signal', tone: 'warning' as const, trend: null },
     ]
   }
+
+  if (activeTab.value === 'routes') return []
 
   return [
     { label: 'API Calls', value: v.totalApiCalls || 0, icon: 'i-heroicons-server', tone: 'brand' as const, trend: v.apiTrend ?? null },

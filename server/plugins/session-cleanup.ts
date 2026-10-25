@@ -11,6 +11,7 @@ import { cleanupExpiredChallenges } from '~/server/utils/webauthn'
 import { getDataRetentionDays } from '~/server/utils/settings'
 import { sqlite } from '~/server/database'
 import { cleanupRateLimits } from '~/server/utils/rateLimit'
+import { runAnalyticsMaintenance } from '~/server/utils/analytics'
 
 function runCleanup() {
   const retentionDays = getDataRetentionDays()
@@ -23,8 +24,9 @@ function runCleanup() {
 
   // Clean up old page views & copy events based on data retention setting
   try {
-    sqlite.prepare('DELETE FROM page_views WHERE created_at < ?').run(cutoff)
-    sqlite.prepare('DELETE FROM copy_events WHERE created_at < ?').run(cutoff)
+    // Anonymous counting: roll up finished days, scrub legacy identifiers, prune detail rows
+    // (RAW_DETAIL_DAYS) and old aggregates. Independent of the retention setting.
+    runAnalyticsMaintenance(sqlite)
     sqlite.prepare('DELETE FROM web_vitals WHERE created_at < ?').run(cutoff)
     // Keep the newest 50 revisions per content cell; older ones go.
     sqlite.prepare(`DELETE FROM content_revisions WHERE id IN (

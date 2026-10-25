@@ -115,7 +115,7 @@ describe('buildOverview', () => {
     const o = buildOverview(sqlite, { now: NOW })
     assert.equal(o.traffic.views7d, 4)
     assert.equal(o.traffic.viewsPrev7d, 1)
-    assert.equal(o.traffic.visitors7d, 2)
+    assert.equal(o.traffic.visitors7d, 3) // daily uniques summed: 1 + 1 + 1 ('unknown' never counts)
     assert.equal(o.traffic.copies7d, 3)
     assert.equal(o.traffic.copiesPrev7d, 1)
     assert.deepEqual(o.traffic.topCopied[0], { name: 'Plater - Main', type: 'profile', copies: 3 })
@@ -131,7 +131,7 @@ describe('buildOverview', () => {
 
   it('flags a broken database', () => {
     const sqlite = freshDb()
-    const broken = { prepare: (sql: string) => sql.startsWith('SELECT 1') ? { get: () => { throw new Error('boom') } } : sqlite.prepare(sql) }
+    const broken = { transaction: sqlite.transaction.bind(sqlite), prepare: (sql: string) => sql.startsWith('SELECT 1') ? { get: () => { throw new Error('boom') } } : sqlite.prepare(sql) }
     const o = buildOverview(broken as unknown as Database.Database, { now: NOW })
     assert.equal(o.health.database, 'unavailable')
     assert.equal(attentionItems(o)[0]!.id, 'database')

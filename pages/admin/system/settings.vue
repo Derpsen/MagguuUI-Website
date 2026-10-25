@@ -273,6 +273,9 @@
             <label class="admin-field__label">Data retention</label>
             <USelect v-model="form.data_retention_days" aria-label="Data retention" :items="retentionOptions" value-key="value" :disabled="saving" />
           </div>
+          <p class="admin-field__hint">
+            Anonymous page-view and copy detail rows are always deleted after 14 days, independent of this setting. Daily totals (no visitor codes) are kept for 400 days.
+          </p>
         </AdminPanel>
 
         <AdminPanel title="Database" description="Current runtime and backup controls." icon="i-heroicons-circle-stack">

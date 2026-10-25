@@ -7,7 +7,7 @@
       <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">Profile configurator</h1>
       <p class="mt-3 text-sm leading-relaxed" :class="muted">
         Pick the addons you want. You get the matching WowUp collections, a plain install list and the Magguu profile strings for exactly those addons.
-        Your choice lives in the page address, so you can bookmark or share it. Nothing is stored or sent anywhere.
+        Your choice lives in the page address, so you can bookmark or share it; it is not stored or sent anywhere. Copy clicks on import strings are counted anonymously (no cookies, no personal data), see <NuxtLink to="/privacy" class="underline underline-offset-4">Privacy</NuxtLink>.
       </p>
     </header>
 
@@ -94,7 +94,7 @@
                 <StringCopyButton
                   :copied="copiedKey === `pack-${entry.pack.id}`"
                   :label="`Copy string: WowUp collection ${entry.pack.label}`"
-                  @copy="copyRemote(`pack-${entry.pack.id}`, `/api/v1/wowup/${entry.pack.id}`)"
+                  @copy="copyRemote(`pack-${entry.pack.id}`, `/api/v1/wowup/${entry.pack.id}`, { type: 'wowup', id: entry.pack.id })"
                 />
               </div>
               <p class="mt-1 text-sm leading-relaxed" :class="muted">
@@ -139,7 +139,7 @@
                   <StringCopyButton
                     :copied="copiedKey === `profile-${p.id}`"
                     :label="`Copy string: ${entry.addon.name}, ${p.name}`"
-                    @copy="copyRemote(`profile-${p.id}`, `/api/v1/profiles/${p.id}`)"
+                    @copy="copyRemote(`profile-${p.id}`, `/api/v1/profiles/${p.id}`, { type: 'profile', id: p.id })"
                   />
                 </li>
               </ul>
@@ -182,6 +182,7 @@
 </template>
 
 <script setup lang="ts">
+import { trackCopy } from '~/utils/beacon'
 import { copyTextToClipboard } from '~/utils/clipboard'
 import {
   REQUIRED_SLUG, buildOutput, parseSelection, presetSelection, selectionToQuery, toggleAddon, toggleProfile,
@@ -240,12 +241,13 @@ async function finishCopy(key: string, text: string) {
   timer = setTimeout(() => { copiedKey.value = '' }, 2000)
 }
 async function copyText(key: string, text: string) { await finishCopy(key, text) }
-async function copyRemote(key: string, url: string) {
+async function copyRemote(key: string, url: string, target?: { type: 'profile' | 'wowup', id: number }) {
   try {
     const res = await $fetch<{ data?: { string?: string } }>(url)
     const text = res.data?.string
     if (!text) throw new Error('empty')
     await finishCopy(key, text)
+    if (target) trackCopy(target.type, target.id)
   } catch {
     toast.add({ title: 'Could not copy', color: 'error' })
   }

@@ -6,8 +6,9 @@
  */
 
 import type Database from 'better-sqlite3'
+import { trafficReport } from './analytics'
 
-type Sqlite = Pick<Database.Database, 'prepare'>
+type Sqlite = Pick<Database.Database, 'prepare' | 'transaction'>
 
 export const OVERVIEW_STALE_DAYS = 30
 export const OVERVIEW_RECENT_LIMIT = 8
@@ -85,30 +86,14 @@ const toChange = (r: ChangeRow): OverviewChange => ({
   id: r.id, action: r.action, entityType: r.entity_type, entityName: r.entity_name, actorName: r.actor_name, createdAt: r.created_at,
 })
 
-function topCopied(sqlite: Sqlite, since: number) {
-  const rows = sqlite.prepare(
-    'SELECT string_type AS t, string_id AS id, COUNT(*) AS c FROM copy_events WHERE created_at > ? GROUP BY string_type, string_id ORDER BY c DESC LIMIT 5',
-  ).all(since) as Array<{ t: string, id: number, c: number }>
-  return rows.map((r) => {
-    let name = `${r.t} #${r.id}`
-    if (r.t === 'profile') {
-      const p = one<{ addon: string, profile: string }>(sqlite, 'SELECT addon, profile FROM profiles WHERE id = ?', r.id)
-      if (p) name = `${p.addon} - ${p.profile}`
-    } else if (r.t === 'wowup') {
-      const w = one<{ name: string }>(sqlite, 'SELECT name FROM wowup_strings WHERE id = ?', r.id)
-      if (w) name = w.name
-    } else if (r.t === 'layout') {
-      const l = one<{ name: string, class_name: string | null, spec: string | null }>(sqlite, 'SELECT name, class_name, spec FROM character_layouts WHERE id = ?', r.id)
-      if (l) name = l.class_name && l.spec ? `${l.class_name} - ${l.spec}` : l.name
-    }
-    return { name, type: r.t, copies: r.c }
-  })
-}
-
 export function buildOverview(sqlite: Sqlite, env: OverviewEnv = {}): Overview {
   const now = env.now ?? Math.floor(Date.now() / 1000)
   const week = 7 * 86400
   const staleBefore = now - OVERVIEW_STALE_DAYS * 86400
+  // Own anonymous counters (utils/analytics.ts): last 7 UTC days incl. today vs. the 7 before; top copies over 30 days.
+  const week7 = trafficReport(sqlite, 7, now)
+  const prev7 = trafficReport(sqlite, 7, now - week)
+  const month = trafficReport(sqlite, 30, now)
 
   let database: 'ok' | 'unavailable' = 'ok'
   try { sqlite.prepare('SELECT 1').get() } catch { database = 'unavailable' }
@@ -168,12 +153,12 @@ export function buildOverview(sqlite: Sqlite, env: OverviewEnv = {}): Overview {
     },
     lastChange: { any: lastAny ? toChange(lastAny) : null, publishAt: publish?.at ?? null, byType },
     traffic: {
-      views7d: num(sqlite, 'SELECT COUNT(*) AS n FROM page_views WHERE created_at > ?', now - week),
-      viewsPrev7d: num(sqlite, 'SELECT COUNT(*) AS n FROM page_views WHERE created_at > ? AND created_at <= ?', now - 2 * week, now - week),
-      visitors7d: num(sqlite, "SELECT COUNT(DISTINCT ip) AS n FROM page_views WHERE created_at > ? AND ip IS NOT NULL AND ip <> 'unknown'", now - week),
-      copies7d: num(sqlite, 'SELECT COUNT(*) AS n FROM copy_events WHERE created_at > ?', now - week),
-      copiesPrev7d: num(sqlite, 'SELECT COUNT(*) AS n FROM copy_events WHERE created_at > ? AND created_at <= ?', now - 2 * week, now - week),
-      topCopied: topCopied(sqlite, now - 30 * 86400),
+      views7d: week7.totals.views,
+      viewsPrev7d: prev7.totals.views,
+      visitors7d: week7.totals.visitors,
+      copies7d: week7.totals.copies,
+      copiesPrev7d: prev7.totals.copies,
+      topCopied: month.copied.slice(0, 5).map(c => ({ name: c.name, type: c.type, copies: c.copies })),
     },
     health: {
       database,

@@ -1,42 +1,37 @@
 /**
- * usePageTracking — Automatic anonymous page view tracking
+ * usePageTracking — anonymous page counting for public pages.
  *
- * Fires on every client-side route change (public pages only).
- * Sends path + referrer to /api/v1/page-view.
- * Does NOT track admin pages or duplicate navigations.
+ * Sends the route (path only, no query) once per navigation via sendBeacon, plus
+ * the referrer host on the landing view. No cookies, no storage, no identifiers.
+ * Skipped when Do-Not-Track / Global Privacy Control is on. Admin pages are never
+ * sent; the server additionally ignores admin sessions, bots and unknown routes.
  */
+import { sendCountBeacon } from '~/utils/beacon'
+import { normalizeTrackedPath } from '~/utils/trackingRules'
 
 export function usePageTracking() {
   const router = useRouter()
-
-  // Only run on client
   if (import.meta.server) return
 
-  // Track initial page load
-  onMounted(() => {
-    trackView(router.currentRoute.value.fullPath)
-  })
+  let last = ''
+  let landing = true
 
-  // Track client-side navigation — capture unregister fn so the hook
-  // does not accumulate across layout re-mounts.
-  const off = router.afterEach((to) => {
-    trackView(to.fullPath)
-  })
+  function trackView(fullPath: string) {
+    const path = normalizeTrackedPath(fullPath)
+    if (!path || path === last) return
+    last = path
+    let referrer: string | null = null
+    if (landing && document.referrer) {
+      try {
+        const host = new URL(document.referrer).hostname
+        if (host && host !== location.hostname) referrer = host
+      } catch { /* ignore */ }
+    }
+    landing = false
+    sendCountBeacon('/api/v1/page-view', { path, referrer })
+  }
+
+  onMounted(() => trackView(router.currentRoute.value.fullPath))
+  const off = router.afterEach(to => trackView(to.fullPath))
   onUnmounted(() => off())
-}
-
-function trackView(path: string) {
-  // Skip admin pages
-  if (path.startsWith('/admin')) return
-
-  // Fire-and-forget — never block rendering
-  try {
-    $fetch('/api/v1/page-view', {
-      method: 'POST',
-      body: {
-        path,
-        referrer: document.referrer || null,
-      },
-    }).catch(() => { /* silent */ })
-  } catch { /* silent */ }
 }

@@ -366,6 +366,7 @@
 </template>
 
 <script setup lang="ts">
+import { trackCopy } from '~/utils/beacon'
 import { addonIconForName } from '~/utils/addonIcons'
 import { wowClassIcon, wowClassColor } from '~/utils/wowClassIcons'
 import { layoutSpecChoices, SHARED_LAYOUT_SPEC, wowSpecIcon } from '~/utils/wowSpecs'
@@ -649,10 +650,6 @@ async function doCopy(text: string): Promise<boolean> {
   const ok = await copyTextToClipboard(text)
   if (!ok) toast.add({ title: 'Could not copy. Select the string and copy it manually.', color: 'error' })
   return ok
-}
-
-function trackCopy(type: string, id: number) {
-  $fetch('/api/v1/copy-event', { method: 'POST', body: { stringType: type, stringId: id } }).catch(() => {})
 }
 
 function profilePreview(row: PublicProfile | null): string {

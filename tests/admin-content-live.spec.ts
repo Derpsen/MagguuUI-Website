@@ -702,3 +702,134 @@ test.describe('profile configurator (/configurator)', () => {
     await expect(page.locator('body')).not.toContainText(nameB)
   })
 })
+
+test.describe('anonymous counting (/privacy, admin Routes view)', () => {
+  // Counts are told apart from other specs' traffic (same IP) by a referrer host that is unique to each check.
+  const HUMAN_UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
+  const s = Date.now().toString(36)
+  const host = (n: string) => `${n}-${s}.example.org`
+  const from = (n: string) => `https://${host(n)}/`
+  let profileId = 0
+  let anon: BrowserContext
+
+  type Traffic = {
+    totals: { views: number, copies: number }
+    routes: Array<{ path: string, views: number }>
+    referrers: Array<{ name: string, views: number }>
+    copied: Array<{ type: string, id: number, copies: number }>
+  }
+  const traffic = async () => json<Traffic>(await api.get('/api/v1/admin/stats/traffic?days=7'))
+  const viaHost = async (n: string) => (await traffic()).referrers.find(r => r.name === host(n))?.views ?? 0
+  const copies = async () => (await traffic()).copied.find(c => c.type === 'profile' && c.id === profileId)?.copies ?? 0
+  const beaconSeen = (p: Page) => p.waitForResponse(r => r.url().includes('/api/v1/page-view'))
+  const settle = (p: Page) => p.waitForTimeout(400)
+  const post = (ctx: BrowserContext, path: string, n: string) =>
+    ctx.request.post('/api/v1/page-view', { data: { path, referrer: from(n) } })
+
+  test.beforeAll(async ({ browser }) => {
+    profileId = (await json<{ id: number }>(await api.post('/api/v1/admin/profiles', { data: { addon: 'BigWigs', profile: `Count ${s}`, string: 'e2e-count' } }))).id
+    anon = await browser.newContext({ userAgent: HUMAN_UA })
+    await anon.grantPermissions(['clipboard-read', 'clipboard-write'])
+  })
+
+  test.afterAll(async () => {
+    await anon?.close()
+    await api.delete(`/api/v1/admin/profiles/${profileId}`)
+  })
+
+  test('a visitor sets no cookie and the privacy page describes the counting', async () => {
+    const res = await anon.request.get('/')
+    expect(res.headers()['set-cookie']).toBeUndefined()
+    const p = await anon.newPage()
+    await p.goto('/privacy')
+    await expect(p.getByRole('heading', { name: '7. Anonymous Usage Counting' })).toBeVisible()
+    await expect(p.locator('body')).toContainText('No cookies')
+    await expect(p.locator('body')).toContainText('deleted after 14 days')
+    await p.close()
+    expect((await anon.cookies()).length).toBe(0)
+    const stored = await anon.storageState()
+    expect(JSON.stringify(stored.origins)).not.toMatch(/visitor|session|uuid/i)
+  })
+
+  test('a page view is counted once per visit, without query or admin paths', async () => {
+    const p = await anon.newPage()
+    await Promise.all([beaconSeen(p), p.goto('/faq?utm_source=e2e#top', { referer: from('view') })])
+    await expect.poll(() => viaHost('view')).toBe(1)
+    await settle(p)
+    expect(await viaHost('view')).toBe(1)
+    const t = await traffic()
+    expect(t.routes.some(r => r.path.includes('?') || r.path.startsWith('/admin'))).toBe(false)
+    await p.close()
+  })
+
+  test('Do Not Track and Global Privacy Control skip counting (client and server)', async ({ browser }) => {
+    // Server side: the header alone is enough, even for a hand-made request.
+    const withDnt = await browser.newContext({ userAgent: HUMAN_UA, extraHTTPHeaders: { DNT: '1' } })
+    expect((await post(withDnt, '/guide', 'dnt')).status()).toBe(204)
+    const withGpc = await browser.newContext({ userAgent: HUMAN_UA, extraHTTPHeaders: { 'Sec-GPC': '1' } })
+    expect((await post(withGpc, '/guide', 'dnt')).status()).toBe(204)
+    // Client side: the browser signal stops the beacon from being sent at all.
+    const signal = await browser.newContext({ userAgent: HUMAN_UA })
+    await signal.addInitScript(() => Object.defineProperty(navigator, 'doNotTrack', { value: '1' }))
+    const p = await signal.newPage()
+    let sent = 0
+    p.on('request', (r) => { if (r.url().includes('/api/v1/page-view')) sent++ })
+    await p.goto('/guide', { referer: from('dnt') })
+    await p.waitForLoadState('networkidle')
+    await settle(p)
+    expect(sent).toBe(0)
+    await Promise.all([withDnt.close(), withGpc.close(), signal.close()])
+    // Control: the same request without the signal is counted.
+    expect((await post(anon, '/guide', 'dnt')).status()).toBe(204)
+    await expect.poll(() => viaHost('dnt')).toBe(1)
+  })
+
+  test('bots, admin sessions and unknown paths are not counted', async ({ browser }) => {
+    const bot = await browser.newContext({ userAgent: 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' })
+    const bp = await bot.newPage()
+    await Promise.all([beaconSeen(bp), bp.goto('/about', { referer: from('skip') })])
+    await bot.close()
+    // The logged-in admin session (this spec's `page`) sends the beacon but is ignored by the server.
+    await Promise.all([beaconSeen(page), page.goto('/about', { referer: from('skip') })])
+    await settle(page)
+    // Anonymous but outside the allowlist.
+    for (const path of ['/admin/users', '/nope', '/api/v1/health']) {
+      expect((await post(anon, path, 'skip')).status()).toBe(204)
+    }
+    // Control: a normal visitor is counted, nothing before it was.
+    expect((await post(anon, '/about', 'skip')).status()).toBe(204)
+    await expect.poll(() => viaHost('skip')).toBe(1)
+    await settle(page)
+    expect(await viaHost('skip')).toBe(1)
+  })
+
+  test('a copy click is counted for a published item only', async () => {
+    const before = await copies()
+    const p = await anon.newPage()
+    await p.goto('/configurator?addons=bigwigs')
+    await p.waitForLoadState('networkidle')
+    await p.getByRole('button', { name: `Copy string: BigWigs, Count ${s}` }).click()
+    await expect.poll(copies).toBe(before + 1)
+    await p.close()
+
+    await json(await api.patch(`/api/v1/admin/profiles/${profileId}`, { data: { isVisible: false } }))
+    expect((await anon.request.post('/api/v1/copy-event', { data: { type: 'profile', id: profileId } })).status()).toBe(204)
+    expect((await anon.request.post('/api/v1/copy-event', { data: { type: 'bogus', id: 1 } })).status()).toBe(204)
+    expect(await copies()).toBe(before + 1)
+  })
+
+  test('the admin Routes view lists routes and copied items and switches range', async () => {
+    await page.goto('/admin/system/stats?tab=routes')
+    await expect(page.getByTestId('traffic-tab')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByTestId('traffic-route-/faq')).toContainText('views')
+    await expect(page.getByTestId('traffic-copied')).toContainText(`Count ${s}`)
+    await expect(page.getByTestId('traffic-note')).toContainText('14 days')
+    await expect(page.getByTestId('traffic-range').getByRole('radio')).toHaveCount(3)
+    const month = page.waitForResponse(r => r.url().includes('/api/v1/admin/stats/traffic?days=30'))
+    await page.getByRole('radio', { name: '30 days' }).check()
+    await month
+    await expect(page.getByTestId('traffic-route-/faq')).toBeVisible()
+    await page.getByRole('radio', { name: '90 days' }).check()
+    await expect(page.getByTestId('traffic-totals')).toContainText('views')
+  })
+})

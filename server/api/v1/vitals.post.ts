@@ -13,9 +13,9 @@ import { parseVitalsBeacon } from '~/server/utils/webVitals'
 export default defineEventHandler(async (event) => {
   setResponseStatus(event, 204)
   setResponseHeader(event, 'Cache-Control', 'no-store')
-  if (!isPageViewTrackingEnabled()) return null
+  if (!isPageViewTrackingEnabled() || requestOptedOut(event)) return null
 
-  const { allowed } = checkRateLimit(`vitals:${rateLimitIpKey(getClientIp(event))}`, 30, 60_000, 60_000)
+  const { allowed } = checkRateLimit(`vitals:${anonymousKey(dailySalt.get(), getClientIp(event))}`, 30, 60_000, 60_000)
   if (!allowed) return null
 
   // sendBeacon posts text/plain; parse it ourselves and cap the size.

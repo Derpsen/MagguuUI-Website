@@ -162,7 +162,18 @@ export const DATABASE_BOOTSTRAP_SQL = `
     os TEXT,
     country TEXT,
     ip TEXT,
+    visitor TEXT,
     created_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+
+  -- Daily roll-up of anonymous counting (no per-visitor data); see server/utils/analytics.ts
+  CREATE TABLE IF NOT EXISTS stats_daily (
+    day TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    key TEXT NOT NULL,
+    views INTEGER NOT NULL DEFAULT 0,
+    uniques INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (day, kind, key)
   );
 
   CREATE TABLE IF NOT EXISTS sessions (
@@ -314,6 +325,7 @@ export const SAFE_COLUMN_MIGRATIONS = [
   'ALTER TABLE changelogs ADD COLUMN content_en TEXT',
   'ALTER TABLE users ADD COLUMN is_locked INTEGER NOT NULL DEFAULT 0',
   'ALTER TABLE users ADD COLUMN locked_until INTEGER',
+  'ALTER TABLE page_views ADD COLUMN visitor TEXT',
   // Performance indexes added 2026-04
   'CREATE INDEX IF NOT EXISTS idx_activity_log_entity_type_created_at ON activity_log(entity_type, created_at)',
   'CREATE INDEX IF NOT EXISTS idx_activity_log_user_id_created_at ON activity_log(user_id, created_at)',

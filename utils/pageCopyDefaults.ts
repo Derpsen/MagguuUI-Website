@@ -79,7 +79,7 @@ export const PRIVACY_DEFAULTS: PageCopyDefaults = {
   },
   s4: {
     title: '4. Data Collection on This Website',
-    body: '<h3>Cookies</h3><p>This website uses technically necessary cookies for the theme setting (Dark/Light Mode). No tracking cookies or third-party cookies are used.</p><h3>Server Log Files</h3><p>The hosting provider automatically collects and stores information in server log files that your browser transmits:</p><ul><li>Browser type and version</li><li>Operating system</li><li>Referrer URL</li><li>IP address (anonymized)</li><li>Time of server request</li></ul><h3>Contact via Email</h3><p>If you contact us via email, your information will be stored for the purpose of processing your inquiry. Your data will not be shared with third parties.</p>',
+    body: '<h3>Cookies and browser storage</h3><p>This website sets no cookies for visitors. Your Dark/Light theme choice (and which release note you last saw) is kept in your own browser storage and is never sent to the server. No tracking cookies or third-party cookies are used.</p><h3>Server Log Files</h3><p>The hosting provider automatically collects and stores information in server log files that your browser transmits:</p><ul><li>Browser type and version</li><li>Operating system</li><li>Referrer URL</li><li>IP address (anonymized)</li><li>Time of server request</li></ul><h3>Contact via Email</h3><p>If you contact us via email, your information will be stored for the purpose of processing your inquiry. Your data will not be shared with third parties.</p>',
   },
   s5: {
     title: '5. External Services',
@@ -88,6 +88,10 @@ export const PRIVACY_DEFAULTS: PageCopyDefaults = {
   s6: {
     title: '6. Your Rights',
     body: '<p>You have the right at any time to free information about your stored personal data, its origin and recipients, and the purpose of data processing, as well as the right to correction, blocking, or deletion of this data. For this purpose and for any further questions regarding data protection, you may contact us at any time.</p>',
+  },
+  s7: {
+    title: '7. Anonymous Usage Counting',
+    body: '<p>To see which pages and import strings are useful, this site counts visits and copy clicks without identifying anyone.</p><h3>What is counted</h3><ul><li>A page view: the page address (without any query), the referring website name if there is one, and your browser family, operating system and device type (for example Firefox, Windows, desktop).</li><li>A copy click: which published profile, WowUp collection or class layout was copied, and when.</li><li>A daily visitor figure: a short code made from a coarse part of your network address and your browser family, mixed with a random secret that is kept only in memory and replaced every day. The code cannot be turned back into an address and cannot be matched from one day to the next.</li></ul><h3>What is not stored</h3><p>No cookies, no browser storage identifiers, no fingerprinting, no full IP address and no user-agent text. Nothing is shared with third parties. If your browser sends Do Not Track or Global Privacy Control, nothing is counted. Crawlers, administrators who are logged in, and unknown pages are not counted.</p><h3>How long it is kept</h3><p>Individual counting records are deleted after 14 days. Before that they are summed into daily totals per page and per copied item, which contain no visitor codes and are kept for up to 13 months.</p>'
   },
 }
 

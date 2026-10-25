@@ -5,7 +5,7 @@
  * Database: SQLite (WAL mode)
  */
 
-import { sqliteTable, text, integer, uniqueIndex, index } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, uniqueIndex, index, primaryKey } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
 // ─── Helper: Timestamps ────────────────────────────
@@ -321,13 +321,26 @@ export const pageViews = sqliteTable('page_views', {
   browser: text('browser'),           // 'Chrome' | 'Firefox' | 'Safari' etc.
   os: text('os'),                     // 'Windows' | 'macOS' | 'Linux' | 'Android' | 'iOS'
   country: text('country'),           // reserved for future geo-IP
-  ip: text('ip'),
+  ip: text('ip'),                     // legacy: always NULL now (scrubbed)
+  visitor: text('visitor'),           // per-day salted hash, not linkable across days
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
 }, (table) => ({
   pathCreatedAtIdx: index('idx_page_views_path_created_at').on(table.path, table.createdAt),
   createdAtIdx: index('idx_page_views_created_at').on(table.createdAt),
+}))
+
+// ─── Daily roll-up of anonymous counting ───────────
+// One row per UTC day, kind (site | route | copy | copy-site | referrer | device | browser | os) and key.
+export const statsDaily = sqliteTable('stats_daily', {
+  day: text('day').notNull(),
+  kind: text('kind').notNull(),
+  key: text('key').notNull(),
+  views: integer('views').notNull().default(0),
+  uniques: integer('uniques').notNull().default(0),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.day, table.kind, table.key] }),
 }))
 
 // ─── Web Vitals (anonymous RUM) ────────────────────

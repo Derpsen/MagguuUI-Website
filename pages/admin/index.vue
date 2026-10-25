@@ -81,7 +81,7 @@
               <span class="admin-dash__value">{{ overview.traffic.views7d }}<span class="admin-dash__muted"> · {{ formatTrend(overview.traffic.views7d, overview.traffic.viewsPrev7d) }}</span></span>
             </li>
             <li class="admin-dash__row">
-              <span>Visitors</span>
+              <span>Daily visitors, summed</span>
               <span class="admin-dash__value">{{ overview.traffic.visitors7d }}</span>
             </li>
             <li class="admin-dash__row" data-testid="dash-copies">

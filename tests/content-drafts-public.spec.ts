@@ -30,3 +30,9 @@ test.describe('audit endpoints require auth', () => {
     expect((await request.post('/api/v1/admin/audit/1/undo')).status()).toBe(401)
   })
 })
+
+/** The dashboard overview is admin-only as well. */
+test('GET admin overview → 401', async ({ request }) => {
+  expect((await request.get('/api/v1/admin/overview')).status()).toBe(401)
+  expect((await request.get('/api/v1/admin/overview?fresh=1')).status()).toBe(401)
+})

@@ -146,7 +146,8 @@ Routine „Magguu Audit Allowlist Review“ ~2. Nov; re-check before review-by.
 After Unraid app-image pull / when Buddy asks ("Unraid & Server" owns container pull):
 
 1. Login `/admin/login`
-2. These six routes must be **200** (from #102):
+2. These seven routes must be **200** (from #102):
+   - `/admin` (dashboard overview, shows "Needs attention" and the Content/Publishing/Traffic/Health sections)
    - `/admin/system/activity`
    - `/admin/system/audit`
    - `/admin/strings/profiles`
@@ -372,3 +373,10 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 - Undo is only for content, changelog and FAQ. It runs in one transaction, refuses if the current state differs from the stored after-state (409 `conflict`), refuses repeat undo and undo of an undo (422), re-inserts deleted changelog/FAQ rows under their old id, and writes a new audit row (`undo_of`) while the original gets `undone_by`. The page asks for a second confirm ("Restore before-state").
 - Retention: newest 5000 rows and 90 days (`AUDIT_MAX_ROWS`, `AUDIT_MAX_AGE_DAYS`), pruned on every insert.
 - Tests: `tests/unit/auditLog.test.ts`, unauth 401 in `tests/content-drafts-public.spec.ts`, full flow (diff, undo, conflict, secret never stored) in `tests/admin-content-live.spec.ts`.
+
+## Admin dashboard overview (2026-10-25)
+
+- `/admin` (`pages/admin/index.vue`) was rewritten in place (no second dashboard) as plain sections with mono mini-label headings and simple stat rows, no cards or icon boxes: Needs attention (drafts, unpublished changelog entries, stale strings, DB failure), Content counts, Publishing (latest `vX.Y.Z` changelog, last content publish and last change from the audit log, last change per type), Traffic from the site's own counters (7 days, trend vs previous week, most copied 30 days), Health of this site (DB check, DB size, uptime, audit/activity row counts, build SHA line) and Recent changes (last 8 audit entries).
+- SITE DATA ONLY: no bot, Plex, Unraid, Discord or GitHub data and no external calls. The old GitHub release/alerts cards were dropped from the dashboard (GitHub Sync keeps its own page). Never add secrets or audit snapshots to the overview; recent changes carry id/action/type/name/actor/time only.
+- One endpoint: `GET /api/v1/admin/overview[?fresh=1]` (`requireAdminAccess`, read-only). Aggregation lives in `server/utils/adminOverview.ts` (`buildOverview(sqlite, env)`, takes a handle, unit-tested in memory), a 10 s in-memory cache (`getOverview`, the Refresh button sends `fresh=1`), view helpers in `utils/overviewView.ts`. `/api/v1/admin/stats` stays for the Analytics page.
+- "Last content publish" is the newest audit row of type content whose name ends in `published`, so keep that naming in `publish.post.ts`. Tests: `tests/unit/adminOverview.test.ts`, unauth 401 in `tests/content-drafts-public.spec.ts`, the admin view in `tests/admin-content-live.spec.ts`.

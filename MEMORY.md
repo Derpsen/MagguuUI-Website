@@ -449,3 +449,8 @@
 
 - New `audit_changes` table (bootstrap SQL, idempotent), `/admin/system/audit`, `GET /api/v1/admin/audit` + `POST .../:id/undo`. Decisions: separate table instead of altering `activity_log`; central `auditRedact.ts` (key-name + value-shape + size caps, on write and read); undo only for content/changelog/FAQ with a strict conflict check (current must equal stored after-state); settings/profiles/WowUp/layouts audited only; retention 5000 rows / 90 days on every insert; audit writes are best effort.
 - Limits: FAQ reorder is unaudited so an older FAQ undo then conflicts (safe); snapshots with redacted/truncated fields are not undoable.
+
+## 2026-10-25 Item 8: admin dashboard overview (site data only)
+
+- Rewrote `/admin` in place as plain sections (Marco dislikes cards/icon boxes) on top of ONE new endpoint `GET /api/v1/admin/overview` (10 s cache, `?fresh=1` bypass). Decisions: dropped the GitHub release/alerts cards and the Chart widgets (external/bot-adjacent data); latest changelog uses `version LIKE 'v%'` like the feeds (dev DB holds leftover entries like `auto`); last publish comes from audit rows named `... published`; recent changes never include snapshots.
+- Limits: traffic counters are the site's own `page_views`/`copy_events` (no bots filtered beyond what is collected); cache means numbers can be up to 10 s old.

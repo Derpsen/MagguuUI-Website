@@ -1729,3 +1729,36 @@ html.dark .admin-shell .admin-activity-action--updated { color: #fcd34d; }
 .admin-audit__line--add { background: rgba(22, 163, 74, 0.14); }
 .admin-audit__line--del { background: rgba(220, 38, 38, 0.13); text-decoration: line-through; text-decoration-color: rgba(220, 38, 38, 0.5); }
 .admin-audit__line--same { opacity: 0.65; }
+
+/* ── Dashboard (plain sections, mono mini-labels, no cards) ───────────── */
+.admin-dash { display: flex; flex-direction: column; gap: 1.75rem; }
+.admin-dash__head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.admin-dash__title { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; }
+.admin-dash__label,
+.admin-dash__type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-brand-700);
+}
+.dark .admin-dash__label,
+.dark .admin-dash__type { color: var(--color-brand-300); }
+.admin-dash__label { margin-bottom: 0.4rem; }
+.admin-dash__label--sub { margin-top: 1rem; }
+.admin-dash__muted { font-size: 0.8125rem; color: var(--admin-fg-muted, inherit); opacity: 0.8; }
+.admin-dash__mono { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
+.admin-dash__grid { display: grid; gap: 1.75rem 3rem; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1024px) { .admin-dash__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.admin-dash__sectionhead { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.admin-dash__rows { list-style: none; margin: 0; padding: 0; }
+.admin-dash__row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 1rem; padding: 0.4rem 0; border-top: 1px solid var(--admin-border, rgba(128, 128, 128, 0.2)); font-size: 0.875rem; }
+.admin-dash__row--sub { padding-left: 0.85rem; font-size: 0.8125rem; }
+.admin-dash__name { overflow-wrap: anywhere; }
+a.admin-dash__name:hover, .admin-dash__link:hover { text-decoration: underline; }
+.admin-dash__value { font-variant-numeric: tabular-nums; text-align: right; }
+.admin-dash__link { font-size: 0.8125rem; color: var(--color-brand-700); }
+.dark .admin-dash__link { color: var(--color-brand-300); }
+.admin-dash__bad { color: #b91c1c; font-weight: 600; }
+.dark .admin-dash__bad { color: #fca5a5; }
+.admin-dash__type + .admin-dash__name { margin-left: 0.6rem; }

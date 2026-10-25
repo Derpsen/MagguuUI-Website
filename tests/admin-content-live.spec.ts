@@ -66,6 +66,46 @@ test('admin dashboard shows the live image SHA + build time as text', async () =
   await expect(line).toHaveText(/^\s*Live: ([0-9a-f]{7}|dev) · built (dev|\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC)$/)
 })
 
+test('admin dashboard: site-data overview with drafts, counts and recent changes (no cards, no secrets)', async () => {
+  test.setTimeout(90_000)
+  const tag = stamp()
+  let faqId = 0
+  try {
+    faqId = (await json<{ id: number }>(await api.post('/api/v1/admin/faqs', { data: { category: 'general', question: `Dash ${tag}`, answer: 'Answer' } }))).id
+    await json(await api.post('/api/v1/admin/content/drafts', { data: { pages: ['about'], items: [{ page: 'about', section: 'intro', key: 'title', locale: 'en', value: `Draft ${tag}` }] } }))
+
+    // The API: one endpoint, fresh bypasses the short cache, no snapshots or secrets.
+    const overview = await json<{ drafts: { cells: number, pages: string[] }, recent: Array<{ entityName: string }>, counts: { faqTotal: number }, health: { database: string } }>(await api.get('/api/v1/admin/overview?fresh=1'))
+    expect(overview.drafts.pages).toContain('about')
+    expect(overview.drafts.cells).toBeGreaterThan(0)
+    expect(overview.counts.faqTotal).toBeGreaterThan(0)
+    expect(overview.health.database).toBe('ok')
+    expect(overview.recent.map(r => r.entityName)).toContain(`Dash ${tag}`)
+    const raw = JSON.stringify(overview).toLowerCase()
+    for (const word of ['password', 'before_json', 'beforejson', 'token', 'webhook']) expect(raw).not.toContain(word)
+
+    await page.goto('/admin')
+    await expect(page.getByTestId('admin-dashboard')).toBeVisible({ timeout: 30_000 })
+    await page.getByTestId('admin-dash-refresh').click()
+    await expect(page.getByTestId('dash-attention-drafts')).toContainText('unpublished draft', { timeout: 15_000 })
+    await expect(page.getByTestId('dash-attention-drafts')).toContainText('about')
+    for (const id of ['dash-content', 'dash-publishing', 'dash-traffic', 'dash-health', 'dash-recent']) {
+      await expect(page.getByTestId(id)).toBeVisible()
+    }
+    await expect(page.getByTestId('dash-count-faq')).toBeVisible()
+    await expect(page.getByTestId('dash-db')).toContainText('ok')
+    await expect(page.getByTestId('dash-latest-version')).toContainText(/v\d|none/)
+    await expect(page.getByTestId('dash-recent')).toContainText(`Dash ${tag}`)
+    await expect(page.getByTestId('dash-last-change')).not.toContainText('none yet')
+
+    // Plain sections: no card boxes on the dashboard.
+    expect(await page.locator('[data-testid="admin-dashboard"] [class*="rounded-xl"], [data-testid="admin-dashboard"] .admin-metric-card').count()).toBe(0)
+  } finally {
+    await discardDrafts('about')
+    if (faqId) await api.delete(`/api/v1/admin/faqs/${faqId}`)
+  }
+})
+
 test('home hero eyebrow + step (admin form) is live on /', async () => {
   await page.goto('/')
   const before = await adminContent('home')

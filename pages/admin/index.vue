@@ -1,357 +1,160 @@
 <template>
-  <div class="space-y-6">
-    <!-- Skeleton loading state -->
-    <div v-if="!stats" class="space-y-5">
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div v-for="item in 4" :key="`metric-${item}`" class="admin-metric-card">
-          <div class="h-24 rounded-2xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-        </div>
+  <div class="admin-dash" data-testid="admin-dashboard">
+    <header class="admin-dash__head">
+      <div class="min-w-0">
+        <p class="admin-dash__label">Overview</p>
+        <h1 class="admin-dash__title">{{ greeting }}</h1>
+        <p class="admin-dash__muted">
+          Site data only: content, changelog, FAQ, strings, drafts and the audit log.
+          <span data-testid="admin-dash-refresh-note">Auto refresh {{ nextRefresh }}s.</span>
+        </p>
+        <p class="admin-dash__muted admin-dash__mono" data-testid="admin-live-build" :title="buildInfo?.gitSha">
+          Live: {{ buildLabel }}
+        </p>
       </div>
+      <UButton size="xs" color="neutral" variant="ghost" icon="i-heroicons-arrow-path" :loading="refreshing" data-testid="admin-dash-refresh" @click="refreshAll">
+        Refresh
+      </UButton>
+    </header>
 
-      <div class="grid gap-5 xl:grid-cols-[1fr_340px]">
-        <div class="h-64 rounded-xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-        <div class="h-64 rounded-xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
-      </div>
-    </div>
+    <p v-if="!overview" class="admin-dash__muted" data-testid="admin-dash-loading">{{ failed ? 'The overview could not be loaded.' : 'Loading…' }}</p>
 
     <template v-else>
-      <!-- 1. Welcome Banner -->
-      <div
-        class="rounded-xl border p-6"
-        :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-slate-200'"
-      >
-        <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div class="space-y-1">
-            <h1
-              class="text-xl font-semibold tracking-tight"
-              :class="isDark ? 'text-white' : 'text-slate-900'"
-            >
-              {{ greeting }}
-            </h1>
-            <p
-              class="text-sm"
-              :class="isDark ? 'text-white/60' : 'text-slate-500'"
-            >
-              Here is what is happening with your project today.
-              <span class="ml-1 text-xs opacity-70">Auto refresh {{ nextRefresh }}s</span>
-            </p>
-            <p
-              class="text-xs font-mono"
-              :class="isDark ? 'text-white/60' : 'text-slate-500'"
-              data-testid="admin-live-build"
-              :title="buildInfo?.gitSha"
-            >
-              Live: {{ buildLabel }}
-            </p>
-          </div>
+      <section class="admin-dash__section" aria-labelledby="dash-attention" data-testid="dash-attention">
+        <h2 id="dash-attention" class="admin-dash__label">Needs attention</h2>
+        <ul v-if="attention.length" class="admin-dash__rows">
+          <li v-for="item in attention" :key="item.id" class="admin-dash__row" :data-testid="`dash-attention-${item.id}`">
+            <span>{{ item.text }}</span>
+            <NuxtLink :to="item.to" class="admin-dash__link">Open</NuxtLink>
+          </li>
+        </ul>
+        <p v-else class="admin-dash__muted">Nothing open. No drafts, unpublished notes or stale strings.</p>
+      </section>
 
-          <div class="flex items-center gap-6">
-            <div v-for="card in trafficCards" :key="card.label" class="text-center">
-              <p
-                class="text-lg font-semibold tabular-nums"
-                :class="isDark ? 'text-white' : 'text-slate-900'"
-              >
-                {{ card.value }}
-              </p>
-              <p
-                class="text-xs"
-                :class="isDark ? 'text-white/50' : 'text-slate-400'"
-              >
-                {{ card.label }}
-              </p>
-            </div>
+      <div class="admin-dash__grid">
+        <section class="admin-dash__section" aria-labelledby="dash-content" data-testid="dash-content">
+          <h2 id="dash-content" class="admin-dash__label">Content</h2>
+          <ul class="admin-dash__rows">
+            <li v-for="row in contentRows" :key="row.key" class="admin-dash__row" :data-testid="`dash-count-${row.key}`">
+              <NuxtLink :to="row.to" class="admin-dash__name">{{ row.label }}</NuxtLink>
+              <span class="admin-dash__value">{{ row.value }}</span>
+            </li>
+          </ul>
+        </section>
 
-            <UButton
-              size="sm"
-              color="neutral"
-              variant="ghost"
-              icon="i-heroicons-arrow-path"
-              aria-label="Refresh dashboard"
-              :loading="refreshing"
-              @click="refreshAll"
-            />
-          </div>
+        <section class="admin-dash__section" aria-labelledby="dash-publishing" data-testid="dash-publishing">
+          <h2 id="dash-publishing" class="admin-dash__label">Publishing</h2>
+          <ul class="admin-dash__rows">
+            <li class="admin-dash__row" data-testid="dash-latest-version">
+              <span>Latest changelog</span>
+              <span class="admin-dash__value">
+                {{ overview.changelog.latestVersion ? `v${overview.changelog.latestVersion.replace(/^v/i, '')}` : 'none' }}
+                <span v-if="overview.changelog.latestPublishedAt" class="admin-dash__muted"> · {{ when(overview.changelog.latestPublishedAt) }}</span>
+              </span>
+            </li>
+            <li class="admin-dash__row" data-testid="dash-last-publish">
+              <span>Last content publish</span>
+              <span class="admin-dash__value">{{ overview.lastChange.publishAt ? when(overview.lastChange.publishAt) : 'none yet' }}</span>
+            </li>
+            <li class="admin-dash__row" data-testid="dash-last-change">
+              <span>Last change</span>
+              <span class="admin-dash__value">
+                <template v-if="overview.lastChange.any">
+                  {{ when(overview.lastChange.any.createdAt) }}
+                  <span class="admin-dash__muted"> · {{ overview.lastChange.any.actorName || 'system' }}</span>
+                </template>
+                <template v-else>none yet</template>
+              </span>
+            </li>
+            <li v-for="row in overview.lastChange.byType" :key="row.entityType" class="admin-dash__row admin-dash__row--sub">
+              <span class="admin-dash__type">{{ typeLabel(row.entityType) }}</span>
+              <span class="admin-dash__value">{{ when(row.at) }}<span class="admin-dash__muted"> · {{ row.actorName || 'system' }}</span></span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="admin-dash__section" aria-labelledby="dash-traffic" data-testid="dash-traffic">
+          <h2 id="dash-traffic" class="admin-dash__label">Traffic, own counters, 7 days</h2>
+          <ul class="admin-dash__rows">
+            <li class="admin-dash__row" data-testid="dash-views">
+              <span>Page views</span>
+              <span class="admin-dash__value">{{ overview.traffic.views7d }}<span class="admin-dash__muted"> · {{ formatTrend(overview.traffic.views7d, overview.traffic.viewsPrev7d) }}</span></span>
+            </li>
+            <li class="admin-dash__row">
+              <span>Visitors</span>
+              <span class="admin-dash__value">{{ overview.traffic.visitors7d }}</span>
+            </li>
+            <li class="admin-dash__row" data-testid="dash-copies">
+              <span>String copies</span>
+              <span class="admin-dash__value">{{ overview.traffic.copies7d }}<span class="admin-dash__muted"> · {{ formatTrend(overview.traffic.copies7d, overview.traffic.copiesPrev7d) }}</span></span>
+            </li>
+          </ul>
+          <p class="admin-dash__label admin-dash__label--sub">Most copied, 30 days</p>
+          <ul v-if="overview.traffic.topCopied.length" class="admin-dash__rows">
+            <li v-for="item in overview.traffic.topCopied" :key="`${item.type}-${item.name}`" class="admin-dash__row">
+              <span class="admin-dash__name">{{ item.name }}</span>
+              <span class="admin-dash__value">{{ item.copies }}</span>
+            </li>
+          </ul>
+          <p v-else class="admin-dash__muted">No copies yet.</p>
+        </section>
+
+        <section class="admin-dash__section" aria-labelledby="dash-health" data-testid="dash-health">
+          <h2 id="dash-health" class="admin-dash__label">Health, this site</h2>
+          <ul class="admin-dash__rows">
+            <li class="admin-dash__row" data-testid="dash-db">
+              <span>Database</span>
+              <span class="admin-dash__value" :class="overview.health.database === 'ok' ? '' : 'admin-dash__bad'">{{ overview.health.database === 'ok' ? 'ok' : 'unavailable' }}</span>
+            </li>
+            <li class="admin-dash__row">
+              <span>Database size</span>
+              <span class="admin-dash__value">{{ formatBytes(overview.health.dbSizeBytes) }}</span>
+            </li>
+            <li class="admin-dash__row">
+              <span>Uptime</span>
+              <span class="admin-dash__value">{{ formatUptime(overview.health.uptimeSeconds) }}</span>
+            </li>
+            <li class="admin-dash__row">
+              <span>Audit log</span>
+              <span class="admin-dash__value">{{ overview.health.auditRows }} entries</span>
+            </li>
+            <li class="admin-dash__row">
+              <span>Activity log</span>
+              <span class="admin-dash__value">{{ overview.health.activityRows }} entries</span>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <section class="admin-dash__section" aria-labelledby="dash-recent" data-testid="dash-recent">
+        <div class="admin-dash__sectionhead">
+          <h2 id="dash-recent" class="admin-dash__label">Recent changes</h2>
+          <NuxtLink to="/admin/system/audit" class="admin-dash__link">Audit log</NuxtLink>
         </div>
-      </div>
-
-      <!-- 2. KPI Metric Cards -->
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <AdminMetricCard
-          v-for="metric in overviewCards"
-          :key="metric.label"
-          :label="metric.label"
-          :value="metric.value"
-          :icon="metric.icon"
-          :hint="metric.hint"
-          :trend="metric.trend"
-          :tone="metric.tone"
-          :to="metric.to"
-        />
-      </div>
-
-      <!-- 3. Quick Actions Row -->
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <NuxtLink
-          v-for="action in quickActions"
-          :key="action.label"
-          :to="action.to"
-          class="group rounded-xl border p-4 transition-all duration-200"
-          :class="[
-            isDark
-              ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)] hover:border-primary/40'
-              : 'bg-white border-slate-200 hover:border-primary/50',
-            'hover:shadow-lg hover:shadow-primary/5',
-          ]"
-        >
-          <div class="flex items-center gap-3">
-            <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-              :class="isDark ? 'bg-white/5' : 'bg-slate-100'"
-            >
-              <UIcon
-                :name="action.icon"
-                class="h-5 w-5"
-                :class="isDark ? 'text-white/70' : 'text-slate-500'"
-              />
-            </div>
-            <div class="min-w-0">
-              <p
-                class="text-sm font-medium truncate"
-                :class="isDark ? 'text-white' : 'text-slate-900'"
-              >
-                {{ action.label }}
-              </p>
-              <p
-                class="text-xs truncate"
-                :class="isDark ? 'text-white/40' : 'text-slate-400'"
-              >
-                {{ action.subtitle }}
-              </p>
-            </div>
-          </div>
-        </NuxtLink>
-      </div>
-
-      <!-- 4. Two-column layout -->
-      <div class="grid gap-5 xl:grid-cols-[1fr_380px]">
-        <!-- Left column -->
-        <div class="space-y-5">
-          <!-- Traffic chart -->
-          <div
-            class="rounded-xl border p-5"
-            :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-slate-200'"
-          >
-            <div class="mb-4 flex items-center justify-between">
-              <div>
-                <h3
-                  class="text-sm font-semibold"
-                  :class="isDark ? 'text-white' : 'text-slate-900'"
-                >
-                  Traffic overview
-                </h3>
-                <p
-                  class="text-xs mt-0.5"
-                  :class="isDark ? 'text-white/50' : 'text-slate-400'"
-                >
-                  Copy events over the last 7 days
-                </p>
-              </div>
-              <div v-if="trafficTrendPills.length" class="flex items-center gap-2">
-                <span
-                  v-for="pill in trafficTrendPills"
-                  :key="pill.label"
-                  class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                  :class="
-                    pill.tone === 'admin-pill--warning'
-                      ? (isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')
-                      : (isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')
-                  "
-                >
-                  {{ pill.label }} {{ pill.value }}
-                </span>
-              </div>
-            </div>
-
-            <div v-if="trafficChartData.length">
-              <AdminChartsAreaChart :data="trafficChartData" color="#3b8bff" height="200px" />
-            </div>
-            <div v-else class="flex h-[200px] items-center justify-center">
-              <p :class="isDark ? 'text-white/30' : 'text-slate-300'" class="text-sm">No traffic data available</p>
-            </div>
-          </div>
-
-          <!-- Recent Activity -->
-          <div
-            class="rounded-xl border p-5"
-            :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-slate-200'"
-          >
-            <div class="mb-4 flex items-center justify-between">
-              <div>
-                <h3
-                  class="text-sm font-semibold"
-                  :class="isDark ? 'text-white' : 'text-slate-900'"
-                >
-                  Recent activity
-                </h3>
-                <p
-                  class="text-xs mt-0.5"
-                  :class="isDark ? 'text-white/50' : 'text-slate-400'"
-                >
-                  Latest changes across content and data
-                </p>
-              </div>
-              <NuxtLink
-                to="/admin/system/activity"
-                class="text-xs font-medium transition-colors text-primary hover:opacity-80"
-              >
-                View all
-              </NuxtLink>
-            </div>
-
-            <div v-if="stats.recentActivity?.length" class="space-y-1">
-              <div
-                v-for="item in stats.recentActivity.slice(0, 8)"
-                :key="item.id"
-                class="flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors"
-                :class="isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-slate-50'"
-              >
-                <div
-                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                  :class="
-                    item.action === 'created'
-                      ? (isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')
-                      : item.action === 'updated'
-                        ? (isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600')
-                        : (isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600')
-                  "
-                >
-                  <UIcon :name="actionIcon(item.action)" class="h-3.5 w-3.5" />
-                </div>
-
-                <div class="min-w-0 flex-1">
-                  <p
-                    class="truncate text-sm"
-                    :class="isDark ? 'text-white/90' : 'text-slate-700'"
-                  >
-                    <span class="font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ item.entityName || typeLabel(item.entityType) }}</span>
-                    <span class="mx-1.5 opacity-40">--</span>
-                    <span class="capitalize">{{ item.action }}</span>
-                  </p>
-                  <p
-                    class="text-xs"
-                    :class="isDark ? 'text-white/35' : 'text-slate-400'"
-                  >
-                    {{ typeLabel(item.entityType) }}
-                  </p>
-                </div>
-
-                <span
-                  class="shrink-0 text-xs tabular-nums"
-                  :class="isDark ? 'text-white/30' : 'text-slate-400'"
-                >
-                  {{ timeAgo(item.createdAt) }}
-                </span>
-              </div>
-            </div>
-
-            <AdminEmptyState
-              v-else
-              icon="i-heroicons-clock"
-              title="No activity yet"
-              description="Changes will appear here once content or settings are updated."
-            />
-          </div>
-        </div>
-
-        <!-- Right column -->
-        <div class="space-y-5">
-          <!-- Status card -->
-          <div
-            class="rounded-xl border p-5"
-            :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-slate-200'"
-          >
-            <h3
-              class="mb-4 text-sm font-semibold"
-              :class="isDark ? 'text-white' : 'text-slate-900'"
-            >
-              System status
-            </h3>
-
-            <div class="space-y-0.5">
-              <div
-                v-for="signal in statusSignals"
-                :key="signal.label"
-                class="flex items-center justify-between rounded-lg px-2 py-2"
-                :class="isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-slate-50'"
-              >
-                <span
-                  class="text-sm"
-                  :class="isDark ? 'text-white/60' : 'text-slate-500'"
-                >
-                  {{ signal.label }}
-                </span>
-                <span
-                  class="text-sm font-medium tabular-nums"
-                  :class="
-                    signal.tone === 'warning'
-                      ? (isDark ? 'text-amber-400' : 'text-amber-600')
-                      : (isDark ? 'text-white/90' : 'text-slate-700')
-                  "
-                >
-                  {{ signal.value }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Top Copied strings -->
-          <div
-            class="rounded-xl border p-5"
-            :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-slate-200'"
-          >
-            <div class="mb-4">
-              <h3
-                class="text-sm font-semibold"
-                :class="isDark ? 'text-white' : 'text-slate-900'"
-              >
-                Top copied strings
-              </h3>
-              <p
-                class="text-xs mt-0.5"
-                :class="isDark ? 'text-white/50' : 'text-slate-400'"
-              >
-                Most copied strings this period
-              </p>
-            </div>
-
-            <AdminChartsHorizontalBarChart
-              v-if="topDemandChartData.length"
-              :data="topDemandChartData"
-              color="#10b981"
-            />
-            <AdminEmptyState
-              v-else
-              icon="i-heroicons-fire"
-              title="No demand data"
-              description="Copied strings will appear here once users start pulling data."
-            />
-          </div>
-        </div>
-      </div>
+        <ul v-if="overview.recent.length" class="admin-dash__rows">
+          <li v-for="entry in overview.recent" :key="entry.id" class="admin-dash__row">
+            <span class="min-w-0">
+              <span class="admin-dash__type">{{ entry.action }}</span>
+              <span class="admin-dash__name"> {{ entry.entityName }}</span>
+              <span class="admin-dash__muted"> · {{ typeLabel(entry.entityType) }} · {{ entry.actorName || 'system' }}</span>
+            </span>
+            <span class="admin-dash__muted">{{ when(entry.createdAt) }}</span>
+          </li>
+        </ul>
+        <p v-else class="admin-dash__muted">No audited changes yet.</p>
+      </section>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import { formatBuildLabel, type BuildInfo } from '~/utils/buildInfo'
+import type { Overview } from '~/server/utils/adminOverview'
 
 definePageMeta({ layout: 'admin' })
 
-const isDark = useIsDark()
-
 const { apiFetch } = useApi()
 const { user } = useAuth()
-const { notifications: notifItems, refresh: notifRefresh } = useAdminNotifications()
 
 const greeting = computed(() => {
   const h = new Date().getHours()
@@ -361,266 +164,43 @@ const greeting = computed(() => {
   return `Good evening, ${name}`
 })
 
-const quickActions = [
-  { label: 'Profiles', subtitle: 'Manage import strings', icon: 'i-heroicons-rectangle-stack', to: '/admin/strings/profiles' },
-  { label: 'Changelog', subtitle: 'Write an update', icon: 'i-heroicons-document-text', to: '/admin/content/changelog' },
-  { label: 'Analytics', subtitle: 'View traffic stats', icon: 'i-heroicons-chart-bar', to: '/admin/system/stats' },
-  { label: 'GitHub', subtitle: 'Sync and releases', icon: 'i-simple-icons-github', to: '/admin/system/github' },
-]
-
-interface ActivityItem {
-  id: number
-  action: string
-  entityType: string
-  entityName: string
-  createdAt: string | number | Date | null
-}
-
-interface TopCopiedItem {
-  string_type: string
-  string_id: number
-  copies: number
-  name: string
-}
-
-interface Stats {
-  profiles: number
-  wowupStrings: number
-  layouts: number
-  changelogs: number
-  copiesLast7Days: number
-  uniqueVisitors: number
-  uniqueVisitorsLast7Days?: number
-  uniquePageVisitorsLast7Days?: number
-  recentActivity: ActivityItem[]
-  dailyCopies: Array<{ day: string; count: number }>
-  totalCopies?: number
-  totalActivities?: number
-  pageViewsLast7Days?: number
-  pageViewTrend?: number
-  copyTrend?: number
-  users?: number
-  apiCallsLast7Days?: number
-  outdatedProfiles?: number
-  outdatedLayouts?: number
-  latestProfileUpdateAt?: string | number | Date | null
-  latestWowupUpdateAt?: string | number | Date | null
-  latestLayoutUpdateAt?: string | number | Date | null
-  lastPublishedAt?: string | number | Date | null
-  topCopied?: TopCopiedItem[]
-}
-
-const stats = ref<Stats | null>(null)
+const overview = ref<Overview | null>(null)
+const failed = ref(false)
 const refreshing = ref(false)
 
 const REFRESH_INTERVAL = 60
 const nextRefresh = ref(REFRESH_INTERVAL)
 let refreshTimer: ReturnType<typeof setInterval>
 
-const versionData = ref<{ latestVersion: string; localVersion: string | null; isUpToDate: boolean } | null>(null)
+const attention = computed(() => overview.value ? attentionItems(overview.value) : [])
 
-const latestActivity = computed(() => stats.value?.recentActivity?.[0] ?? null)
-const totalStaleStrings = computed(() => (stats.value?.outdatedProfiles || 0) + (stats.value?.outdatedLayouts || 0))
-
-const overviewCards = computed(() => {
-  const data = stats.value
-  if (!data) return []
-
-  const stale = totalStaleStrings.value
-  const staleHint = stale
-    ? `${data.outdatedProfiles || 0} profiles · ${data.outdatedLayouts || 0} layouts older than 30d`
-    : `${data.profiles + data.wowupStrings + data.layouts} active strings checked`
-
-  const localVer = versionData.value?.localVersion || null
-  const githubVer = versionData.value?.latestVersion || null
-
-  const releaseValue = !versionData.value
-    ? 'Unknown'
-    : versionData.value.isUpToDate
-      ? 'Current'
-      : (githubVer ? `v${githubVer}` : 'Behind')
-
-  const releaseHint = !versionData.value
-    ? 'GitHub release state unavailable — open GitHub Sync'
-    : versionData.value.isUpToDate
-      ? `Local MagguuUI v${localVer || githubVer} matches GitHub`
-      : !localVer
-        ? `Local unset | GitHub v${githubVer} — set local version on GitHub Sync`
-        : `Local v${localVer} behind GitHub v${githubVer} — open GitHub Sync`
-
+const contentRows = computed(() => {
+  const c = overview.value?.counts
+  if (!c) return []
   return [
-    {
-      label: 'Release',
-      value: releaseValue,
-      icon: 'i-heroicons-rocket-launch',
-      tone: versionData.value && !versionData.value.isUpToDate ? ('warning' as const) : ('brand' as const),
-      to: '/admin/system/github',
-      hint: releaseHint,
-      trend: null,
-    },
-    {
-      label: 'Freshness',
-      value: stale,
-      icon: 'i-heroicons-shield-exclamation',
-      tone: stale ? ('warning' as const) : ('success' as const),
-      to: '/admin/system/stats',
-      hint: staleHint,
-      trend: null,
-    },
-    {
-      label: 'Copies 7d',
-      value: data.copiesLast7Days || 0,
-      icon: 'i-heroicons-bolt',
-      tone: 'success' as const,
-      to: '/admin/system/stats',
-      hint: `${data.pageViewsLast7Days || 0} views · ${data.uniquePageVisitorsLast7Days || 0} visitors`,
-      trend: data.copyTrend ?? null,
-    },
-    {
-      label: 'Alerts',
-      value: notifItems.value.length,
-      icon: 'i-heroicons-bell-alert',
-      tone: notifItems.value.length ? ('warning' as const) : ('success' as const),
-      to: '/admin/system/activity',
-      hint: notifItems.value.length ? 'Open notices need attention' : 'No active admin alerts',
-      trend: null,
-    },
+    { key: 'content', label: 'Site content', value: `${c.contentPages} pages · ${c.contentCells} fields`, to: '/admin/content' },
+    { key: 'changelog', label: 'Changelog', value: `${c.changelogPublished} published / ${c.changelogTotal}`, to: '/admin/content/changelog' },
+    { key: 'faq', label: 'FAQ', value: visibleOf(c.faqTotal, c.faqVisible), to: '/admin/content/faq' },
+    { key: 'profiles', label: 'Profiles', value: visibleOf(c.profilesTotal, c.profilesVisible), to: '/admin/strings/profiles' },
+    { key: 'wowup', label: 'WowUp strings', value: visibleOf(c.wowupTotal, c.wowupVisible), to: '/admin/strings/wowup' },
+    { key: 'layouts', label: 'Layouts', value: visibleOf(c.layoutsTotal, c.layoutsVisible), to: '/admin/strings/layouts' },
   ]
 })
 
-const topDemandItems = computed(() => (stats.value?.topCopied || []).slice(0, 4))
-const topDemandChartData = computed(() =>
-  topDemandItems.value.map(item => ({ label: item.name, value: item.copies }))
-)
-
-const trafficCards = computed(() => {
-  const data = stats.value
-  if (!data) return []
-
-  return [
-    {
-      label: 'Views 7d',
-      value: data.pageViewsLast7Days || 0,
-      hint: 'Public page traffic',
-    },
-    {
-      label: 'Visitors 7d',
-      value: data.uniquePageVisitorsLast7Days || 0,
-      hint: 'Unique page visitors',
-    },
-    {
-      label: 'Copies 7d',
-      value: data.copiesLast7Days || 0,
-      hint: 'String copy events',
-    },
-  ]
-})
-
-function buildDailySeries(source: Array<{ day: string; count: number | string }> | undefined, days: number) {
-  const endDate = new Date()
-  endDate.setHours(0, 0, 0, 0)
-
-  const countByDay = new Map(
-    (source || []).map(item => [item.day, Number(item.count) || 0]),
-  )
-
-  return Array.from({ length: days }, (_, index) => {
-    const date = new Date(endDate)
-    date.setDate(endDate.getDate() - (days - 1 - index))
-    const day = date.toISOString().slice(0, 10)
-
-    return {
-      day,
-      count: countByDay.get(day) ?? 0,
-    }
-  })
+const TYPE_LABELS: Record<string, string> = {
+  content: 'Content', changelog: 'Changelog', faq: 'FAQ', setting: 'Settings',
+  profile: 'Profile', wowup: 'WowUp', layout: 'Layout', addon: 'Addon',
 }
+const typeLabel = (t: string) => TYPE_LABELS[t] || t
+const when = (ts: number) => new Date(ts * 1000).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
 
-const copySeries14 = computed(() => buildDailySeries(stats.value?.dailyCopies, 14))
-const last7Copies = computed(() => copySeries14.value.slice(-7))
-const trafficChartData = computed(() =>
-  last7Copies.value.map(d => {
-    try {
-      return { label: new Date(d.day).toLocaleDateString('en', { weekday: 'short' }).slice(0, 2), value: d.count }
-    } catch {
-      return { label: d.day.slice(-2), value: d.count }
-    }
-  })
-)
-const trafficTrendPills = computed(() => {
-  const data = stats.value
-  if (!data) return []
-
-  return [
-    {
-      label: 'Views',
-      value: formatTrend(data.pageViewTrend),
-      tone: typeof data.pageViewTrend === 'number' && data.pageViewTrend < 0 ? 'admin-pill--warning' : 'admin-pill--success',
-    },
-    {
-      label: 'Copies',
-      value: formatTrend(data.copyTrend),
-      tone: typeof data.copyTrend === 'number' && data.copyTrend < 0 ? 'admin-pill--warning' : 'admin-pill--success',
-    },
-  ]
-})
-
-const statusSignals = computed(() => [
-  {
-    label: 'Version',
-    value: !versionData.value
-      ? 'Unavailable'
-      : versionData.value.isUpToDate
-        ? `Local v${versionData.value.localVersion || versionData.value.latestVersion}`
-        : `Local v${versionData.value.localVersion || '-'} | GH v${versionData.value.latestVersion}`,
-    tone: versionData.value && !versionData.value.isUpToDate ? 'warning' : 'neutral',
-  },
-  {
-    label: 'Alerts',
-    value: notifItems.value.length ? `${notifItems.value.length} open` : 'Clear',
-    tone: notifItems.value.length ? 'warning' : 'neutral',
-  },
-  {
-    label: 'Stale strings',
-    value: totalStaleStrings.value ? `${totalStaleStrings.value} open` : 'Clear',
-    tone: totalStaleStrings.value > 0 ? 'warning' : 'neutral',
-  },
-  {
-    label: 'Profiles',
-    value: stats.value?.latestProfileUpdateAt ? timeAgo(stats.value.latestProfileUpdateAt) : 'No data',
-    tone: 'neutral',
-  },
-  {
-    label: 'WowUp',
-    value: stats.value?.latestWowupUpdateAt ? timeAgo(stats.value.latestWowupUpdateAt) : 'No data',
-    tone: 'neutral',
-  },
-  {
-    label: 'Layouts',
-    value: stats.value?.latestLayoutUpdateAt ? timeAgo(stats.value.latestLayoutUpdateAt) : 'No data',
-    tone: 'neutral',
-  },
-  {
-    label: 'Last publish',
-    value: stats.value?.lastPublishedAt ? timeAgo(stats.value.lastPublishedAt) : 'None',
-    tone: 'neutral',
-  },
-  {
-    label: 'Last change',
-    value: latestActivity.value ? timeAgo(latestActivity.value.createdAt) : 'None',
-    tone: 'neutral',
-  },
-  {
-    label: 'Refresh',
-    value: `${nextRefresh.value}s`,
-    tone: 'neutral',
-  },
-])
-
-async function loadStats() {
+async function loadOverview(fresh = false) {
   refreshing.value = true
   try {
-    stats.value = await apiFetch('/api/v1/admin/stats')
+    overview.value = await apiFetch<Overview>(`/api/v1/admin/overview${fresh ? '?fresh=1' : ''}`)
+    failed.value = false
+  } catch {
+    failed.value = !overview.value
   } finally {
     refreshing.value = false
   }
@@ -639,53 +219,19 @@ async function loadBuildInfo() {
 
 async function refreshAll() {
   nextRefresh.value = REFRESH_INTERVAL
-  await loadStats()
-  await loadStoredVersion()
-  notifRefresh(true)
+  await loadOverview(true)
 }
-
-async function loadStoredVersion() {
-  try {
-    interface GithubStatus { latestVersion?: string, localVersion?: string | null }
-    const result = await apiFetch<GithubStatus>('/api/v1/admin/github/status')
-    if (result?.latestVersion) {
-      versionData.value = {
-        latestVersion: result.latestVersion,
-        localVersion: result.localVersion || null,
-        isUpToDate: !!(result.localVersion && result.latestVersion && result.localVersion === result.latestVersion),
-      }
-    }
-  } catch {
-    versionData.value = null
-  }
-}
-
-
-function formatTrend(value?: number | null) {
-  if (typeof value !== 'number' || Number.isNaN(value)) return 'No data'
-  if (value === 0) return 'Flat'
-  return `${value > 0 ? '+' : ''}${value}%`
-}
-
-const typeLabel = entityTypeLabel
 
 onMounted(async () => {
-  void loadBuildInfo()
-  await loadStats()
-  await loadStoredVersion()
-  notifRefresh(true)
-
-  refreshTimer = setInterval(async () => {
+  await Promise.all([loadOverview(), loadBuildInfo()])
+  refreshTimer = setInterval(() => {
     nextRefresh.value--
     if (nextRefresh.value <= 0) {
       nextRefresh.value = REFRESH_INTERVAL
-      await loadStats()
-      notifRefresh(false)
+      void loadOverview()
     }
   }, 1000)
 })
 
-onUnmounted(() => {
-  clearInterval(refreshTimer)
-})
+onBeforeUnmount(() => clearInterval(refreshTimer))
 </script>

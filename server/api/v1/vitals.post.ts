@@ -15,14 +15,12 @@ export default defineEventHandler(async (event) => {
   setResponseHeader(event, 'Cache-Control', 'no-store')
   if (!isPageViewTrackingEnabled() || requestOptedOut(event)) return null
 
-  const { allowed } = checkRateLimit(`vitals:${anonymousKey(dailySalt.get(), getClientIp(event))}`, 30, 60_000, 60_000)
+  const { allowed } = checkRateLimit(`vitals:${anonymousRateKey(dailySalt.get(), getClientIp(event))}`, 30, 60_000, 60_000)
   if (!allowed) return null
 
-  // sendBeacon posts text/plain; parse it ourselves and cap the size.
-  const raw = await readRawBody(event, 'utf8').catch(() => '')
-  if (!raw || raw.length > 4096) return null
-  let body: unknown
-  try { body = JSON.parse(raw) } catch { return null }
+  // sendBeacon posts text/plain; parse it ourselves, reading at most 4 KiB.
+  const body = await readBeaconJson(event, 4096)
+  if (!body) return null
 
   const samples = parseVitalsBeacon(body)
   if (samples.length === 0) return null

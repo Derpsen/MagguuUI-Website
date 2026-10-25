@@ -14,7 +14,9 @@ import { normalizeTrackedPath } from '../../../utils/trackingRules'
 
 // Same visitor + same route within 5 s counts once. In memory only; pinned to
 // globalThis so HMR reloads do not leak timers.
-const g = globalThis as unknown as { __pageViewDedup?: Map<string, number>, __pageViewDedupTimer?: NodeJS.Timeout }
+const DEDUP_MAX_KEYS = 20_000
+const g = globalThis as unknown as { __pageViewDedup?: Map<string, number>, __pageViewDedupTimer?: NodeJS.Timeout, __referrerLimiter?: ReturnType<typeof createReferrerLimiter> }
+const referrers = g.__referrerLimiter ?? (g.__referrerLimiter = createReferrerLimiter(sqlite))
 const recent: Map<string, number> = g.__pageViewDedup ?? (g.__pageViewDedup = new Map())
 if (!g.__pageViewDedupTimer) {
   g.__pageViewDedupTimer = setInterval(() => {
@@ -37,14 +39,21 @@ export default defineEventHandler(async (event) => {
   const device = parseDeviceType(gate.ua)
   const visitor = visitorHash(gate.salt, { ip: gate.ip, browser, os, device })
 
-  const referrer = referrerHost(body?.referrer, getRequestHeader(event, 'host') || '')
-  const dedupKey = `${visitor}:${path}:${referrer ?? ''}`
+  // The dedup key leaves the referrer out: a scripted client could otherwise change it on every
+  // request to count the same visit again and again (and to fill this map).
+  const dedupKey = `${visitor}:${path}`
   const now = Date.now()
   const last = recent.get(dedupKey)
   if (last !== undefined && now - last < 5000) return null
+  if (recent.size >= DEDUP_MAX_KEYS) {
+    for (const [key, time] of recent) if (now - time > 5000) recent.delete(key)
+    if (recent.size >= DEDUP_MAX_KEYS) return null // flooded: drop the count, never grow
+  }
   recent.set(dedupKey, now)
 
   try {
+    // At most REFERRER_DAILY_MAX distinct hosts per day; further ones are counted as "(other)".
+    const referrer = referrers.resolve(referrerHost(body?.referrer, getRequestHeader(event, 'host') || ''))
     recordView(sqlite, { path, referrer, device, browser, os, visitor })
   } catch { /* counting must never break the page */ }
   return null

@@ -7,6 +7,7 @@
 
 import { sqlite } from '~/server/database'
 import { SLOT_SECONDS, recordStatusSample, runStatusMaintenance } from '~/server/utils/siteStatus'
+import { pruneBeaconRateLimits } from '~/server/utils/analytics'
 import { prunePresets } from '~/server/utils/communityPresets'
 import { pruneStatusNotices } from '~/server/utils/statusNoticeStore'
 
@@ -19,6 +20,7 @@ export default defineNitroPlugin(() => {
     try {
       sqlite.prepare('SELECT 1').get() // a slot counts only when the database answers
       const slot = Math.floor(now / SLOT_SECONDS) * SLOT_SECONDS
+      pruneBeaconRateLimits(sqlite) // anonymous beacon limiter rows live a few minutes; capped in number
       if (slot !== lastSlot) {
         recordStatusSample(sqlite, now)
         lastSlot = slot

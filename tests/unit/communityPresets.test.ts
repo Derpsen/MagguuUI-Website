@@ -158,7 +158,9 @@ describe('rate limiting (in memory, opaque keys)', () => {
   })
   it('is bounded in size', () => {
     const l = createWindowLimiter(1, 1000, 3)
-    assert.deepEqual(['a', 'b', 'c', 'd'].map(k => l.hit(k, 1)), [true, true, true, false])
+    assert.deepEqual(['a', 'b', 'c'].map(k => l.hit(k, 1)), [true, true, true])
+    assert.equal(l.hit('d', 2), true) // full: the oldest is evicted instead of refusing everybody
+    assert.equal(l.size(), 3)
     assert.equal(l.hit('e', 5000), true) // expired windows are purged
     assert.ok(l.size() <= 3)
   })
@@ -326,6 +328,16 @@ describe('privacy text', () => {
     assert.equal(merged.s7!.body, '<p>My edited text</p>')
     assert.equal(merged.s8!.body, PRIVACY_DEFAULTS.s8!.body)
   })
+  it('s9 (temporary records and backups) is its own section, so edited s7 / s8 texts never hide it', () => {
+    const body = PRIVACY_DEFAULTS.s9!.body!
+    for (const needle of ['about ten minutes', 'first 64 bits', 'backups', 'before this clean-up', '24 hours']) assert.ok(body.toLowerCase().includes(needle.toLowerCase()), needle)
+    const merged = mergePageCopy(PRIVACY_DEFAULTS, { s7: { body: '<p>edited</p>' }, s8: { body: '<p>edited too</p>' } })
+    assert.equal(merged.s7!.body, '<p>edited</p>')
+    assert.equal(merged.s8!.body, '<p>edited too</p>')
+    assert.equal(merged.s9!.body, PRIVACY_DEFAULTS.s9!.body)
+    // A stored edit of s9 itself is kept as well.
+    assert.equal(mergePageCopy(PRIVACY_DEFAULTS, { s9: { body: '<p>mine</p>' } }).s9!.body, '<p>mine</p>')
+  })
 })
 
 describe('source guards', () => {
@@ -344,8 +356,9 @@ describe('source guards', () => {
       const src = read(`community-presets/${f}`)
       assert.doesNotMatch(src, /setCookie|getCookie|user-agent|console\.|getClientIp|x-forwarded-for/i, f)
     }
-    const runtime = readFileSync(new URL('../../server/utils/communityPresetRuntime.ts', import.meta.url), 'utf8')
-    assert.doesNotMatch(runtime, /console\.|sqlite|INSERT/i)
+    const code = (rel: string) => readFileSync(new URL(rel, import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
+    assert.doesNotMatch(code('../../server/utils/communityPresetRuntime.ts'), /console\.|INSERT/i)
+    assert.doesNotMatch(code('../../server/utils/presetSubmission.ts'), /setCookie|getCookie|user-agent|console\.|getClientIp|x-forwarded-for/i)
   })
   it('the storage code mentions no IP, cookie or user agent column', () => {
     const src = readFileSync(new URL('../../server/utils/communityPresets.ts', import.meta.url), 'utf8')

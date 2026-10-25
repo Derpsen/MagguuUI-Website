@@ -187,7 +187,13 @@ export function createReplayGuard(maxEntries = 5000, ttlMs = (MAX_FORM_AGE_SECON
 
 // ─── In-memory limiter ─────────────────────────────────────────────────
 
-/** Fixed-window counter per key, bounded in size. Keys are opaque salted hashes (never an IP). */
+/**
+ * Fixed-window counter per key, bounded in size. Keys are opaque salted hashes (never an IP).
+ * The map cannot be filled up: at `maxKeys`, expired windows go first, and if it is still full the
+ * oldest tenth is evicted (a Map iterates in insertion order and every new window is appended last).
+ * Eviction never blocks a visitor; the cost is that an evicted key starts a fresh window, which the
+ * database caps (daily cap, pending cap) and the group limiters still bound.
+ */
 export function createWindowLimiter(max: number, windowMs: number, maxKeys = 10_000) {
   const hits = new Map<string, { count: number, start: number }>()
   return {
@@ -197,8 +203,15 @@ export function createWindowLimiter(max: number, windowMs: number, maxKeys = 10_
       if (!e || now - e.start >= windowMs) {
         if (!e && hits.size >= maxKeys) {
           for (const [k, v] of hits) if (now - v.start >= windowMs) hits.delete(k)
-          if (hits.size >= maxKeys) return false
+          if (hits.size >= maxKeys) {
+            let drop = Math.max(1, Math.floor(maxKeys / 10))
+            for (const k of hits.keys()) {
+              hits.delete(k)
+              if (--drop <= 0) break
+            }
+          }
         }
+        hits.delete(key) // a renewed window moves to the end, keeping the map ordered by window start
         hits.set(key, { count: 1, start: now })
         return true
       }

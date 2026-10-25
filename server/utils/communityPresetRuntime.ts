@@ -2,17 +2,25 @@
  * Process-wide state for the public preset submission endpoints: limiters, the replay guard
  * and the form-token secret. Pinned to globalThis so HMR does not duplicate them. Everything
  * here is in memory only; the IP is reduced to a daily-salted hash and never stored.
+ *
+ * Two granularities: the visitor key is the salted /64 (IPv4: the address), the group key the
+ * salted /48 (IPv4: /24). The group limits stop one network that rotates through its /64s from
+ * using up the global daily cap or the review queue alone.
  */
+import type Database from 'better-sqlite3'
 import type { H3Event } from 'h3'
 import { randomBytes } from 'node:crypto'
 import { anonymousKey, dailySalt } from '~/server/utils/analytics'
+import { getClientIp, rateLimitGroupKey, rateLimitIpKey } from '~/server/utils/clientIp'
 import { createReplayGuard, createWindowLimiter } from '~/server/utils/communityPresets'
+import { presetSubmissionLimits } from '~/server/utils/presetLimits'
+import type { SubmissionDeps } from '~/server/utils/presetSubmission'
 
-interface Runtime {
+type Runtime = ReturnType<typeof presetSubmissionLimits> & {
   replay: ReturnType<typeof createReplayGuard>
-  attempts: ReturnType<typeof createWindowLimiter>
-  accepted: ReturnType<typeof createWindowLimiter>
   tokens: ReturnType<typeof createWindowLimiter>
+  /** Different on every start: form tokens issued before a restart no longer verify (replay guard is in memory). */
+  bootId: string
   fallbackSecret: string
 }
 
@@ -22,34 +30,41 @@ const scale = e2e ? 1000 : 1
 
 const g = globalThis as unknown as { __presetRuntime?: Runtime }
 const rt: Runtime = g.__presetRuntime ?? (g.__presetRuntime = {
+  ...presetSubmissionLimits(scale),
   replay: createReplayGuard(),
-  // Every POST (valid or not) counts as an attempt; only accepted submissions count as accepted.
-  attempts: createWindowLimiter(15 * scale, 3600_000),
-  accepted: createWindowLimiter(3 * scale, 3600_000),
   tokens: createWindowLimiter(30 * scale, 3600_000),
+  bootId: randomBytes(8).toString('hex'),
   fallbackSecret: randomBytes(32).toString('hex'),
 })
 
-export const presetReplay = rt.replay
-export const presetAttempts = rt.attempts
-export const presetAccepted = rt.accepted
 export const presetTokens = rt.tokens
 
-/** Signing secret for form tokens: the app secret when configured, else a per-process random one. */
+/** Signing secret for form tokens: the app secret (or a per-process random one) bound to this process start. */
 export function presetFormSecret(): string {
-  return useRuntimeConfig().jwtSecret || rt.fallbackSecret
+  return `${useRuntimeConfig().jwtSecret || rt.fallbackSecret}|${rt.bootId}`
 }
 
 /** Opaque per-day key for the in-memory limiters. Not reversible, not stored. */
 export function presetClientKey(event: H3Event): string {
-  return anonymousKey(dailySalt.get(), getClientIp(event))
+  return anonymousKey(dailySalt.get(), rateLimitIpKey(getClientIp(event)))
 }
 
-/** A browser sends Origin on POST; a different site must not be able to submit on a visitor's behalf. */
-export function assertSameOriginIfPresent(event: H3Event) {
-  const origin = getHeader(event, 'origin')
-  if (!origin) return
-  let host: string
-  try { host = new URL(origin).host } catch { throw createError({ statusCode: 403, message: 'Invalid Origin header' }) }
-  if (host !== getRequestHost(event)) throw createError({ statusCode: 403, message: 'Cross-origin request blocked' })
+function presetKeys(event: H3Event) {
+  const ip = getClientIp(event)
+  const salt = dailySalt.get()
+  return { client: anonymousKey(salt, rateLimitIpKey(ip)), group: anonymousKey(salt, `g|${rateLimitGroupKey(ip)}`) }
+}
+
+export function presetSubmissionDeps(sqlite: Pick<Database.Database, 'prepare' | 'transaction'>): SubmissionDeps {
+  return {
+    sqlite,
+    secret: presetFormSecret,
+    keys: presetKeys,
+    attempts: rt.attempts,
+    attemptsGroup: rt.attemptsGroup,
+    accepted: rt.accepted,
+    acceptedDay: rt.acceptedDay,
+    acceptedGroup: rt.acceptedGroup,
+    replay: rt.replay,
+  }
 }

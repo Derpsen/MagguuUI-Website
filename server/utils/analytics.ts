@@ -16,6 +16,7 @@
 import { createHmac, randomBytes } from 'node:crypto'
 import type Database from 'better-sqlite3'
 import { COPY_TYPES, TRACKED_ROUTES, type CopyType } from '../../utils/trackingRules'
+import { rateLimitIpKey } from './clientIp'
 
 type Sqlite = Pick<Database.Database, 'prepare' | 'transaction'>
 
@@ -77,6 +78,14 @@ export function anonymousKey(salt: Buffer, ip: string): string {
   return createHmac('sha256', salt).update(`rl|${ip}`).digest('hex').slice(0, 16)
 }
 
+/**
+ * Rate-limit key for an IP: IPv4 as is, IPv6 reduced to its /64 (rateLimitIpKey), then salted per day.
+ * Use this for every limiter keyed by a visitor: with the full IPv6 address one visitor owns 2^64 keys.
+ */
+export function anonymousRateKey(salt: Buffer, ip: string): string {
+  return anonymousKey(salt, rateLimitIpKey(ip))
+}
+
 /** Referrer reduced to its hostname; own host and junk are dropped. */
 export function referrerHost(referrer: unknown, ownHost: string): string | null {
   if (typeof referrer !== 'string' || !referrer || referrer.length > 253) return null
@@ -84,6 +93,52 @@ export function referrerHost(referrer: unknown, ownHost: string): string | null 
   if (!host || !/^[a-z0-9.-]+$/i.test(host)) return null
   const own = ownHost.split(':')[0]?.toLowerCase()
   return host === own || host === 'localhost' ? null : host.toLowerCase()
+}
+
+// ─── referrer cap ───────────────────────────────────────────────────────────
+
+/** Distinct referrer hosts stored per UTC day; every further host is counted as REFERRER_OTHER. */
+export const REFERRER_DAILY_MAX = 100
+/** Not a valid hostname (parentheses), so it can never collide with a real referrer. */
+export const REFERRER_OTHER = '(other)'
+
+/**
+ * Bounds the number of distinct referrer hosts per day: anyone can send any Referer value, so without
+ * a cap the detail table and the daily roll-up grow with whatever a scripted client invents.
+ * The set of today's hosts is seeded from page_views once per day (and after a restart).
+ */
+export function createReferrerLimiter(sqlite: Sqlite, max = REFERRER_DAILY_MAX) {
+  let day = Number.NaN
+  const known = new Set<string>()
+  return {
+    resolve(host: string | null, nowSeconds = Math.floor(Date.now() / 1000)): string | null {
+      if (!host) return null
+      const d = Math.floor(nowSeconds / DAY_S)
+      if (d !== day) {
+        day = d
+        known.clear()
+        const rows = sqlite.prepare("SELECT DISTINCT referrer AS r FROM page_views WHERE created_at >= ? AND referrer IS NOT NULL AND referrer <> ''").all(d * DAY_S) as Array<{ r: string }>
+        for (const r of rows) if (r.r !== REFERRER_OTHER) known.add(r.r)
+      }
+      if (known.has(host)) return host
+      if (known.size >= max) return REFERRER_OTHER
+      known.add(host)
+      return host
+    },
+  }
+}
+
+/** Top `max` keys by views stay; the rest are summed into REFERRER_OTHER. */
+export function capReferrerRows(rows: Array<{ k: string, v: number }>, max = REFERRER_DAILY_MAX): Array<{ k: string, v: number }> {
+  const merged = new Map<string, number>()
+  for (const r of rows) merged.set(r.k, (merged.get(r.k) ?? 0) + r.v)
+  const other = merged.get(REFERRER_OTHER) ?? 0
+  merged.delete(REFERRER_OTHER)
+  const sorted = [...merged].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))
+  const kept = sorted.slice(0, max).map(([k, v]) => ({ k, v }))
+  const rest = sorted.slice(max).reduce((n, [, v]) => n + v, other)
+  if (rest > 0) kept.push({ k: REFERRER_OTHER, v: rest })
+  return kept
 }
 
 // ─── writes ─────────────────────────────────────────────────────────────────
@@ -130,7 +185,8 @@ export function viewRows(sqlite: Sqlite, day: string): StatRow[] {
   const routes = sqlite.prepare(`SELECT CASE WHEN ${routeExpr} = '' THEN '/' ELSE ${routeExpr} END AS k, COUNT(*) AS v, COUNT(DISTINCT ${VISITOR_EXPR}) AS u FROM page_views WHERE created_at >= ? AND created_at < ? GROUP BY k HAVING k IN (${placeholders})`).all(from, to, ...TRACKED_ROUTES) as Array<{ k: string, v: number, u: number }>
   for (const r of routes) out.push({ day, kind: 'route', key: r.k, views: r.v, uniques: r.u })
   for (const [kind, col] of [['referrer', 'referrer'], ['device', 'device_type'], ['browser', 'browser'], ['os', 'os']] as const) {
-    const rows = sqlite.prepare(`SELECT ${col} AS k, COUNT(*) AS v FROM page_views WHERE created_at >= ? AND created_at < ? AND ${col} IS NOT NULL AND ${col} <> '' GROUP BY ${col}`).all(from, to) as Array<{ k: string, v: number }>
+    const found = sqlite.prepare(`SELECT ${col} AS k, COUNT(*) AS v FROM page_views WHERE created_at >= ? AND created_at < ? AND ${col} IS NOT NULL AND ${col} <> '' GROUP BY ${col}`).all(from, to) as Array<{ k: string, v: number }>
+    const rows = kind === 'referrer' ? capReferrerRows(found) : found
     for (const r of rows) out.push({ day, kind, key: r.k, views: r.v, uniques: 0 })
   }
   return out
@@ -174,6 +230,27 @@ export function scrubLegacyIdentifiers(sqlite: Sqlite): number {
   return a + b
 }
 
+export const PRIVACY_VACUUM_MARKER = 'privacy_vacuum_v1'
+
+/**
+ * One-time VACUUM after legacy IP / user-agent values were set to NULL. NULLing alone leaves the old
+ * bytes in free pages and in the WAL; VACUUM rewrites the file and the checkpoint truncates the WAL.
+ * Guarded by a marker row in `settings` (set only after success), so it runs once per database.
+ * It holds the write lock for the duration (a small database: well under a second) and needs about
+ * the database size in free disk space; any failure leaves no marker and is retried next maintenance.
+ */
+export function vacuumAfterScrub(sqlite: Sqlite): 'done' | 'skipped' | 'failed' {
+  if (sqlite.prepare('SELECT 1 AS ok FROM settings WHERE key = ?').get(PRIVACY_VACUUM_MARKER)) return 'skipped'
+  try {
+    sqlite.prepare('VACUUM').run()
+    sqlite.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get()
+    sqlite.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)').run(PRIVACY_VACUUM_MARKER, new Date().toISOString())
+    return 'done'
+  } catch {
+    return 'failed'
+  }
+}
+
 /** Delete detail rows older than `days` whole UTC days (after rolling them up) and old aggregates. */
 export function pruneDetail(sqlite: Sqlite, now = Math.floor(Date.now() / 1000), days = RAW_DETAIL_DAYS) {
   rollupCompletedDays(sqlite, now)
@@ -188,8 +265,30 @@ export function pruneDetail(sqlite: Sqlite, now = Math.floor(Date.now() / 1000),
 export function runAnalyticsMaintenance(sqlite: Sqlite, now = Math.floor(Date.now() / 1000)) {
   const rolled = rollupCompletedDays(sqlite, now)
   const scrubbed = scrubLegacyIdentifiers(sqlite)
+  const vacuum = vacuumAfterScrub(sqlite) // only after the scrub: freed pages must not keep the old values
   const pruned = pruneDetail(sqlite, now)
-  return { rolled, scrubbed, pruned }
+  return { rolled, scrubbed, vacuum, pruned }
+}
+
+// ─── beacon rate-limit rows ─────────────────────────────────────────────────
+
+/** Beacon limiter windows last one minute, so rows older than this are dead weight. */
+export const BEACON_LIMIT_KEEP_MS = 10 * 60_000
+/** Hard ceiling for beacon rows in rate_limits (login limiter rows are never touched). */
+export const BEACON_LIMIT_MAX_ROWS = 20_000
+const BEACON_KEY = "(key LIKE 'page-view:%' OR key LIKE 'copy-event:%' OR key LIKE 'vitals:%')"
+
+/**
+ * Anonymous beacons write one rate_limits row per visitor key; a scripted client rotating
+ * addresses could grow the table. Old rows go, and beyond the ceiling the oldest go first.
+ */
+export function pruneBeaconRateLimits(sqlite: Sqlite, nowMs = Date.now(), maxRows = BEACON_LIMIT_MAX_ROWS): number {
+  let removed = sqlite.prepare(`DELETE FROM rate_limits WHERE ${BEACON_KEY} AND updated_at < ?`).run(nowMs - BEACON_LIMIT_KEEP_MS).changes
+  const count = (sqlite.prepare(`SELECT COUNT(*) AS c FROM rate_limits WHERE ${BEACON_KEY}`).get() as { c: number }).c
+  if (count > maxRows) {
+    removed += sqlite.prepare(`DELETE FROM rate_limits WHERE key IN (SELECT key FROM rate_limits WHERE ${BEACON_KEY} ORDER BY updated_at ASC LIMIT ?)`).run(count - maxRows).changes
+  }
+  return removed
 }
 
 // ─── report ─────────────────────────────────────────────────────────────────

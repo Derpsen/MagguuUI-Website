@@ -95,7 +95,7 @@ test('server defences: time-trap, honeypot, origin, size, addon, malformed input
 
   // Honeypot: answers like a success, stores nothing (checked below).
   const honey = await anon.post(API, { data: { ...body({ name: `E2E ${tag} honeypot`, website: 'https://spam.example' }), token: trap.token } })
-  expect(honey.status()).toBe(200)
+  expect(honey.status()).toBe(201)
 
   // Another site cannot post for a visitor.
   const cross = await anon.post(API, { headers: { Origin: 'https://evil.example' }, data: { ...body({ name: `E2E ${tag} cross` }), token: origin.token } })
@@ -272,6 +272,7 @@ test('the public list is whitelisted and the privacy page describes submissions'
   await expect(page.getByTestId('privacy-s8')).toContainText('Community Preset Submissions')
   await expect(page.getByTestId('privacy-s8')).toContainText('30 days')
   await expect(page.getByTestId('privacy-s7')).toContainText('approved community preset')
+  await expect(page.getByTestId('privacy-s9')).toContainText('Backups of the database')
 })
 
 test('every change is audited, without the string', async () => {

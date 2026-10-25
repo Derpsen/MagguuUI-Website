@@ -23,7 +23,8 @@ import {
   isGitHubCommitSha,
   parseGitHubRepo,
 } from '~/server/utils/github'
-import { checkRateLimit, getClientIp } from '~/server/utils/rateLimit'
+import { checkRateLimit } from '~/server/utils/rateLimit'
+import { getClientIp } from '~/server/utils/clientIp'
 import {
   classifyCanonicalPushChanges,
   verifyGitHubWebhookSignature,

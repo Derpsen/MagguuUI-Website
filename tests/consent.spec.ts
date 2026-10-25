@@ -108,6 +108,7 @@ test('"Necessary only": only the consent cookie, no session cookie, nothing stor
   const marker = newMarker()
   const { context, page } = await visitor(browser, marker)
   await page.goto('/')
+  await hydrated(page) // the banner buttons act only after hydration
   await banner(page).getByTestId('consent-necessary').click()
   await expect(banner(page)).toBeHidden()
   const cookies = await context.cookies()
@@ -133,6 +134,7 @@ test('"Accept all": consent cookie + session cookie, the visit is recorded in de
   const marker = newMarker()
   const { context, page } = await visitor(browser, marker)
   await page.goto('/', { referer: 'https://example.org/some/post?id=7' })
+  await hydrated(page) // the banner buttons act only after hydration
   await expect(banner(page)).toBeVisible()
   expect(sessionsFor(marker)).toEqual([])
   await banner(page).getByTestId('consent-accept').click()
@@ -180,6 +182,7 @@ test('Settings: the statistics toggle is off by default; saving it off stores no
   const marker = newMarker()
   const { context, page } = await visitor(browser, marker)
   await page.goto('/')
+  await hydrated(page) // the banner buttons act only after hydration
   await banner(page).getByTestId('consent-settings').click()
   const toggle = banner(page).getByTestId('consent-stats-toggle')
   await expect(toggle).not.toBeChecked()
@@ -207,6 +210,7 @@ test('revoking through the footer link removes the session cookie and the record
   const marker = newMarker()
   const { context, page } = await visitor(browser, marker)
   await page.goto('/')
+  await hydrated(page) // the banner buttons act only after hydration
   await banner(page).getByTestId('consent-accept').click()
   await expect.poll(() => sessionsFor(marker).length).toBe(1)
   await expect.poll(() => names(context)).toEqual(['mg_consent', 'mg_sid', 'mg_vid']) // the row is written before the browser has processed Set-Cookie
@@ -246,6 +250,7 @@ test('a returning visitor with consent is recorded without a banner', async ({ b
   await hydrated(page) // the banner buttons act only after hydration
   await banner(page).getByTestId('consent-accept').click()
   await expect.poll(() => sessionsFor(marker).length).toBe(1)
+  await expect.poll(() => names(context)).toEqual(['mg_consent', 'mg_sid', 'mg_vid']) // the row is written before the browser has processed Set-Cookie: wait for the cookie, or a later clearCookies/click races it
   // session cookie expired (30 min), consent cookie still valid: a new session starts on the next visit
   await context.clearCookies({ name: 'mg_sid' })
   // The visit is recorded by the page's own beacon after hydration: wait for that response, not for a 5 s guess.
@@ -269,6 +274,7 @@ test('extended signals with consent: utm, screen, language, time zone, sequence,
   await hydrated(page)
   await banner(page).getByTestId('consent-accept').click()
   await expect.poll(() => sessionsFor(marker).length).toBe(1)
+  await expect.poll(() => names(context)).toEqual(['mg_consent', 'mg_sid', 'mg_vid']) // the row is written before the browser has processed Set-Cookie: wait for the cookie, or a later clearCookies/click races it
   const [s] = sessionsFor(marker)
   expect(s).toMatchObject({ utm_source: 'newsletter', utm_medium: 'email', utm_campaign: 'autumn', utm_term: null, language: 'de-DE', timezone: 'Europe/Berlin', country: 'unknown', city: null, landing_path: '/' })
   expect(s!.screen_w).toBeGreaterThan(0)
@@ -374,6 +380,7 @@ for (const mode of ['dark', 'light'] as const) {
     const { context, page } = await visitor(browser, newMarker())
     await page.addInitScript(m => localStorage.setItem('nuxt-color-mode', m), mode)
     await page.goto('/')
+    await hydrated(page)
     await expect(banner(page)).toBeVisible()
     for (const view of ['banner', 'settings']) {
       if (view === 'settings') await banner(page).getByTestId('consent-settings').click()

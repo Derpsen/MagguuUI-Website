@@ -30,6 +30,8 @@ describe('renovate.json', () => {
     assert.equal(off(/^Majors never/)?.automerge, false)
     assert.equal(off(/^0\.x minors/)?.automerge, false)
     assert.equal(rules.find(r => r.matchDepTypes?.includes('overrides'))?.automerge, false)
+    const ovMajor = rules.find(r => r.matchDepTypes?.includes('overrides') && r.matchUpdateTypes?.includes('major'))
+    assert.equal(ovMajor?.enabled, false, 'an override must never jump a major on its own (consumers declare the range)')
     // the overrides rule must come after the automerge rules (later rules win)
     assert.ok(rules.findIndex(r => r.matchDepTypes?.includes('overrides')) > rules.lastIndexOf(merge.at(-1)!))
   })

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Pre-push gate: lint, typecheck, unit tests, actionlint. Enable with:
+# Pre-push gate: lint, typecheck, unit tests, actionlint, failure-alarm caller conditions. Enable with:
 #   npm run hooks:install   (= git config core.hooksPath .githooks)
 # Bypass in emergencies: git push --no-verify
 set -eu
@@ -12,4 +12,5 @@ if command -v actionlint >/dev/null 2>&1; then
 else
   echo "[pre-push] WARNING: actionlint not installed, skipping workflow lint" >&2
 fi
+echo "[pre-push] failure-alarm caller conditions"; python3 tools/alarm-conditions.test.py >/dev/null
 echo "[pre-push] OK"

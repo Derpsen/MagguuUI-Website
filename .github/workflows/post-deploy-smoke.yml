@@ -26,9 +26,11 @@ jobs:
     env:
       BASE: https://ui.magguu.xyz
       UA: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 MagguuUI-smoke"
-      # After a docker build, wait for the Unraid auto-update pull (up to ~15 min).
+      # After a docker build, wait for the Unraid auto-update pull (up to ~15 min: 60 tries x 15 s).
       EXPECT_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || '' }}
-      MAX_TRIES: ${{ github.event_name == 'workflow_run' && '30' || '3' }}
+      MAX_TRIES: ${{ github.event_name == 'workflow_run' && '60' || '3' }}
+      # When the docker run finished (pull latency = live sha seen minus this; reported in the step summary).
+      DOCKER_DONE: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.updated_at || '' }}
     steps:
       - name: Smoke live site
         run: |
@@ -51,7 +53,13 @@ jobs:
               live=$(jq -r '.build.sha // empty' /tmp/health 2>/dev/null || true)
               echo "live build sha: ${live:-unknown}"
               if [ -z "$EXPECT_SHA" ] || [ "$live" = "$EXPECT_SHA" ]; then
-                echo "Smoke OK"; exit 0
+                echo "Smoke OK"
+                if [ -n "$EXPECT_SHA" ] && [ -n "$DOCKER_DONE" ]; then
+                  lat=$(( $(date -u +%s) - $(date -u -d "$DOCKER_DONE" +%s) ))
+                  echo "Pull latency: image live ~${lat}s after the docker run finished (try $try, polled every 15 s)"
+                  echo "Pull latency: live sha ${live:0:7} seen ~${lat}s after the docker run finished (try $try)" >> "$GITHUB_STEP_SUMMARY"
+                fi
+                exit 0
               fi
             fi
             if [ "$try" -ge "$MAX_TRIES" ]; then
@@ -62,7 +70,7 @@ jobs:
               fi
               echo "::error::Smoke FAILED after $try tries"; exit 1
             fi
-            try=$((try + 1)); sleep 30
+            try=$((try + 1)); sleep 15
           done
 
   alarm:

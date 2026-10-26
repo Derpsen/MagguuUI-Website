@@ -4,9 +4,12 @@ on:
   push:
     branches: [main]
     tags: ['v*.*.*']
-    # Build on everything except docs and CI-only changes; docker.yml itself
+    # Build on everything except docs, tests and CI/tooling-only changes; docker.yml itself
     # (and Dockerfile, app/, server/, public/, package*.json) still build.
+    # Every excluded path is either in .dockerignore (tests, docs, .github, unraid, playwright.config.ts)
+    # or unused by `nuxt build` (dev scripts, osv-scanner.toml, renovate.json), so it cannot change the image.
     # Later patterns override earlier ones. Tag pushes ignore path filters.
+    # NOT filtered here: Build and CodeQL (required checks) run on every push.
     paths:
       - '**'
       - '!**/*.md'
@@ -14,6 +17,13 @@ on:
       - '!.github/**'
       - '!.githooks/**'
       - '!tools/**'
+      - '!tests/**'
+      - '!unraid/**'
+      - '!playwright.config.ts'
+      - '!scripts/mutation/**'
+      - '!scripts/run-limited.sh'
+      - '!osv-scanner.toml'
+      - '!renovate.json'
       - '.github/workflows/docker.yml'
   workflow_dispatch:
 

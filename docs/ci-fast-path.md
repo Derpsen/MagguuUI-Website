@@ -1,6 +1,6 @@
 # CI fast path for small text and design fixes (proposal)
 
-Status: proposal, nothing here changes auth, deploy behaviour or the workflows. Measured on 2026-10-26.
+Status: the low-risk gaps are implemented (see the table); nothing here changes auth, signing or the deploy trigger. Measured on 2026-10-26.
 
 ## The path today
 
@@ -11,21 +11,25 @@ Status: proposal, nothing here changes auth, deploy behaviour or the workflows. 
 5. `Post-deploy smoke` checks `/`, `/admin/login`, `/api/health`; red only if the site is down.
 6. Review afterwards (Buddy); rollback = revert commit, or the pull script's rollback on a failed health check.
 
-Typical push-to-live time for a text fix: about 10 to 20 minutes.
+Typical push-to-live time for a text fix: about 10 minutes of CI plus the Unraid pull (measured 40 s to 13 min).
 
-## What makes the chain longer today
+## Gaps: implemented vs deliberately not (2026-10-26)
 
-| # | Gap (evidence) | Proposal | Risk |
-|---|---|---|---|
-| 1 | `docker.yml` path filter lets `tests/**`, `unraid/**`, `playwright*.ts`, `scripts/mutation/**`, `scripts/run-limited.sh`, `osv-scanner.toml`, `renovate.json` through, although `.dockerignore` keeps most of them out of the image. A tests+docs commit (b371ebb) still ran docker for 9.5 min. | Add `'!tests/**'`, `'!unraid/**'`, `'!playwright*.ts'`, `'!scripts/mutation/**'`, `'!scripts/run-limited.sh'`, `'!osv-scanner.toml'`, `'!renovate.json'` to the filter. | None for the image; those files are not in it. Keep `docker.yml` itself in the filter. |
-| 2 | `verify` repeats what `Build` already ran for the same sha: lint, unit, typecheck, build and the full Playwright suite (310 s of 420 s). | On push to `main` reduce `verify` to `audit:prod` + `npm run verify` (build + smoke, ~1.5 min) and let `Build` stay the full gate; keep the full verify for tags and `workflow_dispatch`. Publish time drops from ~9.5 to ~4.5 min. | An image can be published while `Build` is still running or later red. Covered by the failure alarm, the post-deploy smoke and the pull script's rollback. Needs Marco's yes (deploy chain). |
-| 3 | `Build` runs the full suite on docs-only pushes too (6 min). | `paths-ignore` for `**/*.md`, `docs/**` on the `push` trigger only. Keep `pull_request` unfiltered so the required check always reports. | None on main; PR checks stay as they are. |
-| 4 | Pull latency is invisible (40 s to ~10 min between docker end and live sha). | Write "docker finished at / sha live at / latency" to the smoke step summary. Check the Unraid auto-update interval (not visible from this repo) and shorten it if it is the long pole. | None; only reporting. |
-| 5 | Public pages (`/`, `/guide`, `/faq`, `/about`, `/addons`) use `swr: 120`, so right after the sha matches a text fix can still look old for up to 2 minutes. | Verify a text fix with a cache-busting query (`?v=<time>`) or wait 2 minutes after the sha match. Leave the 120 s window as it is. | None. |
-| 6 | `concurrency: cancel-in-progress` on `docker` skips images for intermediate commits. | Fine for the fast path; batch two quick fixes into one push. | None. |
-| 7 | Smoke polls every 30 s for up to 15 min. | Fine; no change. | None. |
+Measured with `gh run list/view`. Before = last 8 pushes with 2 Playwright workers; after = runs with 3 workers.
 
-Expected effect with 1 to 3: docs, test and tooling commits skip the image; a text fix is live ~5 to 6 minutes after the push plus the pull latency.
+| # | Gap | Status |
+|---|---|---|
+| 1 | `docker.yml` path filter let tests/tooling-only pushes build an image (b371ebb: 572 s of docker for no change). | **Done** (cddc7d0): `tests/**`, `unraid/**`, `playwright.config.ts`, `scripts/mutation/**`, `scripts/run-limited.sh`, `osv-scanner.toml`, `renovate.json` added to the filter; each is in `.dockerignore` or unused by `nuxt build`. `docker.yml`, Dockerfile, app code and `package*.json` still build. Build and CodeQL (required checks) have no path filter and run on every push. |
+| 2 | Playwright is 75 % of Build and 60 % of docker verify (377-378 s, 2 workers). | **Done** (769372e): 3 workers on CI (4 vCPU), 2 locally; same 211 tests and retries. Local 288 s -> 227 s / 176 s. CI: Build 451 s median (8 runs) -> 430 s median (4 runs: 393, 480, 467, 374 s); Playwright step 378 s -> 281 / 354 / 342 / 252 s; docker 591 s median -> 571 s (1 run). Runner noise is +-60 s, so the gain is real but modest. Watch: 2 of 5 runs had one retried flaky test (admin API 401 in `admin-content-live`, a visitors/community-presets timing case) vs about 1 in 8 before; retries absorb it. Revert = `workers: 2`. |
+| 3 | Pull latency was invisible. | **Done** (cddc7d0): the smoke step summary now prints "live sha seen N s after the docker run finished" and polls every 15 s (60 tries, same ~15 min window). First measurement (769372e): **787 s** between docker end and the live sha, the longest single segment of the chain. It is the Unraid auto-update schedule, owned by "Unraid & Server"; not changed here. Earlier runs saw 40 s and ~10 min. |
+| 4 | Docker layers/npm cache. | Nothing to do: buildx GHA cache (`mode=max`) and the BuildKit npm cache mount already hit (`Build and push` 42-98 s). `verify` has no npm cache on purpose (zizmor cache-poisoning in the publishing workflow). |
+| 5 | Unit step 24 s is one test file (`mutationRunner.test.ts`, 19 s of timeouts that must elapse). | Not worth it: parallelising inside the file saves ~6 s and adds flake risk. |
+| 6 | `verify` repeats Build's lint/unit/typecheck/Playwright for the same sha. | **Not done, reported**: shortening `verify` shortens a check on the publishing path. Needs Marco's decision. |
+| 7 | Build runs the full suite on docs-only pushes. | **Not done**: `build (26, false)` is a required check and must run for every push. |
+| 8 | Public pages use `swr: 120`, so a text fix can look old for up to 2 minutes after the sha matches. | Not changed (cache behaviour is delivered behaviour): verify with a cache-busting query or wait 2 minutes. |
+| 9 | `concurrency: cancel-in-progress` on docker skips images for intermediate commits. | Fine for the fast path; batch two quick fixes into one push. |
+
+Not touched on purpose: CodeQL, signing/attestation, smoke thresholds, auth/admin paths, auto-update trigger, branch protection (required names stay `build (26, false)` and `Analyze (javascript-typescript)`).
 
 ## Fast-path rules for small text and design fixes
 

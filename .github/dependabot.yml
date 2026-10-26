@@ -1,60 +1,23 @@
 version: 2
+
+# Since 2026-10-26 Renovate (renovate.json) owns the version updates.
+# open-pull-requests-limit: 0 switches Dependabot VERSION updates off; Dependabot SECURITY updates
+# (repository setting, on since 2026-10-23) still open PRs and are handled by dependabot-automerge.yml.
+# The ignore rules below mirror the locks in renovate.json (reasons there), so a security PR never
+# proposes a locked major either.
 updates:
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
-      day: monday
-      time: "05:00"
-      timezone: Europe/Berlin
-    open-pull-requests-limit: 5
-    # Let fresh releases age before Dependabot proposes them (supply-chain safety).
-    cooldown:
-      default-days: 7
-      semver-major-days: 7
-      semver-minor-days: 7
-      semver-patch-days: 7
-    groups:
-      nuxt-stack:
-        patterns:
-          - nuxt
-          - "@nuxt/*"
-          - nitropack
-          - h3
-        update-types:
-          - minor
-          - patch
-      tiptap:
-        patterns:
-          - "@tiptap/*"
-        update-types:
-          - minor
-          - patch
-      test-tooling:
-        patterns:
-          - "@playwright/*"
-          - playwright
-          - typescript
-          - tsx
-        update-types:
-          - minor
-          - patch
-      npm-minor-patch:
-        patterns:
-          - "*"
-        update-types:
-          - minor
-          - patch
+    open-pull-requests-limit: 0
     ignore:
-      # Deferred 2026-10-26 (checked, not forced): Nuxt 4 / Nitro 2 (nitropack 2.13.5) depend on h3 ^1.15.11; h3 2 only comes with Nitro 3 (beta).
       - dependency-name: h3
         versions:
           - "2.x"
-      # Deferred 2026-10-26: typescript-eslint (all releases up to 8.72, peer <6.1) throws "does not support TS 7.0", so lint breaks.
       - dependency-name: typescript
         update-types:
           - version-update:semver-major
-      # Deferred 2026-10-26: nuxt-og-image 7.0.7 peer is satori ^0.47.1 (0.x caret = <0.48); an override would break the declared peer.
       - dependency-name: satori
         versions:
           - ">=0.48.0"
@@ -63,35 +26,10 @@ updates:
     directory: /
     schedule:
       interval: weekly
-      day: monday
-      time: "05:15"
-      timezone: Europe/Berlin
-    open-pull-requests-limit: 5
-    # Let fresh releases age before Dependabot proposes them (supply-chain safety).
-    cooldown:
-      default-days: 7
-    groups:
-      codeql-action:
-        patterns:
-          - "github/codeql-action*"
-        update-types:
-          - minor
-          - patch
-      actions-minor-patch:
-        patterns:
-          - "*"
-        update-types:
-          - minor
-          - patch
+    open-pull-requests-limit: 0
 
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: weekly
-      day: monday
-      time: "05:30"
-      timezone: Europe/Berlin
-    open-pull-requests-limit: 3
-    # Let fresh releases age before Dependabot proposes them (supply-chain safety).
-    cooldown:
-      default-days: 7
+    open-pull-requests-limit: 0

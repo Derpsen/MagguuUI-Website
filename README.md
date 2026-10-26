@@ -223,7 +223,7 @@ Implemented already:
 - Nuxt ESLint via `npm run lint`
 - explicit TypeScript check via `npm run typecheck`
 - local production smoke test via `npm run verify`
-- Dependabot and CodeQL workflows for ongoing dependency/security review
+- Renovate (version updates), Dependabot security updates and CodeQL for ongoing dependency/security review
 
 Still worth improving further:
 

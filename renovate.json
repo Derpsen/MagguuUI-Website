@@ -1,0 +1,167 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "timezone": "Europe/Berlin",
+  "schedule": [
+    "* 0-12 * * 1"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "prConcurrentLimit": 5,
+  "automergeType": "pr",
+  "platformAutomerge": false,
+  "internalChecksFilter": "strict",
+  "ignoreTests": false,
+  "configMigration": true,
+  "vulnerabilityAlerts": {
+    "labels": [
+      "security"
+    ]
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "* 0-12 1 * *"
+    ]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Dockerfile base image digest (ARG NODE_DIGEST, FROM uses variables)",
+      "matchStrings": [
+        "#\\s*renovate: image=(?<depName>[^:\\s]+):(?<currentValue>\\S+)\\nARG NODE_VERSION=\\S+\\nARG NODE_DIGEST=(?<currentDigest>sha256:[a-f0-9]{64})"
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker",
+      "managerFilePatterns": [
+        "/(^|/)Dockerfile$/"
+      ]
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "npm: wait 7 days after publish (same policy as the former Dependabot cooldown; security fixes via vulnerabilityAlerts ignore this)",
+      "matchDatasources": [
+        "npm"
+      ],
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "npm non-major updates in one PR",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "npm non-major"
+    },
+    {
+      "description": "GitHub Actions: minor/patch/pin/digest in one PR (digest pins kept); majors get their own PR and are never merged automatically",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ],
+      "groupName": "github-actions non-major"
+    },
+    {
+      "description": "GitHub Actions: wait 7 days after a new release (pin/digest refreshes of an already used tag are not delayed)",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "Automerge patch/pin/digest as a PR once ALL checks are green (Renovate itself waits for the checks, ignoreTests=false; no branch protection needed)",
+      "matchUpdateTypes": [
+        "patch",
+        "pin",
+        "digest"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "Automerge minor only for stable (non-0.x) versions; 0.x minors can break and get their own PR for review",
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true
+    },
+    {
+      "description": "0.x minors: separate PR per package, no automerge",
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "matchCurrentVersion": "/^0/",
+      "groupName": "npm 0.x minor",
+      "automerge": false
+    },
+    {
+      "description": "Majors never automerge",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "h3 >=2 locked: Nuxt 4 / Nitro 2 (nitropack 2.13.x, @nuxt/nitro-server) depend on h3 ^1.15.11; h3 2 comes with Nitro 3 (beta). Revisit when Nuxt moves to Nitro 3.",
+      "matchPackageNames": [
+        "h3"
+      ],
+      "allowedVersions": "<2"
+    },
+    {
+      "description": "satori >=0.48 locked: nuxt-og-image 7.0.7 peer is satori ^0.47.1 (0.x caret = <0.48); an override would violate the declared peer. Revisit when nuxt-og-image widens it.",
+      "matchPackageNames": [
+        "satori"
+      ],
+      "allowedVersions": "<0.48"
+    },
+    {
+      "description": "typescript >=7 locked: typescript-eslint (all releases up to 8.72, peer <6.1) throws 'does not support TS 7.0', so lint breaks. Revisit when typescript-eslint supports TS 7.",
+      "matchPackageNames": [
+        "typescript"
+      ],
+      "allowedVersions": "<7"
+    },
+    {
+      "description": "package.json overrides (security pins, js-yaml 5 is allowed) never automerge; each gets its own review",
+      "matchDepTypes": [
+        "overrides"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "Node base image: digest/minor only, Node majors are a manual decision (engines.node >=26.12.0, Node 26 line)",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "node"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
+    }
+  ],
+  "constraintsFiltering": "strict",
+  "description": [
+    "Renovate config for MagguuUI-Website, same shape as MagguuBot. Minor/patch automerge as PR only after ALL checks are green (required checks on main: \"build (26, false)\" and \"Analyze (javascript-typescript)\"); majors and 0.x minors are never merged automatically. Locks are packageRules with a reason. Never run `npm audit fix --force`."
+  ]
+}

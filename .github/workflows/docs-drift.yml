@@ -1,12 +1,18 @@
 name: Docs drift
 
-# Weekly docs drift check (tools/docs-drift.sh + .github/docs-drift-rules.txt).
-# Hits: create or update the single open issue "Docs-Drift" (assigned to Derpsen).
-# Clean: stay silent and close an open "Docs-Drift" issue.
+# Docs drift check: tools/docs-drift.sh scans docs against the regex rules in .github/docs-drift-rules.txt.
+# Mode (repository variable DOCS_DRIFT_MODE, default "issue"):
+#   issue  weekly + manual run; hits create/update ONE open issue "Docs-Drift", a clean run closes it. Never fails the run.
+#   warn   every push/PR + weekly; hits become ::warning annotations, the run stays green.
+#   fail   every push/PR + weekly; hits fail the run (use once the rules are free of false positives).
+# Config/usage errors (exit 2) always fail the run. Optional repository variable DOCS_DRIFT_ASSIGNEE assigns the issue.
 
 on:
   schedule:
     - cron: '17 5 * * 1'
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -14,16 +20,20 @@ permissions:
   issues: write
 
 concurrency:
-  group: docs-drift
+  group: docs-drift-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   docs-drift:
+    # In issue mode push/PR runs are skipped (the weekly schedule and manual runs do the work).
+    if: ${{ (vars.DOCS_DRIFT_MODE || 'issue') != 'issue' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      MODE: ${{ vars.DOCS_DRIFT_MODE || 'issue' }}
     steps:
       - name: Checkout repository
-        # actions/checkout@v7.0.0
+        # Pin to a full commit SHA of the checkout release you use (example: actions/checkout v7).
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
@@ -39,12 +49,23 @@ jobs:
           if [ "$rc" -ge 2 ]; then echo "::error::docs-drift config/fetch error"; exit "$rc"; fi
           echo "hits=$([ "$rc" -eq 1 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
+      - name: Warn mode, annotate hits
+        if: steps.drift.outputs.hits == 'true' && env.MODE == 'warn'
+        run: |
+          while IFS= read -r l; do echo "::warning title=Docs drift::$l"; done < drift.txt
+
+      - name: Fail mode, fail the run on hits
+        if: steps.drift.outputs.hits == 'true' && env.MODE == 'fail'
+        run: |
+          echo "::error::docs drift found (see log)"; exit 1
+
       - name: Create or update Docs-Drift issue
-        if: steps.drift.outputs.hits == 'true'
+        if: steps.drift.outputs.hits == 'true' && env.MODE == 'issue'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ASSIGNEE: ${{ vars.DOCS_DRIFT_ASSIGNEE }}
         run: |
           {
             echo "Docs drift found by \`tools/docs-drift.sh\` (rules: \`.github/docs-drift-rules.txt\`)."
@@ -57,14 +78,15 @@ jobs:
           } > body.md
           num=$(gh issue list --repo "$REPO" --state open --search 'in:title "Docs-Drift"' --json number,title \
             --jq '[.[] | select(.title == "Docs-Drift")][0].number // empty')
+          assignee=(); [ -n "$ASSIGNEE" ] && assignee=(--assignee "$ASSIGNEE")
           if [ -n "$num" ]; then
-            gh issue edit "$num" --repo "$REPO" --body-file body.md --add-assignee Derpsen
+            gh issue edit "$num" --repo "$REPO" --body-file body.md "${assignee[@]}"
           else
-            gh issue create --repo "$REPO" --title "Docs-Drift" --body-file body.md --assignee Derpsen
+            gh issue create --repo "$REPO" --title "Docs-Drift" --body-file body.md "${assignee[@]}"
           fi
 
       - name: Close Docs-Drift issue when clean
-        if: steps.drift.outputs.hits == 'false'
+        if: steps.drift.outputs.hits == 'false' && env.MODE == 'issue'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}

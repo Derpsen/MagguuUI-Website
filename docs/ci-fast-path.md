@@ -38,3 +38,7 @@ Not touched on purpose: CodeQL, signing/attestation, smoke thresholds, auth/admi
 - Push to `main` directly; watch `Build` and `docker`; do not re-push while `docker` runs unless needed (a newer push cancels the older image).
 - After the smoke: open the page once with a cache-busting query and compare the text, in Dark and Light.
 - Review afterwards by Buddy; a bad fix is reverted by a new small commit.
+
+## Update 2026-10-26 (night): Playwright sharded
+
+Playwright ran twice (Build and docker verify). Both workflows now run it as two shards (`--shard=1/2`, `2/2`, same 211 tests) next to the other checks, plus a Playwright browser cache in build.yml. `build (26, false)` stays the required check as an aggregator; docker `build-and-push` needs `verify` and both shards, so no image without green tests. Measured with `gh run view`: Build 451 s median -> 284 s (4cbc1b8) and 240 s (b81fcdc); docker 591 s -> 377 s. The shard split first broke the Quality alarm-conditions check (build alarm `needs` did not cover `checks`/`e2e`); fixed in da7e505. Not done: shortening `verify`, paths-ignore on Build (a required check must always run), npm cache in docker.yml (cache poisoning on the publishing path).

@@ -20,5 +20,5 @@
 [Oo]pen a PR|Reviewer pre-review|[Pp]re-review|squash-merge (is )?required|via PR only|[Mm]erge via PR	old PR/pre-review flow; push directly to main through the gate	Dependabot|no PRs|no pre-review
 Node 26 (is )?(locked|held|blocked|on hold|needs)|Node 24 locked|Node 26 only after|needs Marco's yes.*Node 26|Node 26.*needs Marco's yes	Node 26 is live; it is no longer locked
 satori (0\.41\+?|<0\.41|>=0\.41|stays (installed )?below 0\.41|locked at)	satori lock is >=0.48 (nuxt-og-image 7 peer ^0.47.1)
-[Ll]ocked( majors)?:.*\b(Node 26|satori 0\.41)	locked list outdated; locked: TypeScript 7, h3 2, js-yaml 5, satori >=0.48, @types/node 26
+[Ll]ocked( majors)?:.*\b(Node 26|satori 0\.41)	locked list outdated; locked: TypeScript 7, h3 2, satori >=0.48
 sha-[0-9a-f]{7,40}|sha256:[0-9a-f]{6,}	AGENTS.md names a concrete image sha/digest; point to /api/health instead (history belongs in MEMORY.md)	!	^AGENTS\.md$

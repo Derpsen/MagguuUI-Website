@@ -21,7 +21,7 @@ Checks
              MagguuUI: enUS INSTALL_ALL label + `function MUE:InstallAll` must exist, no InstallAll4K function.
   engines    package.json engines.node == expected per repo (Bot >=26, Website >=26.12.0); Dockerfile/CI Node major.
   toc        MagguuUI*.toc: four sibling addons, X-EllesmereUI-Min-Version >= 9.0.6, docs 'EllesmereUI x.y.z+' >= min.
-  locked     typescript <7, h3 <2, js-yaml <5, satori <0.48, @types/node <26 (package.json + lockfile).
+  locked     typescript <7, h3 <2, satori <0.48 (package.json + lockfile). js-yaml 5 and @types/node 26 were released 2026-10-26.
   container  final USER 99 or PUID=99 drop; docker.yml has cosign sign (keyless: no --key).
 
 Allow file (tools/drift-allow.txt, backwards compatible with the Website file):
@@ -36,8 +36,8 @@ OPT_REQUIRED = ["auctionator", "smartreminders", "handynotesmapnotes", "whisperm
 OPT_KNOWN = OPT_REQUIRED + ["buggrabber", "bugsack", "handynotes", "mdt", "mythicdungeontools", "raiderio",
                             "simulationcraft", "talenttreetweaks", "waypointui", "gtfo", "premadegroupsfilter"]
 LOCKED = {  # name: (max exclusive major, optional minor limit)  -> must stay BELOW
-    "typescript": (7, None), "h3": (2, None), "js-yaml": (5, None),
-    "satori": (0, 48), "@types/node": (26, None),
+    "typescript": (7, None), "h3": (2, None),
+    "satori": (0, 48),
 }
 REPOS = {
     "mui": dict(engines=None, docker=False,

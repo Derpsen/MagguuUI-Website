@@ -69,8 +69,8 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
   creation. Do not hand-write migration files unless the strategy changes.
 - Do not perform major dependency upgrades without a separate compatibility
   pass. `types/nuxt-nitro.d.ts` restores Nitro `headers`, `swr`, and `storage`
-  on the Nuxt 4.5 config types. Do not delete it. TypeScript 7 (typescript-eslint peer <6.1), h3 2 (Nitro 2 / Nuxt 4 pin h3 1),
-  js-yaml 5, and @types/node 26 stay blocked without an explicit yes. satori moved to
+  on the Nuxt 4.5 config types. Do not delete it. TypeScript 7 (typescript-eslint throws on TS 7, peer <6.1) and h3 2 (Nitro 2 / Nuxt 4 pin h3 1)
+  stay deferred; js-yaml 5 and @types/node 26 were released by Marco on 2026-10-26 (installed). satori moved to
   ^0.47.1 with nuxt-og-image 7 on 2026-10-16 (hold dropped, #140/#155/#156 closed); satori >=0.48 stays blocked
   (og-image 7 peer ^0.47.1).
 - As of 2026-10-14: addon live **v12.1.8**; container runs as **uid 99**;
@@ -132,7 +132,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
 
 `package.json` overrides (#117): `vue` / `@vue/server-renderer` **3.5.43**,
 `seroval` **1.6.8**, `shell-quote` **1.12.0**, `source-map-js` **1.2.2**,
-`js-yaml` **4.3.2** (stay on 4.x; 5 is a major), `postcss-selector-parser` **7.1.6**.
+`js-yaml` **5.5.0** (released 2026-10-26; transitive via eslint-typegen only, dev tooling), `postcss-selector-parser` **7.1.6**.
 Routine „Magguu Audit Allowlist Review“ ~2. Nov; re-check before review-by.
 
 ## Passkey / WebAuthn
@@ -187,7 +187,7 @@ Never `value: ""` on select / option items — use a sentinel (e.g. `"all"`). En
 
 ## Dependabot + pre-push (2026-10-16)
 
-- `.github/dependabot.yml`: npm and github-actions patch+minor come as grouped PRs; majors stay separate. Ignored: h3 2.x, TypeScript majors, js-yaml >=5, satori >=0.48 (nuxt-og-image 7 peer ^0.47.1).
+- `.github/dependabot.yml`: npm and github-actions patch+minor come as grouped PRs; majors stay separate. Ignored: h3 2.x, TypeScript majors, satori >=0.48 (nuxt-og-image 7 peer ^0.47.1).
 - `.github/workflows/dependabot-automerge.yml` (pull_request_target): labels patch/minor PRs (never majors); `gh pr merge --auto --squash`. Since 2026-10-16 allow_auto_merge=true and main requires `build (26, false)` + `Analyze (javascript-typescript)` (enforce_admins=false, no reviews), so direct pushes by Derpsen still work. If the matrix/job names change, update branch protection. **Dependabot security updates are on (2026-10-23).** Security PRs skip grouping/cooldown on purpose and take the same path: fetch-metadata still reports `version-update:semver-*`, so a security patch/minor auto-merges after CI and a security major waits for a human.
 - Run `npm run hooks:install` (`git config core.hooksPath .githooks`) once per clone. `.githooks/pre-push` runs lint, typecheck, test:unit, and actionlint (skipped if not installed).
 
@@ -254,7 +254,7 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 - **TypeScript 7** (7.0.2): typescript-eslint 8.72 peer is `>=4.8.4 <6.1.0`. Stay on TS 6.0.x until typescript-eslint supports 7.
 - **h3 2** (2.0.8): Nitro 2 (nitropack 2.13.5) needs h3 1. Nitro 3 is still beta (`3.0.260903-beta`), and Nuxt 4 is on Nitro 2.
 - **satori ≥0.48** (0.63.2): nuxt-og-image 7.0.7 peer is `satori ^0.47.1`.
-- **js-yaml 5** (5.5.0): major; the override stays at 4.3.2 until Marco says yes.
+- **js-yaml 5** (5.5.0): released 2026-10-26; the override now pins 5.5.0 (only consumer: @apidevtools/json-schema-ref-parser 14 via eslint-typegen, range ^4.1.0, JSON_SCHEMA parse verified; lint, unit, build, Playwright green).
 - Security: private vulnerability reporting is on (2026-10-23). CodeQL runs as the advanced workflow, so default setup stays off (the two conflict). Docker publish (`build-and-push`, the only job with `attestations: write` + `id-token: write`) ships buildx provenance + SBOM, a keyless Cosign signature, and a GitHub artifact attestation (`actions/attest-build-provenance` v4.2.2, pushed to GHCR). Verify with `gh attestation verify oci://ghcr.io/derpsen/magguuui-website:latest --owner Derpsen`. Immutable Releases: untouched (no releases).
 
 ## zizmor advisory workflow + reporting rule (2026-10-23)

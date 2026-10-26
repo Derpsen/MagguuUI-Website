@@ -56,9 +56,6 @@ updates:
       - dependency-name: satori
         versions:
           - ">=0.48.0"
-      - dependency-name: js-yaml
-        versions:
-          - ">=5.0.0"
 
   - package-ecosystem: github-actions
     directory: /

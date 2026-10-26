@@ -91,7 +91,7 @@
     "undici": "8.12.3",
     "@vue/server-renderer": "3.5.43",
     "seroval": "1.6.8",
-    "js-yaml": "4.3.2",
+    "js-yaml": "5.5.0",
     "postcss-selector-parser": "7.1.6",
     "shell-quote": "1.12.0",
     "source-map-js": "1.2.2",

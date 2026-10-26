@@ -1,8 +1,8 @@
 # osv-scanner ignores (package-lock.json). Each entry needs a reason and an
 # ignoreUntil review date; after it the finding shows up again.
-# No upgrades are made for these: TypeScript 7, h3 2, satori >=0.48, js-yaml 5
-# stay locked. The nested h3 2.0.2 (@devframes/agentic, devframe) and
-# @types/node 26 in the lockfile currently have no OSV advisory, so they need
+# No upgrades are made for these: TypeScript 7, h3 2, satori >=0.48
+# stay locked (js-yaml 5 and @types/node 26 were released 2026-10-26). The nested h3 2.0.2 (@devframes/agentic, devframe) in
+# the lockfile currently has no OSV advisory, so it needs
 # no entry. If one appears, add it here with the same reason (transitive, dev
 # tooling, not in .output) and never bump the major to silence it.
 

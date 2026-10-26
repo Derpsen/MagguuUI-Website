@@ -1,0 +1,16 @@
+# docs-drift rules (read by tools/docs-drift.sh). Copy to .github/docs-drift-rules.txt and adapt.
+# Format: regex<TAB>reason[<TAB>allow-regex[<TAB>file-regex]]   (ERE, case-sensitive, TAB separated!)
+
+# Which docs are scanned (globs, bash globstar). Default if omitted: AGENTS.md MEMORY.md README*.md CLAUDE.md ...
+@files README*.md AGENTS.md docs/**/*.md
+
+# Lines that are explicitly history are fine everywhere (dated entries, "formerly", "renamed", ...).
+@allow \(20[0-9]{2}-[0-9]{2}-[0-9]{2}: |[Ff]ormerly|[Rr]enamed|[Ss]uperseded|[Hh]istor(y|ical)
+
+# Optional: URLs that must answer HTTP 200 (a failure is reported as a hit).
+# @health-url https://example.org/api/health
+
+# --- rules: replace the examples with the facts your docs must not contradict ---
+\bOldProductName\b	old name; the current name is NewProductName
+node (1[0-9]|2[0-4])\b	docs name an unsupported runtime version; the project runs on Node 26
+sha256:[0-9a-f]{6,}	docs name a concrete image digest; point to the health endpoint instead	!	^AGENTS\.md$

@@ -24,6 +24,7 @@ on:
       - '!scripts/run-limited.sh'
       - '!osv-scanner.toml'
       - '!renovate.json'
+      - '!.gitignore'
       - '.github/workflows/docker.yml'
   workflow_dispatch:
 
@@ -67,11 +68,43 @@ jobs:
       - run: npm run test:unit
       - run: npm run typecheck
       - run: npm run verify
+
+  e2e:
+    # Same full Playwright suite as before, split in two halves (--shard=N/2, 107 + 104 = 211 tests).
+    # build-and-push needs BOTH shards, so no image is published without the whole suite green.
+    name: e2e (${{ matrix.shard }}/2)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    env:
+      NUXT_OG_IMAGE_SECRET: ci-dummy-og-image-secret
+      NUXT_JWT_SECRET: ci-dummy-secret-must-be-32-chars-long-XXXXXXXXXX
+      NUXT_ADMIN_PASSWORD: ci-dummy
+      SHARD: ${{ matrix.shard }}
+    steps:
+      - name: Checkout repository
+        # actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        # actions/setup-node@v7.1.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 26
+          # No npm cache in the image-publishing workflow (zizmor cache-poisoning).
+          package-manager-cache: false
+
+      - run: npm ci
       - run: npm run test:install
-      - run: npm test
+      - run: npm test -- --shard="${SHARD}/2"
 
   build-and-push:
-    needs: verify
+    needs: [verify, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -156,7 +189,7 @@ jobs:
     # Failure alarm to the escalation webhook (main only; silent without secrets; never fails the run).
     # Template: failure-alarm.yml. Dedupe: one per run, none if the same workflow already failed on this commit.
     name: failure alarm
-    needs: [verify, build-and-push]
+    needs: [verify, e2e, build-and-push]
     if: ${{ failure() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     permissions:
       actions: read

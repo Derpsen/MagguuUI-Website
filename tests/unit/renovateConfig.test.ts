@@ -49,7 +49,7 @@ describe('renovate.json', () => {
 
   test('the Dockerfile carries the annotation the custom manager matches', () => {
     const docker = readFileSync(new URL('../../Dockerfile', import.meta.url), 'utf8')
-    const rx = new RegExp(cfg.customManagers[0].matchStrings[0].replace(/\(\?</g, '(?<'))
+    const rx = new RegExp(cfg.customManagers[0].matchStrings[0])
     const m = rx.exec(docker)
     assert.equal(m?.groups?.depName, 'node')
     assert.equal(m?.groups?.currentValue, '26-bookworm-slim')

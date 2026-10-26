@@ -221,7 +221,7 @@ describe('markdown sanitization', () => {
     const html = renderNoticeMarkdown('Use <b>care</b> & <script>x</script>')
     assert.match(html, /&lt;b&gt;care&lt;\/b&gt;/)
     assert.match(html, /&lt;script&gt;x&lt;\/script&gt;/)
-    assert.doesNotMatch(html, /<b>|<script/)
+    assert.doesNotMatch(html, /<b>|<script/i)
   })
 
   it('external links are safe: https/mailto only, rel and target forced', () => {

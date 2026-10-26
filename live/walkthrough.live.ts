@@ -111,7 +111,7 @@ test.describe('interactions (desktop)', () => {
       await page.goto('/')
       await page.waitForLoadState('networkidle')
       await page.locator(`header a[href="${href}"]`).first().click()
-      await expect(page).toHaveURL(new RegExp(`${href.replace(/\//g, '\\/')}(\\?.*)?$`))
+      await expect(page).toHaveURL(new RegExp(`${href.replace(/[\\^$.*+?()[\]{}|/]/g, '\\$&')}(\\?.*)?$`))
       await expect(page.locator('h1').first()).toBeVisible()
     }
     const footer = [...new Set(await page.locator('footer a[href]').evaluateAll(els => els.map(e => (e as HTMLAnchorElement).href)))]

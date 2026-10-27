@@ -8,16 +8,20 @@ name: Dependabot auto-merge
 # on purpose but go through the same gate: fetch-metadata still reports
 # update-type version-update:semver-*, so a security patch/minor is labelled and
 # auto-merged after CI, and a security major waits for a human.
-# Safety: `gh pr merge --auto` only waits for CI when the repo has
-# "Allow auto-merge" AND required status checks on main. Without both, the
-# `enable` job skips and the `merge` job below merges only after Build passes.
+# Merge path: `gh pr merge --auto` only. GitHub then waits for ALL required checks on main
+# (`build (26, false)` and `Analyze (javascript-typescript)`) and merges itself. There is no
+# fallback merge job any more (it merged on Build success alone, ignoring CodeQL, and needed
+# contents/actions write for a path that is dead while auto-merge + required checks are on).
+# If auto-merge or required checks are ever off, the `enable` job only prints a notice and a human merges.
+# Token rights (Scorecard Token-Permissions): top-level `permissions: {}`; the two job-level writes left
+# are the minimum: `enable` needs contents + pull-requests write for the enablePullRequestAutoMerge
+# mutation (+ issues write for the label), `post-merge-dispatch` needs actions write for `gh workflow run`
+# (a GITHUB_TOKEN merge does not start push workflows, only workflow_dispatch). Guarded by
+# tools/dependabot-automerge.test.py (Quality, pre-push).
 
 on:
   pull_request_target:  # zizmor: ignore[dangerous-triggers] -- no PR code is checked out or run
     types: [opened, reopened, synchronize, closed]
-  workflow_run:  # zizmor: ignore[dangerous-triggers] -- no PR code is checked out or run
-    workflows: [Build]
-    types: [completed]
 
 permissions: {}
 
@@ -79,63 +83,6 @@ jobs:
       actions: write
     steps:
       - name: Dispatch main workflows
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-        run: |
-          for wf in docker.yml build.yml codeql.yml; do
-            gh workflow run "$wf" --repo "$REPO" --ref main
-          done
-
-  merge:
-    if: >-
-      github.event_name == 'workflow_run' &&
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      actions: write
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Resolve PR for head SHA
-        id: pr
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-          REPO: ${{ github.repository }}
-        run: |
-          PRS=$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls")
-          PR=$(echo "$PRS" | jq -c --arg sha "$HEAD_SHA" \
-            '.[] | select(.state == "open" and .user.login == "dependabot[bot]" and .base.ref == "main" and .head.sha == $sha)' \
-            | head -n 1)
-          if [ -z "$PR" ]; then
-            echo "No open Dependabot PR found for $HEAD_SHA"
-            echo "should_merge=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          NUMBER=$(echo "$PR" | jq -r '.number')
-          HAS_LABEL=$(echo "$PR" | jq -r '.labels[].name' | grep -Fx 'dependabot-auto-merge' || true)
-          echo "number=$NUMBER" >> "$GITHUB_OUTPUT"
-          if [ -n "$HAS_LABEL" ]; then
-            echo "should_merge=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "should_merge=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Merge PR
-        if: steps.pr.outputs.should_merge == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
-          REPO: ${{ github.repository }}
-        run: gh pr merge "$PR_NUMBER" --repo "$REPO" --squash --delete-branch --match-head-commit "$HEAD_SHA"
-
-      # A GITHUB_TOKEN merge fires neither push nor pull_request_target(closed),
-      # so dispatch the main workflows from here as well.
-      - name: Dispatch main workflows
-        if: steps.pr.outputs.should_merge == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}

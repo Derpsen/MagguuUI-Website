@@ -13,4 +13,5 @@ else
   echo "[pre-push] WARNING: actionlint not installed, skipping workflow lint" >&2
 fi
 echo "[pre-push] failure-alarm caller conditions"; python3 tools/alarm-conditions.test.py >/dev/null
+echo "[pre-push] dependabot auto-merge workflow"; python3 tools/dependabot-automerge.test.py >/dev/null
 echo "[pre-push] OK"

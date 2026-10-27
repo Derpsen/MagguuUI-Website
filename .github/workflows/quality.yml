@@ -43,6 +43,9 @@ jobs:
       - name: Failure alarm caller conditions (if:, needs, permissions)
         run: python3 tools/alarm-conditions.test.py
 
+      - name: Dependabot auto-merge workflow (token rights, merge logic)
+        run: python3 tools/dependabot-automerge.test.py
+
       - name: Lighthouse budget checker unit tests
         run: node --test tools/lighthouse-budget.test.mjs
 

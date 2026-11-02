@@ -10,8 +10,3 @@
 id = "GHSA-vjh5-4x84-xrqp"
 ignoreUntil = 2026-11-30
 reason = "False positive: affects nuxt / @nuxt/nitro-server < 4.6.2; the lockfile has 4.6.2 (patched). OSV range data lags. Re-check when OSV is corrected."
-
-[[IgnoredVulns]]
-id = "GHSA-86w9-cpqp-85rv"
-ignoreUntil = 2026-11-30
-reason = "node-forge: no patched release exists. Transitive via listhen (Nuxt dev-server HTTPS certs); not in .output. Same allowlist entry as scripts/audit-prod.mjs."

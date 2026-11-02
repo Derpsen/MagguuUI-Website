@@ -1,18 +1,12 @@
 import { spawnSync } from 'node:child_process'
 
-// Build-only advisories with no patched release upstream. Neither package is
-// traced into Nitro's .output (runtime image), see PR notes. Re-check by the
-// review date; after it the gate fails again until the list is re-approved.
-const ALLOWLIST = {
-  'GHSA-vfj7-8cjw-p6xm': { pkg: 'braces', reason: 'nitropack > globby > fast-glob > micromatch; build-time only' },
-  'GHSA-86w9-cpqp-85rv': { pkg: 'node-forge', reason: 'listhen (nuxt dev server certs); not in .output' },
-  // simple-git 4.x drops default export and breaks @nuxt/devtools. Build/dev only.
-  'GHSA-v5rq-49vh-5v5c': { pkg: '@simple-git/argv-parser', reason: '@nuxt/devtools > simple-git; build/dev only; 4.x breaks default import' },
-  'GHSA-x6jw-m9v5-85vh': { pkg: 'simple-git', reason: '@nuxt/devtools; build/dev only; 4.x breaks default import' },
-  'GHSA-g4wm-2vf7-vfgr': { pkg: 'simple-git', reason: '@nuxt/devtools; build/dev only; 4.x breaks default import' },
-  'GHSA-858h-whjf-mvg5': { pkg: 'simple-git', reason: '@nuxt/devtools; build/dev only; 4.x breaks default import' },
-}
-const REVIEW_BY = '2026-11-30'
+// Build-only advisories with no patched release upstream may be allowlisted here
+// as { 'GHSA-…': { pkg, reason } } together with a REVIEW_BY date; after that date
+// the gate fails again until the list is re-approved. Empty since 2026-11-02:
+// node-forge 1.4.2 (override) fixed the listhen findings and braces/simple-git
+// are no longer reported by npm audit --omit=dev.
+const ALLOWLIST = {}
+const REVIEW_BY = null
 const BLOCKING = new Set(['high', 'critical'])
 
 const res = spawnSync('npm audit --omit=dev --json', {
@@ -36,7 +30,7 @@ if (report.error || !report.metadata?.vulnerabilities) {
   process.exit(1)
 }
 
-const expired = new Date() > new Date(`${REVIEW_BY}T23:59:59Z`)
+const expired = REVIEW_BY !== null && new Date() > new Date(`${REVIEW_BY}T23:59:59Z`)
 const blocking = []
 const allowed = []
 

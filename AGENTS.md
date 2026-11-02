@@ -128,8 +128,8 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
 
 `scripts/audit-prod.mjs` ALLOWLIST is **empty since 2026-11-02** (`REVIEW_BY = null`): override `node-forge` **1.4.2** (listhen wants ^1.4.0) fixed GHSA-86w9-cpqp-85rv and the five new highs (GHSA-7wch-p9px-956x, -jc66-7q78-782g, -8hrf-8g6f-7xwp, -hqq3-7jhf-c5jx, -5x38-2vff-x55p); braces/simple-git are no longer reported by `npm audit --omit=dev`. The osv-scanner.toml node-forge ignore is gone too. A new entry needs `{ pkg, reason }` plus a REVIEW_BY date.
 
-`package.json` overrides (#117): `vue` / `@vue/server-renderer` **3.5.43**,
-`seroval` **1.6.8**, `shell-quote` **1.12.0**, `source-map-js` **1.2.2**,
+`package.json` overrides (#117; lifted to the Nuxt 4.6.3 ranges on 2026-11-02, supersedes Renovate #170): `vue` / `@vue/server-renderer` **^3.5.44**, `devalue` **^6.0.3**, `seroval` **^1.7.2** (resolves 1.7.6; fixes GHSA-f86p-h4j2-7qgj / GHSA-9wx9-5pv9-3349), `esbuild` **^0.28.2** (also lifts drizzle-kit's old esbuild),
+`shell-quote` **1.12.0**, `source-map-js` **1.2.2**,
 `js-yaml` **5.5.0** (released 2026-10-26; transitive via eslint-typegen only, dev tooling), `postcss-selector-parser` **7.1.6**, `node-forge` **1.4.2** (2026-11-02).
 Routine „Magguu Audit Allowlist Review“ ~2. Nov; re-check before review-by.
 

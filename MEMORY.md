@@ -551,3 +551,6 @@
 
 ## 2026-11-02 release-draft bell
 - Bell said "88 unpublished changelog(s)" because Buddy keeps 88 generated rows (auto / Sync YYYY-MM-DD) unpublished on purpose. Bell and dashboard now skip them via the `version` column (`changelogKind.ts`). Live: bell gone unless a real release draft exists. Mutation check 90.
+
+## 2026-11-02 package (Buddy, Marco "Alles machen")
+- P1: nuxt 4.6.3; overrides devalue ^6.0.3, vue/@vue/server-renderer ^3.5.44, seroval ^1.7.2 (1.7.6), esbuild ^0.28.2. Renovate PR #170 (seroval 1.6.11) superseded.

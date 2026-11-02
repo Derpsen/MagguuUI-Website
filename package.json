@@ -90,7 +90,7 @@
     "svgo": "4.1.0",
     "undici": "8.12.3",
     "@vue/server-renderer": "3.5.43",
-    "seroval": "1.6.8",
+    "seroval": "1.6.11",
     "js-yaml": "5.5.0",
     "postcss-selector-parser": "7.1.6",
     "shell-quote": "1.12.0",

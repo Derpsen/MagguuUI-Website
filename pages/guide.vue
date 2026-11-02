@@ -393,12 +393,13 @@ const visibleSubtitle = computed(() => editMode.value ? editableSubtitle.value :
 const visibleSteps = computed(() => editMode.value ? steps.value : (guidePage.value?.steps || []))
 
 const STEP_META = [
-  { label: 'Prepare', icon: 'i-heroicons-wrench-screwdriver' },
+  // One tag per default step (1 EllesmereUI, 2 MagguuUI, 3 optional raid tools, 4 Setup, 5 Skinning/QoL, 6 commands).
+  { label: 'Required', icon: 'i-heroicons-wrench-screwdriver' },
   { label: 'Install', icon: 'i-heroicons-arrow-down-tray' },
-  { label: 'Launch', icon: 'i-heroicons-play' },
+  { label: 'Optional', icon: 'i-heroicons-puzzle-piece' },
   { label: 'Apply', icon: 'i-heroicons-sparkles' },
   { label: 'Skinning & QoL', icon: 'i-heroicons-paint-brush' },
-  { label: 'Finish', icon: 'i-heroicons-check-badge' },
+  { label: 'Commands', icon: 'i-heroicons-command-line' },
 ] as const
 
 watch(guidePage, (page) => {

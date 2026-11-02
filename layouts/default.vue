@@ -11,8 +11,9 @@
       Skip to main content
     </a>
 
-    <header class="sticky top-0 z-50 border-b backdrop-blur-md"
-      :class="isDark ? 'bg-[#0b1118]/95 border-white/10' : 'bg-[#eef4fb]/95 border-gray-200'">
+    <!-- z-[70] while the mobile menu is open: the overlay (z-[65]) must not cover the logo and the close button. -->
+    <header class="sticky top-0 border-b backdrop-blur-md"
+      :class="[mobileOpen ? 'z-[70]' : 'z-50', isDark ? 'bg-[#0b1118]/95 border-white/10' : 'bg-[#eef4fb]/95 border-gray-200']">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-6">
         <NuxtLink to="/" class="flex items-center gap-2 shrink-0">
           <img src="/favicon-32.png" alt="" width="22" height="22" class="w-[22px] h-[22px]" />
@@ -344,7 +345,6 @@ const navLinks = [
   { to: '/', label: 'Home', icon: 'i-heroicons-home' },
   { to: '/strings', label: 'Import Strings', icon: 'i-heroicons-bolt' },
   { to: '/addons', label: 'Addons', icon: 'i-heroicons-puzzle-piece' },
-  { to: '/profiles', label: 'Previews', icon: 'i-heroicons-photo' },
   { to: '/guide', label: 'Guides', icon: 'i-heroicons-book-open' },
   { to: '/changelog', label: 'Changelog', icon: 'i-heroicons-sparkles' },
   { to: '/faq', label: 'FAQ', icon: 'i-heroicons-question-mark-circle' },
@@ -363,7 +363,6 @@ const footerLinks = computed(() => [
   { label: 'Strings', to: '/strings' },
   { label: 'Guide', to: '/guide' },
   { label: 'Addons', to: '/addons' },
-  { label: 'Previews', to: '/profiles' },
   { label: 'Configurator', to: '/configurator' },
   { label: 'Changelog', to: '/changelog' },
   { label: 'FAQ', to: '/faq' },

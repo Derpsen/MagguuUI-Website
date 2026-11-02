@@ -5,7 +5,7 @@
 
 /** Public routes that are counted. Anything else (admin, api, 404s, junk) is ignored. */
 export const TRACKED_ROUTES = [
-  '/', '/strings', '/addons', '/profiles', '/configurator', '/guide', '/changelog', '/faq', '/about', '/imprint', '/privacy', '/status', '/submit-preset',
+  '/', '/strings', '/addons', '/configurator', '/guide', '/changelog', '/faq', '/about', '/imprint', '/privacy', '/status', '/submit-preset',
 ] as const
 
 const TRACKED = new Set<string>(TRACKED_ROUTES)

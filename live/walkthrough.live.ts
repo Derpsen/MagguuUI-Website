@@ -8,7 +8,7 @@ import type { BrowserContext, Page } from '@playwright/test'
  *  - "Necessary only" sets just the mg_consent cookie (no row).
  *  - "Accept all" (LIVE_ACCEPT=1) creates exactly one visitor row, which is deleted again by withdrawing consent in the same test.
  */
-const PAGES = ['/', '/guide', '/strings', '/profiles', '/configurator', '/status', '/about', '/imprint', '/privacy', '/changelog', '/submit-preset', '/faq', '/addons', '/definitely-not-a-page']
+const PAGES = ['/', '/guide', '/strings', '/configurator', '/status', '/about', '/imprint', '/privacy', '/changelog', '/submit-preset', '/faq', '/addons', '/definitely-not-a-page']
 const VIEWPORTS = { mobile: { width: 390, height: 844 }, desktop: { width: 1280, height: 800 } } as const
 const THEMES = ['dark', 'light'] as const
 
@@ -155,12 +155,10 @@ test.describe('interactions (desktop)', () => {
     blocked = blocked.filter(b => !/copy-event|page-view/.test(b)) // the copy counter is aborted on purpose
   })
 
-  test('profiles page shows previews with loaded images', async () => {
-    await page.goto('/profiles')
-    await page.waitForLoadState('networkidle')
-    await expect(page.locator('h1').first()).toBeVisible()
-    const broken = await page.evaluate(() => [...document.images].filter(i => i.loading !== 'lazy' && i.complete && i.naturalWidth === 0).map(i => i.src))
-    expect(broken).toEqual([])
+  test('/profiles (removed) answers 301 to /addons', async () => {
+    const res = await page.request.get('/profiles', { maxRedirects: 0 })
+    expect(res.status()).toBe(301)
+    expect(new URL(res.headers().location!, 'https://x').pathname).toBe('/addons')
   })
 
   test('strings copy button copies and announces', async () => {

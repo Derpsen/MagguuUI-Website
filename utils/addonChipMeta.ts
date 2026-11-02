@@ -25,7 +25,11 @@ export const PROFILE_KEY_BY_SLUG: Record<string, string> = {
   'smart-reminders': 'NaowhSmartReminders',
 }
 
-/** WowUp starter pack slugs (EllesmereUI also Required on the site). MagguuUI itself is not an addons-row. */
+/**
+ * WowUp Starter pack slugs: EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore.
+ * The one source for the Starter group on the home page and /addons (EllesmereUI stays Required there).
+ * MagguuUI itself is not an addons-row.
+ */
 export const WOWUP_STARTER_SLUGS = new Set([
   'ellesmereui',
   'bigwigs',
@@ -138,27 +142,29 @@ export function wowupLabel(name: string): string {
   return name
 }
 
-export type AddonGroupKey = 'required' | 'optional' | 'wowup'
+export type AddonGroupKey = 'required' | 'starter' | 'optional' | 'wowup'
 
 export function isWowupPackSlug(slug: string): boolean {
   return WOWUP_STARTER_SLUGS.has(slug) || WOWUP_OPTIONAL_SLUGS.has(slug)
 }
 
-/** Public home list: EllesmereUI is required. Every other addon is optional. */
+/** Public addon lists (home, /addons): EllesmereUI is required, the Starter pack addons come next, the rest is optional. */
 export function addonGroupForSlug(slug: string, category: 'required' | 'core' | 'optional'): AddonGroupKey {
   if (category === 'required' || slug === 'ellesmereui') return 'required'
+  if (WOWUP_STARTER_SLUGS.has(slug)) return 'starter'
   return 'optional'
 }
 
 export function addonGroupSubtitle(group: AddonGroupKey): string {
   if (group === 'required') return 'Required'
+  if (group === 'starter') return 'Starter pack'
   if (group === 'wowup') return 'WowUp'
   return 'Optional'
 }
 
 export function groupAddonChips<T extends { key: string, kind: AddonGroupKey }>(chips: T[]): Array<{ key: AddonGroupKey, label: string, items: T[] }> {
-  const order: AddonGroupKey[] = ['required', 'optional', 'wowup']
-  const buckets: Record<AddonGroupKey, T[]> = { required: [], optional: [], wowup: [] }
+  const order: AddonGroupKey[] = ['required', 'starter', 'optional', 'wowup']
+  const buckets = Object.fromEntries(order.map(k => [k, [] as T[]])) as Record<AddonGroupKey, T[]>
   for (const chip of chips) buckets[chip.kind].push(chip)
   return order
     .filter(k => buckets[k].length > 0)

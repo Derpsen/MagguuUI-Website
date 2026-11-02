@@ -255,7 +255,7 @@ const form = reactive({
     title: "MagguuUI",
     title2: "Ellesmere setup.",
     ...HOME_HERO_EXTRA_DEFAULTS,
-    description: "MagguuUI is a native EllesmereUI module for WoW Retail. Designed for 4K. Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface, then open /mui and run Apply Magguu profiles.",
+    description: "MagguuUI is a native EllesmereUI module for WoW Retail. Designed for 4K. Open /mui and run Apply Magguu profiles.",
   } as Record<string, string>,
   addons: {
     title: "Supported Addons",

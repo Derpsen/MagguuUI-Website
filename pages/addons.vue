@@ -4,7 +4,7 @@
     <h1 class="text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">Addons</h1>
     <div class="mt-4 space-y-3 text-sm leading-relaxed max-w-2xl" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
       <p>
-        EllesmereUI is required. Download it and MagguuUI from CurseForge, Wago, or WoWInterface. Everything else is optional.
+        EllesmereUI is required. Download it and MagguuUI from CurseForge, Wago, or WoWInterface. The Starter pack addons are recommended; everything else is optional.
       </p>
       <p>
         MagguuUI applies a profile when that addon is installed and skips it otherwise.
@@ -46,6 +46,8 @@
 
 <script setup lang="ts">
 import { ADDON_ICONS } from '~/utils/addonIcons'
+import { addonGroupForSlug, addonGroupSubtitle } from '~/utils/addonChipMeta'
+import type { AddonGroupKey } from '~/utils/addonChipMeta'
 
 const isDark = useIsDark()
 
@@ -77,25 +79,31 @@ function iconFor(slug: string): string | undefined {
   return ADDON_ICONS[slug]
 }
 
+// Same grouping as the home page (utils/addonChipMeta.ts): Required, Starter pack, Optional.
+const GROUP_HINTS: Partial<Record<AddonGroupKey, string>> = {
+  required: 'MagguuUI does not load without EllesmereUI.',
+  starter: 'In the Starter WowUp pack with EllesmereUI and MagguuUI. Recommended; missing addons are skipped.',
+  optional: 'Install the ones you want. Missing addons are skipped.',
+}
+
 const groups = computed(() => {
   const payload = data.value?.data
-  const required = payload?.required ?? []
-  const optional = [...(payload?.core ?? []), ...(payload?.optional ?? [])]
-    .filter(addon => addon.url)
-    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.name.localeCompare(b.name))
-  return [
-    required.length ? {
-      key: 'required',
-      label: 'Required',
-      hint: 'MagguuUI does not load without EllesmereUI.',
-      items: required.filter(addon => addon.url),
-    } : null,
-    optional.length ? {
-      key: 'optional',
-      label: 'Optional',
-      hint: 'Install the ones you want. Missing addons are skipped.',
-      items: optional,
-    } : null,
-  ].filter((group): group is { key: string, label: string, hint: string, items: Addon[] } => group !== null)
+  const all = [
+    ...(payload?.required ?? []).map(addon => ({ addon, category: 'required' as const })),
+    ...(payload?.core ?? []).map(addon => ({ addon, category: 'core' as const })),
+    ...(payload?.optional ?? []).map(addon => ({ addon, category: 'optional' as const })),
+  ].filter(entry => entry.addon.url)
+  const order: AddonGroupKey[] = ['required', 'starter', 'optional']
+  return order
+    .map(key => ({
+      key,
+      label: addonGroupSubtitle(key),
+      hint: GROUP_HINTS[key] ?? '',
+      items: all
+        .filter(entry => addonGroupForSlug(entry.addon.slug, entry.category) === key)
+        .map(entry => entry.addon)
+        .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.name.localeCompare(b.name)),
+    }))
+    .filter(group => group.items.length > 0)
 })
 </script>

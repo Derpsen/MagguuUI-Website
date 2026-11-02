@@ -250,6 +250,9 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'guide', section: 'intro', key: 'text', marker: 'four MagguuUI folders' },
   { page: 'guide', section: 'steps', key: 'step_2', marker: 'Copy all four folders' },
   { page: 'guide', section: 'steps', key: 'step_5', marker: 'leave EXBoss MythicCast off' },
+  // 2026-11-02 QA copy: only the untouched old defaults (full text) are replaced; admin edits stay.
+  { page: 'guide', section: 'steps', key: 'step_1', marker: 'Install **EllesmereUI 9.0.6+** from CurseForge, Wago, or WoWInterface and keep it enabled. MagguuUI will not load without it. Ellesmere start popup is skipped; MagguuUI Setup opens on that login.' },
+  { page: 'home', section: 'hero', key: 'description', marker: 'Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface, open <code>/mui</code>, and run <strong>Apply Magguu profiles</strong>.' },
 ] as const
 
 const LEGACY_FAQ_MARKERS = [

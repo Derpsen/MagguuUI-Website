@@ -3,37 +3,36 @@
 -->
 
 <template>
-  <div class="min-h-screen flex items-center px-6 transition-colors duration-300"
-    :class="isDark ? 'bg-[#0b1118] text-silver-300' : 'bg-[#eef4fb] text-gray-700'">
-    <div class="max-w-md">
-      <p class="font-mono text-sm" :class="isDark ? 'text-brand-300' : 'text-brand-700'">
-        {{ error?.statusCode || 404 }}
-      </p>
-      <h1 class="mt-2 text-3xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">
-        {{ errorTitle }}
-      </h1>
-      <p class="mt-3 leading-relaxed">
-        {{ errorDesc }}
-      </p>
-      <div class="mt-6 flex items-center gap-5 text-sm font-semibold">
-        <button type="button" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'" @click="goHome">
-          Home
-        </button>
-        <button type="button" class="underline underline-offset-4" :class="isDark ? 'text-silver-400' : 'text-gray-500'" @click="handleError">
-          Go Back
-        </button>
+  <!-- Same header, nav and footer as every public page (2026-11-02); content centred; Dark and Light. -->
+  <NuxtLayout name="default">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[50vh] flex items-center justify-center py-20">
+      <div class="max-w-md text-center" data-testid="error-page">
+        <p class="font-mono text-sm" :class="isDark ? 'text-brand-300' : 'text-brand-700'">
+          {{ error?.statusCode || 404 }}
+        </p>
+        <h1 class="mt-2 text-3xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">
+          {{ errorTitle }}
+        </h1>
+        <p class="mt-3 leading-relaxed" :class="isDark ? 'text-silver-300' : 'text-gray-600'">
+          {{ errorDesc }}
+        </p>
+        <div class="mt-6 flex items-center justify-center gap-5 text-sm font-semibold">
+          <button type="button" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'" @click="goHome">
+            Home
+          </button>
+          <button type="button" class="underline underline-offset-4" :class="isDark ? 'text-silver-400' : 'text-gray-500'" @click="handleError">
+            Go back
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
 const error = useError()
 const router = useRouter()
-const isDark = computed(() => {
-  if (!import.meta.client) return true
-  return document.documentElement.classList.contains('dark')
-})
+const isDark = useIsDark()
 
 useSeoMeta({
   robots: 'noindex, nofollow',

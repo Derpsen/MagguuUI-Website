@@ -23,7 +23,7 @@
         </h1>
         <SafeHtml class="home-hero-copy mt-6 max-w-xl text-base sm:text-lg leading-relaxed"
           :class="isDark ? 'text-silver-300' : 'text-gray-600'"
-          :html="content?.hero?.description || 'Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface, open <code>/mui</code>, and run <strong>Apply Magguu profiles</strong>.'"
+          :html="content?.hero?.description || 'Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>.'"
         />
         <div class="mt-8 flex flex-wrap gap-3">
           <NuxtLink to="/guide" data-cta="hero-setup" class="btn-gradient px-5 py-2.5 rounded-md text-white text-sm font-semibold">

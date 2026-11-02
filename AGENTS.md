@@ -387,13 +387,15 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 - One endpoint: `GET /api/v1/admin/overview[?fresh=1]` (`requireAdminAccess`, read-only). Aggregation lives in `server/utils/adminOverview.ts` (`buildOverview(sqlite, env)`, takes a handle, unit-tested in memory), a 10 s in-memory cache (`getOverview`, the Refresh button sends `fresh=1`), view helpers in `utils/overviewView.ts`. `/api/v1/admin/stats` stays for the Analytics page.
 - "Last content publish" is the newest audit row of type content whose name ends in `published`, so keep that naming in `publish.post.ts`. Tests: `tests/unit/adminOverview.test.ts`, unauth 401 in `tests/content-drafts-public.spec.ts`, the admin view in `tests/admin-content-live.spec.ts`.
 
-## Profile previews `/profiles` (2026-10-25)
+## `/profiles` removed (2026-11-02, QA)
 
-- Public page `/profiles` ("Profile previews", header nav + footer + sitemap + `CDN_CACHEABLE_PATHS`). Data: `GET /api/v1/profile-previews` = visible+available addons that have at least one VISIBLE profile (names from the DB, via `readGroupedProfileIndex`); no import strings, nothing unpublished. No new tables.
-- Images: `public/previews/<addon-slug>.<webp|avif|png|jpg|jpeg>` (webp first), 1600x1000 (16:10, fixed frame, `object-fit: cover`). The server lists the folder at runtime (`server/utils/previewFiles.ts`, 10 s cache in prod, none in dev); no file → neutral "Preview image to be added" placeholder, never a fake screenshot. Pure resolution lives in `utils/previewImages.ts`. In production images are part of the build (Nitro's asset manifest is fixed at build time), so a new file needs a deploy.
-- Image list + naming: `docs/preview-images.md` (a unit test fails when a slug in `PROFILE_KEY_BY_SLUG` is missing there). First image eager/high priority, the rest lazy; width/height always set.
-- `/profiles` has NO swr route rule (the folder is read live); the E2E in `admin-content-live.spec.ts` creates a profile, drops a temp `public/previews/ellesmereui.webp` (only if none is committed) and removes it again.
-- Header nav switched from `md` to `lg` (7 links no longer fit at 768 px); below that the hamburger menu is used.
+- The public preview page is gone: `pages/profiles.vue`, `GET /api/v1/profile-previews`, `server/utils/profilePreviews.ts`, `server/utils/previewFiles.ts`, `utils/previewImages.ts` (+ test) and `docs/preview-images.md` were deleted; nav/footer/sitemap/`CDN_CACHEABLE_PATHS`/tracking/link-check no longer list it.
+- `/profiles` and `/profiles/**` answer 301 to `/addons` (route rules in `nuxt.config.ts`), `/contact` answers 301 to `/imprint` (the footer Contact link is a mailto after mount). Tests: `tests/qa-1103.spec.ts`, `live/walkthrough.live.ts`.
+- Kept on purpose: `/api/v1/profiles`, `/api/v1/admin/profiles` and admin strings/profiles (used by `/strings`, `/configurator`, sync and `verify-build`).
+- Starter pack grouping: `WOWUP_STARTER_SLUGS` in `utils/addonChipMeta.ts` is the single source; `addonGroupForSlug` returns `required` (EllesmereUI), `starter`, `optional`; home and `/addons` both group with it. Do not write a literal `starter:` object key there (magguu-drift reads it as a pack list).
+- `error.vue` renders inside the default layout (header/footer, centered, Light + Dark). Mobile header is `z-[70]` while the menu overlay (`z-[65]`) is open, so logo and close button stay on top. The Light theme toggle is a plain icon button (colour change only, no white box).
+- Copy (code defaults + exact-text markers in `server/plugins/init.ts`, so admin edits stay): guide step tags Required/Install/Optional/Apply/Skinning & QoL/Commands; guide step_1 ends "MagguuUI Setup opens on that login instead of the Ellesmere start popup."; home hero description drops the Download clause (the Steps keep it).
+- Header nav breakpoint stays `lg`; below that the hamburger menu is used.
 
 ## Profile configurator `/configurator` (2026-10-25)
 

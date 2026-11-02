@@ -239,7 +239,7 @@ export default defineNuxtConfig({
       ? {
           prerender: {
             failOnError: false,
-            routes: ['/', '/guide', '/faq', '/changelog', '/about', '/addons', '/profiles', '/configurator', '/imprint', '/privacy', '/strings'],
+            routes: ['/', '/guide', '/faq', '/changelog', '/about', '/addons', '/configurator', '/imprint', '/privacy', '/strings'],
           },
         }
       : {}),
@@ -403,9 +403,12 @@ export default defineNuxtConfig({
     '/changelog': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
     '/about': { swr: 120 },
     '/addons': { swr: 120 },
-    // No swr: the previews folder is read live (a dropped-in image appears at once) and the
-    // page is cheap; the bare URL is still edge-cached via CDN-Cache-Control (publicCache.ts).
-    '/profiles': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
+    // /profiles ("Previews") was removed on 2026-11-02; old links land on /addons.
+    '/profiles': { redirect: { to: '/addons', statusCode: 301 } },
+    '/profiles/**': { redirect: { to: '/addons', statusCode: 301 } },
+    // There is no contact page: the footer Contact link is a mailto (built after mount); typed /contact URLs
+    // go to the legal notice, which lists the address.
+    '/contact': { redirect: { to: '/imprint', statusCode: 301 } },
     // Selection lives in the query string, so no swr (the route cache would key every variant).
     '/configurator': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
     '/imprint': { swr: 120 },

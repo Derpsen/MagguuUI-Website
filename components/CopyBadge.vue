@@ -1,7 +1,9 @@
 <template>
+  <!-- No transition-colors: inside content-visibility:auto cards an off-screen colour transition
+       (SSR dark -> client light) stays frozen at white until painted (axe contrast failure, 2026-11-02). -->
   <button
     type="button"
-    class="copy-badge inline-flex items-center gap-1 rounded px-0.5 font-mono text-[0.85rem] transition-colors hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
+    class="copy-badge inline-flex items-center gap-1 rounded px-0.5 font-mono text-[0.85rem] hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
     :class="isDark
       ? 'text-white focus-visible:outline-brand-300'
       : 'text-gray-950 focus-visible:outline-brand-700'"

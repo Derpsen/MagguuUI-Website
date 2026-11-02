@@ -18,7 +18,6 @@ const PAGES = [
   { loc: '/strings', changefreq: 'daily', priority: 0.9 },
   { loc: '/guide', changefreq: 'monthly', priority: 0.7 },
   { loc: '/addons', changefreq: 'monthly', priority: 0.7 },
-  { loc: '/profiles', changefreq: 'monthly', priority: 0.6 },
   { loc: '/configurator', changefreq: 'monthly', priority: 0.6 },
   { loc: '/changelog', changefreq: 'weekly', priority: 0.6, lastmodFromChangelog: true },
   { loc: '/faq', changefreq: 'monthly', priority: 0.5 },

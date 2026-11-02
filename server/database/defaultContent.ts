@@ -2,7 +2,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'hero', key: 'title', value: 'MagguuUI', type: 'text', sortOrder: 0, locale: 'en' },
   { page: 'home', section: 'hero', key: 'title2', value: 'Ellesmere setup.', type: 'text', sortOrder: 1, locale: 'en' },
   { page: 'home', section: 'hero', key: 'subtitle', value: 'A native overhaul for EllesmereUI.', type: 'text', sortOrder: 2, locale: 'en' },
-  { page: 'home', section: 'hero', key: 'description', value: 'Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface, open <code>/mui</code>, and run <strong>Apply Magguu profiles</strong>.', type: 'html', sortOrder: 3, locale: 'en' },
+  { page: 'home', section: 'hero', key: 'description', value: 'Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>.', type: 'html', sortOrder: 3, locale: 'en' },
   { page: 'home', section: 'hero', key: 'badge', value: 'Ready for WoW 12.1', type: 'text', sortOrder: 4, locale: 'en' },
 
   { page: 'home', section: 'features', key: 'feature_1_title', value: 'Native Ellesmere setup', type: 'text', sortOrder: 0, locale: 'en' },
@@ -53,7 +53,7 @@ export const DEFAULT_GUIDE_CONTENT = [
   { page: 'guide', section: 'intro', key: 'text', value: 'Download EllesmereUI 9.0.6+ and MagguuUI from CurseForge, Wago, or WoWInterface. Open /mui and run Apply Magguu profiles. Everything except EllesmereUI is optional.', locale: 'en', type: 'text', sortOrder: 1 },
 
   { page: 'guide', section: 'steps', key: 'step_1_title', value: '1. Install EllesmereUI', locale: 'en', type: 'text', sortOrder: 10 },
-  { page: 'guide', section: 'steps', key: 'step_1', value: 'Install **EllesmereUI 9.0.6+** from CurseForge, Wago, or WoWInterface and keep it enabled. MagguuUI will not load without it. Ellesmere start popup is skipped; MagguuUI Setup opens on that login.', locale: 'en', type: 'markdown', sortOrder: 11 },
+  { page: 'guide', section: 'steps', key: 'step_1', value: 'Install **EllesmereUI 9.0.6+** from CurseForge, Wago, or WoWInterface and keep it enabled. MagguuUI will not load without it. MagguuUI Setup opens on that login instead of the Ellesmere start popup.', locale: 'en', type: 'markdown', sortOrder: 11 },
 
   { page: 'guide', section: 'steps', key: 'step_2_title', value: '2. Install MagguuUI', locale: 'en', type: 'text', sortOrder: 20 },
   { page: 'guide', section: 'steps', key: 'step_2', value: 'Download **MagguuUI** from CurseForge, Wago, or WoWInterface. Leave it enabled next to EllesmereUI.', locale: 'en', type: 'markdown', sortOrder: 21 },

@@ -11,6 +11,7 @@ import {
   characterLayouts, changelogs,
 } from '~/server/database/schema'
 import { resolveLocalAddonVersion } from '~/server/utils/addonVersion'
+import { versionMismatchNotice } from '~/server/utils/addonRelease'
 
 interface Notification {
   id: string
@@ -45,15 +46,8 @@ export default defineEventHandler(async (event) => {
   const localAddonVersion = resolveLocalAddonVersion()
   const githubVersion = db.select().from(settings).where(eq(settings.key, 'github_latest_version')).get()
 
-  if (localAddonVersion && githubVersion?.value && localAddonVersion !== githubVersion.value) {
-    notifications.push({
-      id: 'version-mismatch',
-      type: 'warning',
-      title: 'Addon version outdated',
-      message: `Local MagguuUI: v${localAddonVersion} — GitHub latest: v${githubVersion.value}`,
-      link: '/admin/system/github',
-    })
-  }
+  const mismatch = versionMismatchNotice(localAddonVersion, githubVersion?.value)
+  if (mismatch) notifications.push(mismatch)
 
   // 3. Check empty categories
   const profileCount = db.select({ count: count() }).from(profiles).get()

@@ -33,7 +33,7 @@ import {
 import { syncAddonChangelog } from '~/server/utils/syncAddonChangelog'
 import { syncAddonsFromToc } from '~/server/utils/syncAddons'
 import { createSyncChangelog } from '~/server/utils/syncChangelog'
-import { upsertSetting } from '~/server/utils/settings'
+import { recordLatestRelease } from '~/server/utils/addonVersion'
 
 const MAIN_REF = 'refs/heads/main'
 const MAX_WEBHOOK_BODY_BYTES = 2 * 1024 * 1024
@@ -208,8 +208,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const version = tag.replace(/^v/, '')
-    upsertSetting('github_latest_version', version)
-    upsertSetting('github_last_check', new Date().toISOString())
+    recordLatestRelease(tag)
 
     let changelog: ReturnType<typeof syncAddonChangelog> | null = null
     try {

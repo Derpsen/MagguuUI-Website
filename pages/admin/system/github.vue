@@ -368,6 +368,7 @@ definePageMeta({ layout: "admin" })
 
 const toast = useToast()
 const { apiFetch } = useApi()
+const { refresh: refreshNotifications } = useAdminNotifications()
 
 interface SyncEntry {
   id: number
@@ -562,7 +563,7 @@ async function doVersionCheck() {
   try {
     versionCheckDetails.value = await apiFetch("/api/v1/admin/version-check", { method: "POST" })
     toast.add({ title: "Version checked", color: "success" })
-    await loadStatus()
+    await Promise.all([loadStatus(), refreshNotifications(true)])
   } catch (error: unknown) {
     toast.add({ title: errorMessage(error, "Version check failed"), color: "error" })
   } finally {

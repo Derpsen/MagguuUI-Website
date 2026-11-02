@@ -2,11 +2,11 @@
  * POST /api/v1/admin/version-check
  *
  * Fetches the latest release tag from GitHub and stores it in settings.
- * Compares with local addon_version setting.
+ * The newest tag also becomes the local version (recordLatestRelease), so the
+ * "Addon version outdated" bell clears after a check.
  */
 
-import { upsertSetting } from '~/server/utils/settings'
-import { resolveLocalAddonVersion } from '~/server/utils/addonVersion'
+import { recordLatestRelease } from '~/server/utils/addonVersion'
 import { githubErrorHint, parseGitHubError, parseGitHubRepo } from '~/server/utils/github'
 
 export default defineEventHandler(async (event) => {
@@ -53,12 +53,9 @@ export default defineEventHandler(async (event) => {
       }
     )
 
-    const latestVersion = (response.tag_name || '').replace(/^v/, '')
-
-    upsertSetting('github_latest_version', latestVersion)
-    upsertSetting('github_last_check', new Date().toISOString())
-
-    const localVersion = resolveLocalAddonVersion({ persistMissing: true })
+    const applied = recordLatestRelease(response.tag_name)
+    if (!applied) throw apiError('GITHUB_ERROR', 'Latest release has no tag name', 502)
+    const { latestVersion, localVersion } = applied
 
     return apiSuccess({
       latestVersion,

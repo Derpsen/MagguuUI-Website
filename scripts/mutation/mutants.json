@@ -490,5 +490,23 @@
   "file": "server/plugins/session-cleanup.ts",
   "find": "    ...retentionSteps(sqlite, cutoff),\n    { name: 'expired sessions', run: () => cleanupExpiredSessions() },",
   "repl": "    { name: 'expired sessions', run: () => cleanupExpiredSessions() },\n    ...retentionSteps(sqlite, cutoff),"
+ },
+ {
+  "name": "release: local not moved to newest tag",
+  "file": "server/utils/addonRelease.ts",
+  "find": "  store.set('addon_version', version)\n",
+  "repl": ""
+ },
+ {
+  "name": "release: legacy local_version left stale",
+  "file": "server/utils/addonRelease.ts",
+  "find": "  if (store.get('local_version') != null) store.set('local_version', version)\n",
+  "repl": ""
+ },
+ {
+  "name": "bell: mismatch compare disabled",
+  "file": "server/utils/addonRelease.ts",
+  "find": "if (!l || !g || l === g) return null",
+  "repl": "if (!l || !g) return null"
  }
 ]

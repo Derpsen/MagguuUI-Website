@@ -8,11 +8,15 @@ import { db } from '~/server/database'
 import { settings } from '~/server/database/schema'
 import { CURRENT_ADDON_CHANGELOG } from '~/server/database/defaultAddonChangelog'
 import { upsertSetting } from '~/server/utils/settings'
+import { applyLatestRelease, normalizeAddonVersion, type AppliedRelease } from '~/server/utils/addonRelease'
 
-export function normalizeAddonVersion(version: string | null | undefined): string | null {
-  if (!version?.trim()) return null
-  const normalized = version.trim().replace(/^v/i, '')
-  return normalized || null
+function readSetting(key: string): string | null {
+  return db.select().from(settings).where(eq(settings.key, key)).get()?.value ?? null
+}
+
+/** Record the newest release tag as latest and local (see addonRelease.ts). */
+export function recordLatestRelease(tag: string | null | undefined): AppliedRelease | null {
+  return applyLatestRelease({ get: readSetting, set: upsertSetting }, tag)
 }
 
 /** Known MagguuUI release shipped with this website (from defaultAddonChangelog). */
@@ -23,9 +27,7 @@ export const KNOWN_ADDON_VERSION = normalizeAddonVersion(CURRENT_ADDON_CHANGELOG
  * When persistMissing is true and neither setting exists, seed addon_version with the known version.
  */
 export function resolveLocalAddonVersion(options: { persistMissing?: boolean } = {}): string {
-  const localRow = db.select().from(settings).where(eq(settings.key, 'local_version')).get()
-  const addonRow = db.select().from(settings).where(eq(settings.key, 'addon_version')).get()
-  const stored = normalizeAddonVersion(localRow?.value) || normalizeAddonVersion(addonRow?.value)
+  const stored = normalizeAddonVersion(readSetting('local_version')) || normalizeAddonVersion(readSetting('addon_version'))
 
   if (stored) return stored
 

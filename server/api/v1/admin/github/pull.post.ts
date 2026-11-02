@@ -23,7 +23,7 @@ import {
   getGitHubBranchHeadSha,
   parseGitHubRepo,
 } from '~/server/utils/github'
-import { upsertSetting } from '~/server/utils/settings'
+import { recordLatestRelease } from '~/server/utils/addonVersion'
 
 const MAIN_BRANCH = 'main'
 const MAX_CHANGELOG_BYTES = 4 * 1024 * 1024
@@ -74,9 +74,7 @@ export default defineEventHandler(async (event) => {
           timeout: 10000,
         },
       )
-      const version = (release.tag_name || '').replace(/^v/, '')
-      upsertSetting('github_latest_version', version)
-      upsertSetting('github_last_check', new Date().toISOString())
+      recordLatestRelease(release.tag_name)
 
       if (/^[0-9A-Za-z._-]+$/.test(release.tag_name)) {
         const markdown = await fetchGitHubTextFile({

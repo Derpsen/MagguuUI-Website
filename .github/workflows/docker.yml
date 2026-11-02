@@ -191,7 +191,7 @@ jobs:
             sleep 5
           done
           echo "healthcheck: $status"
-          docker top smoke -eo uid,args
+          docker top smoke -eo pid,uid,args
           if [ "$status" != healthy ]; then docker logs smoke | tail -50; docker rm -f smoke; exit 1; fi
           docker rm -f smoke > /dev/null
 

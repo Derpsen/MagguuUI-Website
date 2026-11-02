@@ -519,3 +519,6 @@ Deliberately supersedes the privacy-minimal stance for CONSENTED visitors only. 
 ## Changelog release drafts vs generated rows
 - Generated changelog rows are recognised by the structured `version` column (no extra field exists): `auto` (activityLog.ts, admin page "Auto-generated changes") and `Sync YYYY-MM-DD` (syncChangelog.ts, admin page "Version Sync ..."). `server/utils/changelogKind.ts` (`isGeneratedChangelogVersion`, `countReleaseDrafts`, pure) is the single rule.
 - **2026-11-02:** the admin bell (`/api/v1/admin/notifications`, id `unpublished-changelogs`, now "N unpublished release draft(s)") and the dashboard `changelog.unpublished` (still without `Unreleased`, which has its own flag) count only release drafts. No data is changed. Tests: `tests/unit/changelogKind.test.ts`, `adminOverview.test.ts`; 5 mutants.
+
+## Action pin format (2026-11-02)
+- Every third-party action is `uses: owner/repo@<40-char sha> # vX.Y.Z` on ONE line (Renovate `helpers:pinGitHubActionDigests` keeps this form). The version in the comment must be the tag that points at that sha (check with `gh api repos/<owner>/<repo>/git/matching-refs/tags/v`, dereference annotated tags); zizmor `ref-version-mismatch` flags a wrong one. Local `./` reusable workflows stay unpinned (exempt from `sha_pinning_required`).

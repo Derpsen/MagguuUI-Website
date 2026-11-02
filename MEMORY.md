@@ -555,3 +555,4 @@
 ## 2026-11-02 package (Buddy, Marco "Alles machen")
 - P1: nuxt 4.6.3; overrides devalue ^6.0.3, vue/@vue/server-renderer ^3.5.44, seroval ^1.7.2 (1.7.6), esbuild ^0.28.2. Renovate PR #170 (seroval 1.6.11) superseded.
 - P2: Dependabot security updates off, alerts on; dependabot.yml, dependabot-automerge.yml and its test deleted (Quality, pre-push, gate.sh); renovate vulnerabilityAlerts enabled. Alerts glob #12 / minimatch #13 / deepmerge #4 dismissed not_used (build-time only via nitropack/@vercel/nft/archiver/@rollup/plugin-node-resolve and eslint, not in .output).
+- P5: all 48 action pins now `uses: owner/repo@<sha> # vX.Y.Z` on one line, versions verified tag->sha via `git/matching-refs/tags` (annotated tags dereferenced). zizmor auditor ref-version-mismatch 48 -> 0; sha_pinning_required unchanged.

@@ -42,8 +42,8 @@ jobs:
     steps:
       - name: Checkout redaction script
         continue-on-error: true
-        # actions/checkout@v7.0.1 - pinned by SHA. Sparse: only tools/redact-log.sh, no credentials kept.
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        # Pinned by SHA. Sparse: only tools/redact-log.sh, no credentials kept.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           sparse-checkout: tools/redact-log.sh

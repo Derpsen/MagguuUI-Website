@@ -1,4 +1,4 @@
-// renovate.json is staged for the Renovate app (dependabot.yml stays until the app is enabled for this repo).
+// renovate.json drives all dependency PRs, security fixes included (Dependabot updates are off since 2026-11-02; alerts stay on).
 // These tests pin the safety rules: locks with reasons, no automerge for majors/0.x/overrides, 7-day release age.
 import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
@@ -34,6 +34,14 @@ describe('renovate.json', () => {
     assert.equal(ovMajor?.enabled, false, 'an override must never jump a major on its own (consumers declare the range)')
     // the overrides rule must come after the automerge rules (later rules win)
     assert.ok(rules.findIndex(r => r.matchDepTypes?.includes('overrides')) > rules.lastIndexOf(merge.at(-1)!))
+  })
+
+  test('security fixes come from Renovate vulnerabilityAlerts, labelled, majors never automerged', () => {
+    assert.equal(cfg.vulnerabilityAlerts?.enabled, true)
+    assert.deepEqual(cfg.vulnerabilityAlerts?.labels, ['security'])
+    // no automerge override here: the packageRules decide (patch/minor yes, majors and overrides no)
+    assert.equal('automerge' in cfg.vulnerabilityAlerts, false)
+    assert.equal(rules.find(r => r.matchUpdateTypes?.length === 1 && r.matchUpdateTypes[0] === 'major')?.automerge, false)
   })
 
   test('checks must be green (ignoreTests false, PR automerge), 7 day release age, engines respected, Node majors manual', () => {

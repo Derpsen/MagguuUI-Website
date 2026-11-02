@@ -18,6 +18,7 @@
   "ignoreTests": false,
   "configMigration": true,
   "vulnerabilityAlerts": {
+    "enabled": true,
     "labels": [
       "security"
     ]

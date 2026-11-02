@@ -127,13 +127,6 @@
       "allowedVersions": "<2"
     },
     {
-      "description": "satori >=0.48 locked: nuxt-og-image 7.0.7 peer is satori ^0.47.1 (0.x caret = <0.48); an override would violate the declared peer. Revisit when nuxt-og-image widens it.",
-      "matchPackageNames": [
-        "satori"
-      ],
-      "allowedVersions": "<0.48"
-    },
-    {
       "description": "typescript >=7 locked: typescript-eslint (all releases up to 8.72, peer <6.1) throws 'does not support TS 7.0', so lint breaks. Revisit when typescript-eslint supports TS 7.",
       "matchPackageNames": [
         "typescript"
@@ -148,7 +141,7 @@
       "automerge": false
     },
     {
-      "description": "package.json overrides: no major bump by Renovate. An override into a new major replaces the range the consumers declare (devalue 6 vs nuxt/nitro ^5, like the satori lock); do it by hand like js-yaml 5.",
+      "description": "package.json overrides: no major bump by Renovate. An override into a new major replaces the range the consumers declare (as devalue 6 was before Nuxt 4.6.3 allowed it); do it by hand like js-yaml 5 and devalue 6.",
       "matchDepTypes": [
         "overrides"
       ],

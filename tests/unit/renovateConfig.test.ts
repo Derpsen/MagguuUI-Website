@@ -10,13 +10,12 @@ const rules: Rule[] = cfg.packageRules
 const lock = (name: string) => rules.find(r => r.matchPackageNames?.includes(name) && r.allowedVersions)
 
 describe('renovate.json', () => {
-  test('locks are packageRules with a reason: typescript <7, h3 <2, satori <0.48', () => {
+  test('locks are packageRules with a reason: typescript <7, h3 <2 (satori is gone, OG renders with Takumi)', () => {
     assert.equal(lock('typescript')?.allowedVersions, '<7')
     assert.match(lock('typescript')!.description, /typescript-eslint/)
     assert.equal(lock('h3')?.allowedVersions, '<2')
     assert.match(lock('h3')!.description, /Nitro/)
-    assert.equal(lock('satori')?.allowedVersions, '<0.48')
-    assert.match(lock('satori')!.description, /nuxt-og-image 7/)
+    assert.equal(lock('satori'), undefined, 'satori is not a dependency any more')
     assert.equal(lock('js-yaml'), undefined, 'js-yaml 5 is allowed')
   })
 

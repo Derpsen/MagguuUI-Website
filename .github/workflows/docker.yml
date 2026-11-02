@@ -170,6 +170,31 @@ jobs:
           provenance: true
           sbom: true
 
+      # Smoke the pushed digest before it is signed or gets :latest (2026-11-02, trixie base):
+      # native modules load as uid 99 and the image HEALTHCHECK turns healthy.
+      - name: Smoke image (native modules as uid 99, healthcheck)
+        env:
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+        run: |
+          docker pull -q "$IMAGE_REF"
+          docker run --rm --user 99:100 -w /app/.output/server --entrypoint node "$IMAGE_REF" \
+            -e "require('bcrypt');require('better-sqlite3')(':memory:');console.log('native modules OK as uid', process.getuid())"
+          docker run -d --name smoke \
+            -e NUXT_JWT_SECRET=ci-dummy-secret-must-be-32-chars-long-XXXXXXXXXX \
+            -e NUXT_APP_SECRET=ci-dummy-app-secret-must-be-32-chars-XXXXXXXXX \
+            -e NUXT_ADMIN_PASSWORD=ci-dummy "$IMAGE_REF"
+          status=starting
+          for _ in $(seq 1 30); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' smoke)
+            [ "$status" = healthy ] && break
+            [ "$status" = unhealthy ] && break
+            sleep 5
+          done
+          echo "healthcheck: $status"
+          docker top smoke -eo uid,args
+          if [ "$status" != healthy ]; then docker logs smoke | tail -50; docker rm -f smoke; exit 1; fi
+          docker rm -f smoke > /dev/null
+
       - name: Install Cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
 

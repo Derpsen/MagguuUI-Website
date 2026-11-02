@@ -59,7 +59,7 @@ describe('renovate.json', () => {
     const rx = new RegExp(cfg.customManagers[0].matchStrings[0])
     const m = rx.exec(docker)
     assert.equal(m?.groups?.depName, 'node')
-    assert.equal(m?.groups?.currentValue, '26-bookworm-slim')
+    assert.equal(m?.groups?.currentValue, '26-trixie-slim')
     assert.match(m?.groups?.currentDigest ?? '', /^sha256:[a-f0-9]{64}$/)
   })
 })

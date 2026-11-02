@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1.7
 # ─── Build Stage ─────────────────────────────────
-# node:26-bookworm-slim multi-arch index digest (2026-10-23, Node 26.12.1)
-# renovate: image=node:26-bookworm-slim
+# node:26-trixie-slim multi-arch index digest (2026-11-02, Node 26.13.0, Debian 13 trixie)
+# renovate: image=node:26-trixie-slim
 ARG NODE_VERSION=26
-ARG NODE_DIGEST=sha256:bc0a2afd3b74ce12222fc8bab99271e66257f021078f5f4a5d687a77d280c1d9
-FROM node:${NODE_VERSION}-bookworm-slim@${NODE_DIGEST} AS build
+ARG NODE_DIGEST=sha256:e4db4c914bf8ad241bd24804fc25d272d89bad97e68cdc8a1414862790a02c39
+FROM node:${NODE_VERSION}-trixie-slim@${NODE_DIGEST} AS build
 
 WORKDIR /app
 
@@ -34,7 +34,7 @@ COPY . .
 RUN npm run build
 
 # ─── Production Stage ────────────────────────────
-FROM node:${NODE_VERSION}-bookworm-slim@${NODE_DIGEST}
+FROM node:${NODE_VERSION}-trixie-slim@${NODE_DIGEST}
 
 ARG VCS_REF=unknown
 ARG BUILD_DATE=unknown

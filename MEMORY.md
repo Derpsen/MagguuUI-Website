@@ -548,3 +548,6 @@
 
 ## 2026-11-02 version bell fix
 - Symptom: /admin/system/github showed local v12.1.6 vs GitHub v12.1.8 after Check; bell stuck. Cause: local came from the `addon_version` setting, seeded once by `resolveLocalAddonVersion({ persistMissing: true })` and never written by Check, the release webhook or pull (they only wrote `github_latest_version`). Fix: `recordLatestRelease` moves local to the newest tag in all three paths. After the image update one Check (or the next release webhook) clears the bell. No auth/lockout change.
+
+## 2026-11-02 release-draft bell
+- Bell said "88 unpublished changelog(s)" because Buddy keeps 88 generated rows (auto / Sync YYYY-MM-DD) unpublished on purpose. Bell and dashboard now skip them via the `version` column (`changelogKind.ts`). Live: bell gone unless a real release draft exists. Mutation check 90.

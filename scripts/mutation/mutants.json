@@ -508,5 +508,35 @@
   "file": "server/utils/addonRelease.ts",
   "find": "if (!l || !g || l === g) return null",
   "repl": "if (!l || !g) return null"
+ },
+ {
+  "name": "drafts: auto rows counted",
+  "file": "server/utils/changelogKind.ts",
+  "find": "  return v === 'auto' || SYNC_VERSION.test(v)",
+  "repl": "  return SYNC_VERSION.test(v)"
+ },
+ {
+  "name": "drafts: Sync rows counted",
+  "file": "server/utils/changelogKind.ts",
+  "find": "  return v === 'auto' || SYNC_VERSION.test(v)",
+  "repl": "  return v === 'auto'"
+ },
+ {
+  "name": "drafts: Sync pattern unanchored",
+  "file": "server/utils/changelogKind.ts",
+  "find": "const SYNC_VERSION = /^sync \\d{4}-\\d{2}-\\d{2}$/",
+  "repl": "const SYNC_VERSION = /sync \\d{4}-\\d{2}-\\d{2}/"
+ },
+ {
+  "name": "drafts: dashboard filter dropped",
+  "file": "server/utils/adminOverview.ts",
+  "find": "      unpublished: countReleaseDrafts(",
+  "repl": "      unpublished: ((v: string[], _o: unknown) => v.filter(x => x !== 'Unreleased').length)("
+ },
+ {
+  "name": "bell: release-draft filter dropped",
+  "file": "server/api/v1/admin/notifications/index.get.ts",
+  "find": "  const releaseDrafts = countReleaseDrafts(draftVersions.map(r => r.version))",
+  "repl": "  const releaseDrafts = draftVersions.length"
  }
 ]

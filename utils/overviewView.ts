@@ -25,7 +25,7 @@ export function attentionItems(o: Overview): AttentionItem[] {
   if (o.changelog.unpublished > 0) {
     items.push({
       id: 'changelog',
-      text: `${o.changelog.unpublished} unpublished changelog ${o.changelog.unpublished === 1 ? 'entry' : 'entries'}`,
+      text: `${o.changelog.unpublished} unpublished release ${o.changelog.unpublished === 1 ? 'draft' : 'drafts'}`,
       to: '/admin/content/changelog',
     })
   }

@@ -6,6 +6,7 @@
  */
 
 import type Database from 'better-sqlite3'
+import { countReleaseDrafts } from './changelogKind'
 import { trafficReport } from './analytics'
 import { visitorSummary } from './visitorReport'
 
@@ -155,7 +156,11 @@ export function buildOverview(sqlite: Sqlite, env: OverviewEnv = {}): Overview {
       latestVersion: latest?.version ?? null,
       latestPublishedAt: latest?.published_at ?? null,
       hasUnreleased: num(sqlite, "SELECT COUNT(*) AS n FROM changelogs WHERE version = 'Unreleased'") > 0,
-      unpublished: num(sqlite, 'SELECT COUNT(*) AS n FROM changelogs WHERE is_published = 0 AND version <> \'Unreleased\''),
+      // Release drafts only: generated rows (auto, Sync YYYY-MM-DD) are skipped, see changelogKind.ts.
+      unpublished: countReleaseDrafts(
+        (sqlite.prepare('SELECT version FROM changelogs WHERE is_published = 0').all() as Array<{ version: string }>).map(r => r.version),
+        { excludeUnreleased: true },
+      ),
     },
     stale: {
       days: OVERVIEW_STALE_DAYS,

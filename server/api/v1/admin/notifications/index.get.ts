@@ -12,6 +12,7 @@ import {
 } from '~/server/database/schema'
 import { resolveLocalAddonVersion } from '~/server/utils/addonVersion'
 import { versionMismatchNotice } from '~/server/utils/addonRelease'
+import { countReleaseDrafts } from '~/server/utils/changelogKind'
 
 interface Notification {
   id: string
@@ -64,17 +65,18 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // 4. Check unpublished changelogs
-  const unpublished = db.select({ count: count() }).from(changelogs)
+  // 4. Check unpublished release drafts (generated auto / Sync rows do not count)
+  const draftVersions = db.select({ version: changelogs.version }).from(changelogs)
     .where(eq(changelogs.isPublished, false))
-    .get()
+    .all()
+  const releaseDrafts = countReleaseDrafts(draftVersions.map(r => r.version))
 
-  if (unpublished && unpublished.count > 0) {
+  if (releaseDrafts > 0) {
     notifications.push({
       id: 'unpublished-changelogs',
       type: 'info',
-      title: `${unpublished.count} unpublished changelog(s)`,
-      message: 'There are changelog entries that have not been published yet.',
+      title: `${releaseDrafts} unpublished release draft(s)`,
+      message: 'There are release notes that have not been published yet.',
       link: '/admin/content/changelog',
     })
   }

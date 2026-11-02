@@ -86,6 +86,19 @@ describe('buildOverview', () => {
     assert.ok(attentionItems(o).some(i => i.id === 'changelog'))
   })
 
+  it('unpublished counts release drafts only, not generated auto / Sync rows', () => {
+    const sqlite = freshDb()
+    const add = sqlite.prepare('INSERT INTO changelogs (version, content, is_published, published_at) VALUES (?, ?, 0, NULL)')
+    add.run('auto', 'a'); add.run('auto', 'b'); add.run('Sync 2026-10-30', 'c'); add.run('Sync 2026-11-01', 'd')
+    let o = buildOverview(sqlite, { now: NOW })
+    assert.equal(o.changelog.unpublished, 0)
+    assert.equal(attentionItems(o).some(i => i.id === 'changelog'), false)
+    add.run('v12.1.9', 'e'); add.run('Unreleased', 'f')
+    o = buildOverview(sqlite, { now: NOW })
+    assert.equal(o.changelog.unpublished, 1)
+    assert.match(attentionItems(o).find(i => i.id === 'changelog')!.text, /^1 unpublished release draft$/)
+  })
+
   it('reads last publish/edit from the audit log without exposing snapshots', () => {
     const sqlite = freshDb()
     const content = { after: { 'about/intro/title@en': 'New' }, before: { 'about/intro/title@en': 'Old' } }

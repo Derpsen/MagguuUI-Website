@@ -1,6 +1,6 @@
 # osv-scanner ignores (package-lock.json). Each entry needs a reason and an
 # ignoreUntil review date; after it the finding shows up again.
-# No upgrades are made for these: TypeScript 7, h3 2, satori >=0.48
+# No upgrades are made for these: TypeScript 7, h3 2 and @types/node 27
 # stay locked (js-yaml 5 and @types/node 26 were released 2026-10-26). The nested h3 2.0.2 (@devframes/agentic, devframe) in
 # the lockfile currently has no OSV advisory, so it needs
 # no entry. If one appears, add it here with the same reason (transitive, dev
@@ -10,3 +10,20 @@
 id = "GHSA-vjh5-4x84-xrqp"
 ignoreUntil = 2026-11-30
 reason = "False positive: affects nuxt / @nuxt/nitro-server < 4.6.2; the lockfile has 4.6.2 (patched). OSV range data lags. Re-check when OSV is corrected."
+
+# Build-time only (eslint / nuxt-og-image dev chain, none of them in .output; checked 2026-11-03).
+# The fixes are majors (glob 14, minimatch 11) or missing (deepmerge), so no override; never force a major for them.
+[[IgnoredVulns]]
+id = "GHSA-3g3m-2fjr-6pw4"
+ignoreUntil = 2026-11-30
+reason = "glob 10.5.0/13.0.6, build-time only (not in .output). Fix is glob 14 (major) - no override; re-check when parents move to glob 14."
+
+[[IgnoredVulns]]
+id = "GHSA-g3hv-75wg-m249"
+ignoreUntil = 2026-11-30
+reason = "minimatch 5.1.9/9.0.9/10.2.6, build-time only (not in .output). Fix is minimatch 11 (major) - no override; re-check when parents move to minimatch 11."
+
+[[IgnoredVulns]]
+id = "GHSA-gcqx-w48m-w2h4"
+ignoreUntil = 2026-11-30
+reason = "deepmerge 4.3.1, build-time only (not in .output). No patched version published yet; re-check then."

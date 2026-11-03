@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.28
 # ─── Build Stage ─────────────────────────────────
 # node:26-trixie-slim multi-arch index digest (2026-11-02, Node 26.13.0, Debian 13 trixie)
 # renovate: image=node:26-trixie-slim

@@ -42,7 +42,7 @@ export function navLinksFor(product: Product): readonly NavLink[] {
 
 /** Header CTA. Forever has none: Download is already in its nav, a second link would only repeat it. */
 export function primaryActionFor(product: Product): NavLink | null {
-  return product === 'forever' ? null : { to: '/guide', label: 'Setup' }
+  return product === 'forever' ? null : { to: '/guide', label: 'Download' }
 }
 
 /** Section roots ('/' and '/forever') match only themselves; other links also match their subpages. */

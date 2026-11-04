@@ -20,14 +20,11 @@
           <span class="text-sm font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">MagguuUI</span>
         </NuxtLink>
 
-        <nav class="hidden lg:flex items-center gap-2 shrink-0 font-mono text-[11px] uppercase tracking-[0.16em]" aria-label="Product" data-testid="product-switch">
-          <template v-for="(p, i) in PRODUCT_SWITCH" :key="p.product">
-            <span v-if="i > 0" aria-hidden="true" :class="isDark ? 'text-silver-500' : 'text-gray-400'">|</span>
-            <NuxtLink :to="p.to" :aria-current="product === p.product ? 'page' : undefined" :data-product="p.product"
-              :class="product === p.product
-                ? isDark ? 'text-brand-300' : 'text-brand-700'
-                : isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-950'">{{ p.label }}</NuxtLink>
-          </template>
+        <nav class="hidden lg:inline-flex items-center shrink-0 p-0.5 rounded-md border font-mono text-[11px] uppercase tracking-[0.14em]"
+          :class="isDark ? 'border-white/15' : 'border-gray-300 bg-white'" aria-label="Product" data-testid="product-switch">
+          <NuxtLink v-for="p in PRODUCT_SWITCH" :key="p.product" :to="p.to" :aria-current="product === p.product ? 'page' : undefined" :data-product="p.product"
+            class="px-2.5 py-1 rounded transition-colors"
+            :class="segmentClass(p.product)">{{ p.label }}</NuxtLink>
         </nav>
 
         <nav class="hidden lg:flex items-center gap-4 min-w-0 overflow-x-auto text-sm" aria-label="Primary">
@@ -73,7 +70,7 @@
           </button>
           <NuxtLink v-if="isLoggedIn" to="/admin" class="hidden sm:inline text-sm" :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-950'">Admin</NuxtLink>
           <NuxtLink v-else to="/admin/login" class="hidden sm:inline text-sm" :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-950'">Login</NuxtLink>
-          <NuxtLink v-if="primaryAction" :to="primaryAction.to" data-cta="header-setup" class="hidden sm:inline text-sm font-semibold" :class="isDark ? 'text-brand-300 hover:text-white' : 'text-brand-700 hover:text-brand-900'">
+          <NuxtLink v-if="primaryAction" :to="primaryAction.to" data-cta="header-setup" class="btn-gradient hidden sm:inline-flex items-center px-3 py-1.5 rounded-md text-sm font-semibold">
             {{ primaryAction.label }}
           </NuxtLink>
           <button class="lg:hidden inline-flex items-center justify-center w-8 h-8"
@@ -115,15 +112,11 @@
 
         <div ref="mobileMenuPanel" class="absolute inset-x-3 top-16">
           <div class="public-nav-shell rounded-[1.6rem] p-4 shadow-2xl">
-            <nav class="flex items-center gap-2 pb-3 mb-1 border-b font-mono text-[11px] uppercase tracking-[0.16em]" :class="isDark ? 'border-white/10' : 'border-gray-200'" aria-label="Product" data-testid="product-switch-mobile">
-              <template v-for="(p, i) in PRODUCT_SWITCH" :key="p.product">
-                <span v-if="i > 0" aria-hidden="true" :class="isDark ? 'text-silver-500' : 'text-gray-400'">|</span>
-                <NuxtLink :to="p.to" :aria-current="product === p.product ? 'page' : undefined" :data-product="p.product"
-                  :class="product === p.product
-                    ? isDark ? 'text-brand-300' : 'text-brand-700'
-                    : isDark ? 'text-silver-300' : 'text-gray-600'"
-                  @click="mobileOpen = false">{{ p.label }}</NuxtLink>
-              </template>
+            <nav class="grid grid-cols-2 p-0.5 mb-3 rounded-md border font-mono text-xs uppercase tracking-[0.14em]" :class="isDark ? 'border-white/15' : 'border-gray-300 bg-white'" aria-label="Product" data-testid="product-switch-mobile">
+              <NuxtLink v-for="p in PRODUCT_SWITCH" :key="p.product" :to="p.to" :aria-current="product === p.product ? 'page' : undefined" :data-product="p.product"
+                class="min-h-11 flex items-center justify-center rounded transition-colors"
+                :class="segmentClass(p.product)"
+                @click="mobileOpen = false">{{ p.label }}</NuxtLink>
             </nav>
             <div class="grid">
               <NuxtLink v-for="link in navLinks" :key="link.to" :to="link.to"
@@ -315,7 +308,7 @@
 <script setup lang="ts">
 import { SPECULATION_RULES } from '~/utils/speculationRules'
 import { isPrivateRepoUrl } from '~/utils/privateRepoLinks'
-import { PRODUCT_SWITCH, isNavActive, navLinksFor, primaryActionFor, productForPath } from '~/utils/productNav'
+import { PRODUCT_SWITCH, isNavActive, navLinksFor, primaryActionFor, productForPath, type Product } from '~/utils/productNav'
 
 const colorMode = useColorMode()
 const route = useRoute()
@@ -416,6 +409,12 @@ const siteStatusClasses = computed(() => {
     ? 'bg-ellesmere/10 text-ellesmere border border-ellesmere/20'
     : 'bg-ellesmere/10 text-emerald-800 border border-ellesmere/30'
 })
+
+/** Retail | Forever segmented control: the current product is the filled segment. */
+function segmentClass(p: Product): string {
+  if (product.value === p) return isDark.value ? 'bg-white/10 text-brand-200' : 'bg-brand-50 text-brand-800'
+  return isDark.value ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-950'
+}
 
 function isActive(path: string): boolean {
   return isNavActive(route.path, path)

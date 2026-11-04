@@ -15,7 +15,7 @@ describe('product nav', () => {
     assert.equal(navLinksFor('forever'), FOREVER_NAV)
     assert.equal(navLinksFor('retail'), RETAIL_NAV)
     assert.ok(FOREVER_NAV.every(l => productForPath(l.to) === 'forever'))
-    assert.deepEqual(primaryActionFor('retail'), { to: '/guide', label: 'Setup' })
+    assert.deepEqual(primaryActionFor('retail'), { to: '/guide', label: 'Download' })
     assert.equal(primaryActionFor('forever'), null)
   })
   it('marks section roots active only on themselves', () => {

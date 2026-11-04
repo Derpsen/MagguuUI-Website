@@ -11,7 +11,13 @@
     </p>
 
     <p v-if="!loaded" class="mt-6 text-sm" :class="faint">Loading...</p>
-    <p v-else-if="!items.length" class="mt-6 text-sm" :class="muted" data-testid="community-empty">No community presets yet.</p>
+    <div v-else-if="!items.length" class="mt-6 rounded-lg border border-dashed px-5 py-6 text-sm" :class="isDark ? 'border-white/15' : 'border-gray-300 bg-white'" data-testid="community-empty">
+      <p class="font-medium" :class="strong">No community presets yet.</p>
+      <p class="mt-1" :class="muted">
+        Share a setup that works for you.
+        <NuxtLink to="/submit-preset" class="underline underline-offset-2" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Submit the first one</NuxtLink>.
+      </p>
+    </div>
     <ul v-else class="mt-6 divide-y border-y" :class="isDark ? 'divide-white/10 border-white/10' : 'divide-gray-200 border-gray-200'" data-testid="community-list">
       <li v-for="p in items" :key="p.id" class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 py-4" :data-testid="`community-item-${p.id}`">
         <div class="min-w-0 flex-1 text-sm">

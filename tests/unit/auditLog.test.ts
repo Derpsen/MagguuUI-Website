@@ -8,7 +8,7 @@ import {
   recordAuditChange, recordContentAudit, undoAuditChange, cellId,
 } from '../../server/utils/auditLog'
 import { applyContentItems } from '../../server/utils/contentDrafts'
-import { diffLines, diffSnapshots } from '../../utils/auditDiff'
+import { auditLineDiff, diffSnapshots } from '../../utils/auditDiff'
 
 function freshDb() {
   const sqlite = new Database(':memory:')
@@ -105,7 +105,7 @@ describe('redaction', () => {
 
 describe('diff', () => {
   it('produces a line diff and field changes', () => {
-    assert.deepEqual(diffLines('a\nb\nc', 'a\nx\nc').map(l => `${l.type}:${l.text}`), ['same:a', 'del:b', 'add:x', 'same:c'])
+    assert.deepEqual(auditLineDiff('a\nb\nc', 'a\nx\nc').map(l => `${l.type}:${l.text}`), ['same:a', 'del:b', 'add:x', 'same:c'])
     const changes = diffSnapshots({ title: 'Old', body: 'same', gone: 'x' }, { title: 'New', body: 'same', added: 'y' })
     assert.deepEqual(changes.map(c => [c.field, c.kind]), [['title', 'changed'], ['gone', 'removed'], ['added', 'added']])
     assert.deepEqual(diffSnapshots(null, { a: 1 }).map(c => c.kind), ['added'])

@@ -3,14 +3,14 @@
  * Snapshots are flat objects; strings get a line diff, everything else a value change.
  */
 
-export type DiffLine = { type: 'same' | 'add' | 'del', text: string }
+export type AuditDiffLine = { type: 'same' | 'add' | 'del', text: string }
 
 export interface FieldChange {
   field: string
   kind: 'added' | 'removed' | 'changed'
   before: string | null
   after: string | null
-  lines: DiffLine[]
+  lines: AuditDiffLine[]
 }
 
 const show = (v: unknown): string | null => {
@@ -19,7 +19,7 @@ const show = (v: unknown): string | null => {
 }
 
 /** Line diff via LCS. Inputs are capped, so the O(n*m) table stays small. */
-export function diffLines(before: string, after: string): DiffLine[] {
+export function auditLineDiff(before: string, after: string): AuditDiffLine[] {
   const a = before.split('\n').slice(0, 400)
   const b = after.split('\n').slice(0, 400)
   const dp: number[][] = Array.from({ length: a.length + 1 }, () => new Array<number>(b.length + 1).fill(0))
@@ -28,7 +28,7 @@ export function diffLines(before: string, after: string): DiffLine[] {
       dp[i]![j] = a[i] === b[j] ? dp[i + 1]![j + 1]! + 1 : Math.max(dp[i + 1]![j]!, dp[i]![j + 1]!)
     }
   }
-  const out: DiffLine[] = []
+  const out: AuditDiffLine[] = []
   let i = 0
   let j = 0
   while (i < a.length && j < b.length) {
@@ -60,7 +60,7 @@ export function diffSnapshots(
       kind: !hasBefore ? 'added' : !hasAfter ? 'removed' : 'changed',
       before: bs,
       after: as,
-      lines: diffLines(bs ?? '', as ?? ''),
+      lines: auditLineDiff(bs ?? '', as ?? ''),
     })
   }
   return changes

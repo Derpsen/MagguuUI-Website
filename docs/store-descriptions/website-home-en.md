@@ -5,7 +5,7 @@ Tone: short and factual. Prefer seed keys in `defaultContent.ts` or site admin /
 ## Hero
 
 **title:** MagguuUI  
-**title2:** Ellesmere setup.  
+**title2:** Full UI setup in one click.  
 **subtitle:** A native overhaul for EllesmereUI.  
 **badge:** Ready for WoW 12.1  
 

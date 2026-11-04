@@ -5,7 +5,7 @@ Ton wie EN: klar, kurz, ohne Marketing-Floskeln. Für Admin /home oder Seed `def
 ## Hero
 
 **title:** MagguuUI  
-**title2:** Ellesmere-Setup.  
+**title2:** Komplettes UI-Setup mit einem Klick.  
 **subtitle:** Ein natives Overhaul für EllesmereUI.  
 **badge:** Bereit für WoW 12.1  
 

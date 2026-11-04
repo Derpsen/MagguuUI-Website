@@ -71,7 +71,7 @@
             </div>
             <div class="admin-field">
               <label for="home-hero-title2" class="admin-field__label">Heading line 2</label>
-              <UInput id="home-hero-title2" v-model="form.hero.title2" :disabled="saving" placeholder="Ellesmere setup." />
+              <UInput id="home-hero-title2" v-model="form.hero.title2" :disabled="saving" placeholder="Full UI setup in one click." />
               <p class="admin-field__hint" :class="counterClass(form.hero.title2?.length || 0, 30)">
                 {{ form.hero.title2?.length || 0 }}/30
               </p>
@@ -172,7 +172,7 @@
           <h2 class="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
             {{ form.hero.title || "MagguuUI" }}
             <br>
-            <span class="text-slate-500 dark:text-slate-400">{{ form.hero.title2 || "Ellesmere setup." }}</span>
+            <span class="text-slate-500 dark:text-slate-400">{{ form.hero.title2 || "Full UI setup in one click." }}</span>
           </h2>
           <SafeHtml
             class="prose prose-sm mx-auto mt-4 max-w-2xl dark:prose-invert"
@@ -253,7 +253,7 @@ const featureIndices = [1, 2, 3] as const
 const form = reactive({
   hero: {
     title: "MagguuUI",
-    title2: "Ellesmere setup.",
+    title2: "Full UI setup in one click.",
     ...HOME_HERO_EXTRA_DEFAULTS,
     description: "MagguuUI is a native EllesmereUI module for WoW Retail. Designed for 4K. Open /mui and run Apply Magguu profiles.",
   } as Record<string, string>,

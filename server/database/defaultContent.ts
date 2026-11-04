@@ -1,6 +1,6 @@
 export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'hero', key: 'title', value: 'MagguuUI', type: 'text', sortOrder: 0, locale: 'en' },
-  { page: 'home', section: 'hero', key: 'title2', value: 'Ellesmere setup.', type: 'text', sortOrder: 1, locale: 'en' },
+  { page: 'home', section: 'hero', key: 'title2', value: 'Full UI setup in one click.', type: 'text', sortOrder: 1, locale: 'en' },
   { page: 'home', section: 'hero', key: 'subtitle', value: 'A native overhaul for EllesmereUI.', type: 'text', sortOrder: 2, locale: 'en' },
   { page: 'home', section: 'hero', key: 'description', value: 'Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>.', type: 'html', sortOrder: 3, locale: 'en' },
   { page: 'home', section: 'hero', key: 'badge', value: 'Ready for WoW 12.1', type: 'text', sortOrder: 4, locale: 'en' },
@@ -24,7 +24,7 @@ export const DEFAULT_HOME_CONTENT = [
   { page: 'home', section: 'addons', key: 'subtitle', value: 'EllesmereUI is required. Everything else is optional.', type: 'text', sortOrder: 1, locale: 'en' },
 
   { page: 'home', section: 'hero', key: 'title', value: 'MagguuUI', type: 'text', sortOrder: 0, locale: 'de' },
-  { page: 'home', section: 'hero', key: 'title2', value: 'Ellesmere-Setup.', type: 'text', sortOrder: 1, locale: 'de' },
+  { page: 'home', section: 'hero', key: 'title2', value: 'Komplettes UI-Setup mit einem Klick.', type: 'text', sortOrder: 1, locale: 'de' },
   { page: 'home', section: 'hero', key: 'subtitle', value: 'Ein natives Overhaul für EllesmereUI.', type: 'text', sortOrder: 2, locale: 'de' },
   { page: 'home', section: 'hero', key: 'description', value: 'Natives <strong>EllesmereUI</strong>-Modul für WoW Retail. Für 4K ausgelegt. EllesmereUI und MagguuUI bei CurseForge, Wago oder WoWInterface laden, <code>/mui</code> öffnen und <strong>Magguu-Profile übernehmen</strong>.', type: 'html', sortOrder: 3, locale: 'de' },
   { page: 'home', section: 'hero', key: 'badge', value: 'Bereit für WoW 12.1', type: 'text', sortOrder: 4, locale: 'de' },

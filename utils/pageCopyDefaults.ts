@@ -14,6 +14,9 @@ export interface PageCopyField {
 
 export type PageCopyDefaults = Record<string, Record<string, string>>
 
+/** Home heading line 2: what you get, not what it is. */
+export const HOME_HERO_TITLE2_DEFAULT = 'Full UI setup in one click.'
+
 export const HOME_HERO_EXTRA_DEFAULTS = {
   eyebrow: 'WoW Retail · EllesmereUI',
   step_1: 'Download EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface.',

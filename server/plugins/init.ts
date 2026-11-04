@@ -54,6 +54,9 @@ const LEGACY_CONTENT_MARKERS = [
   { page: 'home', section: 'hero', key: 'title2', marker: 'perfected.' },
   { page: 'home', section: 'hero', key: 'title', marker: 'Dein WoW-Interface,', locale: 'de' },
   { page: 'home', section: 'hero', key: 'title2', marker: 'perfektioniert.', locale: 'de' },
+  // exact: replace only the untouched old default, never an admin text that merely contains it.
+  { page: 'home', section: 'hero', key: 'title2', marker: 'Ellesmere setup.', exact: true },
+  { page: 'home', section: 'hero', key: 'title2', marker: 'Ellesmere-Setup.', locale: 'de', exact: true },
   { page: 'home', section: 'features_heading', key: 'title', marker: 'Why MagguuUI?' },
   { page: 'home', section: 'features_heading', key: 'title', marker: 'Warum MagguuUI?', locale: 'de' },
   { page: 'home', section: 'hero', key: 'description', marker: 'MagguuUI is an in-game addon that installs and configures ElvUI' },
@@ -641,7 +644,9 @@ export default defineNitroPlugin(() => {
           eq(siteContent.locale, locale),
         ))
         .get()
-      if (!row || !row.value.includes(legacy.marker)) continue
+      if (!row) continue
+      const exact = 'exact' in legacy && legacy.exact
+      if (exact ? row.value.trim() !== legacy.marker : !row.value.includes(legacy.marker)) continue
 
       db.update(siteContent)
         .set({

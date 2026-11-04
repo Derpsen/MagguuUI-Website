@@ -544,3 +544,10 @@ Deliberately supersedes the privacy-minimal stance for CONSENTED visitors only. 
 ## Auto-import name collisions (2026-11-04)
 Nuxt auto-imports every export of utils/ and composables/, Nitro every export of server/utils/. Two files with the same export name make the build bind one silently. tests/unit/autoImportCollisions.test.ts fails on any duplicate; rename instead of relying on explicit imports. Audit-log diff is `auditLineDiff` (utils/auditDiff.ts), the string editor diff stays `diffLines` (utils/stringDiff.ts); `formatBytes` lives only in utils/overviewView.ts.
 
+
+## Download links and home layout (polish 2026-11-04)
+- Retail download targets live only in `utils/downloadLinks.ts` (CurseForge from site setting, Wago `5NR84pK3`, WoWInterface `27061`); render them via `<DownloadButtons>` (one `primary` = CurseForge filled). Hero, closing CTA, /guide and /forever share it; `tests/polish.spec.ts` pins the hrefs.
+- Trust line uses only real data (latest changelog version/date, patch parsed from changelog). Never add invented counts.
+- Lightbox (`ScreenshotFrame`): focus trap, Escape, focus return; keep `data-testid="screenshot-lightbox"`.
+- Legacy content markers support `exact: true`: replace a DB row only when it equals the old default verbatim.
+- Discord/GitHub/socials only when `discord_url`/`github_url` are set; none are invented.

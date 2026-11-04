@@ -574,3 +574,5 @@ Base d566cf7, 2026-11-04.
 1. server/plugins/init.ts (972 lines): split into seed / migrations / content markers modules. ROI high (most edited boot file), risk medium-high: needs characterization of the boot side effects (admin seed, force reset, exact-text markers) first.
 2. pages/strings.vue (836): extract the class/spec picker and the string card into components. ROI medium, risk medium (e2e covers copy + edit flows).
 3. Exports used only inside their own file (~60): drop `export` only when the file is touched anyway. ROI low, risk nil.
+
+- 2026-11-04 23:5x Berlin: Polish pushed (4ba57e1..695e871): hero/download row/lightbox/nav segment/strings+community fixes/forever width. Gate green (PW 233, axe). CI: pending.

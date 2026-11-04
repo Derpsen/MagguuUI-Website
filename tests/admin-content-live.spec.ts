@@ -1,11 +1,16 @@
 import { join } from 'node:path'
 import Database from 'better-sqlite3'
-import { expect, test } from '@playwright/test'
+import { expect, request as playwrightRequest, test } from '@playwright/test'
 import type { APIRequestContext, BrowserContext, Page } from '@playwright/test'
 
 /**
  * Admin edit → public page shows it on the next request (SWR route cache is
  * cleared on admin writes) → restore. One login per run (login is rate-limited).
+ *
+ * Isolation: the login lives in its own API request context (`api`, own cookie jar). Every test gets a fresh browser
+ * context that only receives a copy of that cookie. Before, page and API helpers shared one jar for the whole serial
+ * file, so a browser-side cookie loss in one test (the admin UI clears the auth cookie whenever its session check
+ * fails) turned every later API call into a 401 (CI run 41563783001). Now that stays inside the one test.
  */
 
 const ADMIN_USER = process.env.E2E_ADMIN_USER || 'admin'
@@ -48,16 +53,31 @@ async function expectLive(path: string, text: string) {
   await expect(page.getByText(text, { exact: false }).first()).toBeVisible()
 }
 
-test.beforeAll(async ({ browser }) => {
-  context = await browser.newContext()
-  page = await context.newPage()
-  api = context.request
+let authCookies: Awaited<ReturnType<APIRequestContext['storageState']>>['cookies'] = []
+
+test.beforeAll(async ({ browser, baseURL }) => {
+  // Sessions are bound to browser + OS family: the API context sends the browser's own user agent.
+  const probe = await browser.newContext()
+  const userAgent = await (await probe.newPage()).evaluate(() => navigator.userAgent)
+  await probe.close()
+  api = await playwrightRequest.newContext({ baseURL, userAgent })
   const res = await api.post('/api/v1/auth/login', { data: { username: ADMIN_USER, password: ADMIN_PASSWORD } })
   expect(res.ok(), `admin login → ${res.status()}`).toBe(true)
+  authCookies = (await api.storageState()).cookies
+})
+
+test.beforeEach(async ({ browser }) => {
+  context = await browser.newContext()
+  await context.addCookies(authCookies)
+  page = await context.newPage()
+})
+
+test.afterEach(async () => {
+  await context?.close()
 })
 
 test.afterAll(async () => {
-  await context?.close()
+  await api?.dispose()
 })
 
 test('admin dashboard shows the live image SHA + build time as text', async () => {

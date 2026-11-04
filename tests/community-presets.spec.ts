@@ -205,7 +205,10 @@ test('the admin sees it as pending, as plain text, and approves it', async () =>
   await admin.getByTestId('community-edit-save').click()
   await expect(row).toContainText('tested with version 1.2.4')
 
+  // Wait for the approve write before switching the filter, else the approved list can load before the status changed.
+  const approved = admin.waitForResponse(r => r.url().includes(`/api/v1/admin/community-presets/${presetId}`) && r.request().method() !== 'GET')
   await admin.getByTestId(`community-approve-${presetId}`).click()
+  expect((await approved).ok()).toBe(true)
   await admin.getByTestId('community-filter-approved').click()
   await expect(admin.getByTestId(`community-row-${presetId}`)).toHaveAttribute('data-status', 'approved')
   expect(await admin.evaluate(() => (window as unknown as { __xss?: number }).__xss)).toBeUndefined()

@@ -56,7 +56,6 @@ export async function purgeCloudflareCache(
   }
 }
 
-let pending: Promise<PurgeResult> | null = null
 let timer: ReturnType<typeof setTimeout> | null = null
 
 /**
@@ -71,11 +70,7 @@ export function schedulePurgeCloudflareCache(delayMs = 1500): void {
   if (timer) clearTimeout(timer)
   timer = setTimeout(() => {
     timer = null
-    pending = purgeCloudflareCache().finally(() => { pending = null })
+    void purgeCloudflareCache()
   }, delayMs)
   timer.unref?.()
-}
-
-export function pendingCloudflarePurge(): Promise<PurgeResult> | null {
-  return pending
 }

@@ -87,12 +87,6 @@ function one<T>(sqlite: Sqlite, sql: string, ...args: unknown[]): T | undefined 
 }
 const num = (sqlite: Sqlite, sql: string, ...args: unknown[]) => one<{ n: number | null }>(sqlite, sql, ...args)?.n ?? 0
 
-/** Trend helper kept pure for the UI and tests: +12, -5 or null without a baseline. */
-export function trendPercent(current: number, previous: number): number | null {
-  if (!previous) return null
-  return Math.round(((current - previous) / previous) * 100)
-}
-
 type ChangeRow = { id: number, action: string, entity_type: string, entity_name: string, actor_name: string | null, created_at: number }
 const toChange = (r: ChangeRow): OverviewChange => ({
   id: r.id, action: r.action, entityType: r.entity_type, entityName: r.entity_name, actorName: r.actor_name, createdAt: r.created_at,

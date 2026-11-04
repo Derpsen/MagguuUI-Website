@@ -567,3 +567,10 @@
 - 2026-11-04: /forever area for MagguuUI x Forever (WoW Forever, EllesmereUI base): Retail | Forever nav switch (utils/productNav.ts), /forever + guide/download/strings, Coming soon until a release exists; GET /api/v1/forever/release (10 min cache, null on 404). Repo Derpsen/MagguuUI-Forever was private and empty, so no README/TOC facts yet. Strings: WowUp string read at runtime from Derpsen/MagguuUI-Forever `MagguuUI_Forever/Data/WowUp.lua` (private repo, needs the GitHub token; null → Coming soon), 11-addon list and WowUp 2.24.1+ Forever-install hint always shown.
 
 - 2026-11-04 B: admin-content-live hardened (own API jar for the login, fresh browser context per test); cause: auth cookie lost in the shared page/API jar. A = 19db708 green, digest sha256:718bbdfa…
+- 2026-11-04 hard-refactor (base dc12604): a5ffd05 audit diff -> auditLineDiff/AuditDiffLine, shadowed adminHelpers.formatBytes dropped (3 "Duplicated imports" warnings gone); 930af8d dead trendPercent + pendingCloudflarePurge (and the write-only `pending`) removed; d566cf7 unit guard tests/unit/autoImportCollisions.test.ts (utils+composables, server/utils). Baseline: gate 229/229, smoke 0, mutation 97/97. Inventory: ~/Projekte/.grok/reports/inventory-website-2026-11-04.md.
+
+## Hard-refactor ROI backlog
+Base d566cf7, 2026-11-04.
+1. server/plugins/init.ts (972 lines): split into seed / migrations / content markers modules. ROI high (most edited boot file), risk medium-high: needs characterization of the boot side effects (admin seed, force reset, exact-text markers) first.
+2. pages/strings.vue (836): extract the class/spec picker and the string card into components. ROI medium, risk medium (e2e covers copy + edit flows).
+3. Exports used only inside their own file (~60): drop `export` only when the file is touched anyway. ROI low, risk nil.

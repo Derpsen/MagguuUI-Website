@@ -540,3 +540,7 @@ Deliberately supersedes the privacy-minimal stance for CONSENTED visitors only. 
 - The 401 flake (CI run 41563783001) was the auth cookie vanishing from the one cookie jar that page and API helpers shared for the whole serial file: the server saw requests without a cookie ("Authentication required"; no session revoke, no UA drift). The admin UI clears the cookie whenever its session check fails, and a fresh login on retry failed the same way, so one loss broke every later test.
 - Now: login once in its own API request context (`api`, browser user agent because sessions are bound to browser + OS), every test gets a fresh browser context with a copy of the cookie (beforeEach/afterEach). No retries added, app auth and lockout unchanged.
 - community-presets.spec: approve now waits for its write before the Approved filter loads (race seen in the gate 2026-11-04).
+
+## Auto-import name collisions (2026-11-04)
+Nuxt auto-imports every export of utils/ and composables/, Nitro every export of server/utils/. Two files with the same export name make the build bind one silently. tests/unit/autoImportCollisions.test.ts fails on any duplicate; rename instead of relying on explicit imports. Audit-log diff is `auditLineDiff` (utils/auditDiff.ts), the string editor diff stays `diffLines` (utils/stringDiff.ts); `formatBytes` lives only in utils/overviewView.ts.
+

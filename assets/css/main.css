@@ -371,6 +371,18 @@ html.light .string-copy-btn:focus-visible { outline-color: #0f766e; }
 
 .btn-gradient:active { transform: translateY(0); }
 
+/* Download row: outlined buttons, quiet hover (no lift, the filled one keeps its own). */
+.dl-btn { transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease; }
+
+/* Public section headings: one size for every H2 on the marketing pages. */
+.home-h2 {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+@media (min-width: 640px) { .home-h2 { font-size: 1.75rem; } }
+
 .btn-gradient-green {
   background: linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%);
   background-size: 200% 200%;

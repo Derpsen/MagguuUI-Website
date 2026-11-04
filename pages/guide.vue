@@ -84,17 +84,7 @@
         <p class="mt-4 max-w-2xl text-base leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
           {{ visibleSubtitle || 'Download EllesmereUI 9.0.6+ and MagguuUI from CurseForge, Wago, or WoWInterface. Open /mui and run Apply Magguu profiles. Everything except EllesmereUI is optional.' }}
         </p>
-        <nav class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm" aria-label="Download MagguuUI">
-          <a
-            v-for="item in installLinks"
-            :key="item.label"
-            :href="item.href"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-medium underline underline-offset-4"
-            :class="isDark ? 'text-white hover:text-brand-200' : 'text-gray-950 hover:text-brand-700'"
-          >{{ item.label }}</a>
-        </nav>
+        <DownloadButtons primary class="mt-6" />
       </div>
 
       <div v-else class="max-w-3xl mx-auto space-y-3">
@@ -118,7 +108,7 @@
       </div>
     </section>
 
-    <div v-if="!editMode" class="mb-12 mx-auto max-w-3xl">
+    <div v-if="!editMode" class="mb-12 max-w-3xl">
       <ScreenshotFrame
         src="/screenshots/setup.jpg"
         alt="EllesmereUI MagguuUI Setup, with Apply Magguu profiles."
@@ -300,18 +290,11 @@
 </template>
 
 <script setup lang="ts">
-import { SITE_SETTINGS_DEFAULTS, WAGO_ADDON_URL, WOWINTERFACE_ADDON_URL } from '~/utils/siteSettingsDefaults'
 
 const toast = useToast()
 const { apiFetch } = useApi()
 const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
-const siteSettings = usePublicSiteSettings()
-const installLinks = computed(() => [
-  { label: 'CurseForge', href: siteSettings.value.curseforge_url || SITE_SETTINGS_DEFAULTS.curseforge_url },
-  { label: 'Wago', href: WAGO_ADDON_URL },
-  { label: 'WoWInterface', href: WOWINTERFACE_ADDON_URL },
-])
 usePublicPageSeo({
   title: 'Installation Guide',
   description: 'Download EllesmereUI 9.0.6+ and MagguuUI from CurseForge, Wago, or WoWInterface, open /mui, and run Apply Magguu profiles.',

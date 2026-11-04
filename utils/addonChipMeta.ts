@@ -187,3 +187,13 @@ export function changelogPreviewBullets(content: string, max = 3): string[] {
   }
   return out
 }
+
+/**
+ * Short line for an addon row from its catalogue description: the first sentence without the leading
+ * "Optional"/"Required" (the badge says that). "Optional boss timers. MagguuUI applies…" -> "Boss timers".
+ */
+export function addonOneLiner(description: string | null | undefined): string {
+  const text = (description || '').replace(/^\s*(?:required|optional)\b\.?\s*/i, '').trim()
+  const first = (text.match(/^[^.!?]+/)?.[0] || '').trim()
+  return first ? first.charAt(0).toUpperCase() + first.slice(1) : ''
+}

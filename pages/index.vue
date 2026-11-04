@@ -25,16 +25,17 @@
           :class="isDark ? 'text-silver-300' : 'text-gray-600'"
           :html="content?.hero?.description || 'Native <strong>EllesmereUI</strong> module for WoW Retail. Designed for 4K. Open <code>/mui</code> and run <strong>Apply Magguu profiles</strong>.'"
         />
-        <div class="mt-8 flex flex-wrap gap-3">
-          <NuxtLink to="/guide" data-cta="hero-setup" class="btn-gradient px-5 py-2.5 rounded-md text-white text-sm font-semibold">
+        <div class="mt-8 flex flex-wrap items-center gap-2">
+          <NuxtLink to="/guide" data-cta="hero-setup" class="btn-gradient px-5 py-2 rounded-md border border-transparent text-white text-sm font-semibold">
             Install &amp; Setup
           </NuxtLink>
-          <NuxtLink to="/strings"
-            class="px-5 py-2.5 rounded-md text-sm font-semibold border"
-            :class="isDark ? 'border-white/15 text-silver-200 hover:text-white' : 'border-gray-300 text-gray-700 hover:text-gray-950'">
-            Import Strings
-          </NuxtLink>
+          <DownloadButtons />
         </div>
+        <p v-if="trustLine.length" class="mt-4 font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-silver-400' : 'text-gray-600'" data-testid="home-trust-line">
+          <template v-for="(part, i) in trustLine" :key="part">
+            <span v-if="i > 0" class="px-1.5" aria-hidden="true">·</span>{{ part }}
+          </template>
+        </p>
       </div>
 
       <ol class="lg:pt-9" :class="isDark ? 'border-white/10' : 'border-gray-200'" data-testid="home-hero-steps">
@@ -43,25 +44,28 @@
           <SafeHtml class="home-hero-step" :class="isDark ? 'home-hero-step--dark' : ''" :html="step" />
         </li>
       </ol>
-    </section>
-
-    <section aria-label="Screenshots" class="mt-16">
-      <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">In game</h2>
-      <div class="mt-4">
+      <div class="lg:col-span-2">
         <ScreenshotFrame
           src="/screenshots/hud.jpg"
           alt="MagguuUI dungeon HUD: unit frames, cast bars, and action bars."
           caption="HUD"
+          description="Dungeon HUD: unit frames, cast bars and action bars."
           :width="2000"
           :height="1125"
+          eager
         />
       </div>
-      <div class="mt-6 grid sm:grid-cols-2 gap-6">
+    </section>
+
+    <section aria-label="Screenshots" class="mt-16">
+      <h2 class="home-h2" :class="isDark ? 'text-white' : 'text-gray-950'">In game</h2>
+      <div class="mt-5 grid sm:grid-cols-2 gap-6">
         <ScreenshotFrame
           src="/screenshots/edit-mode.jpg"
           sizes="(min-width: 1280px) 600px, (min-width: 640px) 50vw, 100vw"
           alt="Edit Mode with the Magguu frame layout."
           caption="Edit Mode"
+          description="The Magguu frame layout in Blizzard Edit Mode."
           :width="2000"
           :height="1125"
         />
@@ -70,6 +74,7 @@
           sizes="(min-width: 1280px) 600px, (min-width: 640px) 50vw, 100vw"
           alt="EllesmereUI MagguuUI Setup, with Apply Magguu profiles."
           caption="Setup"
+          description="MagguuUI Setup inside EllesmereUI, with Apply Magguu profiles."
           :width="2000"
           :height="1125"
         />
@@ -78,22 +83,26 @@
 
     <section aria-label="Addons and latest release" class="reveal mt-16 grid lg:grid-cols-[minmax(0,1.25fr)_minmax(15rem,0.75fr)] gap-12 lg:gap-16 items-start">
       <div>
-        <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ content?.addons?.title || 'Supported Addons' }}</h2>
+        <h2 class="home-h2" :class="isDark ? 'text-white' : 'text-gray-950'">{{ content?.addons?.title || 'Supported Addons' }}</h2>
         <p class="mt-2 text-sm max-w-xl leading-relaxed" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ content?.addons?.subtitle || 'EllesmereUI is required. Everything else is optional.' }}</p>
-        <div v-if="addonGroups.length" class="mt-6 space-y-5">
-          <div v-for="group in addonGroups" :key="group.key">
-            <p class="font-mono text-[11px] uppercase tracking-[0.14em] mb-1.5" :class="isDark ? 'text-brand-300' : 'text-brand-700'">{{ group.label }}</p>
-            <p class="text-sm leading-7" :class="isDark ? 'text-silver-300' : 'text-gray-700'">
-              <template v-for="(item, index) in group.items" :key="item.key">
-                <span v-if="index > 0" class="px-1.5" :class="isDark ? 'text-white/25' : 'text-gray-300'">·</span><wbr>
-                <NuxtLink :to="item.href" class="whitespace-nowrap hover:underline underline-offset-4">{{ item.name }}</NuxtLink>
-              </template>
-            </p>
-          </div>
-        </div>
+        <ul v-if="addonRows.length" class="mt-6 grid sm:grid-cols-2 gap-x-6" data-testid="home-addon-list">
+          <li v-for="item in addonRows" :key="item.key" class="border-b" :class="isDark ? 'border-white/10' : 'border-gray-200'">
+            <NuxtLink :to="item.href" class="addon-row group flex items-center gap-3 py-2.5">
+              <img v-if="item.icon" :src="item.icon" alt="" width="28" height="28" loading="lazy" decoding="async" class="w-7 h-7 rounded shrink-0" />
+              <span v-else class="w-7 h-7 shrink-0 grid place-items-center text-base" aria-hidden="true">{{ item.emoji }}</span>
+              <span class="min-w-0 flex-1">
+                <span class="flex items-center gap-2">
+                  <span class="text-sm font-medium truncate group-hover:underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">{{ item.name }}</span>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.12em] shrink-0" :class="isDark ? 'text-brand-300' : 'text-brand-700'">{{ item.subtitle }}</span>
+                </span>
+                <span v-if="item.line" class="block text-xs truncate" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ item.line }}</span>
+              </span>
+            </NuxtLink>
+          </li>
+        </ul>
       </div>
 
-      <div v-if="latestCard">
+      <div v-if="latestCard" class="rounded-lg border p-5" :class="isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white shadow-sm'">
         <p class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Latest</p>
         <NuxtLink to="/changelog" class="group block mt-2">
           <span class="font-mono text-2xl font-semibold tracking-tight" :class="isDark ? 'text-white group-hover:text-brand-200' : 'text-gray-950 group-hover:text-brand-700'">{{ latestCard.version }}</span>
@@ -106,13 +115,14 @@
     </section>
 
     <section aria-label="Features" class="reveal mt-16 pt-10 border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
-      <h2 class="text-base font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ content?.features_heading?.title || 'The module' }}</h2>
+      <h2 class="home-h2" :class="isDark ? 'text-white' : 'text-gray-950'">{{ content?.features_heading?.title || 'The module' }}</h2>
       <p class="mt-2 text-sm max-w-xl" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ content?.features_heading?.subtitle || 'An EllesmereUI setup with optional raid tools' }}</p>
-      <div class="mt-8 grid gap-10 lg:grid-cols-3 lg:gap-12">
+      <div class="mt-6 grid gap-4 lg:grid-cols-3">
         <article
           v-for="(feat, index) in features"
           :key="index"
-          class="feature-item flex flex-col"
+          class="feature-item flex flex-col rounded-lg border p-5"
+          :class="isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-white shadow-sm'"
           :data-accent="feat.meta.accent"
         >
           <div class="flex items-center gap-2 h-5">
@@ -141,6 +151,17 @@
         </article>
       </div>
     </section>
+
+    <section aria-labelledby="home-get" class="mt-16 pt-10 border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'" data-testid="home-closing-cta">
+      <h2 id="home-get" class="home-h2" :class="isDark ? 'text-white' : 'text-gray-950'">Get MagguuUI</h2>
+      <p class="mt-2 text-sm max-w-xl leading-relaxed" :class="isDark ? 'text-silver-300' : 'text-gray-600'">
+        Free. Needs EllesmereUI 9.0.6 or newer. Install both, open <code class="font-mono">/mui</code>, done.
+      </p>
+      <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
+        <DownloadButtons primary />
+        <NuxtLink to="/guide" class="text-sm font-medium underline underline-offset-4" :class="isDark ? 'text-silver-200 hover:text-white' : 'text-gray-700 hover:text-gray-950'">Installation guide</NuxtLink>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -150,13 +171,17 @@ import { buildPublicUrl } from '~/utils/publicSite'
 import {
   addonGroupForSlug,
   addonGroupSubtitle,
+  addonOneLiner,
   changelogPreviewBullets,
+  emojiForAddonName,
   groupAddonChips,
   profileHrefForSlug,
 } from '~/utils/addonChipMeta'
-import { extractMuiCommands, featureCardMeta, splitFeatureAddons } from '~/utils/featureCardMeta'
+import { addonThumbPath, extractMuiCommands, featureCardMeta, splitFeatureAddons } from '~/utils/featureCardMeta'
+import { ADDON_ICONS, addonIconForName } from '~/utils/addonIcons'
 import type { FeatureAccent } from '~/utils/featureCardMeta'
-import { HOME_HERO_EXTRA_DEFAULTS } from '~/utils/pageCopyDefaults'
+import { HOME_HERO_EXTRA_DEFAULTS, HOME_HERO_TITLE2_DEFAULT } from '~/utils/pageCopyDefaults'
+import { patchFromChangelog } from '~/utils/downloadLinks'
 
 const { isLoggedIn } = useAuth()
 const isDark = useIsDark()
@@ -251,6 +276,7 @@ interface PublicAddonChip {
   name: string
   category: 'required' | 'core' | 'optional'
   emoji: string | null
+  description?: string | null
 }
 
 interface AddonsPayload {
@@ -271,7 +297,7 @@ const heroSteps = computed(() => ([1, 2, 3] as const).map((n) => {
 }))
 const heroTitle2 = computed(() => {
   const raw = content.value?.hero?.title2
-  if (typeof raw !== 'string') return 'Ellesmere setup.'
+  if (typeof raw !== 'string') return HOME_HERO_TITLE2_DEFAULT
   return raw.trim()
 })
 
@@ -287,6 +313,9 @@ function toChip(addon: PublicAddonChip) {
     kind,
     badge,
     subtitle,
+    icon: addonThumbPath(ADDON_ICONS[addon.slug] ?? addonIconForName(addon.name)),
+    emoji: addon.emoji || emojiForAddonName(addon.name),
+    line: addonOneLiner(addon.description),
   }
 }
 
@@ -296,7 +325,8 @@ const allAddonChips = computed(() => {
   return [...(data.required ?? []), ...(data.core ?? []), ...(data.optional ?? [])].map(toChip)
 })
 
-const addonGroups = computed(() => groupAddonChips(allAddonChips.value))
+/** One list in Required, Starter pack, Optional order; the badge on each row names the group. */
+const addonRows = computed(() => groupAddonChips(allAddonChips.value).flatMap(g => g.items))
 
 const { data: changelogListData } = useFetch<{ data: Array<{ version: string, content: string, publishedAt: string | number | null }> }>('/api/v1/changelogs')
 const latestCard = computed(() => {
@@ -308,6 +338,17 @@ const latestCard = computed(() => {
     ? new Date(entry.publishedAt).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
     : ''
   return { version: entry.version, date, bullets }
+})
+
+/** Version, date and patch of the newest release: only what the changelog says. */
+const trustLine = computed(() => {
+  const entry = changelogListData.value?.data?.[0]
+  if (!entry?.version) return []
+  const parts = [`Latest ${entry.version}`]
+  if (latestCard.value?.date) parts.push(latestCard.value.date)
+  const patch = patchFromChangelog(entry.content)
+  if (patch) parts.push(`Ready for ${patch}`)
+  return parts
 })
 
 const featureCopy = computed(() => [
@@ -344,11 +385,6 @@ function accentClasses(_accent: FeatureAccent) {
 </script>
 
 <style scoped>
-.feature-item {
-  /* Offscreen on load: skip render work until near the viewport. */
-  content-visibility: auto;
-  contain-intrinsic-size: auto 22rem;
-}
 
 .home-hero-copy :deep(p),
 .home-feature-copy :deep(p) {

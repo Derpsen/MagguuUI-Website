@@ -33,7 +33,8 @@ test.describe('security + cache headers', () => {
 test.describe('homepage screenshots', () => {
   test('serve AVIF/WebP srcsets', async ({ page }) => {
     await page.goto('/')
-    const sources = page.locator('section[aria-label="Screenshots"] picture source[type="image/avif"]')
+    // HUD sits in the hero, Edit Mode and Setup in the "In game" section.
+    const sources = page.locator('main picture source[type="image/avif"]')
     await expect(sources).toHaveCount(3)
     await expect(sources.first()).toHaveAttribute('srcset', /hud-800\.avif 800w/)
     const avif = await page.request.get('/screenshots/hud-1280.avif')

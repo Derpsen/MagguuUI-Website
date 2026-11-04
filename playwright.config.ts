@@ -42,6 +42,8 @@ export default defineConfig({
       // admin password; force-reset so the E2E login always matches this value.
       NUXT_ADMIN_PASSWORD: process.env.NUXT_ADMIN_PASSWORD || 'playwright-admin',
       NUXT_FORCE_PASSWORD_RESET: 'true',
+      // No GitHub call from E2E: the Forever pages show their Coming-soon state.
+      NUXT_FOREVER_REPO: 'off',
       // Seeds one WowUp pack (server/plugins/e2e-seed.ts) for the lazy-strings test.
       NUXT_E2E_SEED: 'true',
       // NUXT_VISITOR_LOG is deliberately NOT set: the detailed visitor log (banner, consent, capture) is on by default

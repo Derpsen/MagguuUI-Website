@@ -538,5 +538,47 @@
   "file": "server/api/v1/admin/notifications/index.get.ts",
   "find": "  const releaseDrafts = countReleaseDrafts(draftVersions.map(r => r.version))",
   "repl": "  const releaseDrafts = draftVersions.length"
+ },
+ {
+  "name": "forever: draft releases shown",
+  "file": "utils/foreverRelease.ts",
+  "find": "  if (r.draft === true || r.prerelease === true) return null\n",
+  "repl": "  if (r.prerelease === true) return null\n"
+ },
+ {
+  "name": "forever: private repo links exposed",
+  "file": "utils/foreverRelease.ts",
+  "find": "    url: repoIsPublic && GITHUB_URL.test(htmlUrl) ? htmlUrl : null,\n",
+  "repl": "    url: GITHUB_URL.test(htmlUrl) ? htmlUrl : null,\n"
+ },
+ {
+  "name": "forever: non-GitHub asset links kept",
+  "file": "utils/foreverRelease.ts",
+  "find": "        if (!name || !GITHUB_URL.test(url)) return []\n",
+  "repl": "        if (!name) return []\n"
+ },
+ {
+  "name": "nav: forever prefix too loose",
+  "file": "utils/productNav.ts",
+  "find": "path.startsWith(`${FOREVER_BASE}/`)",
+  "repl": "path.startsWith(FOREVER_BASE)"
+ },
+ {
+  "name": "nav: forever root active on subpages",
+  "file": "utils/productNav.ts",
+  "find": "  if (to === '/' || to === FOREVER_BASE) return currentPath === to\n",
+  "repl": "  if (to === '/') return currentPath === to\n"
+ },
+ {
+  "name": "forever wowup: any client type",
+  "file": "utils/foreverWowup.ts",
+  "find": "d.client_type !== 'Forever' || ",
+  "repl": ""
+ },
+ {
+  "name": "forever wowup: no size limit",
+  "file": "utils/foreverWowup.ts",
+  "find": "if (!value || value.length > MAX_STRING) return null",
+  "repl": "if (!value) return null"
  }
 ]

@@ -213,6 +213,8 @@ export default defineNuxtConfig({
     apiBearerToken: process.env.API_BEARER_TOKEN || '',
     githubToken: process.env.NUXT_GITHUB_TOKEN || '',
     githubRepo: process.env.NUXT_GITHUB_REPO || 'Derpsen/MagguuUI',
+    // MagguuUI x Forever release source (server/utils/foreverReleaseSource.ts); "off" disables the lookup.
+    foreverRepo: process.env.NUXT_FOREVER_REPO || 'Derpsen/MagguuUI-Forever',
     githubWebhookSecret: process.env.NUXT_GITHUB_WEBHOOK_SECRET || '',
 
     webauthnRpName: 'MagguuUI Admin',
@@ -239,7 +241,7 @@ export default defineNuxtConfig({
       ? {
           prerender: {
             failOnError: false,
-            routes: ['/', '/guide', '/faq', '/changelog', '/about', '/addons', '/configurator', '/imprint', '/privacy', '/strings'],
+            routes: ['/', '/guide', '/faq', '/changelog', '/about', '/addons', '/configurator', '/imprint', '/privacy', '/strings', '/forever', '/forever/guide', '/forever/download', '/forever/strings'],
           },
         }
       : {}),
@@ -413,6 +415,10 @@ export default defineNuxtConfig({
     '/configurator': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
     '/imprint': { swr: 120 },
     '/privacy': { swr: 120 },
+    '/forever': { swr: 120 },
+    '/forever/**': { swr: 120 },
+    '/api/v1/forever/release': { swr: 120 },
+    '/api/v1/forever/wowup': { swr: 120 },
     '/api/v1/catalog-summary': { swr: 120 },
     '/api/v1/profiles': { swr: 120 },
     '/api/v1/profiles/**': { swr: 120 },

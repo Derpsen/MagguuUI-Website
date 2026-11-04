@@ -6,7 +6,7 @@
 import { writeFileSync } from 'node:fs'
 
 const base = new URL(process.env.BASE_URL || 'https://ui.magguu.xyz')
-const start = ['/', '/guide', '/faq', '/strings', '/addons', '/configurator', '/changelog', '/about', '/imprint', '/privacy', '/status']
+const start = ['/', '/guide', '/faq', '/strings', '/addons', '/configurator', '/changelog', '/about', '/imprint', '/privacy', '/status', '/forever', '/forever/guide', '/forever/download', '/forever/strings']
 const MAX_PAGES = 60
 const SKIP = [/^mailto:/, /^tel:/, /^javascript:/, /^#/, /^data:/]
 const SKIP_PATH = [/^\/admin/, /^\/api\//, /^\/cdn-cgi\//]

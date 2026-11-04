@@ -94,7 +94,11 @@ describe('request rules', () => {
     const pages = readdirSync(new URL('../../pages', import.meta.url), { withFileTypes: true })
       .filter(e => e.isFile() && e.name.endsWith('.vue'))
       .map(e => e.name === 'index.vue' ? '/' : `/${e.name.replace(/\.vue$/, '')}`)
-      .sort()
+    const forever = readdirSync(new URL('../../pages/forever', import.meta.url), { withFileTypes: true })
+      .filter(e => e.isFile() && e.name.endsWith('.vue'))
+      .map(e => e.name === 'index.vue' ? '/forever' : `/forever/${e.name.replace(/\.vue$/, '')}`)
+    pages.push(...forever)
+    pages.sort()
     assert.deepEqual([...TRACKED_ROUTES].sort(), pages)
   })
 

@@ -1,6 +1,6 @@
 <!--
   Default Layout — Public Pages
-  Used by: /, /guide, /strings, /changelog
+  Used by: all public pages, Retail and /forever/**
 -->
 
 <template>
@@ -19,6 +19,16 @@
           <img src="/favicon-32.png" alt="" width="22" height="22" class="w-[22px] h-[22px]" />
           <span class="text-sm font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">MagguuUI</span>
         </NuxtLink>
+
+        <nav class="hidden lg:flex items-center gap-2 shrink-0 font-mono text-[11px] uppercase tracking-[0.16em]" aria-label="Product" data-testid="product-switch">
+          <template v-for="(p, i) in PRODUCT_SWITCH" :key="p.product">
+            <span v-if="i > 0" aria-hidden="true" :class="isDark ? 'text-silver-500' : 'text-gray-400'">|</span>
+            <NuxtLink :to="p.to" :aria-current="product === p.product ? 'page' : undefined" :data-product="p.product"
+              :class="product === p.product
+                ? isDark ? 'text-brand-300' : 'text-brand-700'
+                : isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-950'">{{ p.label }}</NuxtLink>
+          </template>
+        </nav>
 
         <nav class="hidden lg:flex items-center gap-4 min-w-0 overflow-x-auto text-sm" aria-label="Primary">
           <NuxtLink
@@ -63,7 +73,7 @@
           </button>
           <NuxtLink v-if="isLoggedIn" to="/admin" class="hidden sm:inline text-sm" :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-950'">Admin</NuxtLink>
           <NuxtLink v-else to="/admin/login" class="hidden sm:inline text-sm" :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-950'">Login</NuxtLink>
-          <NuxtLink :to="primaryAction.to" data-cta="header-setup" class="hidden sm:inline text-sm font-semibold" :class="isDark ? 'text-brand-300 hover:text-white' : 'text-brand-700 hover:text-brand-900'">
+          <NuxtLink v-if="primaryAction" :to="primaryAction.to" data-cta="header-setup" class="hidden sm:inline text-sm font-semibold" :class="isDark ? 'text-brand-300 hover:text-white' : 'text-brand-700 hover:text-brand-900'">
             {{ primaryAction.label }}
           </NuxtLink>
           <button class="lg:hidden inline-flex items-center justify-center w-8 h-8"
@@ -105,6 +115,16 @@
 
         <div ref="mobileMenuPanel" class="absolute inset-x-3 top-16">
           <div class="public-nav-shell rounded-[1.6rem] p-4 shadow-2xl">
+            <nav class="flex items-center gap-2 pb-3 mb-1 border-b font-mono text-[11px] uppercase tracking-[0.16em]" :class="isDark ? 'border-white/10' : 'border-gray-200'" aria-label="Product" data-testid="product-switch-mobile">
+              <template v-for="(p, i) in PRODUCT_SWITCH" :key="p.product">
+                <span v-if="i > 0" aria-hidden="true" :class="isDark ? 'text-silver-500' : 'text-gray-400'">|</span>
+                <NuxtLink :to="p.to" :aria-current="product === p.product ? 'page' : undefined" :data-product="p.product"
+                  :class="product === p.product
+                    ? isDark ? 'text-brand-300' : 'text-brand-700'
+                    : isDark ? 'text-silver-300' : 'text-gray-600'"
+                  @click="mobileOpen = false">{{ p.label }}</NuxtLink>
+              </template>
+            </nav>
             <div class="grid">
               <NuxtLink v-for="link in navLinks" :key="link.to" :to="link.to"
                 class="py-2.5 text-sm border-b"
@@ -118,7 +138,7 @@
                 @click="mobileOpen = false">
                 {{ link.label }}
               </NuxtLink>
-              <NuxtLink :to="primaryAction.to"
+              <NuxtLink v-if="primaryAction" :to="primaryAction.to"
                 class="py-2.5 text-sm font-semibold"
                 :class="isDark ? 'text-brand-300' : 'text-brand-700'"
                 @click="mobileOpen = false">
@@ -295,6 +315,7 @@
 <script setup lang="ts">
 import { SPECULATION_RULES } from '~/utils/speculationRules'
 import { isPrivateRepoUrl } from '~/utils/privateRepoLinks'
+import { PRODUCT_SWITCH, isNavActive, navLinksFor, primaryActionFor, productForPath } from '~/utils/productNav'
 
 const colorMode = useColorMode()
 const route = useRoute()
@@ -341,17 +362,10 @@ function handleLogout() {
   logout()
 }
 
-const navLinks = [
-  { to: '/', label: 'Home', icon: 'i-heroicons-home' },
-  { to: '/strings', label: 'Import Strings', icon: 'i-heroicons-bolt' },
-  { to: '/addons', label: 'Addons', icon: 'i-heroicons-puzzle-piece' },
-  { to: '/guide', label: 'Guides', icon: 'i-heroicons-book-open' },
-  { to: '/changelog', label: 'Changelog', icon: 'i-heroicons-sparkles' },
-  { to: '/faq', label: 'FAQ', icon: 'i-heroicons-question-mark-circle' },
-]
-
-// Same header CTA on every page.
-const primaryAction = { to: '/guide', label: 'Setup', icon: 'i-heroicons-arrow-right' }
+// Two products: Retail pages get the Retail nav, /forever/** the Forever nav (utils/productNav.ts).
+const product = computed(() => productForPath(route.path))
+const navLinks = computed(() => navLinksFor(product.value))
+const primaryAction = computed(() => primaryActionFor(product.value))
 
 const socialLinks = computed(() => ({
   github: isPrivateRepoUrl(siteSettings.value.github_url) ? '' : (siteSettings.value.github_url || ''),
@@ -364,6 +378,7 @@ const footerLinks = computed(() => [
   { label: 'Guide', to: '/guide' },
   { label: 'Addons', to: '/addons' },
   { label: 'Configurator', to: '/configurator' },
+  { label: 'WoW Forever', to: '/forever' },
   { label: 'Changelog', to: '/changelog' },
   { label: 'FAQ', to: '/faq' },
   { label: 'About', to: '/about' },
@@ -403,8 +418,7 @@ const siteStatusClasses = computed(() => {
 })
 
 function isActive(path: string): boolean {
-  if (path === '/') return route.path === '/'
-  return route.path.startsWith(path)
+  return isNavActive(route.path, path)
 }
 
 const contactEmail = computed(() => siteSettings.value.contact_email || 'contact@magguu.xyz')

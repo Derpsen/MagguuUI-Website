@@ -575,4 +575,4 @@ Base d566cf7, 2026-11-04.
 2. pages/strings.vue (836): extract the class/spec picker and the string card into components. ROI medium, risk medium (e2e covers copy + edit flows).
 3. Exports used only inside their own file (~60): drop `export` only when the file is touched anyway. ROI low, risk nil.
 
-- 2026-11-04 23:5x Berlin: Polish pushed (4ba57e1..695e871): hero/download row/lightbox/nav segment/strings+community fixes/forever width. Gate green (PW 233, axe). CI: pending.
+- 2026-11-04 23:5x Berlin: Polish pushed (4ba57e1..695e871): hero/download row/lightbox/nav segment/strings+community fixes/forever width. Gate green (PW 233, axe). CI cc7d420 all green, docker signed+verified, digest sha256:f8dc6bf05001daf5bb432ccd38b1fb01ce6b509a02663bb2c13aec1f7c88094e. Pull: Buddy.

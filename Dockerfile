@@ -3,7 +3,7 @@
 # node:26-trixie-slim multi-arch index digest (2026-11-02, Node 26.13.0, Debian 13 trixie)
 # renovate: image=node:26-trixie-slim
 ARG NODE_VERSION=26
-ARG NODE_DIGEST=sha256:e4db4c914bf8ad241bd24804fc25d272d89bad97e68cdc8a1414862790a02c39
+ARG NODE_DIGEST=sha256:5adad64f9a1fca2d51972caa65983634c8a774eb300d72b20f7f2a0f60368072
 FROM node:${NODE_VERSION}-trixie-slim@${NODE_DIGEST} AS build
 
 WORKDIR /app

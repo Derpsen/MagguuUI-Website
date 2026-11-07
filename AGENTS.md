@@ -551,3 +551,7 @@ Nuxt auto-imports every export of utils/ and composables/, Nitro every export of
 - Lightbox (`ScreenshotFrame`): focus trap, Escape, focus return; keep `data-testid="screenshot-lightbox"`.
 - Legacy content markers support `exact: true`: replace a DB row only when it equals the old default verbatim.
 - Discord/GitHub/socials only when `discord_url`/`github_url` are set; none are invented.
+
+## Renovate wave 2026-11-07
+- Dashboard #163 scheduled entries may be explicitly unscheduled on request. Only fully green PRs merge; red or unclear PRs remain untouched (report log cause, no fixes: Marco/Buddy 2026-11-07).
+- #171 Node digest, #172 docker/login-action, #173 npm non-major merged after every check passed; TS7, h3 2/Nitro3 and @types/node27 locks unchanged. Auto-pull owns deployment; no manual pull.

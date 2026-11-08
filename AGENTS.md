@@ -73,7 +73,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
   stay deferred; js-yaml 5 and @types/node 26 were released by Marco on 2026-10-26 (installed). @types/node 27 stays
   blocked. satori, @resvg/resvg-js and the fflate override were removed on 2026-11-02: OG images render with Takumi
   (`components/OgImage/MagguuOg.takumi.vue`, `@takumi-rs/core`); satori/resvg are only optional peers of nuxt-og-image 7.
-- As of 2026-10-14: addon live **v12.1.8**; container runs as **uid 99**;
+- As of 2026-11-08: addon live **v12.1.9**; container runs as **uid 99**;
   images are **Cosign keyless** signed; site defaults to **Dark**; **WIM is
   removed** (Whisper Messenger is the whisper chat); `engines.node >=26.12.0`,
   Node 26 since 2026-10-16 (Marco's yes); Docker base 26.12.1 since 2026-10-23 (still Current, Active LTS expected late Oct 2026).
@@ -170,7 +170,7 @@ Merge reports to Buddy must say which path applies:
 For PRs / copy / pack deltas:
 
 - Four siblings: MagguuUI / MagguuUI_Data / MagguuUI_EUI / MagguuUI_Media
-- EllesmereUI TOC min **9.0.6+**; live **9.2.9**; Magguu bake is **dump-based**; notes track **v12.1.8**
+- EllesmereUI TOC min **9.0.6+**; live **9.2.9**; Magguu bake is **dump-based**; notes track **v12.1.9**
 - WowUp Starter: EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore
 - Optional includes Whisper Messenger (WhisperMessenger), Auctionator, Smart Reminders, HandyNotes MapNotes; **no WIM / Ellesmere WIM Skin**; **no WindTools**; **no KeystoneLoot / MagguuKSL**
 - No EXBoss name-split

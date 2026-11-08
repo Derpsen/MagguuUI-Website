@@ -20,7 +20,7 @@ export function recordLatestRelease(tag: string | null | undefined): AppliedRele
 }
 
 /** Known MagguuUI release shipped with this website (from defaultAddonChangelog). */
-export const KNOWN_ADDON_VERSION = normalizeAddonVersion(CURRENT_ADDON_CHANGELOG.version) || '12.1.8'
+export const KNOWN_ADDON_VERSION = normalizeAddonVersion(CURRENT_ADDON_CHANGELOG.version) || '12.1.9'
 
 /**
  * Read local MagguuUI version from settings (local_version -> addon_version -> known product version).

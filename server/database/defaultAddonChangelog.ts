@@ -1,7 +1,45 @@
 export const CURRENT_ADDON_CHANGELOG = {
-  version: 'v12.1.8',
-  publishedAt: new Date('2026-10-14T00:00:00Z'),
-  content: `Ready for WoW 12.1.5. MagguuUI lives inside EllesmereUI. Type \`/mui\` to open it.
+  version: 'v12.1.9',
+  publishedAt: new Date('2026-11-08T00:00:00Z'),
+  content: `Ready for WoW 12.1.5 and now also on WoW Forever. MagguuUI lives inside EllesmereUI. Type \`/mui\` to open it. One changelog for both clients: entries marked **Retail** or **WoW Forever** apply only there.
+
+### What's new
+
+- **Retail** - **DoT Coverage** for Assassination and Subtlety Rogue: an icon that lights up while your Rupture is on your target. Moves in Unlock Mode.
+- **Retail** - **Wild Guardian bar** for Guardian Druid, and the **Boiling Point** bar now shows a held proc with its own color.
+- **Retail** - Combined enemy text for the EllesmereUI M+ timer, on by default.
+- **WoW Forever** - One MagguuUI package with its own Magguu profiles and a Setup page like Retail. Forever settings stay fully separate from Retail.
+
+### Additional features
+
+- Needs **EllesmereUI 9.0.6+**. Download MagguuUI and EllesmereUI from CurseForge, Wago, or WoWInterface.
+- Every Magguu export names Retail or WoW Forever at the top. An export from the other client is refused.
+- **Apply Magguu profiles** now brings over every EllesmereUI setting from the Magguu profile and still turns on **Targeted Spell Bars**.
+- **Retail** - Updated Magguu profiles, new Cooldown Manager layouts for Druid, Paladin, Priest and Warrior, and updated Smart Reminders.
+- **Retail** - New \`/magguu check\` report and a redesigned Boost tab with one numbered post for all your boost characters.
+- **WoW Forever** - Updated Magguu profiles, class cooldown layouts for all nine classes, and two-tone names on their own Skinning tab.
+
+### Bug fixes
+
+- **Retail** - Boiling Point, Co-Tank, tooltip buffs, bag currencies and BigWigs options now follow the Magguu setup correctly.
+- **Retail** - **Apply Magguu profiles** keeps your own settings that the Magguu profile does not set.
+- **WoW Forever** - Patch Notes and the new-version dot work again, and there is no second install prompt.
+
+### Install notes
+
+- Download **MagguuUI** and **EllesmereUI 9.0.6+** from CurseForge, Wago, or WoWInterface, and leave them enabled.
+- Open \`/mui\` and run **Apply Magguu profiles**.
+- **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, Whisper Messenger, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
+- **WoW Forever WowUp:** Starter EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky Raid Tools. Optional Auctionator, HandyNotes, Whisper Messenger, Waypoint UI, Talent Tree Tweaks, GTFO, BugSack, BugGrabber.
+- Works on WoW 12.1.5 and still loads on Midnight 12.0.
+- UI is available in every WoW client language MagguuUI ships.`,
+} as const
+
+export const PREVIOUS_ADDON_CHANGELOGS = [
+  {
+    version: 'v12.1.8',
+    publishedAt: new Date('2026-10-14T00:00:00Z'),
+    content: `Ready for WoW 12.1.5. MagguuUI lives inside EllesmereUI. Type \`/mui\` to open it.
 
 ### What's new
 
@@ -27,9 +65,7 @@ export const CURRENT_ADDON_CHANGELOG = {
 - **WowUp starter:** EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore. **Optional:** BugGrabber, BugSack, HandyNotes, HandyNotes MapNotes, MDT, Raider.IO, Simulationcraft, Talent Tree Tweaks, Whisper Messenger, Waypoint UI, GTFO, Premade Groups Filter, Auctionator, Smart Reminders.
 - Works on WoW 12.1.5 and still loads on Midnight 12.0.
 - UI is available in every WoW client language MagguuUI ships.`,
-} as const
-
-export const PREVIOUS_ADDON_CHANGELOGS = [
+  },
   {
     version: 'v12.1.7',
     publishedAt: new Date('2026-10-10T00:00:00Z'),

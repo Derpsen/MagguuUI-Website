@@ -24,13 +24,13 @@ describe('WowUp pack copy', () => {
 
     assert.ok(CURRENT_ADDON_CHANGELOG.content.includes('**WowUp starter:** ' + STARTER + '.'))
     assert.ok(CURRENT_ADDON_CHANGELOG.content.includes('**Optional:** ' + OPTIONAL + '.'))
-    assert.equal(CURRENT_ADDON_CHANGELOG.version, 'v12.1.8')
+    assert.equal(CURRENT_ADDON_CHANGELOG.version, 'v12.1.9')
   })
 })
 
 describe('MagguuUI product facts copy', () => {
   it('locks Ellesmere live host, Apply Magguu profiles, Targeted Spell Bars, and no foreign author credits', () => {
-    assert.match(CURRENT_ADDON_CHANGELOG.content, /live \*\*9\.2\.9\*\*/)
+    assert.match(CURRENT_ADDON_CHANGELOG.content, /\*\*EllesmereUI 9\.0\.6\+\*\*/)
     assert.match(CURRENT_ADDON_CHANGELOG.content, /Targeted Spell Bars/)
     assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /MythicCast/)
     assert.doesNotMatch(CURRENT_ADDON_CHANGELOG.content, /four-addon group/)

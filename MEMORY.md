@@ -41,7 +41,7 @@
 
 ## MagguuUI product facts (2026-09-07)
 
-- EllesmereUI TOC min **9.0.6+**; **live 9.2.9**; Magguu bake is **dump-based**; notes track **v12.1.8**.
+- EllesmereUI TOC min **9.0.6+**; **live 9.2.9**; Magguu bake is **dump-based**; notes track **v12.1.9**.
 - Four siblings: MagguuUI / MagguuUI_Data / MagguuUI_EUI / MagguuUI_Media.
 - Posted Magguu export = **full bake** (2026-09-11: Ellesmere type=full, BigWigs, NSRT, EXBoss, WIM, Waypoint UI, HandyNotes, TTT, GTFO, BugSack, PGF, Smart Reminders). Magguu Settings overlay still does not reimport the bake.
 - **Targeted Spell Bars** is a public feature name. Public pages do not tell players to turn EXBoss MythicCast off.
@@ -580,3 +580,7 @@ Base d566cf7, 2026-11-04.
 - 2026-11-07 Berlin Renovate: #171 merged 999b4ea (Node 5adad64), #172 f07ccaf (login-action 4.7.0), #173 45da414 (npm non-major). All PR checks green. main docker 42419010532 green, sign+verify PASS: sha256:0496a1f7de352d8d00668544fb3590e41fbae4f3771bf720642964bb8cc77d8e. Lockfile maintenance triggered; Renovate keeps it in Other Branches without branch/PR (not changed manually). Unraid still old cc7d420/f8dc6bf at first check; no manual pull. Public GET smoke /, /admin/login, /api/v1/catalog-summary, /api/v1/status 200; authenticated 6-route smoke not performed (login required). No code fixes, no locked major changes.
 
 - Post-push e27cdc1: Unraid auto-pull confirmed, revision 45da414 healthy; live RepoDigest sha256:0496a1f7de352d8d00668544fb3590e41fbae4f3771bf720642964bb8cc77d8e. Post-pull public GET smoke 4/4 HTTP200. Full authenticated admin smoke remains untested. Lockfile maintenance no PR after Renovate request.
+
+## 2026-11-08 MagguuUI release
+
+- MagguuUI addon live **v12.1.9** (tagged 2026-11-08): Retail and WoW Forever in one package with one shared changelog. CURRENT_ADDON_CHANGELOG is v12.1.9; v12.1.8 moved to PREVIOUS_ADDON_CHANGELOGS.

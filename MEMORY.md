@@ -570,10 +570,12 @@
 - 2026-11-04 hard-refactor (base dc12604): a5ffd05 audit diff -> auditLineDiff/AuditDiffLine, shadowed adminHelpers.formatBytes dropped (3 "Duplicated imports" warnings gone); 930af8d dead trendPercent + pendingCloudflarePurge (and the write-only `pending`) removed; d566cf7 unit guard tests/unit/autoImportCollisions.test.ts (utils+composables, server/utils). Baseline: gate 229/229, smoke 0, mutation 97/97. Inventory: ~/Projekte/.grok/reports/inventory-website-2026-11-04.md.
 
 ## Hard-refactor ROI backlog
-Base d566cf7, 2026-11-04.
-1. server/plugins/init.ts (972 lines): split into seed / migrations / content markers modules. ROI high (most edited boot file), risk medium-high: needs characterization of the boot side effects (admin seed, force reset, exact-text markers) first.
-2. pages/strings.vue (836): extract the class/spec picker and the string card into components. ROI medium, risk medium (e2e covers copy + edit flows).
-3. Exports used only inside their own file (~60): drop `export` only when the file is touched anyway. ROI low, risk nil.
+Base 4ff3a8b, 2026-11-09 (overnight perf wave 22ac182..4ff3a8b).
+1. server/plugins/init.ts (~977): split seed / migrations / content markers. ROI high, risk medium-high — needs boot characterization first (admin seed, force reset, exact-text markers). Auth-adjacent: do not mix with passkey/lockout.
+2. pages/strings.vue (~836): extract class/spec picker + string card. ROI medium, risk medium (e2e copy/edit).
+3. Drop file-local `export` only when touching the file. ROI low.
+
+Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533), configurator hydration shell (03a8eaa), LazyAdBanner (d0f0b1b), LazyCommunityPresets (4ff3a8b). Bundle client JS ~2478→2479 kB (+4 chunks from code-split); /addons icons now thumb webp.
 
 - 2026-11-04 23:5x Berlin: Polish pushed (4ba57e1..695e871): hero/download row/lightbox/nav segment/strings+community fixes/forever width. Gate green (PW 233, axe). CI cc7d420 all green, docker signed+verified, digest sha256:f8dc6bf05001daf5bb432ccd38b1fb01ce6b509a02663bb2c13aec1f7c88094e. Pull: Buddy.
 

@@ -555,3 +555,6 @@ Nuxt auto-imports every export of utils/ and composables/, Nitro every export of
 ## Renovate wave 2026-11-07
 - Dashboard #163 scheduled entries may be explicitly unscheduled on request. Only fully green PRs merge; red or unclear PRs remain untouched (report log cause, no fixes: Marco/Buddy 2026-11-07).
 - #171 Node digest, #172 docker/login-action, #173 npm non-major merged after every check passed; TS7, h3 2/Nitro3 and @types/node27 locks unchanged. Auto-pull owns deployment; no manual pull.
+
+## Hard-refactor (Website, 2026-11-09)
+- Perf wave `22ac182..4ff3a8b`: public addon thumbs, `/api/v1/configurator` swr 120, configurator hydration shell, LazyAdBanner, LazyCommunityPresets. Behavior-neutral. Next ROI: init.ts split (characterization first), strings.vue extract.

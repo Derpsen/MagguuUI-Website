@@ -41,7 +41,7 @@
 
 ## MagguuUI product facts (2026-09-07)
 
-- EllesmereUI TOC min **9.0.6+**; **live 9.2.9**; Magguu bake is **dump-based**; notes track **v12.1.9**.
+- EllesmereUI TOC min **9.0.6+**; **live / fixture 9.8.2**; Magguu bake is **dump-based**; notes track **v12.1.9**.
 - Four siblings: MagguuUI / MagguuUI_Data / MagguuUI_EUI / MagguuUI_Media.
 - Posted Magguu export = **full bake** (2026-09-11: Ellesmere type=full, BigWigs, NSRT, EXBoss, WIM, Waypoint UI, HandyNotes, TTT, GTFO, BugSack, PGF, Smart Reminders). Magguu Settings overlay still does not reimport the bake.
 - **Targeted Spell Bars** is a public feature name. Public pages do not tell players to turn EXBoss MythicCast off.
@@ -219,7 +219,7 @@
 
 ## 2026-10-12 Facts refresh
 
-- MagguuUI addon live **v12.1.8**.
+- MagguuUI addon live **v12.1.9** (was v12.1.8 until 2026-11-08).
 - Container runs as **uid 99** (Unraid `nobody`). Images are signed with **Cosign keyless** (GitHub OIDC).
 - Website defaults to **Dark** mode (`colorMode.preference: 'dark'`); light only when the visitor picks it.
 - **WIM is removed** everywhere. Whisper Messenger is the whisper chat. Player button: **Apply Magguu profiles** (4K only in descriptions).
@@ -234,7 +234,7 @@
 - Buddy makes small design/text changes directly; bigger work goes to "Website". Since 2026-10-12 helpers and Buddy push directly to `main` (no PRs, no pre-review); Buddy reviews commits afterwards; after a green Docker publish the no-AI Unraid pull/test script (`magguu-pull`, rollback on failure) pulls the new image.
 - (superseded, see 2026-10-15) Live 2026-10-14: `sha-d8e734a` (digest `sha256:516f6c21…`): admin restyle, admin save clears cache, `/admin/content` shows a page list. Before: `sha-1febf58` (#144, #146, #147). #148 is test-only (no pull). #149 two-tone wording merged to main and is waiting for the next pull. `useIsDark` stays dark until mount (light-mode hydration fix).
 - Legal notice: "free, non-commercial project operated from Switzerland" + `contact@magguu.xyz`; no name, no address. Plain structured text with small green mini-label headings; no cards, icon boxes or flashy buttons.
-- Addon live v12.1.8. "Split names" options are becoming "Two-tone unit-frame names" / "Two-tone party and raid names" (MagguuUI PR #30; `SPLIT_NAMES` keys unchanged): half the name in the default color, half in the class color.
+- Addon live **v12.1.9** (was v12.1.8). "Split names" options are becoming "Two-tone unit-frame names" / "Two-tone party and raid names" (MagguuUI PR #30; `SPLIT_NAMES` keys unchanged): half the name in the default color, half in the class color.
 - Unchanged: WIM is removed and Whisper Messenger is used; "Apply Magguu profiles"; Node 26 live since 2026-10-16; locked TS 7, h3 2, js-yaml 5, satori >=0.48; uid 99 + Cosign; `engines.node >=26.12.0`; no tags without Marco's yes; never remove third-party author names.
 
 ## 2026-10-14 Perf wave ("Website", direct to main)
@@ -584,3 +584,5 @@ Base d566cf7, 2026-11-04.
 ## 2026-11-08 MagguuUI release
 
 - MagguuUI addon live **v12.1.9** (tagged 2026-11-08): Retail and WoW Forever in one package with one shared changelog. CURRENT_ADDON_CHANGELOG is v12.1.9; v12.1.8 moved to PREVIOUS_ADDON_CHANGELOGS.
+- Website live after v12.1.9 notes wave: `sha-5c6faa4` (build 2026-11-08 ~20:02 Berlin; CURRENT_ADDON_CHANGELOG v12.1.9; /api/health ok). Forever public pages still Coming soon (code follow-up).
+- Forever one-package follow-up (Website /forever*): public Forever pages still say Coming soon / MagguuUI x Forever standalone and read WowUp from `Derpsen/MagguuUI-Forever`. Product truth since v12.1.9 is the MagguuUI one-package + Camelot WowUp packs above; needs Website code + App-Image (not this docs commit).

@@ -83,7 +83,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
   aligned with the current MagguuUI release. Tell players to download
   EllesmereUI and MagguuUI from CurseForge, Wago, or WoWInterface. Do not tell
   them to copy folders, and do not tell them to turn a feature off.
-  EllesmereUI TOC min **9.0.6+** (**live 9.2.9**).
+  EllesmereUI TOC min **9.0.6+** (**live / fixture 9.8.2**).
   **Targeted Spell Bars** stays a feature name without an off-switch lecture.
   MagguuUI_EUI keeps **Boiling Point** (no TopBar / Hearth-Picker / MagguuUI
   FPS-MS), AuraBuff count text **CENTER**, Magguu does not join/leave/hide Services, fresh
@@ -170,7 +170,7 @@ Merge reports to Buddy must say which path applies:
 For PRs / copy / pack deltas:
 
 - Four siblings: MagguuUI / MagguuUI_Data / MagguuUI_EUI / MagguuUI_Media
-- EllesmereUI TOC min **9.0.6+**; live **9.2.9**; Magguu bake is **dump-based**; notes track **v12.1.9**
+- EllesmereUI TOC min **9.0.6+**; live / fixture **9.8.2**; Magguu bake is **dump-based**; notes track **v12.1.9**
 - WowUp Starter: EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky, EXBoss, EXCore
 - Optional includes Whisper Messenger (WhisperMessenger), Auctionator, Smart Reminders, HandyNotes MapNotes; **no WIM / Ellesmere WIM Skin**; **no WindTools**; **no KeystoneLoot / MagguuKSL**
 - No EXBoss name-split
@@ -529,6 +529,7 @@ Deliberately supersedes the privacy-minimal stance for CONSENTED visitors only. 
 - Every third-party action is `uses: owner/repo@<40-char sha> # vX.Y.Z` on ONE line (Renovate `helpers:pinGitHubActionDigests` keeps this form). The version in the comment must be the tag that points at that sha (check with `gh api repos/<owner>/<repo>/git/matching-refs/tags/v`, dereference annotated tags); zizmor `ref-version-mismatch` flags a wrong one. Local `./` reusable workflows stay unpinned (exempt from `sha_pinning_required`).
 
 ## Two products: Retail and MagguuUI x Forever (2026-11-04)
+- **Superseded product shape (2026-11-08 / v12.1.9):** Forever is no longer a standalone MagguuUI x Forever zip. One MagguuUI package (Curse/Wago/WoWI) covers Retail + Forever via Camelot/`AllowLoadGameType`. Forever WowUp Starter (5): EllesmereUI, MagguuUI, BigWigs, LittleWigs, Northern Sky Raid Tools. Forever Optional (8): Auctionator, HandyNotes, Whisper Messenger, Waypoint UI, Talent Tree Tweaks, GTFO, BugSack, BugGrabber. Strings live in MagguuUI `Game/Camelot/Modules/Data/AddOns/WowUp.lua`. Public `/forever*` pages and `getForeverWowup()` still target the transitional `Derpsen/MagguuUI-Forever` repo and show Coming soon — Website code follow-up needed (no Unraid pull from this docs commit).
 - The site covers MagguuUI (Retail, every existing route, unchanged) and the standalone addon **MagguuUI x Forever** for World of Warcraft: Forever (live 2026-11-05 00:00 CET, Blizzard news 24315820), built on EllesmereUI, repo `Derpsen/MagguuUI-Forever`.
 - `utils/productNav.ts` is the one source: `productForPath` (`/forever` and `/forever/**` = Forever), `RETAIL_NAV` / `FOREVER_NAV`, `primaryActionFor` (Retail Setup -> /guide; Forever none, Download is already in its nav), `isNavActive` (section roots match only themselves). The header shows a plain "Retail | Forever" switch (green mono mini label on the active product; desktop next to the logo, mobile at the top of the menu).
 - Pages `pages/forever/{index,guide,download,strings}.vue`. Facts only from real sources: name, "built on EllesmereUI" (brief), launch date (Blizzard). No README/TOC/release exists yet (repo private and empty on 2026-11-04), so Guide/Strings/Download show `ForeverComingSoon` ("Download available once the first release is published."). Do not add features, interface numbers or download links without a source.

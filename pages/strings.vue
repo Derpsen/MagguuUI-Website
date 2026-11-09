@@ -325,7 +325,7 @@
       </div>
     </div>
 
-    <CommunityPresets />
+    <LazyCommunityPresets />
 
     <!-- ═══ Inline Edit Modal ═══ -->
     <UModal v-model:open="editModal" :ui="{ content: 'max-w-2xl' }" :title="'Edit'" aria-labelledby="edit-modal-title">

@@ -5,6 +5,9 @@
     <p class="mt-4 max-w-2xl text-base leading-relaxed" :class="muted">
       Forever is included in the MagguuUI package as the Camelot flavor. One download covers Retail and Forever; Forever keeps its own profiles and SavedVariables. Built on EllesmereUI.
     </p>
+    <p class="mt-3 max-w-2xl text-sm leading-relaxed" :class="muted" data-testid="forever-feature-line">
+      Magguu Settings on Forever includes Smart Tab, class-colored keybinds, Boost, BigWigs bar styles, and HandyNotes MapNotes (with HandyNotes).
+    </p>
 
     <div class="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-14 items-start">
     <dl class="divide-y text-sm" :class="divider">

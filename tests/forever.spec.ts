@@ -54,9 +54,13 @@ test('download and guide describe the one-package Camelot flavor', async ({ page
   await expect(page.getByTestId('forever-coming-soon')).toHaveCount(0)
   await page.goto('/forever/guide')
   await expect(page.getByRole('heading', { name: '2. Open Setup' })).toBeVisible()
+  await expect(page.getByTestId('forever-guide-qol')).toContainText('Smart Tab')
+  await expect(page.getByTestId('forever-guide-qol')).toContainText('Boost')
+  await expect(page.getByTestId('forever-guide-qol')).not.toContainText(/Zygor|RXP/)
   await expect(page.getByTestId('forever-coming-soon')).toHaveCount(0)
   await page.goto('/forever')
   await expect(page.getByTestId('forever-release-state')).toContainText('v12.1.9')
+  await expect(page.getByTestId('forever-feature-line')).toContainText('Smart Tab')
   await expect(page.locator('h1')).toHaveText('MagguuUI on Forever')
 })
 

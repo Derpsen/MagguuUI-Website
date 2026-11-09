@@ -584,7 +584,7 @@ Base d566cf7, 2026-11-04.
 ## 2026-11-08 MagguuUI release
 
 - MagguuUI addon live **v12.1.9** (tagged 2026-11-08): Retail and WoW Forever in one package with one shared changelog. CURRENT_ADDON_CHANGELOG is v12.1.9; v12.1.8 moved to PREVIOUS_ADDON_CHANGELOGS.
-- Website live after v12.1.9 notes wave: `sha-5c6faa4` (build 2026-11-08 ~20:02 Berlin; CURRENT_ADDON_CHANGELOG v12.1.9; /api/health ok). Forever public pages still Coming soon (code follow-up).
-- Forever one-package follow-up (Website /forever*): public Forever pages still say Coming soon / MagguuUI x Forever standalone and read WowUp from `Derpsen/MagguuUI-Forever`. Product truth since v12.1.9 is the MagguuUI one-package + Camelot WowUp packs above; needs Website code + App-Image (not this docs commit).
+- Website after v12.1.9 notes wave was `sha-5c6faa4` (2026-11-08). Forever pages updated in `c6320e1` (one-package + Camelot WowUp); docker publish for that SHA failed (incomplete e2e matrix, no digest) — live still `sha-5c6faa4` until a green image.
+- Forever product truth: MagguuUI one-package + Camelot WowUp (5+8). Website `c6320e1` reads Camelot WowUp.lua from MagguuUI. Forever Magguu Settings (Smart Tab, keybinds, Boost, BigWigsStyle, MapNotes) documented 2026-11-09 from MagguuUI main portable EUI; Zygor/RXP internal only.
 
-- 2026-11-09 Berlin: A) Dependabot #14 minimatch: override 11.0.1 breaks eslint-plugin-import-x (no makeRe); left osv ignore GHSA-g3hv-75wg-m249, no parent major. B) Forever one-package pages + Camelot WowUp (5+8). Gate 0, mutation 50/50+47/47 killed. Push/CI pending.
+- 2026-11-09 Berlin: A) Dependabot #14 minimatch: override 11.0.1 breaks eslint-plugin-import-x (no makeRe); left osv ignore GHSA-g3hv-75wg-m249, no parent major. B) `c6320e1` Forever one-package + Camelot WowUp (5+8); Gate 0, mutation 97 killed. CI: Build/CodeQL/Quality green; docker #42672840649 FAIL (only verify+e2e 2/2, no build-and-push/digest — left alone). Docs-drift FAIL unclear. Live still 5c6faa4 / digest 2ab45ef… Forever QoL public copy (Smart Tab, keybinds, Boost, BigWigs styles, MapNotes) + AGENTS/MEMORY + product-facts skill; Zygor/RXP public-tree free; forever.spec 9/9.

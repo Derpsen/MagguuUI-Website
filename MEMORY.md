@@ -584,7 +584,7 @@ Base d566cf7, 2026-11-04.
 ## 2026-11-08 MagguuUI release
 
 - MagguuUI addon live **v12.1.9** (tagged 2026-11-08): Retail and WoW Forever in one package with one shared changelog. CURRENT_ADDON_CHANGELOG is v12.1.9; v12.1.8 moved to PREVIOUS_ADDON_CHANGELOGS.
-- Website after v12.1.9 notes wave was `sha-5c6faa4` (2026-11-08). Forever pages updated in `c6320e1` (one-package + Camelot WowUp); docker publish for that SHA failed (incomplete e2e matrix, no digest) — live still `sha-5c6faa4` until a green image.
+- Website live 2026-11-09 Berlin: `sha-917b07b` (Forever one-package `c6320e1` + QoL docs). Digest live `sha256:49572a16…` (matches `:latest` / `:sha-917b07b`). Prior `c6320e1` docker failed (incomplete e2e); `917b07b` docker green + auto-pull. Public /forever* shows Smart Tab QoL, no Coming soon, no Zygor/RXP.
 - Forever product truth: MagguuUI one-package + Camelot WowUp (5+8). Website `c6320e1` reads Camelot WowUp.lua from MagguuUI. Forever Magguu Settings (Smart Tab, keybinds, Boost, BigWigsStyle, MapNotes) documented 2026-11-09 from MagguuUI main portable EUI; Zygor/RXP internal only.
 
 - 2026-11-09 Berlin: A) Dependabot #14 minimatch: override 11.0.1 breaks eslint-plugin-import-x (no makeRe); left osv ignore GHSA-g3hv-75wg-m249, no parent major. B) `c6320e1` Forever one-package + Camelot WowUp (5+8); Gate 0, mutation 97 killed. CI: Build/CodeQL/Quality green; docker #42672840649 FAIL (only verify+e2e 2/2, no build-and-push/digest — left alone). Docs-drift FAIL unclear. Live still 5c6faa4 / digest 2ab45ef… Forever QoL public copy (Smart Tab, keybinds, Boost, BigWigs styles, MapNotes) + AGENTS/MEMORY + product-facts skill; Zygor/RXP public-tree free; forever.spec 9/9.

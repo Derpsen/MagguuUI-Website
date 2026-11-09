@@ -2,11 +2,12 @@ import { expect, test } from '@playwright/test'
 import { hydrated } from './support/hydrated'
 
 /**
- * MagguuUI x Forever area. The E2E server runs with NUXT_FOREVER_REPO=off, so no
- * release exists and every page must show its Coming-soon state without errors.
+ * MagguuUI Forever area (Camelot flavor in the MagguuUI package).
+ * E2E sets NUXT_FOREVER_REPO=off, so GitHub WowUp reads stay null; pages still
+ * render the verified pack lists and download/guide copy without errors.
  */
 const PAGES = [
-  { path: '/forever', h1: 'MagguuUI x Forever' },
+  { path: '/forever', h1: 'MagguuUI on Forever' },
   { path: '/forever/guide', h1: 'Guide' },
   { path: '/forever/download', h1: 'Download' },
   { path: '/forever/strings', h1: 'Strings' },
@@ -24,34 +25,39 @@ for (const { path, h1 } of PAGES) {
   })
 }
 
-test('release API answers null while no release exists', async ({ request }) => {
+test('release API answers null while the Forever repo lookup is off', async ({ request }) => {
   const res = await request.get('/api/v1/forever/release')
   expect(res.status()).toBe(200)
   expect((await res.json()).data).toBeNull()
 })
 
-test('wowup endpoint is null and the strings page shows the addon list, hint and Coming soon', async ({ page, request }) => {
+test('wowup endpoint is null offline; strings page lists 13 addons and the WowUp hint', async ({ page, request }) => {
   const res = await request.get('/api/v1/forever/wowup')
   expect(res.status()).toBe(200)
   expect((await res.json()).data).toBeNull()
   await page.goto('/forever/strings')
-  await expect(page.getByTestId('forever-addons').locator('li')).toHaveCount(11)
+  await expect(page.getByTestId('forever-addons').locator('li')).toHaveCount(13)
+  await expect(page.getByTestId('forever-addons')).toContainText('MagguuUI')
+  await expect(page.getByTestId('forever-addons')).toContainText('LittleWigs')
   await expect(page.getByTestId('forever-addons')).toContainText('Northern Sky Raid Tools')
+  await expect(page.getByTestId('forever-addons')).not.toContainText(/\bWIM\b/)
   await expect(page.getByTestId('forever-wowup-hint')).toContainText('WowUp 2.24.1')
-  await expect(page.getByTestId('forever-coming-soon')).toContainText('WowUp string')
+  await expect(page.getByTestId('forever-addons-starter').locator('li')).toHaveCount(5)
+  await expect(page.getByTestId('forever-addons-optional').locator('li')).toHaveCount(8)
   await expect(page.getByTestId('forever-wowup-string')).toHaveCount(0)
 })
 
-test('download, guide and strings show Coming soon without a release', async ({ page }) => {
+test('download and guide describe the one-package Camelot flavor', async ({ page }) => {
   await page.goto('/forever/download')
-  await expect(page.getByTestId('forever-coming-soon')).toContainText('Download available once the first release is published.')
-  await expect(page.getByTestId('forever-release')).toHaveCount(0)
-  for (const path of ['/forever/guide', '/forever/strings']) {
-    await page.goto(path)
-    await expect(page.getByTestId('forever-coming-soon')).toBeVisible()
-  }
+  await expect(page.getByTestId('forever-download-copy')).toContainText('MagguuUI package')
+  await expect(page.getByTestId('download-buttons').locator('a')).toHaveCount(3)
+  await expect(page.getByTestId('forever-coming-soon')).toHaveCount(0)
+  await page.goto('/forever/guide')
+  await expect(page.getByRole('heading', { name: '2. Open Setup' })).toBeVisible()
+  await expect(page.getByTestId('forever-coming-soon')).toHaveCount(0)
   await page.goto('/forever')
-  await expect(page.getByTestId('forever-release-state')).toContainText('Not published yet')
+  await expect(page.getByTestId('forever-release-state')).toContainText('v12.1.9')
+  await expect(page.locator('h1')).toHaveText('MagguuUI on Forever')
 })
 
 test.describe('desktop product switch', () => {

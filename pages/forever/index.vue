@@ -1,10 +1,9 @@
 <template>
   <article class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-20" data-testid="forever-page">
     <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="label">WoW Forever</p>
-    <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight" :class="strong">MagguuUI x Forever</h1>
+    <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight" :class="strong">MagguuUI on Forever</h1>
     <p class="mt-4 max-w-2xl text-base leading-relaxed" :class="muted">
-      A standalone addon for World of Warcraft: Forever, built on EllesmereUI. It is a separate product from MagguuUI for Retail
-      and is in development.
+      Forever is included in the MagguuUI package as the Camelot flavor. One download covers Retail and Forever; Forever keeps its own profiles and SavedVariables. Built on EllesmereUI.
     </p>
 
     <div class="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-14 items-start">
@@ -17,6 +16,10 @@
         </dd>
       </div>
       <div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-3">
+        <dt :class="faint">Package</dt>
+        <dd class="text-right" :class="strong">Same MagguuUI zip as Retail (Camelot flavor)</dd>
+      </div>
+      <div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-3">
         <dt :class="faint">Based on</dt>
         <dd :class="strong">EllesmereUI</dd>
       </div>
@@ -26,16 +29,15 @@
       </div>
       <div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-3">
         <dt :class="faint">In game</dt>
-        <dd :class="strong"><code>/muif</code></dd>
+        <dd :class="strong"><code>/mui</code> or <code>/muif</code></dd>
       </div>
       <div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-3">
         <dt :class="faint">Distribution</dt>
-        <dd :class="strong">Not on CurseForge</dd>
+        <dd class="text-right" :class="strong">CurseForge, Wago, WoWInterface</dd>
       </div>
       <div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-3" data-testid="forever-release-state">
         <dt :class="faint">Release</dt>
-        <dd v-if="release" :class="strong">{{ release.version }}<template v-if="release.publishedAt">, {{ formatForeverDate(release.publishedAt) }}</template></dd>
-        <dd v-else :class="strong">Not published yet</dd>
+        <dd :class="strong">Ships with MagguuUI v12.1.9</dd>
       </div>
     </dl>
 
@@ -53,10 +55,10 @@
     <section class="mt-14 pt-10 border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'" aria-labelledby="forever-next" data-testid="forever-next-step">
       <h2 id="forever-next" class="home-h2" :class="strong">Playing Retail today?</h2>
       <p class="mt-2 text-sm max-w-xl leading-relaxed" :class="muted">
-        MagguuUI for Retail is released and unchanged. Get it now, or read what changed in the latest version.
+        MagguuUI for Retail uses the same package. Get it now, or read what changed in the latest version.
       </p>
       <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
-        <DownloadButtons primary label="Download MagguuUI for Retail" />
+        <DownloadButtons primary label="Download MagguuUI" />
         <NuxtLink to="/changelog" class="text-sm font-medium underline underline-offset-4" :class="link">Retail changelog</NuxtLink>
       </div>
     </section>
@@ -64,23 +66,21 @@
 </template>
 
 <script setup lang="ts">
+import { FOREVER_PACK_ADDONS } from '~/utils/foreverWowup'
+
 const isDark = useIsDark()
 
 usePublicPageSeo({
-  title: 'MagguuUI x Forever',
-  description: 'MagguuUI x Forever is a standalone addon for World of Warcraft: Forever, built on EllesmereUI. In development.',
+  title: 'MagguuUI on Forever',
+  description: 'MagguuUI includes WoW Forever as the Camelot flavor in one package with Retail. Built on EllesmereUI.',
   path: '/forever',
 })
 
-const release = await useForeverRelease()
-const { data: wowupData } = await useFetch<{ data: { string: string } | null }>('/api/v1/forever/wowup', { key: 'forever-wowup' })
-const wowup = computed(() => wowupData.value?.data ?? null)
-
-const sections = computed(() => [
-  { to: '/forever/guide', label: 'Guide', state: 'Coming soon' },
-  { to: '/forever/download', label: 'Download', state: release.value ? release.value.version : 'Coming soon' },
-  { to: '/forever/strings', label: 'Strings', state: wowup.value ? 'WowUp collection, 11 addons' : 'Addon list, string coming soon' },
-])
+const sections = [
+  { to: '/forever/guide', label: 'Guide', state: 'Install into Forever' },
+  { to: '/forever/download', label: 'Download', state: 'Same MagguuUI package' },
+  { to: '/forever/strings', label: 'Strings', state: `WowUp packs, ${FOREVER_PACK_ADDONS.length} addons` },
+]
 
 const label = computed(() => isDark.value ? 'text-brand-300' : 'text-brand-700')
 const link = computed(() => isDark.value ? 'text-brand-300 hover:text-white' : 'text-brand-700 hover:text-brand-900')

@@ -1,26 +1,57 @@
 /**
- * MagguuUI x Forever WowUp collection. The string itself lives only in the Forever repo
- * (MagguuUI_Forever/Data/WowUp.lua, `D.WowUpForever = "..."`); the server reads it at
- * runtime. Pure and strict: anything that is not a base64 WowUp collection with
- * client_type "Forever" is null, which the Strings page shows as "Coming soon".
+ * Forever WowUp collections live in MagguuUI Camelot
+ * (`Game/Camelot/Modules/Data/AddOns/WowUp.lua`: `D.WowUpForever` + `D.WowUpForeverOptional`).
+ * The server reads that file at runtime. Anything that is not a base64 WowUp
+ * collection with client_type "Forever" is null.
  */
 
-export const FOREVER_WOWUP_PATH = 'MagguuUI_Forever/Data/WowUp.lua'
+/** Canonical MagguuUI path (v12.1.9 one-package Camelot). */
+export const FOREVER_WOWUP_PATH = 'Game/Camelot/Modules/Data/AddOns/WowUp.lua'
 
-/** The 11 addons of the verified collection (2026-11-04), shown even while the string is not available. */
-export const FOREVER_PACK_ADDONS = [
-  'EllesmereUI', 'BigWigs', 'Northern Sky Raid Tools', 'BugGrabber', 'BugSack', 'GTFO',
-  'Talent Tree Tweaks', 'Waypoint UI', 'Whisper Messenger', 'HandyNotes', 'Auctionator',
+/** Transitional MagguuUI-Forever path kept as a read fallback. */
+export const FOREVER_WOWUP_PATH_LEGACY = 'MagguuUI_Forever/Data/WowUp.lua'
+
+/** Forever Starter pack (5), verified against MagguuUI Camelot WowUp.lua at v12.1.9. */
+export const FOREVER_STARTER_ADDONS = [
+  'EllesmereUI',
+  'MagguuUI',
+  'BigWigs',
+  'LittleWigs',
+  'Northern Sky Raid Tools',
 ] as const
 
-export interface ForeverWowup { string: string, collectionName: string, addons: string[] }
+/** Forever Optional pack (8), same source. */
+export const FOREVER_OPTIONAL_ADDONS = [
+  'Auctionator',
+  'HandyNotes',
+  'Whisper Messenger',
+  'Waypoint UI',
+  'Talent Tree Tweaks',
+  'GTFO',
+  'BugSack',
+  'BugGrabber',
+] as const
+
+/** Starter then Optional (13). Shown even while a live string cannot be read. */
+export const FOREVER_PACK_ADDONS = [
+  ...FOREVER_STARTER_ADDONS,
+  ...FOREVER_OPTIONAL_ADDONS,
+] as const
+
+export interface ForeverWowup {
+  string: string
+  collectionName: string
+  addons: string[]
+}
+
+export interface ForeverWowupPacks {
+  starter: ForeverWowup
+  optional: ForeverWowup | null
+}
 
 const MAX_STRING = 20_000
 
-export function parseForeverWowupLua(source: unknown): ForeverWowup | null {
-  if (typeof source !== 'string') return null
-  const m = /\bD\.WowUpForever\s*=\s*"([A-Za-z0-9+/=]+)"/.exec(source)
-  const value = m?.[1]
+function decodeCollection(value: string): ForeverWowup | null {
   if (!value || value.length > MAX_STRING) return null
   let data: unknown
   try {
@@ -36,4 +67,21 @@ export function parseForeverWowupLua(source: unknown): ForeverWowup | null {
     : [])
   if (addons.length !== d.addons.length) return null
   return { string: value, collectionName: typeof d.collection_name === 'string' ? d.collection_name : '', addons }
+}
+
+function extractAssignment(source: string, key: 'WowUpForever' | 'WowUpForeverOptional'): string | null {
+  const m = new RegExp(String.raw`\bD\.${key}\s*=\s*"([A-Za-z0-9+/=]+)"`).exec(source)
+  return m?.[1] ?? null
+}
+
+/** Parse starter (required) and optional (when present) Forever collections from Camelot WowUp.lua. */
+export function parseForeverWowupLua(source: unknown): ForeverWowupPacks | null {
+  if (typeof source !== 'string') return null
+  const starterRaw = extractAssignment(source, 'WowUpForever')
+  if (!starterRaw) return null
+  const starter = decodeCollection(starterRaw)
+  if (!starter) return null
+  const optionalRaw = extractAssignment(source, 'WowUpForeverOptional')
+  const optional = optionalRaw ? decodeCollection(optionalRaw) : null
+  return { starter, optional }
 }

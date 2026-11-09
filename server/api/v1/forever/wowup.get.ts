@@ -1,7 +1,7 @@
 /**
  * GET /api/v1/forever/wowup
- * The MagguuUI x Forever WowUp collection string from the Forever repo, or null while it
- * is not readable. Public and read-only; see server/utils/foreverReleaseSource.ts.
+ * Forever WowUp starter + optional packs from MagguuUI Camelot (or null while unread).
+ * Public and read-only; see server/utils/foreverReleaseSource.ts.
  */
 import { getForeverWowup } from '~/server/utils/foreverReleaseSource'
 

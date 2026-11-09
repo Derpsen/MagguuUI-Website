@@ -1,8 +1,7 @@
 /**
- * The site covers two separate products: MagguuUI for Retail WoW and the
- * standalone addon "MagguuUI x Forever" for World of Warcraft: Forever.
- * The header shows the nav of the product the current page belongs to.
- * Pure, so the layout and the unit tests share one source.
+ * The site covers MagguuUI for Retail and MagguuUI on Forever (Camelot flavor
+ * in the same package since v12.1.9). The header shows the nav of the product
+ * the current page belongs to. Pure, so the layout and the unit tests share one source.
  */
 
 export type Product = 'retail' | 'forever'

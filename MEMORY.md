@@ -586,3 +586,5 @@ Base d566cf7, 2026-11-04.
 - MagguuUI addon live **v12.1.9** (tagged 2026-11-08): Retail and WoW Forever in one package with one shared changelog. CURRENT_ADDON_CHANGELOG is v12.1.9; v12.1.8 moved to PREVIOUS_ADDON_CHANGELOGS.
 - Website live after v12.1.9 notes wave: `sha-5c6faa4` (build 2026-11-08 ~20:02 Berlin; CURRENT_ADDON_CHANGELOG v12.1.9; /api/health ok). Forever public pages still Coming soon (code follow-up).
 - Forever one-package follow-up (Website /forever*): public Forever pages still say Coming soon / MagguuUI x Forever standalone and read WowUp from `Derpsen/MagguuUI-Forever`. Product truth since v12.1.9 is the MagguuUI one-package + Camelot WowUp packs above; needs Website code + App-Image (not this docs commit).
+
+- 2026-11-09 Berlin: A) Dependabot #14 minimatch: override 11.0.1 breaks eslint-plugin-import-x (no makeRe); left osv ignore GHSA-g3hv-75wg-m249, no parent major. B) Forever one-package pages + Camelot WowUp (5+8). Gate 0, mutation 50/50+47/47 killed. Push/CI pending.

@@ -22,9 +22,7 @@
       </ul>
     </section>
 
-    <div v-if="!data" class="text-sm" :class="muted" role="status">Loading the addon list…</div>
-
-    <div v-else class="grid gap-12 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
       <!-- ═══ 1 · Choose ═══ -->
       <form class="space-y-6" aria-label="Choose addons" @submit.prevent>
         <fieldset class="m-0 min-w-0 border-0 p-0">
@@ -206,19 +204,19 @@ const strong = computed(() => isDark.value ? 'text-white' : 'text-gray-950')
 const linkClass = computed(() => isDark.value ? 'text-white' : 'text-gray-950')
 
 const { data: raw } = await useFetch<{ data: ConfiguratorData }>('/api/v1/configurator')
-const data = computed(() => raw.value?.data ?? null)
-
 const EMPTY: ConfiguratorData = { addons: [], packs: [] }
+// Always the same tree on SSR and client (no Loading/grid v-if swap). Empty catalogue until payload arrives.
+const data = computed(() => raw.value?.data ?? EMPTY)
 // The address is the single source of truth: SSR, reload and shared links render the same state.
-const selection = computed<Selection>(() => parseSelection(route.query, data.value ?? EMPTY))
-const output = computed(() => buildOutput(data.value ?? EMPTY, selection.value))
+const selection = computed<Selection>(() => parseSelection(route.query, data.value))
+const output = computed(() => buildOutput(data.value, selection.value))
 
 function update(next: Selection) {
-  void router.replace({ query: selectionToQuery(next, data.value ?? EMPTY) })
+  void router.replace({ query: selectionToQuery(next, data.value) })
 }
 const onAddon = (slug: string, on: boolean) => update(toggleAddon(selection.value, slug, on))
 const onProfile = (slug: string, name: string, on: boolean) => update(toggleProfile(selection.value, slug, name, on))
-const applyPreset = (preset: 'starter' | 'all' | 'required') => update(presetSelection(data.value ?? EMPTY, preset))
+const applyPreset = (preset: 'starter' | 'all' | 'required') => update(presetSelection(data.value, preset))
 
 function addonHint(addon: ConfiguratorAddon): string {
   const parts: string[] = []

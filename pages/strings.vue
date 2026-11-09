@@ -263,7 +263,7 @@
                 :class="selectedWowupName === pack.name ? 'is-active' : ''"
                 @click="pick(() => selectedWowupName = pack.name)"
               >
-                <img src="/addon-icons/magguuui.png" alt="" class="wow-class-chip__icon" width="24" height="24" />
+                <img src="/addon-icons/thumb/magguuui.webp" alt="" class="wow-class-chip__icon" width="24" height="24" loading="lazy" decoding="async" />
                 <span>{{ wowupLabel(pack.name) }}</span>
               </button>
             </div>

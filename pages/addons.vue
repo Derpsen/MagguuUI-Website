@@ -31,6 +31,8 @@
               width="48"
               height="48"
               class="h-12 w-12 shrink-0 object-contain"
+              loading="lazy"
+              decoding="async"
             />
             <span v-else class="flex h-12 w-12 shrink-0 items-center justify-center text-2xl" aria-hidden="true">{{ addon.emoji }}</span>
             <span class="min-w-0">
@@ -46,6 +48,7 @@
 
 <script setup lang="ts">
 import { ADDON_ICONS } from '~/utils/addonIcons'
+import { addonThumbPath } from '~/utils/featureCardMeta'
 import { addonGroupForSlug, addonGroupSubtitle } from '~/utils/addonChipMeta'
 import type { AddonGroupKey } from '~/utils/addonChipMeta'
 
@@ -76,7 +79,7 @@ interface AddonsResponse {
 const { data } = useFetch<{ data: AddonsResponse }>('/api/v1/addons')
 
 function iconFor(slug: string): string | undefined {
-  return ADDON_ICONS[slug]
+  return addonThumbPath(ADDON_ICONS[slug])
 }
 
 // Same grouping as the home page (utils/addonChipMeta.ts): Required, Starter pack, Optional.

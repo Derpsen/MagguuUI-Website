@@ -681,8 +681,13 @@ test.describe('anonymous counting (/privacy, admin Routes view)', () => {
     referrers: Array<{ name: string, views: number }>
     copied: Array<{ type: string, id: number, copies: number }>
   }
-  const traffic = async () => json<Traffic>(await api.get('/api/v1/admin/stats/traffic?days=7'))
-  const viaHost = async (n: string) => (await traffic()).referrers.find(r => r.name === host(n))?.views ?? 0
+  const traffic = async (referrer?: string) => {
+    const q = referrer ? `&referrer=${encodeURIComponent(referrer)}` : ''
+    return json<Traffic & { referrerMatch?: { name: string, views: number } }>(await api.get(`/api/v1/admin/stats/traffic?days=7${q}`))
+  }
+  // Exact-host lookup: the admin list is only the top 10 referrers, so a 1-view
+  // host from this test can disappear under CI load even after a successful 204.
+  const viaHost = async (n: string) => (await traffic(host(n))).referrerMatch?.views ?? 0
   const copies = async () => (await traffic()).copied.find(c => c.type === 'profile' && c.id === profileId)?.copies ?? 0
   const beaconSeen = (p: Page) => p.waitForResponse(r => r.url().includes('/api/v1/page-view'))
   const settle = (p: Page) => p.waitForTimeout(400)
@@ -753,8 +758,16 @@ test.describe('anonymous counting (/privacy, admin Routes view)', () => {
     expect(sent).toBe(0)
     await Promise.all([withDnt.close(), withGpc.close(), signal.close()])
     // Control: the same request without the signal is counted.
-    expect((await post(anon, '/guide', 'dnt')).status()).toBe(204)
-    await expect.poll(() => viaHost('dnt')).toBe(1)
+    // 204 is also returned when the view is skipped (DNT) or swallowed by the
+    // 5s visitor+path dedup, so wait on the exact-host API count and re-POST
+    // only while it is still 0.
+    const before = await viaHost('dnt')
+    await expect.poll(async () => {
+      const seen = await viaHost('dnt')
+      if (seen > before) return seen
+      expect((await post(anon, '/guide', 'dnt')).status()).toBe(204)
+      return viaHost('dnt')
+    }, { timeout: 15_000 }).toBe(before + 1)
   })
 
   test('bots, admin sessions and unknown paths are not counted', async ({ browser }) => {

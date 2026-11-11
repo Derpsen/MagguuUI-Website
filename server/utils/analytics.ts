@@ -305,6 +305,8 @@ export interface TrafficReport {
   devices: Array<{ name: string, views: number }>
   browsers: Array<{ name: string, views: number }>
   os: Array<{ name: string, views: number }>
+  /** Exact-host lookup from the full map, not the top-10 `referrers` list. */
+  referrerMatch?: { name: string, views: number }
 }
 
 function copyName(sqlite: Sqlite, type: string, id: number): string {
@@ -344,7 +346,7 @@ const topCopied = (m: Map<string, number>, limit: number) => [...m].sort((a, b) 
  * (today) are aggregated live from the detail rows. Visitors are the SUM of daily
  * uniques: hashes rotate daily, so people cannot be linked across days.
  */
-export function trafficReport(sqlite: Sqlite, days: number, now = Math.floor(Date.now() / 1000)): TrafficReport {
+export function trafficReport(sqlite: Sqlite, days: number, now = Math.floor(Date.now() / 1000), options?: { referrer?: string }): TrafficReport {
   const span = Math.min(Math.max(1, Math.floor(days)), AGGREGATE_DAYS)
   rollupCompletedDays(sqlite, now)
   const toDay = isoDay(now)
@@ -378,6 +380,7 @@ export function trafficReport(sqlite: Sqlite, days: number, now = Math.floor(Dat
     else if (r.kind === 'os') bump(oses, r.key, r.views)
   }
   const named = (m: Map<string, number>) => top(m, 10).map(([name, views]) => ({ name, views }))
+  const wanted = options?.referrer?.trim()
   return {
     days: span,
     from: fromDay,
@@ -394,5 +397,6 @@ export function trafficReport(sqlite: Sqlite, days: number, now = Math.floor(Dat
     devices: named(devices),
     browsers: named(browsers),
     os: named(oses),
+    ...(wanted ? { referrerMatch: { name: wanted, views: referrers.get(wanted) ?? 0 } } : {}),
   }
 }

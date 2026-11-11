@@ -11,7 +11,7 @@ import { checkLatestRelease, githubRepoCredentials, githubSyncFailureHint, resyn
 import { githubRateLimitSkipReason, shouldSkipGithubCall } from '~/server/utils/githubRateLimit'
 import { withGithubSyncLock } from '~/server/utils/githubSyncLock'
 import { upsertSetting } from '~/server/utils/settings'
-import { isGithubNightlyEnabled } from '~/utils/githubSchedule'
+import { githubNightlyFromRuntimeConfig, isGithubNightlyEnabled } from '~/utils/githubSchedule'
 
 export const GITHUB_SCHEDULED_AT_KEY = 'github_scheduled_last_at'
 export const GITHUB_SCHEDULED_STATUS_KEY = 'github_scheduled_last_status'
@@ -101,7 +101,14 @@ async function settleScheduledStep<T>(fn: () => Promise<T>): Promise<{ ok: true,
 }
 
 export async function runScheduledGithubSync(): Promise<ScheduledGithubRun> {
-  if (!isGithubNightlyEnabled()) {
+  let nightlyOn = isGithubNightlyEnabled()
+  try {
+    nightlyOn = githubNightlyFromRuntimeConfig(useRuntimeConfig())
+  }
+  catch {
+    // Unit tests and other non-Nitro callers have no runtimeConfig; fall back to the env parse.
+  }
+  if (!nightlyOn) {
     return recordScheduledGithubRun('skipped', 'Disabled (NUXT_GITHUB_NIGHTLY is off)')
   }
   const creds = githubRepoCredentials()

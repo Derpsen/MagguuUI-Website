@@ -9,7 +9,7 @@ import { db } from '~/server/database'
 import { syncHistory, settings } from '~/server/database/schema'
 import { resolveLocalAddonVersion } from '~/server/utils/addonVersion'
 import { readScheduledGithubRun } from '~/server/utils/githubScheduledSync'
-import { nextGithubNightlyRun } from '~/utils/githubSchedule'
+import { githubNightlyFromRuntimeConfig, nextGithubNightlyRun } from '~/utils/githubSchedule'
 
 export default defineEventHandler(async (event) => {
   requireAdminAccess(event)
@@ -49,6 +49,7 @@ export default defineEventHandler(async (event) => {
     lastCheck,
     scheduledRun: readScheduledGithubRun(),
     nextRunAt: nextGithubNightlyRun().toISOString(),
+    nightlyEnabled: githubNightlyFromRuntimeConfig(config),
     syncPage,
     syncLimit,
     syncTotalPages: Math.max(1, Math.ceil(total / syncLimit)),

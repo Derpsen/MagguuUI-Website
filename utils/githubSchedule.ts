@@ -41,15 +41,40 @@ export function formatBerlinTime(value: string | number | Date | null | undefine
 }
 
 /**
- * Nightly job kill switch (NUXT_GITHUB_NIGHTLY).
- * Default: on in production, off in development. Explicit true/false wins.
- * The string "false" must not be treated as on (Nuxt would otherwise leave it truthy).
+ * Nightly job kill switch (NUXT_GITHUB_NIGHTLY / runtimeConfig.githubNightly).
+ * Default: on in production, off in development.
+ * Recognised values (case-insensitive): true/1 = on, false/0/no = off.
+ * Anything else logs a warning and uses the default. The string "false" must
+ * not be treated as on (Nuxt would otherwise leave a runtimeConfig string truthy).
  */
+export function parseGithubNightlyFlag(
+  value: unknown,
+  nodeEnv = process.env.NODE_ENV,
+  warn: (message: string) => void = console.warn,
+): boolean {
+  const defaultOn = nodeEnv === 'production'
+  if (value == null || value === '') return defaultOn
+  if (typeof value === 'boolean') return value
+  const raw = String(value).trim().toLowerCase()
+  if (raw === 'true' || raw === '1') return true
+  if (raw === 'false' || raw === '0' || raw === 'no') return false
+  warn(`[github:nightly] NUXT_GITHUB_NIGHTLY=${JSON.stringify(String(value))} is not recognised; using default (${defaultOn ? 'on' : 'off'})`)
+  return defaultOn
+}
+
 export function isGithubNightlyEnabled(
   env: NodeJS.ProcessEnv = process.env,
   nodeEnv = env.NODE_ENV ?? process.env.NODE_ENV,
+  warn: (message: string) => void = console.warn,
 ): boolean {
-  const raw = env.NUXT_GITHUB_NIGHTLY
-  if (raw == null || raw.trim() === '') return nodeEnv === 'production'
-  return ['1', 'true', 'yes', 'on'].includes(raw.trim().toLowerCase())
+  return parseGithubNightlyFlag(env.NUXT_GITHUB_NIGHTLY, nodeEnv, warn)
+}
+
+/** Read the flag from Nitro runtimeConfig (the value Nuxt may override with a string). */
+export function githubNightlyFromRuntimeConfig(
+  config: { githubNightly?: unknown },
+  nodeEnv = process.env.NODE_ENV,
+  warn: (message: string) => void = console.warn,
+): boolean {
+  return parseGithubNightlyFlag(config.githubNightly, nodeEnv, warn)
 }

@@ -4,7 +4,7 @@
  * as a Sources list in the body when that heading is not already present.
  */
 
-import { NEWS_AUTHOR, NEWS_SUMMARY_MAX, NEWS_UNPUBLISHED_SEED_SLUG, isNewsSlug, parseNewsTags, publishedAtFromDate, sourceNameFromUrl } from './news'
+import { NEWS_AUTHOR, NEWS_SUMMARY_MAX, NEWS_UNPUBLISHED_SEED_SLUG, isHttpUrl, isNewsSlug, parseNewsTags, publishedAtFromDate, sourceNameFromUrl } from './news'
 
 export type ParsedNewsMarkdown = {
   slug: string
@@ -72,7 +72,7 @@ export function parseNewsMarkdown(source: string, options: { unpublishedSlug?: s
   const publishedAt = publishedAtFromDate(String(meta.date || '').trim())
   if (publishedAt == null) return null
   const sources = Array.isArray(meta.sources)
-    ? (meta.sources as unknown[]).map(item => String(item).trim()).filter(Boolean)
+    ? (meta.sources as unknown[]).map(item => String(item).trim()).filter(item => isHttpUrl(item))
     : []
   const first = sources[0] || null
   const unpublishedSlug = options.unpublishedSlug ?? NEWS_UNPUBLISHED_SEED_SLUG

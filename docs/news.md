@@ -13,7 +13,7 @@ scaffold, and the site does not auto-publish from any feed.
 | `title` | `title` | Required |
 | `summary` | `summary` | Required, max 160 characters |
 | `body` | `body` | Markdown. Public pages render it through `SafeHtml` / `displayRichText` (sanitized). Never raw unsanitized `v-html`. |
-| `source_url` | `sourceUrl` | Optional canonical source |
+| `source_url` | `sourceUrl` | Optional canonical source; only `http://` or `https://` URLs are stored |
 | `source_name` | `sourceName` | Optional; derived from the URL host when empty (`news.blizzard.com` → "Blizzard News"). Host matching is exact domain or a subdomain (`hostnameMatches`); a suffix like `evilwowhead.com` is not Wowhead. |
 | `published_at` | `publishedAt` | Unix seconds (UTC). The admin date field stores midnight UTC for that calendar day. |
 | `author` | `author` | Always `Magguu` (the API and admin ignore other values) |
@@ -27,8 +27,10 @@ as a `## Sources` list in the body when that heading is not already present.
 
 ## Seed
 
-First boot inserts missing slugs from `server/database/news-seed/*.md` (Buddy
-YAML frontmatter + body). Admin edits are never overwritten.
+Boot inserts each slug from `server/database/news-seed/*.md` (Buddy YAML
+frontmatter + body) at most once. A row in `news_seed_markers` records that
+the slug has already been offered. Admin edits are never overwritten, and a
+deleted article is not re-inserted on a later boot.
 
 `pouch-of-violet-dust-launch-celebration` is always seeded **unpublished**. The
 Twitch drop it describes ends 2026-11-13 01:30 Europe/Berlin, so it must not go
@@ -41,7 +43,7 @@ after that cutoff.
 - `NewsArticle` JSON-LD on the article page
 - Open Graph images through the existing Takumi `MagguuOg` card (`usePublicPageSeo`)
 - Sitemap: `/news` plus published slugs (never the feed, never unpublished rows)
-- RSS: `/news/feed.xml`
+- RSS: `/news/feed.xml` (author is `<dc:creator>Magguu</dc:creator>`, not an email-less `<author>` tag)
 - Retail header + footer link, site search group "News", visitor tracking counts `/news` and `/news/[slug]` as `/news`
 - Edge cache for `/news` and `/news/[slug]` (not `/news/feed.xml`)
 - Internal "Also on this site" links to `/guide` and `/meta`. `/meta` lands with the Meta PRs; the link check is advisory, so a temporary 404 there does not block the build

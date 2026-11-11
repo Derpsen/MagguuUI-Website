@@ -5,7 +5,8 @@
 import { desc, eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { newsArticles } from '~/server/database/schema'
-import { NEWS_AUTHOR, type NewsArticle, type NewsArticleListItem, parseNewsTags, sourceNameFromUrl } from '~/utils/news'
+import { recordNewsSeedMarker } from '~/server/utils/bootNews'
+import { NEWS_AUTHOR, isHttpUrl, type NewsArticle, type NewsArticleListItem, parseNewsTags, sourceNameFromUrl } from '~/utils/news'
 
 export type NewsRow = typeof newsArticles.$inferSelect
 
@@ -22,7 +23,11 @@ export type NewsWriteInput = {
 }
 
 function normalizeSource(sourceUrl: string | null | undefined, sourceName: string | null | undefined): { sourceUrl: string | null, sourceName: string | null } {
-  const url = sourceUrl?.trim() || null
+  const raw = sourceUrl?.trim() || null
+  if (raw && !isHttpUrl(raw)) {
+    throw createError({ statusCode: 400, message: 'sourceUrl must be an http or https URL.' })
+  }
+  const url = raw
   const name = sourceName?.trim() || (url ? sourceNameFromUrl(url) : null)
   return { sourceUrl: url, sourceName: name }
 }
@@ -142,6 +147,7 @@ export function updateNews(id: number, input: Partial<NewsWriteInput>): NewsArti
 export function deleteNews(id: number): NewsArticle {
   const existing = getNewsById(id)
   if (!existing) throw createError({ statusCode: 404, message: 'Not found' })
+  recordNewsSeedMarker(db, existing.slug)
   db.delete(newsArticles).where(eq(newsArticles.id, id)).run()
   return existing
 }

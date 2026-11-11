@@ -6,9 +6,9 @@ import Database from 'better-sqlite3'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { initializeDatabase } from '../../server/database/bootstrap'
 import * as schema from '../../server/database/schema'
-import { seedNewsArticlesIfMissing } from '../../server/utils/bootNews'
+import { recordNewsSeedMarker, seedNewsArticlesIfMissing } from '../../server/utils/bootNews'
 import { buildNewsRss, newsEntryUrl } from '../../server/utils/newsFeed'
-import { NEWS_AUTHOR, NEWS_SUMMARY_MAX, NEWS_UNPUBLISHED_SEED_SLUG, hostnameMatches, isNewsSlug, sourceNameFromUrl } from '../../utils/news'
+import { NEWS_AUTHOR, NEWS_SUMMARY_MAX, NEWS_UNPUBLISHED_SEED_SLUG, hostnameMatches, isHttpUrl, isNewsSlug, sourceNameFromUrl } from '../../utils/news'
 import { appendSourcesToBody, parseNewsMarkdown } from '../../utils/newsMarkdown'
 
 const FIXTURES = join(process.cwd(), 'server/database/news-seed')
@@ -75,6 +75,33 @@ describe('news markdown and sources', () => {
     assert.equal(sourceNameFromUrl('https://wowhead.com.evil.com/news/1'), 'wowhead.com.evil.com')
     assert.equal(sourceNameFromUrl('https://noticy-veins.com/'), 'noticy-veins.com')
   })
+
+  it('keeps only http(s) source URLs', () => {
+    assert.equal(isHttpUrl('https://news.blizzard.com/article/1'), true)
+    assert.equal(isHttpUrl('http://example.com/x'), true)
+    assert.equal(isHttpUrl('javascript:alert(1)'), false)
+    assert.equal(isHttpUrl('data:text/html,hi'), false)
+    assert.equal(isHttpUrl('/relative'), false)
+    assert.equal(isHttpUrl('//evil.example/x'), false)
+    const parsed = parseNewsMarkdown([
+      '---',
+      'title: "T"',
+      'slug: http-sources-only',
+      'date: 2026-11-11',
+      'summary: "A short summary."',
+      'sources:',
+      '  - javascript:alert(1)',
+      '  - https://www.wowhead.com/news/1',
+      '---',
+      '',
+      'Body',
+      '',
+    ].join('\n'))
+    assert.ok(parsed)
+    assert.equal(parsed.sourceUrl, 'https://www.wowhead.com/news/1')
+    assert.equal(parsed.sourceName, 'Wowhead')
+    assert.deepEqual(parsed.sources, ['https://www.wowhead.com/news/1'])
+  })
 })
 
 describe('news seed and RSS', () => {
@@ -82,7 +109,7 @@ describe('news seed and RSS', () => {
     const sqlite = new Database(':memory:')
     initializeDatabase(sqlite)
     const db = drizzle(sqlite, { schema })
-    assert.equal(seedNewsArticlesIfMissing(db, FIXTURES), 5)
+    assert.equal(seedNewsArticlesIfMissing(db, FIXTURES), 9)
     assert.equal(seedNewsArticlesIfMissing(db, FIXTURES), 0)
     sqlite.prepare("UPDATE news_articles SET title = 'Edited' WHERE slug = 'wow-forever-now-live'").run()
     assert.equal(seedNewsArticlesIfMissing(db, FIXTURES), 0)
@@ -90,6 +117,20 @@ describe('news seed and RSS', () => {
     assert.equal(row.title, 'Edited')
     const pouch = sqlite.prepare("SELECT is_published AS isPublished FROM news_articles WHERE slug = ?").get(NEWS_UNPUBLISHED_SEED_SLUG) as { isPublished: number }
     assert.equal(pouch.isPublished, 0)
+    const published = sqlite.prepare('SELECT count(*) AS n FROM news_articles WHERE is_published = 1').get() as { n: number }
+    assert.equal(published.n, 8)
+  })
+
+  it('does not re-insert a slug after it has been deleted', () => {
+    const sqlite = new Database(':memory:')
+    initializeDatabase(sqlite)
+    const db = drizzle(sqlite, { schema })
+    assert.equal(seedNewsArticlesIfMissing(db, FIXTURES), 9)
+    sqlite.prepare("DELETE FROM news_articles WHERE slug = 'wow-forever-now-live'").run()
+    recordNewsSeedMarker(db, 'wow-forever-now-live')
+    assert.equal(seedNewsArticlesIfMissing(db, FIXTURES), 0)
+    const gone = sqlite.prepare("SELECT count(*) AS n FROM news_articles WHERE slug = 'wow-forever-now-live'").get() as { n: number }
+    assert.equal(gone.n, 0)
   })
 
   it('builds an RSS feed of published articles only', () => {
@@ -117,5 +158,8 @@ describe('news seed and RSS', () => {
     assert.equal(newsEntryUrl({ slug: 'wow-forever-now-live', title: '', summary: '', body: '', publishedAt: 0, author: NEWS_AUTHOR }), 'https://ui.magguu.xyz/news/wow-forever-now-live')
     assert.doesNotMatch(xml, /Should not appear/)
     assert.match(xml, /&lt;strong&gt;there&lt;\/strong&gt;/)
+    assert.match(xml, /xmlns:dc="http:\/\/purl\.org\/dc\/elements\/1\.1\/"/)
+    assert.match(xml, /<dc:creator>Magguu<\/dc:creator>/)
+    assert.doesNotMatch(xml, /<author>/)
   })
 })

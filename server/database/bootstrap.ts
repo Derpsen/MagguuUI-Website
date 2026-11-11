@@ -113,6 +113,11 @@ export const DATABASE_BOOTSTRAP_SQL = `
   CREATE UNIQUE INDEX IF NOT EXISTS idx_news_articles_slug ON news_articles(slug);
   CREATE INDEX IF NOT EXISTS idx_news_articles_published ON news_articles(is_published, published_at);
 
+  CREATE TABLE IF NOT EXISTS news_seed_markers (
+    slug TEXT PRIMARY KEY NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+
   CREATE TABLE IF NOT EXISTS activity_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     action TEXT NOT NULL,

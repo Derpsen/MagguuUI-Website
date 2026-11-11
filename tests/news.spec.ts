@@ -7,10 +7,14 @@ const PUBLISHED = [
   'midnight-12-1-5-mid-season',
   'wow-forever-november-hotfixes',
   'discord-guild-chat-linking',
+  'midnight-season-2-mythic-plus-pool',
+  'midnight-november-hotfixes-class-tuning',
+  'echoes-of-the-worldcore-announced',
+  'november-trading-post-sweet-tooth',
 ] as const
 const UNPUBLISHED = 'pouch-of-violet-dust-launch-celebration'
 
-test('the news index lists the four published seed articles and not the unpublished pouch drop', async ({ page }) => {
+test('the news index lists the eight published seed articles and not the unpublished pouch drop', async ({ page }) => {
   await page.goto('/news')
   await hydrated(page)
   await expect(page.getByRole('heading', { level: 1, name: 'News' })).toBeVisible()

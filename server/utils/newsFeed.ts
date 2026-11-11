@@ -43,7 +43,7 @@ export function buildNewsRss(entries: NewsFeedEntry[]): string {
       `      <link>${escapeXml(newsEntryUrl(entry))}</link>`,
       `      <guid isPermaLink="true">${escapeXml(newsEntryUrl(entry))}</guid>`,
       `      <pubDate>${date.toUTCString()}</pubDate>`,
-      `      <author>${escapeXml(entry.author)}</author>`,
+      `      <dc:creator>${escapeXml(entry.author)}</dc:creator>`,
       `      <description>${escapeXml(html)}</description>`,
       '    </item>',
     ].join('\n')
@@ -51,7 +51,7 @@ export function buildNewsRss(entries: NewsFeedEntry[]): string {
 
   const updated = newsFeedUpdated(entries)
   return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>${escapeXml(NEWS_FEED_TITLE)}</title>
     <link>${FEED_SITE_URL}/news</link>

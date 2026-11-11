@@ -160,6 +160,15 @@ export const newsArticles = sqliteTable('news_articles', {
   publishedIdx: index('idx_news_articles_published').on(table.isPublished, table.publishedAt),
 }))
 
+// Remembers slugs the news seed has already offered, including ones an admin
+// later deleted, so a boot never re-inserts them.
+export const newsSeedMarkers = sqliteTable('news_seed_markers', {
+  slug: text('slug').primaryKey(),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+})
+
 // ─── Activity Log ─────────────────────────────────
 // Tracks all admin actions (string changes, content edits, etc.)
 

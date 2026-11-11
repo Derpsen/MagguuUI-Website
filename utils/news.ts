@@ -29,6 +29,17 @@ export function isNewsSlug(value: string): boolean {
   return NEWS_SLUG_PATTERN.test(value) && value.length <= 120
 }
 
+/** Accept only absolute http(s) URLs with a hostname. */
+export function isHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value)
+    return (url.protocol === 'http:' || url.protocol === 'https:') && Boolean(url.hostname)
+  }
+  catch {
+    return false
+  }
+}
+
 export function parseNewsTags(raw: unknown): string[] {
   if (Array.isArray(raw)) {
     return [...new Set(raw.map(item => String(item).trim().toLowerCase()).filter(Boolean))]

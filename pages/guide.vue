@@ -32,7 +32,7 @@
         </template>
         <template v-else-if="isAdmin">
           <button
-            @click="editMode = true"
+            @click="startEdit"
             class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
             :class="isDark ? 'bg-brand-400/10 text-brand-400 hover:bg-brand-400/20 border border-brand-400/20' : 'bg-brand-50 text-brand-600 hover:bg-brand-100 border border-brand-200'"
           >
@@ -178,7 +178,13 @@
                   <div>
                     <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-silver-500' : 'text-gray-400'">Content</label>
                     <ClientOnly>
-                      <LazyTipTapEditor v-model="step.editableContent" placeholder="Step content..." min-height="120px" />
+                      <component
+                        :is="TipTapEditor"
+                        v-if="TipTapEditor"
+                        v-model="step.editableContent"
+                        placeholder="Step content..."
+                        min-height="120px"
+                      />
                       <template #fallback>
                         <div class="min-h-[120px] rounded-xl" aria-hidden="true" />
                       </template>
@@ -290,6 +296,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Component } from 'vue'
 
 const toast = useToast()
 const { apiFetch } = useApi()
@@ -369,6 +376,20 @@ const steps = ref<EditableStep[]>([])
 const editMode = ref(false)
 const saving = ref(false)
 const showSaved = ref(false)
+// Loaded only after "Edit Page" — not a Lazy* child in the public tree, so the
+// TipTap/ProseMirror chunk is not prefetched on guest visits.
+const TipTapEditor = shallowRef<Component | null>(null)
+let editorImport: Promise<void> | null = null
+
+async function startEdit() {
+  if (!TipTapEditor.value) {
+    editorImport ??= import('~/components/TipTapEditor.vue').then((mod) => {
+      TipTapEditor.value = mod.default
+    })
+    await editorImport
+  }
+  editMode.value = true
+}
 
 // Prefer payload-backed computeds for SSR/hydration; edit refs only while editing.
 const visibleTitle = computed(() => editMode.value ? editableTitle.value : (guidePage.value?.title || ''))

@@ -298,7 +298,15 @@ export default defineNuxtConfig({
     // ride along on public pages as <link rel="prefetch"> / modulepreload.
     // Shared chunks/CSS that only admin chunks import are admin-only too.
     'build:manifest'(manifest) {
-      const adminOnly = new Set(Object.keys(manifest).filter(key => ADMIN_ONLY_CHUNK.test(key)))
+      const isAdminKey = (key: string, chunk?: { file?: string, src?: string }) =>
+        ADMIN_ONLY_CHUNK.test(key)
+        || (chunk?.file ? ADMIN_ONLY_CHUNK.test(chunk.file) : false)
+        || (chunk?.src ? ADMIN_ONLY_CHUNK.test(chunk.src) : false)
+      const adminOnly = new Set(
+        Object.entries(manifest)
+          .filter(([key, chunk]) => isAdminKey(key, chunk))
+          .map(([key]) => key),
+      )
       const importers = new Map<string, Set<string>>()
       for (const [key, chunk] of Object.entries(manifest)) {
         for (const dep of [...(chunk.imports ?? []), ...(chunk.dynamicImports ?? [])]) {
@@ -327,6 +335,12 @@ export default defineNuxtConfig({
           const cssChunk = manifest[css]
           if (cssChunk) cssChunk.prefetch = false
         }
+      }
+      // Public pages (including /guide after a late import()) must not emit
+      // <link rel="prefetch"> for TipTap/admin chunks still listed as dynamicImports.
+      for (const [key, chunk] of Object.entries(manifest)) {
+        if (adminOnly.has(key) || !chunk.dynamicImports?.length) continue
+        chunk.dynamicImports = chunk.dynamicImports.filter(dep => !adminOnly.has(dep))
       }
     },
   },

@@ -290,6 +290,49 @@ describe('blizzard meta sync from fixtures', () => {
     })
     assert.equal(blocked.status, 'locked')
   })
+
+  it('fires the job deadline on the live Date.now clock when now is omitted', async () => {
+    const realNow = Date.now
+    let t = 1_700_000_000_000
+    Date.now = () => t
+    try {
+      const fetcher: BlizzardFetcher = async (input) => {
+        t += 60_000
+        return fixtureFetcher()(input)
+      }
+      await assert.rejects(
+        () => buildMetaSnapshot({
+          fetcher,
+          credentials: FIXTURE_CREDENTIALS,
+          sleep: async () => {},
+          deadline: 1_700_000_000_000 + 180_000,
+        }),
+        /job deadline/,
+      )
+    } finally {
+      Date.now = realNow
+    }
+  })
+
+  it('keeps rate-gate waits to one slot on the live Date.now clock when now is omitted', async () => {
+    const { createBlizzardTraffic } = await import('../../server/utils/blizzardHttp')
+    const realNow = Date.now
+    let t = 1_700_000_000_000
+    Date.now = () => t
+    try {
+      const waits: number[] = []
+      const traffic = createBlizzardTraffic({
+        maxRps: 10,
+        concurrency: 1,
+        sleep: async (ms) => { waits.push(ms); t += ms },
+      })
+      for (let i = 0; i < 6; i++) await traffic.run(async () => { t += 1 })
+      assert.ok(waits.length >= 1)
+      assert.ok(waits.every(ms => ms <= 100), `waits must not grow: ${waits.join(',')}`)
+    } finally {
+      Date.now = realNow
+    }
+  })
 })
 
 describe('share helpers', () => {

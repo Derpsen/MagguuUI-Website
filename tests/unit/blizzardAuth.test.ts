@@ -14,7 +14,7 @@ import {
   tryAcquireBlizzardMetaLock,
   withBlizzardMetaLock,
 } from '../../server/utils/blizzardMetaLock'
-import { parseRetryAfterMs } from '../../server/utils/blizzardHttp'
+import { blizzardRequest, createBlizzardTraffic, parseRetryAfterMs } from '../../server/utils/blizzardHttp'
 
 describe('blizzard credentials and log redaction', () => {
   it('reads trimmed id and secret from runtimeConfig and rejects missing values', () => {
@@ -87,6 +87,17 @@ describe('blizzard meta lock', () => {
     }, () => t, deadline)
     assert.deepEqual(first, { ok: true, value: 'ok' })
   })
+
+  it('releases the lock in finally after success and after a throw', async () => {
+    const first = await withBlizzardMetaLock(async () => 'ok', 1000)
+    assert.deepEqual(first, { ok: true, value: 'ok' })
+    await assert.rejects(
+      () => withBlizzardMetaLock(async () => { throw new Error('boom') }, 1000),
+      /boom/,
+    )
+    const again = await withBlizzardMetaLock(async () => 2, 1000)
+    assert.deepEqual(again, { ok: true, value: 2 })
+  })
 })
 
 describe('Retry-After parsing', () => {
@@ -96,5 +107,35 @@ describe('Retry-After parsing', () => {
     assert.equal(parseRetryAfterMs(null), 1_000)
     const now = Date.parse('2026-01-01T00:00:00.000Z')
     assert.equal(parseRetryAfterMs('Thu, 01 Jan 2026 00:00:05 GMT', now), 5_000)
+  })
+
+  it('pauses later traffic until clock plus Retry-After, not until the raw wait', async () => {
+    const t = 1_700_000_000_000
+    const waits: number[] = []
+    const sleep = async (ms: number) => { waits.push(ms) }
+    const traffic = createBlizzardTraffic({ maxRps: 100, concurrency: 1, sleep, now: () => t })
+    let calls = 0
+    const fetcher = async () => {
+      calls += 1
+      if (calls === 1) {
+        return {
+          status: 429,
+          headers: { get: (name: string) => name.toLowerCase() === 'retry-after' ? '2' : null },
+          body: {},
+        }
+      }
+      return { status: 200, headers: { get: () => null }, body: { ok: true } }
+    }
+    const res = await blizzardRequest(fetcher, { method: 'GET', url: 'https://example.test/meta', headers: {} }, {
+      sleep,
+      now: () => t,
+      traffic,
+      jitter: () => 0,
+    })
+    assert.equal(res.status, 200)
+    assert.ok(
+      waits.filter(ms => ms >= 2000).length >= 2,
+      `expected retry wait plus a clock-based traffic pause, got ${waits.join(',')}`,
+    )
   })
 })

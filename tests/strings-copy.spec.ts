@@ -96,9 +96,9 @@ test('guide explains how to apply only one module', async ({ page }) => {
 })
 
 
-const E2E_CLASS = 'E2E Test Class'
+const E2E_CLASS = 'Mage'
 const E2E_SPEC = 'E2E Spec'
-const E2E_CLASS_B = 'E2E Other Class'
+const E2E_CLASS_B = 'Warlock'
 const E2E_SPEC_B = 'E2E Other Spec'
 const E2E_LAYOUT_STRING = 'E2E-LAYOUT-STRING-TEST-CLASS'
 

@@ -30,15 +30,23 @@ function seedWowupPack() {
 }
 
 const E2E_LAYOUTS = [
-  { name: 'E2E Test Layout', className: 'E2E Test Class', spec: 'E2E Spec', importString: 'E2E-LAYOUT-STRING-TEST-CLASS' },
-  { name: 'E2E Other Layout', className: 'E2E Other Class', spec: 'E2E Other Spec', importString: 'E2E-LAYOUT-STRING-OTHER-CLASS' },
+  { name: 'E2E Test Layout', className: 'Mage', spec: 'E2E Spec', importString: 'E2E-LAYOUT-STRING-TEST-CLASS' },
+  { name: 'E2E Other Layout', className: 'Warlock', spec: 'E2E Other Spec', importString: 'E2E-LAYOUT-STRING-OTHER-CLASS' },
 ]
 
 function seedLayouts() {
   try {
     for (const row of E2E_LAYOUTS) {
       const exists = db.select({ id: characterLayouts.id }).from(characterLayouts).where(eq(characterLayouts.name, row.name)).get()
-      if (exists) continue
+      if (exists) {
+        db.update(characterLayouts).set({
+          className: row.className,
+          spec: row.spec,
+          importString: row.importString,
+          isVisible: true,
+        }).where(eq(characterLayouts.name, row.name)).run()
+        continue
+      }
       db.insert(characterLayouts).values({
         name: row.name,
         className: row.className,

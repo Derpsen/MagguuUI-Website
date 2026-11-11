@@ -22,3 +22,10 @@ export function formatBuildLabel(info: Pick<BuildInfo, 'shortSha' | 'buildTime'>
     : `${date.toISOString().slice(0, 16).replace('T', ' ')} UTC`
   return `${info.shortSha} · built ${when}`
 }
+
+/** `3.0.0 · sha-abc1234` (or `3.0.0 · dev` when GIT_SHA is unset). Matches the docker image tag prefix. */
+export function formatAppVersionLabel(version: string, info: Pick<BuildInfo, 'gitSha' | 'shortSha'>): string {
+  const v = version.trim() || '0'
+  if (info.gitSha === 'dev') return `${v} · dev`
+  return `${v} · sha-${info.shortSha}`
+}

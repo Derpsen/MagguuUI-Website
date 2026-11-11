@@ -13,7 +13,18 @@
       </template>
     </AdminPageHeader>
 
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div v-if="loading && !items.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div v-for="i in 4" :key="i" class="admin-metric-card">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-2xl skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+          <div class="flex-1 space-y-2">
+            <div class="h-7 w-14 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+            <div class="h-3 w-24 rounded skeleton bg-slate-200/70 dark:bg-slate-800/70" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <AdminMetricCard
         v-for="stat in statCards"
         :key="stat.label"

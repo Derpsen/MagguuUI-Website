@@ -8,6 +8,7 @@
 import { statSync } from 'fs'
 import { join } from 'path'
 import { sqlite } from '~/server/database'
+import { formatAppVersionLabel, readBuildInfo } from '~/utils/buildInfo'
 
 export default defineEventHandler(async (event) => {
   requireAdminAccess(event)
@@ -56,9 +57,10 @@ export default defineEventHandler(async (event) => {
     copyEvents: safeTableCount('copy_events'),
   }
 
-  // App version from runtime config
+  // App version from runtime config; SHA from GIT_SHA (docker.yml build-arg).
   const config = useRuntimeConfig()
   const appVersion = config.public.appVersion || '3.0.0'
+  const build = readBuildInfo()
 
   // Active sessions count
   const activeSessions = (sqlite.prepare(
@@ -73,6 +75,11 @@ export default defineEventHandler(async (event) => {
     },
     app: {
       version: appVersion,
+      gitSha: build.gitSha,
+      shortSha: build.shortSha,
+      buildTime: build.buildTime,
+      imageTag: build.gitSha === 'dev' ? 'dev' : `sha-${build.shortSha}`,
+      versionLabel: formatAppVersionLabel(appVersion, build),
       nodeVersion: process.version,
       platform: process.platform,
       uptime: process.uptime(),

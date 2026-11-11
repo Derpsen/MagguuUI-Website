@@ -5,7 +5,11 @@
       eyebrow="System"
       title="Settings"
       description="One place for site defaults, access rules and operational switches."
-    />
+    >
+      <template #meta>
+        <span v-if="versionLabel" class="admin-pill" data-testid="admin-settings-build">App {{ versionLabel }}</span>
+      </template>
+    </AdminPageHeader>
 
 
     <AdminStickyBar :show="hasChanges" description="There are unsaved settings changes waiting to be applied.">
@@ -363,10 +367,12 @@ interface SysInfo {
     sizeFormatted?: string
     tables?: Record<string, number>
   }
-  app?: { version?: string, nodeVersion?: string, platform?: string, uptime?: number, uptimeFormatted?: string }
+  app?: { version?: string, gitSha?: string, shortSha?: string, buildTime?: string, imageTag?: string, versionLabel?: string, nodeVersion?: string, platform?: string, uptime?: number, uptimeFormatted?: string }
   activeSessions?: number
 }
 const sysInfo = ref<SysInfo | null>(null)
+const versionLabel = computed(() => sysInfo.value?.app?.versionLabel || sysInfo.value?.app?.version || '')
+
 
 type TabId = 'general' | 'seo' | 'security' | 'ads' | 'data'
 
@@ -391,7 +397,7 @@ function switchTab(tab: TabId) {
 }
 
 const statusCards = computed(() => [
-  { label: "Version", value: sysInfo.value?.app?.version || "-", icon: "i-heroicons-server-stack", tone: "brand" as const, hint: "Current app version" },
+  { label: "Version", value: versionLabel.value || "-", icon: "i-heroicons-server-stack", tone: "brand" as const, hint: "App version and live image SHA (GIT_SHA)" },
   { label: "Uptime", value: sysInfo.value?.app?.uptimeFormatted || "-", icon: "i-heroicons-clock", tone: "success" as const, hint: "Server availability" },
   { label: "Database", value: sysInfo.value?.database?.sizeFormatted || "-", icon: "i-heroicons-circle-stack", tone: "violet" as const, hint: "Current DB size" },
   { label: "Sessions", value: sysInfo.value?.activeSessions || 0, icon: "i-heroicons-user-group", tone: "warning" as const, hint: "Active admin sessions" },

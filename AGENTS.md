@@ -44,6 +44,16 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     keeps admin chunks out of public prefetch/modulepreload.
   - `/strings` lists use `view=meta`; full strings load per id on copy/edit.
   - Admin dashboard `Live:` line reads `GIT_SHA`/`BUILD_TIME` (docker.yml).
+  - Settings header/metric also shows `App {version} · sha-{short}` (or `dev`)
+    from the same `GIT_SHA` via `/api/v1/admin/system/info`. docker.yml already
+    passes `GIT_SHA=${{ github.sha }}`.
+  - Admin tab bar (`components/admin/TabBar.vue`): hidden scrollbar plus fade
+    and arrow buttons when tabs overflow; Playwright `tests/admin-tab-bar.spec.ts`
+    at 1280px and 390px, light and dark. Community must stay reachable.
+  - Admin list metrics must not show a counted 0 while the first fetch is in
+    flight (skeleton instead). `/admin/**` is `ssr: false` (auth-token flash),
+    so the first list wait is SPA download + session check + `apiFetch` after
+    mount. Profiles/layouts list APIs still return full import strings.
 - Queue A–J 2026-10-14 (keep these invariants):
   - RUM: `/api/v1/vitals` stores path + metric + value only (no IP/UA/cookie);
     never add identifiers. Admin view: `/admin/system/vitals` (p75).

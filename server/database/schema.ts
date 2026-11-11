@@ -584,3 +584,20 @@ export const metaSnapshotActive = sqliteTable('meta_snapshot_active', {
   snapshotId: integer('snapshot_id').notNull().references(() => metaSnapshots.snapshotId, { onDelete: 'cascade' }),
 })
 
+export const metaRuns = sqliteTable('meta_runs', {
+  runId: integer('run_id').primaryKey({ autoIncrement: true }),
+  startedAt: integer('started_at').notNull(),
+  endedAt: integer('ended_at').notNull(),
+  status: text('status').notNull(),
+  reason: text('reason'),
+  calls: integer('calls').notNull().default(0),
+  http429: integer('http_429').notNull().default(0),
+  http404: integer('http_404').notNull().default(0),
+  specMismatch: integer('spec_mismatch').notNull().default(0),
+  durationMs: integer('duration_ms').notNull().default(0),
+  snapshotId: integer('snapshot_id').references(() => metaSnapshots.snapshotId, { onDelete: 'set null' }),
+  nPerSpec: text('n_per_spec'),
+}, (table) => ({
+  endedAtIdx: index('idx_meta_runs_ended_at').on(table.endedAt),
+}))
+

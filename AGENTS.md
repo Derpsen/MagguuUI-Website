@@ -77,13 +77,17 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     sent to Blizzard). Nightly task `blizzard:nightly` is armed at **03:15 UTC**
     by `server/plugins/blizzard-meta-schedule.ts` (UTC date math, after
     `github:nightly` at 02:30). Default **off**. Kill switch:
-    `NUXT_BLIZZARD_META_NIGHTLY` / `runtimeConfig.blizzardMetaNightly`, same
+    `NUXT_META_NIGHTLY` / `runtimeConfig.metaNightly`, same
     on/true/1/yes and off/false/0/no parsing (unknown warns once per process
     and stays off). Also off without `NUXT_BLIZZARD_CLIENT_ID` and
     `NUXT_BLIZZARD_CLIENT_SECRET` (`runtimeConfig.blizzardClientId` /
-    `blizzardClientSecret`, server-only, never logged). In-process lock and
-    429 Retry-After backoff. Tests stay fixture-only (no network). The full
-    spec layout follows in a later PR. Tests: `tests/unit/metaSchedule.test.ts`,
+    `blizzardClientSecret`, server-only, never logged). Optional
+    `NUXT_BLIZZARD_REGION` (eu only), `NUXT_META_KUMA_PUSH_URL`,
+    `NUXT_META_SAMPLE_PER_SPEC` (default 200), `NUXT_META_MAX_ATTEMPTS_PER_SPEC`
+    (default 400). In-process lock (45 min), rate gate ≤ 40 rps, 429/5xx
+    Retry-After backoff, Kuma push, optional Cloudflare `/meta` prefix purge.
+    Tests stay fixture-only (no network). The full spec layout follows in a
+    later PR. Tests: `tests/unit/metaSchedule.test.ts`,
     `tests/unit/blizzardMetaSync.test.ts`, `tests/unit/blizzardMetaStore.test.ts`,
     `tests/unit/metaSnapshot.test.ts`, `tests/unit/metaCopy.test.ts`,
     `tests/meta.spec.ts`.

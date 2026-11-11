@@ -50,7 +50,7 @@ export async function getBlizzardAccessToken(
   requestToken: (credentials: BlizzardCredentials) => Promise<TokenResponse>,
   now = Date.now(),
 ): Promise<string> {
-  if (tokenCache && tokenCache.expiresAt > now + 5_000) return tokenCache.token
+  if (tokenCache && tokenCache.expiresAt > now + 300_000) return tokenCache.token
   let body: TokenResponse
   try {
     body = await requestToken(credentials)

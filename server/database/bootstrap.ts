@@ -440,6 +440,22 @@ export const DATABASE_BOOTSTRAP_SQL = `
   );
   CREATE INDEX IF NOT EXISTS idx_meta_snapshots_expires_at ON meta_snapshots(expires_at);
   CREATE INDEX IF NOT EXISTS idx_meta_snapshots_region_fetched ON meta_snapshots(region, fetched_at);
+  CREATE TABLE IF NOT EXISTS meta_runs (
+    run_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    started_at INTEGER NOT NULL,
+    ended_at INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    reason TEXT,
+    calls INTEGER NOT NULL DEFAULT 0,
+    http_429 INTEGER NOT NULL DEFAULT 0,
+    http_404 INTEGER NOT NULL DEFAULT 0,
+    spec_mismatch INTEGER NOT NULL DEFAULT 0,
+    duration_ms INTEGER NOT NULL DEFAULT 0,
+    snapshot_id INTEGER,
+    n_per_spec TEXT,
+    FOREIGN KEY (snapshot_id) REFERENCES meta_snapshots(snapshot_id) ON DELETE SET NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_meta_runs_ended_at ON meta_runs(ended_at);
 `
 
 export const SAFE_COLUMN_MIGRATIONS = [

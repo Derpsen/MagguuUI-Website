@@ -3,7 +3,7 @@
  * A stuck hold expires after TTL.
  */
 
-const TTL_MS = 15 * 60 * 1000
+const TTL_MS = 45 * 60 * 1000
 let heldUntil = 0
 
 export const BLIZZARD_META_LOCK_TTL_MS = TTL_MS

@@ -20,6 +20,28 @@ export const META_MIN_BUILD_SAMPLE = 50
 export const META_MIN_ITEM_SAMPLE = 20
 /** Below this, the spec shows "Collecting data" and no figures. */
 export const META_MIN_SHOW_SAMPLE = 10
+/** A nightly run is only `ok` when at least this share of planned profile calls succeeded. */
+export const META_MIN_PROFILE_SUCCESS_RATIO = 0.7
+/** 429 responses above this share of HTTP calls fail the promote sanity gate. */
+export const META_MAX_429_RATE = 0.05
+/** Leaderboard fetches must succeed at at least this share to promote. */
+export const META_MIN_LEADERBOARD_SUCCESS_RATIO = 0.9
+/** Total n may not drop below this share of the previous snapshot. */
+export const META_SANITY_N_FLOOR_RATIO = 0.5
+/** A spec with at least this many players must not flip to n = 0 (build threshold). */
+export const META_SANITY_SPEC_FLIP_N = META_MIN_BUILD_SAMPLE
+/** Default profile sample per spec (overridable via NUXT_META_SAMPLE_PER_SPEC). */
+export const META_SAMPLE_PER_SPEC = 200
+/** Max profile attempts per spec before giving up (overridable via NUXT_META_MAX_ATTEMPTS_PER_SPEC). */
+export const META_MAX_ATTEMPTS_PER_SPEC = 400
+/** Target request rate for the nightly (hard cap 50/s). */
+export const META_MAX_RPS = 40
+/** In-flight Blizzard requests during the nightly. */
+export const META_CONCURRENCY = 16
+/** Per-request timeout in ms. */
+export const META_REQUEST_TIMEOUT_MS = 20_000
+/** Stale lock / run deadline. 200 profiles/spec takes about 15–20 minutes. */
+export const META_JOB_TIMEOUT_MS = 45 * 60 * 1000
 
 export type MetaTalentTree = 'class' | 'spec' | 'hero'
 export type MetaTalentBand = 'core' | 'flexible' | 'rare'
@@ -43,6 +65,11 @@ export type MetaTalentCount = {
   share: number
   tree: MetaTalentTree
   band: MetaTalentBand
+  node: number | null
+  spellId: number | null
+  icon: string | null
+  /** True when the pick is not in the published static tree layout. */
+  unmapped: boolean
 }
 
 export type MetaLoadout = {
@@ -72,6 +99,8 @@ export type MetaGearCount = {
   embellished: boolean
   ilvl: number | null
   source: string | null
+  /** Icon filename (no host), e.g. "inv_helm_cinders". Null when unknown. */
+  icon: string | null
   lowSample: boolean
   enchant: { id: number, label: string } | null
   gems: Array<{ id: number, label: string }>
@@ -114,6 +143,36 @@ export type MetaTalentGroups = {
   hero: MetaTalentCount[]
 }
 
+/** Talent counts for profiles that used a given hero tree. */
+export type MetaHeroTalentGroup = {
+  heroTree: { id: number, label: string }
+  n: number
+  talents: MetaTalentGroups
+}
+
+
+export type MetaTalentLayoutChoice = {
+  talentId: number
+  label: string
+  spellId: number | null
+}
+
+export type MetaTalentLayoutNode = {
+  node: number
+  row: number | null
+  col: number | null
+  type: string | null
+  maxRank: number
+  unlocks: number[]
+  choices: MetaTalentLayoutChoice[]
+}
+
+export type MetaTalentLayout = {
+  class: MetaTalentLayoutNode[]
+  spec: MetaTalentLayoutNode[]
+  hero: Array<{ id: number, label: string, nodes: MetaTalentLayoutNode[] }>
+}
+
 export type MetaSpecSummary = {
   slug: string
   label: string
@@ -132,6 +191,10 @@ export type MetaSpecSummary = {
   heroSplit: MetaHeroSplit[]
   loadouts: MetaLoadout[]
   talents: MetaTalentGroups
+  /** Talent counts split by hero tree (empty when none were sampled). */
+  talentsByHero: MetaHeroTalentGroup[]
+  /** Static tree layout for the heatmap (optional in older fixtures). */
+  talentLayout: MetaTalentLayout | null
   stats: MetaStatBar[]
   gearSlots: MetaSlotGroup[]
   trinkets: MetaGearCount[]
@@ -195,6 +258,7 @@ export type MetaSnapshotPayload = {
     profiles: number
     skipped404: number
     specMismatch: number
+    unknownTalentNodes: number
   }
   classes: MetaClassSummary[]
 }
@@ -205,13 +269,13 @@ export function talentBand(share: number): MetaTalentBand {
   return 'rare'
 }
 
-export function applySpecFlags<T extends { n: number, loadouts: MetaLoadout[] }>(spec: T): T & Pick<MetaSpecSummary, 'empty' | 'collecting' | 'lowSample' | 'bestBuild'> {
+export function applySpecFlags<T extends { n: number, loadouts: MetaLoadout[], bestBuild?: MetaLoadout | null }>(spec: T): T & Pick<MetaSpecSummary, 'empty' | 'collecting' | 'lowSample' | 'bestBuild'> {
   const state = specDataState(spec.n)
   return {
     ...spec,
     empty: state === 'empty',
     collecting: state === 'collecting',
     lowSample: state !== 'ok',
-    bestBuild: state === 'ok' ? (spec.loadouts[0] ?? null) : null,
+    bestBuild: state === 'ok' ? (spec.bestBuild ?? spec.loadouts[0] ?? null) : null,
   }
 }

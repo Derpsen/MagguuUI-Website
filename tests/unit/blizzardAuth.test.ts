@@ -35,18 +35,19 @@ describe('blizzard credentials and log redaction', () => {
     assert.match(text, /\[redacted\]/)
   })
 
-  it('caches a token until shortly before it expires', async () => {
+  it('caches a token until five minutes before it expires', async () => {
     resetBlizzardAccessTokenCache()
     let calls = 0
     const request = async () => {
       calls += 1
-      return { access_token: 'tok', expires_in: 120 }
+      return { access_token: 'tok', expires_in: 3600 }
     }
     const creds = { id: 'id', secret: 'secret' }
-    assert.equal(await getBlizzardAccessToken(creds, request, 1_000), 'tok')
-    assert.equal(await getBlizzardAccessToken(creds, request, 10_000), 'tok')
+    const issued = 1_000
+    assert.equal(await getBlizzardAccessToken(creds, request, issued), 'tok')
+    assert.equal(await getBlizzardAccessToken(creds, request, issued + 240_000), 'tok')
     assert.equal(calls, 1)
-    assert.equal(await getBlizzardAccessToken(creds, request, 1_000 + 120_000), 'tok')
+    assert.equal(await getBlizzardAccessToken(creds, request, issued + 3_600_000 - 300_000), 'tok')
     assert.equal(calls, 2)
     resetBlizzardAccessTokenCache()
   })

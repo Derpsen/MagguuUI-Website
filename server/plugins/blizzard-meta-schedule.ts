@@ -4,11 +4,11 @@
  * and the Unraid container / image have no TZ. UTC date math only.
  */
 import { runTask } from 'nitropack/runtime'
-import { nextBlizzardMetaNightlyRun } from '~/utils/metaSchedule'
+import { nextBlizzardMetaNightlyRun, shouldArmMetaSchedule } from '~/utils/metaSchedule'
 
 export default defineNitroPlugin((nitroApp) => {
-  // Playwright and the link-check prerender must not fire outbound Blizzard jobs.
-  if (process.env.NUXT_E2E_SEED === 'true' || process.env.LINK_CHECK === '1') return
+  // Playwright, CI, dev, and the link-check prerender must not fire outbound Blizzard jobs.
+  if (!shouldArmMetaSchedule()) return
 
   let timer: ReturnType<typeof setTimeout> | null = null
   let stopped = false

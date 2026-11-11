@@ -31,7 +31,11 @@ Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` 
 | `NODE_ENV` | `production` in Docker | Runtime mode |
 | `NUXT_BLIZZARD_CLIENT_ID` | empty | OAuth client id for the Blizzard Game Data and Profile APIs (client credentials). Server-only via `runtimeConfig.blizzardClientId`. Never log or expose to the browser. The Meta nightly job stays off while this or the secret is empty. |
 | `NUXT_BLIZZARD_CLIENT_SECRET` | empty | Matching OAuth client secret (`runtimeConfig.blizzardClientSecret`). Host/container secret only. |
-| `NUXT_BLIZZARD_META_NIGHTLY` | off | Arms the 03:15 UTC Meta snapshot (`blizzard:nightly`). Default **off** in every environment. Recognised values (case-insensitive): `on`/`true`/`1`/`yes` and `off`/`false`/`0`/`no`. Unknown values warn once per process and stay off. Also off without both Blizzard credentials. |
+| `NUXT_BLIZZARD_REGION` | `eu` | Phase 1 is EU only. Any other value warns once and still uses `eu` (`runtimeConfig.blizzardRegion`). |
+| `NUXT_META_NIGHTLY` | off | Arms the 03:15 UTC Meta snapshot (`blizzard:nightly`). Default **off** in every environment. Recognised values (case-insensitive): `on`/`true`/`1`/`yes` and `off`/`false`/`0`/`no`. Unknown values warn once per process and stay off. Also off without both Blizzard credentials. Replaces the earlier `NUXT_BLIZZARD_META_NIGHTLY` name. |
+| `NUXT_META_KUMA_PUSH_URL` | empty | Optional Uptime Kuma push URL (token in the path). The job pushes `up` on `ok`/`skipped` and `down` on `partial`/`error`/`locked`. Never logged. Empty = no-op. |
+| `NUXT_META_SAMPLE_PER_SPEC` | `200` | Profile sample target per spec (default in the 150–200 range). |
+| `NUXT_META_MAX_ATTEMPTS_PER_SPEC` | `400` | Max profile attempts per spec before giving up. |
 
 ## Notes
 

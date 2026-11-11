@@ -62,7 +62,11 @@
 
   <Config Name="NUXT_BLIZZARD_CLIENT_SECRET" Target="NUXT_BLIZZARD_CLIENT_SECRET" Default="" Mode="" Description="Optional Blizzard OAuth client secret for the Meta snapshot. Host/container secret only. Leave empty to keep the job off." Type="Variable" Display="advanced" Required="false" Mask="true"/>
 
-  <Config Name="NUXT_BLIZZARD_META_NIGHTLY" Target="NUXT_BLIZZARD_META_NIGHTLY" Default="" Mode="" Description="Optional. Default off. Set to on/true/1/yes to arm the 03:15 UTC Meta snapshot after credentials are set. off/false/0/no forces it off." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="NUXT_BLIZZARD_REGION" Target="NUXT_BLIZZARD_REGION" Default="eu" Mode="" Description="Optional. Phase 1 is EU only (default eu)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="NUXT_META_NIGHTLY" Target="NUXT_META_NIGHTLY" Default="" Mode="" Description="Optional. Default off. Set to on/true/1/yes to arm the 03:15 UTC Meta snapshot after credentials are set. off/false/0/no forces it off." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="NUXT_META_KUMA_PUSH_URL" Target="NUXT_META_KUMA_PUSH_URL" Default="" Mode="" Description="Optional Uptime Kuma push URL for the Meta nightly. Host/container secret only. Leave empty to skip." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="NUXT_META_SAMPLE_PER_SPEC" Target="NUXT_META_SAMPLE_PER_SPEC" Default="200" Mode="" Description="Optional. Profile sample per spec (default 200)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="NUXT_META_MAX_ATTEMPTS_PER_SPEC" Target="NUXT_META_MAX_ATTEMPTS_PER_SPEC" Default="400" Mode="" Description="Optional. Max profile attempts per spec (default 400)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
   <Config Name="NODE_ENV" Target="NODE_ENV" Default="production" Mode="" Description="Keep as 'production' on Unraid." Type="Variable" Display="advanced" Required="false" Mask="false">production</Config>
 

@@ -6,7 +6,9 @@ pages/index.vue	WIM is retired
 server/api/v1/admin/wowup/*.ts	cannot include WIM
 server/database/addonMetadata.ts	WIM is retired|^\s*.(elvui-windtools|wim|wim-elvui-skin|keystoneloot).,?\s*$
 server/database/defaultAddonChangelog.ts	EXBoss, WIM, and Waypoint UI|KeystoneLoot is no longer part
-server/plugins/init.ts	marker:|currentRelease\.content\.includes|SWR-cached HTML
+server/plugins/init.ts	SWR-cached HTML
+server/utils/bootContentMarkers.ts	marker:
+server/utils/bootSeed.ts	currentRelease\.content\.includes
 server/utils/addonProfileLua.ts	.WIM\.lua.
 server/utils/addonProfileSync.ts	WIM
 utils/addonChipMeta.ts	wim

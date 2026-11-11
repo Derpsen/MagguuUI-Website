@@ -1,6 +1,7 @@
 import { PUBLIC_SITE_ORIGIN, PUBLIC_SITE_SETTINGS_DEFAULTS } from './utils/siteSettingsDefaults'
 import { isGithubNightlyEnabled } from './utils/githubSchedule'
 import { applyAdminManifestPolicy } from './utils/adminManifest'
+import { isBlizzardMetaNightlyEnabled } from './utils/metaSchedule'
 
 const defaultSiteName = PUBLIC_SITE_SETTINGS_DEFAULTS.site_name
 const defaultMetaTitle = PUBLIC_SITE_SETTINGS_DEFAULTS.meta_title
@@ -229,6 +230,12 @@ export default defineNuxtConfig({
     // Read back at runtime via githubNightlyFromRuntimeConfig(useRuntimeConfig())
     // so a string "false" is not treated as on. Unknown values warn once and use the default.
     githubNightly: isGithubNightlyEnabled(),
+    // Meta snapshot (EU Mythic+). Default off; also skipped without credentials.
+    // Override with NUXT_BLIZZARD_META_NIGHTLY=on|true|1|yes or off|false|0|no.
+    // Credentials: NUXT_BLIZZARD_CLIENT_ID / NUXT_BLIZZARD_CLIENT_SECRET (server-only, never logged).
+    blizzardClientId: process.env.NUXT_BLIZZARD_CLIENT_ID || '',
+    blizzardClientSecret: process.env.NUXT_BLIZZARD_CLIENT_SECRET || '',
+    blizzardMetaNightly: isBlizzardMetaNightlyEnabled(),
 
     webauthnRpName: 'MagguuUI Admin',
     webauthnRpId: process.env.NUXT_WEBAUTHN_RP_ID || '',

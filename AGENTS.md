@@ -74,9 +74,18 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     `tests/fixtures/blizzard-meta/snapshot.json` (never served on live pages).
     SQLite table `meta_snapshots` holds a payload for at most 30 days.
     Privacy section 13 describes server-side retrieval (no visitor data is
-    sent to Blizzard). A later PR adds the Blizzard client and nightly job;
-    another adds the full spec layout. Tests: `tests/unit/metaSnapshot.test.ts`,
-    `tests/unit/blizzardMetaStore.test.ts`, `tests/unit/metaCopy.test.ts`,
+    sent to Blizzard). Nightly task `blizzard:nightly` is armed at **03:15 UTC**
+    by `server/plugins/blizzard-meta-schedule.ts` (UTC date math, after
+    `github:nightly` at 02:30). Default **off**. Kill switch:
+    `NUXT_BLIZZARD_META_NIGHTLY` / `runtimeConfig.blizzardMetaNightly`, same
+    on/true/1/yes and off/false/0/no parsing (unknown warns once per process
+    and stays off). Also off without `NUXT_BLIZZARD_CLIENT_ID` and
+    `NUXT_BLIZZARD_CLIENT_SECRET` (`runtimeConfig.blizzardClientId` /
+    `blizzardClientSecret`, server-only, never logged). In-process lock and
+    429 Retry-After backoff. Tests stay fixture-only (no network). The full
+    spec layout follows in a later PR. Tests: `tests/unit/metaSchedule.test.ts`,
+    `tests/unit/blizzardMetaSync.test.ts`, `tests/unit/blizzardMetaStore.test.ts`,
+    `tests/unit/metaSnapshot.test.ts`, `tests/unit/metaCopy.test.ts`,
     `tests/meta.spec.ts`.
     **DoD / rollout:** `/meta` stays off the header, footer and sitemap until stacked PR C2 is green *and* the Lighthouse budget for `/meta` (measured against the fixture snapshot until a live one exists) is green. Then the links go back in. Own tooltips and that budget belong in C2, not in A–C. AdBanner / AdSense migration is PR D. Routes and APIs stay reachable by direct URL in A–C so the pages can be reviewed and budgeted.
   - Settings header/metric also shows `App {version} · sha-{short}` (or `dev`)

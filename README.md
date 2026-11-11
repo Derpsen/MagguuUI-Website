@@ -124,6 +124,8 @@ Important values include:
 - `NUXT_ADMIN_PASSWORD`
 - `API_BEARER_TOKEN`
 - `NUXT_GITHUB_TOKEN`
+- `NUXT_BLIZZARD_CLIENT_ID` / `NUXT_BLIZZARD_CLIENT_SECRET` (optional, server-only: Meta snapshot; leave empty until configured)
+- `NUXT_BLIZZARD_META_NIGHTLY` (optional, default off; `on`/`true`/`1`/`yes` to arm the 03:15 UTC job once credentials exist)
 - `NUXT_GITHUB_REPO`
 - `NUXT_GITHUB_WEBHOOK_SECRET`
 - `NUXT_SYNC_SEEDED_CONTENT`

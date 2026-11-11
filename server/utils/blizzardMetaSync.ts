@@ -102,7 +102,7 @@ type SyncOptions = {
   fetcher: BlizzardFetcher
   credentials: BlizzardCredentials
   sleep?: (ms: number) => Promise<void>
-  now?: number
+  now?: number | (() => number)
   caps?: Partial<MetaSyncCaps>
   deadline?: number
   stats?: BlizzardHttpStats
@@ -186,6 +186,15 @@ function mergeCaps(partial?: Partial<MetaSyncCaps>): MetaSyncCaps {
   return caps
 }
 
+function asClock(now?: number | (() => number)): () => number {
+  if (typeof now === 'function') return now
+  if (typeof now === 'number' && Number.isFinite(now)) {
+    const frozen = now
+    return () => frozen
+  }
+  return () => Date.now()
+}
+
 function assertDeadline(deadline: number | undefined, now: () => number) {
   if (deadline != null && now() >= deadline) throw new Error('Meta nightly hit the job deadline')
 }
@@ -193,7 +202,7 @@ function assertDeadline(deadline: number | undefined, now: () => number) {
 async function requestToken(
   fetcher: BlizzardFetcher,
   credentials: BlizzardCredentials,
-  options: { sleep?: (ms: number) => Promise<void>, now?: number, stats?: BlizzardHttpStats, traffic?: BlizzardTraffic },
+  options: { sleep?: (ms: number) => Promise<void>, now?: number | (() => number), stats?: BlizzardHttpStats, traffic?: BlizzardTraffic },
 ) {
   const secrets = [credentials.id, credentials.secret]
   const res = await blizzardRequest(fetcher, {
@@ -216,12 +225,12 @@ function createGetter(
   secrets: readonly string[],
 ) {
   let token = ''
-  const now = () => options.now ?? Date.now()
+  const now = asClock(options.now)
   const refresh = async (force = false) => {
     if (force) resetBlizzardAccessTokenCache()
     token = await getBlizzardAccessToken(
       options.credentials,
-      creds => requestToken(options.fetcher, creds, { sleep: options.sleep, now: now(), stats, traffic }),
+      creds => requestToken(options.fetcher, creds, { sleep: options.sleep, now, stats, traffic }),
       now(),
     )
     return token
@@ -263,13 +272,14 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   leaderboards: { planned: number, ok: number, failed: number }
 }> {
   const caps = mergeCaps(options.caps)
-  const now = options.now ?? Date.now()
+  const clock = asClock(options.now)
+  const now = clock()
   const stats = options.stats ?? createBlizzardHttpStats()
   const traffic = options.traffic ?? createBlizzardTraffic({
     maxRps: caps.maxRps,
     concurrency: caps.concurrency,
     sleep: options.sleep,
-    now: () => options.now ?? Date.now(),
+    now: clock,
   })
   const secrets = [options.credentials.id, options.credentials.secret]
   const { get } = createGetter(options, stats, traffic, secrets)
@@ -427,7 +437,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   await Promise.all([...perSpec.entries()].map(async ([specId, list]) => {
     const kept: RawProfile[] = []
     for (let i = 0; i < list.length && kept.length < caps.samplePerSpec && i < caps.maxAttemptsPerSpec; i++) {
-      assertDeadline(options.deadline, () => options.now ?? Date.now())
+      assertDeadline(options.deadline, asClock(options.now))
       const target = list[i]!
       failures.attempted += 1
       try {
@@ -637,7 +647,7 @@ export async function runScheduledBlizzardMetaSync(input: {
   }
   fetcher: BlizzardFetcher
   sleep?: (ms: number) => Promise<void>
-  now?: number
+  now?: number | (() => number)
   nodeEnv?: string
   warn?: (message: string) => void
   caps?: Partial<MetaSyncCaps>
@@ -645,8 +655,9 @@ export async function runScheduledBlizzardMetaSync(input: {
   purgeMeta?: typeof purgeCloudflareMeta
   deadline?: number
 }): Promise<ScheduledMetaResult> {
-  const now = input.now ?? Date.now()
-  const startedAt = now
+  const clock = asClock(input.now)
+  const startedAt = clock()
+  const deadline = input.deadline ?? (startedAt + META_JOB_TIMEOUT_MS)
   const nightlyOn = metaNightlyFromRuntimeConfig(
     { metaNightly: input.config.metaNightly },
     input.nodeEnv,
@@ -656,7 +667,7 @@ export async function runScheduledBlizzardMetaSync(input: {
   const finish = async (status: MetaRunStatus, reason?: string, snapshotId?: number | null, stats?: BlizzardHttpStats, failures?: ProfileFailures, nPerSpec?: Record<string, number> | null) => {
     const record = recordMetaRun(input.sqlite, {
       startedAt,
-      endedAt: input.now ?? Date.now(),
+      endedAt: clock(),
       status,
       reason: reason ?? null,
       calls: stats?.calls ?? 0,
@@ -674,8 +685,8 @@ export async function runScheduledBlizzardMetaSync(input: {
   const credentials = blizzardCredentialsFromConfig(input.config)
   if (!nightlyOn) {
     const locked = await withBlizzardMetaLock(async () => {
-      deleteExpiredMetaSnapshots(input.sqlite, now)
-    }, now)
+      deleteExpiredMetaSnapshots(input.sqlite, clock())
+    }, clock, deadline)
     if (!locked.ok) return finish('locked', 'A Meta update is already running')
     return finish('skipped', 'Disabled (NUXT_META_NIGHTLY is off)')
   }
@@ -686,17 +697,17 @@ export async function runScheduledBlizzardMetaSync(input: {
   const sampleCaps = sampleCapsFromRuntimeConfig(input.config)
   const caps = mergeCaps({ ...sampleCaps, ...input.caps })
   const locked = await withBlizzardMetaLock(async () => {
-    deleteExpiredMetaSnapshots(input.sqlite, now)
-    const previous = readCurrentMetaSnapshot(input.sqlite, META_REGION, now)
+    deleteExpiredMetaSnapshots(input.sqlite, clock())
+    const previous = readCurrentMetaSnapshot(input.sqlite, META_REGION, clock())
     const built = await buildMetaSnapshot({
       fetcher: input.fetcher,
       credentials,
       sleep: input.sleep,
-      now,
+      now: clock,
       caps,
-      deadline: input.deadline ?? (now + META_JOB_TIMEOUT_MS),
+      deadline,
     })
-    const staged = writeStagedMetaSnapshot(input.sqlite, built.payload, now)
+    const staged = writeStagedMetaSnapshot(input.sqlite, built.payload, clock())
     const plannedProfiles = Math.max(built.failures.attempted, built.payload.sampled.profiles)
     const policy = evaluateMetaRunPolicy({
       plannedProfiles,
@@ -724,7 +735,7 @@ export async function runScheduledBlizzardMetaSync(input: {
         nPerSpec,
       }
     }
-    const promoted = promoteMetaSnapshot(input.sqlite, staged.snapshotId, built.payload.region, now)
+    const promoted = promoteMetaSnapshot(input.sqlite, staged.snapshotId, built.payload.region, clock())
     const purge = input.purgeMeta ?? purgeCloudflareMeta
     await purge()
     return {
@@ -735,7 +746,7 @@ export async function runScheduledBlizzardMetaSync(input: {
       failures: built.failures,
       nPerSpec,
     }
-  }, now)
+  }, clock, deadline)
 
   if (!locked.ok) return finish('locked', 'A Meta update is already running')
   const value = locked.value
@@ -753,7 +764,7 @@ export async function runScheduledBlizzardMetaSyncGuarded(input: Parameters<type
     const reason = sanitizeBlizzardLog(err instanceof Error ? err.message : 'Meta update failed', secrets)
     console.error(`[blizzard:nightly] ${reason}`)
     recordMetaRun(input.sqlite, {
-      startedAt: input.now ?? Date.now(),
+      startedAt: asClock(input.now)(),
       status: 'error',
       reason,
     })

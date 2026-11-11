@@ -245,6 +245,51 @@ describe('blizzard meta sync from fixtures', () => {
     assert.equal(failed.status, 'error')
     assert.doesNotMatch(failed.reason || '', /leaked-id|leaked-secret|abc\.token/)
   })
+
+  it('fires the job deadline when the clock advances past it', async () => {
+    let t = 1_700_000_000_000
+    const fetcher: BlizzardFetcher = async (input) => {
+      t += 60_000
+      return fixtureFetcher()(input)
+    }
+    await assert.rejects(
+      () => buildMetaSnapshot({
+        fetcher,
+        credentials: FIXTURE_CREDENTIALS,
+        sleep: async () => {},
+        now: () => t,
+        deadline: 1_700_000_000_000 + 180_000,
+      }),
+      /job deadline/,
+    )
+  })
+
+  it('keeps rate-gate waits to one slot when the clock advances, and does not overlap a held lock', async () => {
+    const { createBlizzardTraffic } = await import('../../server/utils/blizzardHttp')
+    let t = 1_700_000_000_000
+    const waits: number[] = []
+    const traffic = createBlizzardTraffic({
+      maxRps: 10,
+      concurrency: 1,
+      sleep: async (ms) => { waits.push(ms); t += ms },
+      now: () => t,
+    })
+    for (let i = 0; i < 6; i++) await traffic.run(async () => { t += 1 })
+    assert.ok(waits.length >= 1)
+    assert.ok(waits.every(ms => ms <= 100), `waits must not grow: ${waits.join(',')}`)
+
+    const sqlite = openStore()
+    let tLock = 1_700_000_000_000
+    tryAcquireBlizzardMetaLock(() => tLock, tLock + 45 * 60 * 1000)
+    const blocked = await runScheduledBlizzardMetaSync({
+      sqlite,
+      config: armedConfig,
+      fetcher: fixtureFetcher(),
+      sleep: async () => {},
+      now: () => { tLock += 1_000; return tLock },
+    })
+    assert.equal(blocked.status, 'locked')
+  })
 })
 
 describe('share helpers', () => {

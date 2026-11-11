@@ -74,6 +74,19 @@ describe('blizzard meta lock', () => {
     assert.equal(tryAcquireBlizzardMetaLock(1000 + BLIZZARD_META_LOCK_TTL_MS - 1), false)
     assert.equal(tryAcquireBlizzardMetaLock(1000 + BLIZZARD_META_LOCK_TTL_MS), true)
   })
+
+  it('holds until the job deadline so a later clock still cannot overlap a running job', async () => {
+    const start = 5_000
+    const deadline = start + BLIZZARD_META_LOCK_TTL_MS + 60_000
+    let t = start
+    const first = await withBlizzardMetaLock(async () => {
+      t = deadline - 1
+      const nested = await withBlizzardMetaLock(async () => 'overlap', () => t, deadline)
+      assert.deepEqual(nested, { ok: false, reason: 'locked' })
+      return 'ok'
+    }, () => t, deadline)
+    assert.deepEqual(first, { ok: true, value: 'ok' })
+  })
 })
 
 describe('Retry-After parsing', () => {

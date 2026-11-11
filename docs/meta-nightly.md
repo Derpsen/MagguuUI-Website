@@ -24,7 +24,7 @@ EU connected realms, current Mythic+ season, current period plus the two previou
 - Global rate gate ≤ 40 requests/s (hard cap 50) and concurrency 16. Per-request timeout 20 s.
 - 429/5xx: honour `Retry-After` when present, otherwise exponential backoff with jitter, max 6 attempts, then the item counts as failed.
 - 404/403 are not retried (private, renamed, or transferred characters).
-- Job / lock deadline: 45 minutes. Failed leaderboards and profiles are skipped; promote is decided by the sanity gates.
+- Job / lock deadline: 45 minutes (same as the lock TTL). Production uses a live clock on every deadline, rate-gate, and 429 wait — tests may pass an advancing `now` function. The lock is held until `max(now + TTL, job deadline)` and always released in `finally`, so a second run cannot overlap while the first still holds. Failed leaderboards and profiles are skipped; promote is decided by the sanity gates.
 - Secrets never appear in logs. Names and realms are in-memory lookup keys only.
 
 ## Sanity gates (before promote)

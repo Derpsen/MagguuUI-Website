@@ -43,10 +43,17 @@ export function formatBerlinTime(value: string | number | Date | null | undefine
 /**
  * Nightly job kill switch (NUXT_GITHUB_NIGHTLY / runtimeConfig.githubNightly).
  * Default: on in production, off in development.
- * Recognised values (case-insensitive): true/1 = on, false/0/no = off.
- * Anything else logs a warning and uses the default. The string "false" must
- * not be treated as on (Nuxt would otherwise leave a runtimeConfig string truthy).
+ * Recognised values (case-insensitive, trimmed): on/true/1/yes = on,
+ * off/false/0/no = off. Anything else logs a warning once per process and
+ * uses the default. The string "false" must not be treated as on.
  */
+let unknownGithubNightlyWarned = false
+
+/** Test-only: allow the once-per-process unknown-value warning to fire again. */
+export function resetGithubNightlyFlagWarning() {
+  unknownGithubNightlyWarned = false
+}
+
 export function parseGithubNightlyFlag(
   value: unknown,
   nodeEnv = process.env.NODE_ENV,
@@ -56,9 +63,12 @@ export function parseGithubNightlyFlag(
   if (value == null || value === '') return defaultOn
   if (typeof value === 'boolean') return value
   const raw = String(value).trim().toLowerCase()
-  if (raw === 'true' || raw === '1') return true
-  if (raw === 'false' || raw === '0' || raw === 'no') return false
-  warn(`[github:nightly] NUXT_GITHUB_NIGHTLY=${JSON.stringify(String(value))} is not recognised; using default (${defaultOn ? 'on' : 'off'})`)
+  if (raw === 'on' || raw === 'true' || raw === '1' || raw === 'yes') return true
+  if (raw === 'off' || raw === 'false' || raw === '0' || raw === 'no') return false
+  if (!unknownGithubNightlyWarned) {
+    unknownGithubNightlyWarned = true
+    warn(`[github:nightly] NUXT_GITHUB_NIGHTLY=${JSON.stringify(String(value))} is not recognised; using default (${defaultOn ? 'on' : 'off'})`)
+  }
   return defaultOn
 }
 

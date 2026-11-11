@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { formatBerlinTime, isGithubNightlyEnabled, nextGithubNightlyRun, parseGithubNightlyFlag } from '../../utils/githubSchedule'
+import { formatBerlinTime, isGithubNightlyEnabled, nextGithubNightlyRun, parseGithubNightlyFlag, resetGithubNightlyFlagWarning } from '../../utils/githubSchedule'
 
 describe('github nightly UTC clock', () => {
   it('returns the next 02:30 UTC even when the process TZ is Europe/Berlin', () => {
@@ -31,27 +31,30 @@ describe('NUXT_GITHUB_NIGHTLY kill switch', () => {
     assert.equal(isGithubNightlyEnabled({ NODE_ENV: 'production', NUXT_GITHUB_NIGHTLY: '' }, 'production'), true)
   })
 
-  it('treats only false/0/no as off and true/1 as on, case-insensitive', () => {
-    assert.equal(isGithubNightlyEnabled({ NUXT_GITHUB_NIGHTLY: 'false' }, 'production'), false)
-    assert.equal(isGithubNightlyEnabled({ NUXT_GITHUB_NIGHTLY: 'FALSE' }, 'production'), false)
-    assert.equal(isGithubNightlyEnabled({ NUXT_GITHUB_NIGHTLY: '0' }, 'production'), false)
-    assert.equal(isGithubNightlyEnabled({ NUXT_GITHUB_NIGHTLY: 'no' }, 'production'), false)
-    assert.equal(isGithubNightlyEnabled({ NUXT_GITHUB_NIGHTLY: 'true' }, 'development'), true)
-    assert.equal(isGithubNightlyEnabled({ NUXT_GITHUB_NIGHTLY: 'TRUE' }, 'development'), true)
-    assert.equal(isGithubNightlyEnabled({ NUXT_GITHUB_NIGHTLY: '1' }, 'development'), true)
+  it('treats off/false/0/no as off and on/true/1/yes as on, case-insensitive and trimmed', () => {
+    for (const value of ['off', 'OFF', ' false ', '0', 'No']) {
+      assert.equal(parseGithubNightlyFlag(value, 'production'), false, value)
+    }
+    for (const value of ['on', 'ON', ' true ', '1', 'Yes']) {
+      assert.equal(parseGithubNightlyFlag(value, 'development'), true, value)
+    }
+    assert.equal(isGithubNightlyEnabled({ NUXT_GITHUB_NIGHTLY: 'off' }, 'production'), false)
+    assert.equal(isGithubNightlyEnabled({ NUXT_GITHUB_NIGHTLY: 'yes' }, 'development'), true)
     assert.equal(parseGithubNightlyFlag(false, 'production'), false)
     assert.equal(parseGithubNightlyFlag(true, 'development'), true)
   })
 
-  it('warns and uses the default for unknown values', () => {
+  it('warns once per process for unknown values and uses the default', () => {
+    resetGithubNightlyFlagWarning()
     const warnings: string[] = []
     const warn = (message: string) => { warnings.push(message) }
-    assert.equal(parseGithubNightlyFlag('off', 'production', warn), true)
-    assert.equal(parseGithubNightlyFlag('on', 'development', warn), false)
-    assert.equal(parseGithubNightlyFlag('yes', 'development', warn), false)
     assert.equal(parseGithubNightlyFlag('maybe', 'production', warn), true)
-    assert.equal(warnings.length, 4)
+    assert.equal(parseGithubNightlyFlag('foo', 'development', warn), false)
+    assert.equal(warnings.length, 1)
     assert.match(warnings[0]!, /not recognised/)
-    assert.match(warnings[0]!, /off/)
+    assert.match(warnings[0]!, /maybe/)
+    resetGithubNightlyFlagWarning()
+    assert.equal(parseGithubNightlyFlag('bar', 'production', warn), true)
+    assert.equal(warnings.length, 2)
   })
 })

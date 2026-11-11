@@ -218,9 +218,9 @@ export default defineNuxtConfig({
     foreverRepo: process.env.NUXT_FOREVER_REPO || 'Derpsen/MagguuUI-Forever',
     githubWebhookSecret: process.env.NUXT_GITHUB_WEBHOOK_SECRET || '',
     // Nightly GitHub job. Default on in production, off in development.
-    // Override with NUXT_GITHUB_NIGHTLY=true|1 or false|0|no. Read back at
-    // runtime via githubNightlyFromRuntimeConfig(useRuntimeConfig()) so a
-    // string "false" is not treated as on. Unknown values warn and use the default.
+    // Override with NUXT_GITHUB_NIGHTLY=on|true|1|yes or off|false|0|no.
+    // Read back at runtime via githubNightlyFromRuntimeConfig(useRuntimeConfig())
+    // so a string "false" is not treated as on. Unknown values warn once and use the default.
     githubNightly: isGithubNightlyEnabled(),
 
     webauthnRpName: 'MagguuUI Admin',

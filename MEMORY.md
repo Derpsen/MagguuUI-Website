@@ -259,8 +259,9 @@
   (`server/plugins/github-nightly-schedule.ts`, UTC date math; no TZ on the
   image or Unraid). Admin last/next run is shown in Europe/Berlin. Kill switch
   `NUXT_GITHUB_NIGHTLY` / `runtimeConfig.githubNightly`, read at run time
-  (default on in prod, off in dev; only false/0/no are off, unknown values
-  warn and use the default; off → `skipped` in admin). Catalogue sync still
+  (default on in prod, off in dev; off/false/0/no = off, on/true/1/yes = on;
+  unknown values warn once per process and use the default; off → `skipped`
+  in admin). Catalogue sync still
   runs if the release check fails (`partial` / `error` with both results).
   Shared lock with Check/Resync; rate-limit skip on remaining=0 / 429 /
   rate-limit 403.

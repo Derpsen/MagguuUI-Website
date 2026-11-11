@@ -56,8 +56,9 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     and read back with `githubNightlyFromRuntimeConfig(useRuntimeConfig())`
     (also exposed as `nightlyEnabled` on `/api/v1/admin/github/status`).
     Default on in production and off in development. Recognised values
-    (case-insensitive): `true`/`1` = on, `false`/`0`/`no` = off; unknown
-    values log a warning and use the default. When off the run is recorded as
+    (case-insensitive, trimmed): `on`/`true`/`1`/`yes` = on,
+    `off`/`false`/`0`/`no` = off; unknown values log a warning once per
+    process and use the default. When off the run is recorded as
     `skipped` ("Disabled (NUXT_GITHUB_NIGHTLY is off)"). The catalogue sync
     still runs if the release check fails; status is then `partial` or `error`
     with both results in the reason. 403/429 are soft (read

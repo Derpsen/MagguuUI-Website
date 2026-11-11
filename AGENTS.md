@@ -57,6 +57,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
 - Queue A–J 2026-10-14 (keep these invariants):
   - RUM: `/api/v1/vitals` stores path + metric + value only (no IP/UA/cookie);
     never add identifiers. Admin view: `/admin/system/vitals` (p75).
+    Collection and the admin table only keep `TRACKED_ROUTES` (404s such as `/doesnotexist` are dropped).
   - Search: `/api/v1/search-index` is public data only (full-text since 2026-10-24, see "Full-text search"); `PublicSearch.vue`
     and `web-vitals` stay out of public prefetch (`ADMIN_ONLY_CHUNK`).
   - Speculation Rules (`utils/speculationRules.ts`) must keep excluding

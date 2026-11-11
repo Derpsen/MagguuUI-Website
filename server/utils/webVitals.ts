@@ -1,5 +1,7 @@
 /** Anonymous Web Vitals (RUM): validation + p75 aggregation. Pure, unit-tested. */
 
+import { normalizeTrackedPath } from '../../utils/trackingRules'
+
 export const VITAL_METRICS = ['LCP', 'INP', 'CLS', 'TTFB'] as const
 export type VitalMetric = typeof VITAL_METRICS[number]
 
@@ -8,13 +10,9 @@ const MAX_VALUE: Record<VitalMetric, number> = { LCP: 60_000, INP: 60_000, TTFB:
 
 export interface VitalSample { path: string, metric: VitalMetric, value: number }
 
-/** Pathname only (no query/hash), public pages only, bounded length. */
+/** Pathname only (no query/hash), known public pages only — 404s like /doesnotexist are dropped. */
 export function normalizeVitalPath(raw: unknown): string | null {
-  if (typeof raw !== 'string' || !raw.startsWith('/') || raw.length > 300) return null
-  const path = raw.split(/[?#]/)[0] || '/'
-  if (path.startsWith('/admin') || path.startsWith('/api') || path.startsWith('/_')) return null
-  if (!/^\/[\w\-/.]*$/.test(path)) return null
-  return path.length > 1 ? path.replace(/\/+$/, '') : path
+  return normalizeTrackedPath(raw)
 }
 
 /** Accepts `{ path, metrics: [{ name, value }] }`; at most 8 samples per beacon. */
@@ -57,6 +55,7 @@ export interface VitalRow { path: string, metric: VitalMetric, p75: number, samp
 export function aggregateVitals(rows: Array<{ path: string, metric: string, value: number }>): VitalRow[] {
   const groups = new Map<string, number[]>()
   for (const r of rows) {
+    if (!normalizeTrackedPath(r.path)) continue
     const k = `${r.path}\u0000${r.metric}`
     if (!groups.has(k)) groups.set(k, [])
     groups.get(k)!.push(r.value)

@@ -12,6 +12,16 @@ test.describe('security + cache headers', () => {
     expect(h['cloudflare-cdn-cache-control']).toBe('public, max-age=120, stale-while-revalidate=600')
   })
 
+  test('bare /strings is edge-cached like /guide; query variants are not', async ({ request }) => {
+    const bare = (await request.get('/strings')).headers()
+    expect(bare['cache-control']).toBe('public, max-age=0, must-revalidate')
+    expect(bare['cdn-cache-control']).toBe('public, max-age=120, stale-while-revalidate=600')
+    expect(bare['cloudflare-cdn-cache-control']).toBe('public, max-age=120, stale-while-revalidate=600')
+    const queried = (await request.get('/strings?class=mage')).headers()
+    expect(queried['cdn-cache-control']).toBeUndefined()
+    expect(queried['cloudflare-cdn-cache-control']).toBeUndefined()
+  })
+
   test('catalog-summary is edge-cacheable', async ({ request }) => {
     const h = (await request.get('/api/v1/catalog-summary')).headers()
     expect(h['cdn-cache-control']).toBe('public, max-age=120, stale-while-revalidate=600')

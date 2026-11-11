@@ -13,7 +13,7 @@
     </div>
 
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-      <component :is="filtering ? 'h1' : 'p'" class="font-mono text-[11px] uppercase tracking-[0.16em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Release notes</component>
+      <p class="font-mono text-[11px] uppercase tracking-[0.16em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Release notes</p>
       <p class="text-xs" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
         Subscribe:
         <a href="/changelog/feed.xml" type="application/rss+xml" class="underline underline-offset-4" :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-700 hover:text-gray-950'">RSS</a>
@@ -21,6 +21,8 @@
         <a href="/changelog/atom.xml" type="application/atom+xml" class="underline underline-offset-4" :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-700 hover:text-gray-950'">Atom</a>
       </p>
     </div>
+
+    <h1 class="mt-3 text-4xl sm:text-5xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">Changelog</h1>
 
     <form method="get" action="/changelog" class="mt-6 border-b pb-6" :class="isDark ? 'border-white/10' : 'border-gray-200'" data-testid="changelog-filter">
       <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
@@ -79,8 +81,7 @@
         class="border-b pb-10"
         :class="[index === 0 && (!unreleased || filtering) ? 'mt-6' : 'mt-10', isDark ? 'border-white/10' : 'border-gray-200']"
       >
-        <component
-          :is="isCurrent(release) && !filtering ? 'h1' : 'h2'"
+        <h2
           class="font-mono font-semibold tracking-tight leading-none"
           :class="[
             isCurrent(release) && !filtering ? 'text-4xl sm:text-5xl' : 'text-2xl',
@@ -88,7 +89,7 @@
           ]"
         >
           {{ release.version }}
-        </component>
+        </h2>
         <p class="mt-3 text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
           {{ formatDate(release.publishedAt) }}
           <template v-if="isCurrent(release)">
@@ -116,8 +117,7 @@
     </div>
 
     <div v-else-if="!releases.length" class="mt-8">
-      <h1 class="text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">Changelog</h1>
-      <p class="mt-3 text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-500'">No entries yet.</p>
+      <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-500'">No entries yet.</p>
     </div>
   </div>
 </template>

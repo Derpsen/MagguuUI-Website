@@ -60,7 +60,7 @@
 
 - Public home: clean and clear — primary CTA **Install & Setup** (`/guide`), secondary **Import Strings** (`/strings`). Little glass/motion; no hero fade-in or bounce scroll cue.
 - Brand palette (public): Ellesmere teal `#0CD29D` is **primary** via `--color-brand-*` (hover/pressed `#0AA882` / `#088F6F`). `--color-ellesmere` aliases brand-400. Backgrounds are charcoal/near-black — not navy-blue brand dominance. Old Magguu blue is demoted; admin keeps its own accent tokens (light touch only if shared tokens force it). Admin brand marks use `/logo.png` (same as public).
-- Home copy stays factual about EllesmereUI (native module, `/mui` Apply Magguu profiles, Magguu Settings overlay/QoL, Load profiles activate-only, optional companions, Skinning NAMES & COLORS DualRow for two-tone unit-frame and party/raid names (default + class color) plus class-colored keybinds — no EXBoss split, party/raid item level, Smart Tab, Quick Focus, audio switcher, Boiling Point, Targeted Spell Bars). Magguu does not join, leave, or hide Services. Seed defaults live in `server/database/defaultContent.ts` (EN + DE). Known-stale seed claims need a `LEGACY_*` marker in `server/plugins/init.ts` or `NUXT_SYNC_SEEDED_CONTENT=true`. Public pages prefer Magguu/MagguuUI naming and product addon names — no foreign person/author credits. Never bake/dump/recapture on public pages.
+- Home copy stays factual about EllesmereUI (native module, `/mui` Apply Magguu profiles, Magguu Settings overlay/QoL, Load profiles activate-only, optional companions, Skinning NAMES & COLORS DualRow for two-tone unit-frame and party/raid names (default + class color) plus class-colored keybinds — no EXBoss split, party/raid item level, Smart Tab, Quick Focus, audio switcher, Boiling Point, Targeted Spell Bars). Magguu does not join, leave, or hide Services. Seed defaults live in `server/database/defaultContent.ts` (EN + DE). Known-stale seed claims need a `LEGACY_*` marker in `server/utils/bootContentMarkers.ts` or `NUXT_SYNC_SEEDED_CONTENT=true`. Public pages prefer Magguu/MagguuUI naming and product addon names — no foreign person/author credits. Never bake/dump/recapture on public pages.
 
 ## Important Paths
 
@@ -182,7 +182,7 @@
 - Public settings now return merged defaults from `utils/siteSettingsDefaults.ts`, so empty databases still expose stable SEO/contact defaults.
 - Homepage SEO/JSON-LD now uses centralized public settings instead of a half-static/half-dynamic split.
 - Public layout branding now reads `site_name` from settings in key visible spots.
-- `/imprint` is now the **Legal notice** page (2026-10-12): "MagguuUI is a free, non-commercial project operated from Switzerland." + `<ContactEmail>`. No §5 TMG, no name, no postal address. Follow-up: `imprint_*` settings + `Germany` default removed from defaults/admin UI/public API; `server/plugins/init.ts` deletes leftover `imprint_*` rows on boot.
+- `/imprint` is now the **Legal notice** page (2026-10-12): "MagguuUI is a free, non-commercial project operated from Switzerland." + `<ContactEmail>`. No §5 TMG, no name, no postal address. Follow-up: `imprint_*` settings + `Germany` default removed from defaults/admin UI/public API; `server/utils/bootMigrations.ts` deletes leftover `imprint_*` rows on boot.
 - Shared seeded content now lives in `server/database/defaultContent.ts`, which reduces drift between startup init and manual seed flows.
 - Standalone `db:seed` now bootstraps schema/tables via `server/database/bootstrap.ts` before inserts, which aligns fresh seeding with normal app startup.
 - About, FAQ, Privacy, Guide, Strings, and Changelog pages now use safer shared public title helpers and settings-driven fallbacks for branding/contact metadata.
@@ -287,7 +287,7 @@
   and the search dialog.
 
 
-- 2026-10-14: Private-repo link sweep for Derpsen/MagguuUI (mapping CurseForge / /changelog / /about#contact), idempotent DB migration in init.ts, link check treats store 403 as OK.
+- 2026-10-14: Private-repo link sweep for Derpsen/MagguuUI (mapping CurseForge / /changelog / /about#contact), idempotent DB migration in bootContentMarkers.ts, link check treats store 403 as OK.
 
 ## 2026-10-15 Live state + Arbeitscomputer
 
@@ -570,9 +570,9 @@
 - 2026-11-04 hard-refactor (base dc12604): a5ffd05 audit diff -> auditLineDiff/AuditDiffLine, shadowed adminHelpers.formatBytes dropped (3 "Duplicated imports" warnings gone); 930af8d dead trendPercent + pendingCloudflarePurge (and the write-only `pending`) removed; d566cf7 unit guard tests/unit/autoImportCollisions.test.ts (utils+composables, server/utils). Baseline: gate 229/229, smoke 0, mutation 97/97. Inventory: ~/Projekte/.grok/reports/inventory-website-2026-11-04.md.
 
 ## Hard-refactor ROI backlog
-Base 4ff3a8b, 2026-11-09 (overnight perf wave 22ac182..4ff3a8b).
-1. server/plugins/init.ts (~977): split seed / migrations / content markers. ROI high, risk medium-high — needs boot characterization first (admin seed, force reset, exact-text markers). Auth-adjacent: do not mix with passkey/lockout.
-2. pages/strings.vue (~836): extract class/spec picker + string card. ROI medium, risk medium (e2e copy/edit).
+Base (POINT 1 in review; see `refactor/init-split`). 2026-11-11.
+1. ~~server/plugins/init.ts split~~ (this PR): characterization in `tests/unit/websiteBoot.test.ts`; modules `bootSeed.ts`, `bootMigrations.ts`, `bootContentMarkers.ts`, orchestrator `websiteBoot.ts`. Admin / force-reset / passkey / lockout left in `init.ts` unchanged. Next review: Code-Review, no merge from this helper.
+2. pages/strings.vue (~836): extract class/spec picker + string card. ROI medium, risk medium (e2e copy/edit). Not started (POINT 2).
 3. Drop file-local `export` only when touching the file. ROI low.
 
 Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533), configurator hydration shell (03a8eaa), LazyAdBanner (d0f0b1b), LazyCommunityPresets (4ff3a8b). Bundle client JS ~2478→2479 kB (+4 chunks from code-split); /addons icons now thumb webp.

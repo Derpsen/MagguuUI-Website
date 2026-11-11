@@ -28,7 +28,10 @@ test('a published article is SSR, uses sanitized HTML, and exposes NewsArticle J
   expect(html).toContain('World of Warcraft: Forever Is Now Live')
   expect(html).toContain('application/ld+json')
   expect(html).toContain('"@type":"NewsArticle"')
-  expect(html).not.toContain('v-html')
+  // SafeHtml is the audited boundary; do not scan the whole document for the
+  // substring 'v-html' (it appears in the component's eslint comment).
+  expect(html).not.toMatch(/\sv-html=/)
+  expect(html).toContain('prose-custom')
 
   await page.goto('/news/wow-forever-now-live')
   await hydrated(page)

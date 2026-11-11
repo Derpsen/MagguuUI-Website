@@ -43,13 +43,26 @@ export function parseNewsTags(raw: unknown): string[] {
   return []
 }
 
+/**
+ * True when `host` is exactly `domain` or a subdomain of it.
+ * `evilwowhead.com` and `wowhead.com.evil.com` must not match `wowhead.com`
+ * (CodeQL js/incomplete-url-substring-sanitization).
+ */
+export function hostnameMatches(host: string, domain: string): boolean {
+  const h = host.replace(/^www\./, '').toLowerCase()
+  const d = domain.replace(/^www\./, '').toLowerCase()
+  if (!h || !d) return false
+  return h === d || h.endsWith(`.${d}`)
+}
+
 export function sourceNameFromUrl(url: string): string {
   try {
-    const host = new URL(url).hostname.replace(/^www\./, '').toLowerCase()
-    if (host === 'news.blizzard.com' || host.endsWith('.blizzard.com') || host === 'blizzard.com') return 'Blizzard News'
-    if (host.endsWith('wowhead.com')) return 'Wowhead'
-    if (host.endsWith('icy-veins.com')) return 'Icy Veins'
-    return host || 'Source'
+    const host = new URL(url).hostname
+    if (hostnameMatches(host, 'blizzard.com')) return 'Blizzard News'
+    if (hostnameMatches(host, 'wowhead.com')) return 'Wowhead'
+    if (hostnameMatches(host, 'icy-veins.com')) return 'Icy Veins'
+    const bare = host.replace(/^www\./, '').toLowerCase()
+    return bare || 'Source'
   } catch {
     return 'Source'
   }

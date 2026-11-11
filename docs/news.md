@@ -14,7 +14,7 @@ scaffold, and the site does not auto-publish from any feed.
 | `summary` | `summary` | Required, max 160 characters |
 | `body` | `body` | Markdown. Public pages render it through `SafeHtml` / `displayRichText` (sanitized). Never raw unsanitized `v-html`. |
 | `source_url` | `sourceUrl` | Optional canonical source |
-| `source_name` | `sourceName` | Optional; derived from the URL host when empty (`news.blizzard.com` → "Blizzard News") |
+| `source_name` | `sourceName` | Optional; derived from the URL host when empty (`news.blizzard.com` → "Blizzard News"). Host matching is exact domain or a subdomain (`hostnameMatches`); a suffix like `evilwowhead.com` is not Wowhead. |
 | `published_at` | `publishedAt` | Unix seconds (UTC). The admin date field stores midnight UTC for that calendar day. |
 | `author` | `author` | Always `Magguu` (the API and admin ignore other values) |
 | `tags` | `tags` | JSON string array in SQLite, string array in the API |

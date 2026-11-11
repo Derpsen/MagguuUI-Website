@@ -8,7 +8,7 @@ import { initializeDatabase } from '../../server/database/bootstrap'
 import * as schema from '../../server/database/schema'
 import { seedNewsArticlesIfMissing } from '../../server/utils/bootNews'
 import { buildNewsRss, newsEntryUrl } from '../../server/utils/newsFeed'
-import { NEWS_AUTHOR, NEWS_SUMMARY_MAX, NEWS_UNPUBLISHED_SEED_SLUG, isNewsSlug, sourceNameFromUrl } from '../../utils/news'
+import { NEWS_AUTHOR, NEWS_SUMMARY_MAX, NEWS_UNPUBLISHED_SEED_SLUG, hostnameMatches, isNewsSlug, sourceNameFromUrl } from '../../utils/news'
 import { appendSourcesToBody, parseNewsMarkdown } from '../../utils/newsMarkdown'
 
 const FIXTURES = join(process.cwd(), 'server/database/news-seed')
@@ -58,13 +58,22 @@ describe('news markdown and sources', () => {
       'https://news.blizzard.com/en-us/article/1',
       'https://www.wowhead.com/news/2',
     ])
-    assert.equal(kept.includes('wowhead.com'), false)
+    assert.equal(kept.includes('https://www.wowhead.com/news/2'), false)
   })
 
-  it('names common hosts', () => {
+  it('names common hosts by exact domain or subdomain, not a suffix', () => {
+    assert.equal(hostnameMatches('www.wowhead.com', 'wowhead.com'), true)
+    assert.equal(hostnameMatches('ptr.wowhead.com', 'wowhead.com'), true)
+    assert.equal(hostnameMatches('evilwowhead.com', 'wowhead.com'), false)
+    assert.equal(hostnameMatches('wowhead.com.evil.com', 'wowhead.com'), false)
+    assert.equal(hostnameMatches('noticy-veins.com', 'icy-veins.com'), false)
     assert.equal(sourceNameFromUrl('https://news.blizzard.com/en-us/article/1'), 'Blizzard News')
     assert.equal(sourceNameFromUrl('https://worldofwarcraft.blizzard.com/en-us/news/1'), 'Blizzard News')
     assert.equal(sourceNameFromUrl('https://www.wowhead.com/news/1'), 'Wowhead')
+    assert.equal(sourceNameFromUrl('https://www.icy-veins.com/wow/'), 'Icy Veins')
+    assert.equal(sourceNameFromUrl('https://evilwowhead.com/news/1'), 'evilwowhead.com')
+    assert.equal(sourceNameFromUrl('https://wowhead.com.evil.com/news/1'), 'wowhead.com.evil.com')
+    assert.equal(sourceNameFromUrl('https://noticy-veins.com/'), 'noticy-veins.com')
   })
 })
 

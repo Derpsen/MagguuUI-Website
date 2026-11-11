@@ -681,8 +681,13 @@ test.describe('anonymous counting (/privacy, admin Routes view)', () => {
     referrers: Array<{ name: string, views: number }>
     copied: Array<{ type: string, id: number, copies: number }>
   }
-  const traffic = async () => json<Traffic>(await api.get('/api/v1/admin/stats/traffic?days=7'))
-  const viaHost = async (n: string) => (await traffic()).referrers.find(r => r.name === host(n))?.views ?? 0
+  const traffic = async (referrer?: string) => {
+    const q = referrer ? `&referrer=${encodeURIComponent(referrer)}` : ''
+    return json<Traffic & { referrerMatch?: { name: string, views: number } }>(await api.get(`/api/v1/admin/stats/traffic?days=7${q}`))
+  }
+  // Exact-host lookup: the admin list is only the top 10 referrers, so a 1-view
+  // host from this test can disappear under CI load even after a successful 204.
+  const viaHost = async (n: string) => (await traffic(host(n))).referrerMatch?.views ?? 0
   const copies = async () => (await traffic()).copied.find(c => c.type === 'profile' && c.id === profileId)?.copies ?? 0
   const beaconSeen = (p: Page) => p.waitForResponse(r => r.url().includes('/api/v1/page-view'))
   const settle = (p: Page) => p.waitForTimeout(400)
@@ -752,9 +757,19 @@ test.describe('anonymous counting (/privacy, admin Routes view)', () => {
     await settle(p)
     expect(sent).toBe(0)
     await Promise.all([withDnt.close(), withGpc.close(), signal.close()])
-    // Control: the same request without the signal is counted.
-    expect((await post(anon, '/guide', 'dnt')).status()).toBe(204)
-    await expect.poll(() => viaHost('dnt')).toBe(1)
+    // DNT/GPC (and the client-side signal) must not have been counted. Assert
+    // this first: a baseline taken afterwards would hide a leak and let the
+    // control POST pass with before+1.
+    expect(await viaHost('dnt')).toBe(0)
+    // Control: the same request without the signal is counted. 204 is also
+    // returned when the 5s visitor+path dedup drops the write, so re-POST
+    // only while the exact-host count is still 0 and wait for exactly 1.
+    await expect.poll(async () => {
+      const seen = await viaHost('dnt')
+      if (seen > 0) return seen
+      expect((await post(anon, '/guide', 'dnt')).status()).toBe(204)
+      return viaHost('dnt')
+    }, { timeout: 15_000 }).toBe(1)
   })
 
   test('bots, admin sessions and unknown paths are not counted', async ({ browser }) => {

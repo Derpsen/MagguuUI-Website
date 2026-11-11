@@ -223,9 +223,26 @@ describe('daily roll-up and report', () => {
     assert.equal(runAnalyticsMaintenance(sqlite, NOW).rolled, 0)
     assert.equal((sqlite.prepare("SELECT uniques FROM stats_daily WHERE kind = 'site'").get() as { uniques: number }).uniques, 2)
   })
+
+  it('looks up a referrer even when it is outside the top 10 list', () => {
+    const sqlite = freshDb()
+    for (let i = 0; i < 12; i++) {
+      for (let n = 0; n < 3; n++) {
+        recordView(sqlite, { path: '/faq', referrer: `popular-${i}.example.org`, device: 'desktop', browser: 'Firefox', os: 'Linux', visitor: `v${i}-${n}` }, TODAY + 10)
+      }
+    }
+    recordView(sqlite, { path: '/guide', referrer: 'unique-dnt.example.org', device: 'desktop', browser: 'Firefox', os: 'Linux', visitor: 'dnt' }, TODAY + 11)
+    const r = trafficReport(sqlite, 7, NOW, { referrer: 'unique-dnt.example.org' })
+    assert.equal(r.referrers.length, 10)
+    assert.equal(r.referrers.some(row => row.name === 'unique-dnt.example.org'), false)
+    assert.deepEqual(r.referrerMatch, { name: 'unique-dnt.example.org', views: 1 })
+    assert.deepEqual(trafficReport(sqlite, 7, NOW, { referrer: 'missing.example.org' }).referrerMatch, { name: 'missing.example.org', views: 0 })
+    assert.equal(trafficReport(sqlite, 7, NOW).referrerMatch, undefined)
+  })
 })
 
 describe('retention', () => {
+
   it('prunes detail rows after RAW_DETAIL_DAYS whole days, keeps the aggregates, drops very old aggregates', () => {
     const sqlite = freshDb()
     const oldDay = TODAY - (RAW_DETAIL_DAYS + 3) * DAY + 100

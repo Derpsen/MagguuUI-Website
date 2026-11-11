@@ -52,8 +52,13 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     image / Unraid container have no TZ. Admin last/next run on
     `/admin/system/github` is formatted in Europe/Berlin (`Intl`,
     `timeZone: 'Europe/Berlin'`; winter 03:30 CET, summer 04:30 CEST).
-    Kill switch: `NUXT_GITHUB_NIGHTLY` (`runtimeConfig.githubNightly`), default
-    on in production and off in development; when off the run is recorded as
+    Kill switch: `NUXT_GITHUB_NIGHTLY`, stored as `runtimeConfig.githubNightly`
+    and read back with `githubNightlyFromRuntimeConfig(useRuntimeConfig())`
+    (also exposed as `nightlyEnabled` on `/api/v1/admin/github/status`).
+    Default on in production and off in development. Recognised values
+    (case-insensitive, trimmed): `on`/`true`/`1`/`yes` = on,
+    `off`/`false`/`0`/`no` = off; unknown values log a warning once per
+    process and use the default. When off the run is recorded as
     `skipped` ("Disabled (NUXT_GITHUB_NIGHTLY is off)"). The catalogue sync
     still runs if the release check fails; status is then `partial` or `error`
     with both results in the reason. 403/429 are soft (read
@@ -442,7 +447,7 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 - Guarantees: no cookies, no localStorage identifier, no raw IP, no user agent stored. Uniques = per-day HMAC of coarse IP (/24, /48) + browser/OS/device family, random in-memory salt rotated per UTC day (never persisted, not in git, restart mid-day only over-counts). Rate-limit and dedup keys use the same salted hash, so `rate_limits` holds no raw IP for beacons.
 - Skipped server-side in `server/utils/beaconRequest.ts` (order: DNT/Sec-GPC, bot UA regex, login session, rate limit) and client-side (DNT/GPC). Path allowlist and copy-type allowlist live in `utils/trackingRules.ts`; a new public page must be added to `TRACKED_ROUTES` (a unit test compares it with `pages/*.vue`). Copy targets must exist and be published.
 - Retention (`server/utils/analytics.ts`, run by `server/plugins/session-cleanup.ts`): finished UTC days are rolled up into `stats_daily` (INSERT OR IGNORE), legacy `ip`/`user_agent` values are set to NULL after their distinct IPs were counted, detail rows older than 14 days are deleted, aggregates older than 400 days are deleted. The `data_retention_days` setting no longer governs these two tables.
-- Admin: `GET /api/v1/admin/stats/traffic?days=7|30|90` and the "Routes" tab on `/admin/system/stats`; the overview and legacy stats use `trafficReport`. "Visitors" are summed daily uniques (labelled so). Reports write idempotent roll-ups.
+- Admin: `GET /api/v1/admin/stats/traffic?days=7|30|90` (optional `referrer` exact host returns `referrerMatch` from the full map, not the top-10 `referrers` list) and the "Routes" tab on `/admin/system/stats`; the overview and legacy stats use `trafficReport`. "Visitors" are summed daily uniques (labelled so). Reports write idempotent roll-ups.
 - Privacy page: default text is `PRIVACY_DEFAULTS` (`utils/pageCopyDefaults.ts`); the counting text is a new section key `s7`, so existing DBs get it without touching stored edits (an edited `s4` keeps the editor's wording). Imprint has no data-processing text and is unchanged.
 - E2E: default Playwright Desktop Chrome UA is a normal UA and is counted; tell checks apart by a unique referrer host.
 

@@ -5,6 +5,8 @@ name: Quality
 # osv-scanner runs advisory in osv-scanner.yml; dependency-review covers PRs.
 
 on:
+  # Feature branches: pull_request only. Push is main only (and dispatch).
+  # cancel-in-progress is safe here (not the image publish in docker.yml).
   push:
     branches: [main]
     paths-ignore: ['**/*.md']

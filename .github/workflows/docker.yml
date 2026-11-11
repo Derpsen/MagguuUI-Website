@@ -29,8 +29,11 @@ on:
   workflow_dispatch:
 
 concurrency:
+  # Same ref (main or a version tag) shares one group so publishes are serial.
+  # cancel-in-progress stays false: a newer push must not abort an in-progress
+  # image build, sign, or GHCR push. The later run queues, then publishes its SHA.
   group: docker-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read

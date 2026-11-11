@@ -27,7 +27,7 @@ Measured with `gh run list/view`. Before = last 8 pushes with 2 Playwright worke
 | 6 | `verify` repeats Build's lint/unit/typecheck/Playwright for the same sha. | **Not done, reported**: shortening `verify` shortens a check on the publishing path. Needs Marco's decision. |
 | 7 | Build runs the full suite on docs-only pushes. | **Not done**: `build (26, false)` is a required check and must run for every push. |
 | 8 | Public pages use `swr: 120`, so a text fix can look old for up to 2 minutes after the sha matches. | Not changed (cache behaviour is delivered behaviour): verify with a cache-busting query or wait 2 minutes. |
-| 9 | `concurrency: cancel-in-progress` on docker skips images for intermediate commits. | Fine for the fast path; batch two quick fixes into one push. |
+| 9 | `concurrency: cancel-in-progress` on docker skipped images for intermediate commits. | **Changed (audit):** `docker.yml` now uses `cancel-in-progress: false`. A newer push to `main` or a version tag queues behind the in-progress publish instead of aborting the sign/push. Advisory jobs (Lighthouse, link check, Quality) still cancel superseded runs; they run on feature branches only as pull_request (Quality also on push to main). |
 
 Not touched on purpose: CodeQL, signing/attestation, smoke thresholds, auth/admin paths, auto-update trigger, branch protection (required names stay `build (26, false)` and `Analyze (javascript-typescript)`).
 
@@ -35,7 +35,7 @@ Not touched on purpose: CodeQL, signing/attestation, smoke thresholds, auth/admi
 
 - Allowed: copy, labels, spacing, colours, static content in `components/`, `pages/`, `utils/pageCopyDefaults.ts`, `assets/`; no auth, passkey, lockout, database or server changes.
 - Local gate: lint, typecheck, unit and only the Playwright specs of the touched page (full suite only when layout or shared components change).
-- Push to `main` directly; watch `Build` and `docker`; do not re-push while `docker` runs unless needed (a newer push cancels the older image).
+- Push to `main` directly; watch `Build` and `docker`. A newer push no longer cancels an in-progress image publish (it queues, then publishes its own SHA).
 - After the smoke: open the page once with a cache-busting query and compare the text, in Dark and Light.
 - Review afterwards by Buddy; a bad fix is reverted by a new small commit.
 

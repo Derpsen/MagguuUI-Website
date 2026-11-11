@@ -25,7 +25,7 @@ import { resetBlizzardMetaLock, tryAcquireBlizzardMetaLock } from '../../server/
 import { buildMetaSnapshot, runScheduledBlizzardMetaSync, runScheduledBlizzardMetaSyncGuarded } from '../../server/utils/blizzardMetaSync'
 import { readCurrentMetaSnapshot, readLastMetaRun } from '../../server/utils/blizzardMetaStore'
 import { parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
-import { META_MIN_BUILD_SAMPLE, talentBand } from '../../utils/metaTypes'
+import { META_JOB_TIMEOUT_MS, META_MIN_BUILD_SAMPLE, talentBand } from '../../utils/metaTypes'
 import { formatShare, statPrioritySymbol } from '../../utils/metaFormat'
 
 function headers(init: Record<string, string> = {}): { get(name: string): string | null } {
@@ -328,6 +328,78 @@ describe('blizzard meta sync from fixtures', () => {
       })
       for (let i = 0; i < 6; i++) await traffic.run(async () => { t += 1 })
       assert.ok(waits.length >= 1)
+      assert.ok(waits.every(ms => ms <= 100), `waits must not grow: ${waits.join(',')}`)
+    } finally {
+      Date.now = realNow
+    }
+  })
+
+  it('fires a provided deadline through runScheduledBlizzardMetaSync when now is omitted', async () => {
+    const realNow = Date.now
+    let t = 1_700_000_000_000
+    Date.now = () => t
+    try {
+      const fetcher: BlizzardFetcher = async (input) => {
+        t += 60_000
+        return fixtureFetcher()(input)
+      }
+      const result = await runScheduledBlizzardMetaSyncGuarded({
+        sqlite: openStore(),
+        config: armedConfig,
+        fetcher,
+        sleep: async () => {},
+        deadline: 1_700_000_000_000 + 180_000,
+        kumaPush: async () => 'pushed',
+        purgeMeta: async () => 'purged',
+      })
+      assert.equal(result.status, 'error')
+      assert.match(result.reason || '', /job deadline/)
+    } finally {
+      Date.now = realNow
+    }
+  })
+
+  it('applies the default 45-minute deadline through runScheduledBlizzardMetaSync when now and deadline are omitted', async () => {
+    const realNow = Date.now
+    let t = 1_700_000_000_000
+    Date.now = () => t
+    try {
+      const fetcher: BlizzardFetcher = async (input) => {
+        t += META_JOB_TIMEOUT_MS
+        return fixtureFetcher()(input)
+      }
+      const result = await runScheduledBlizzardMetaSyncGuarded({
+        sqlite: openStore(),
+        config: armedConfig,
+        fetcher,
+        sleep: async () => {},
+        kumaPush: async () => 'pushed',
+        purgeMeta: async () => 'purged',
+      })
+      assert.equal(result.status, 'error')
+      assert.match(result.reason || '', /job deadline/)
+    } finally {
+      Date.now = realNow
+    }
+  })
+
+  it('keeps scheduled rate-gate waits to one slot on the live Date.now clock when now is omitted', async () => {
+    const realNow = Date.now
+    let t = 1_700_000_000_000
+    Date.now = () => t
+    const waits: number[] = []
+    try {
+      const result = await runScheduledBlizzardMetaSync({
+        sqlite: openStore(),
+        config: armedConfig,
+        fetcher: fixtureFetcher(),
+        sleep: async (ms) => { waits.push(ms); t += ms },
+        caps: { maxRps: 10, concurrency: 1 },
+        kumaPush: async () => 'pushed',
+        purgeMeta: async () => 'purged',
+      })
+      assert.equal(result.status, 'ok')
+      assert.ok(waits.length >= 1, 'expected the rate gate to wait at least once')
       assert.ok(waits.every(ms => ms <= 100), `waits must not grow: ${waits.join(',')}`)
     } finally {
       Date.now = realNow

@@ -610,5 +610,23 @@
     "file": "server/utils/blizzardHttp.ts",
     "find": "      if (res.status === 429 && options.traffic) options.traffic.pauseUntil(clock() + wait)\n",
     "repl": "      if (res.status === 429 && options.traffic) options.traffic.pauseUntil(wait)\n"
+  },
+  {
+    "name": "meta: scheduled asClock freezes input.now at creation",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "  const clock = asClock(input.now)\n",
+    "repl": "  const clock = asClock(asClock(input.now)())\n"
+  },
+  {
+    "name": "meta: buildMetaSnapshot traffic gate uses a frozen clock",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "    sleep: options.sleep,\n    now: clock,\n",
+    "repl": "    sleep: options.sleep,\n    now: () => now,\n"
+  },
+  {
+    "name": "meta: scheduled job has no default deadline",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "  const deadline = input.deadline ?? (startedAt + META_JOB_TIMEOUT_MS)\n",
+    "repl": "  const deadline = input.deadline\n"
   }
 ]

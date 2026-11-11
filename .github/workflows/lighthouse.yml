@@ -5,6 +5,8 @@ name: Lighthouse
 # This workflow is deliberately NOT a required check and never fails: a missed
 # budget only raises a ::warning:: annotation and a row in the job summary.
 # It does not run on every push (noise / runner minutes).
+# Feature branches: pull_request to main only — never on a branch push.
+# cancel-in-progress is safe here (advisory budget, not the image publish).
 on:
   pull_request:
     branches: [main]

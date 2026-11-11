@@ -10,6 +10,8 @@ name: Link check (build)
 # bots with 403; addon query values are intentionally mixed case).
 
 on:
+  # Feature branches: pull_request only — never on a branch push.
+  # cancel-in-progress is safe here (advisory, not the image publish).
   pull_request:
     paths:
       - 'pages/**'

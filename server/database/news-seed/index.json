@@ -1,0 +1,42 @@
+[
+  {
+    "slug": "wow-forever-now-live",
+    "title": "World of Warcraft: Forever Is Now Live",
+    "date": "2026-11-11",
+    "summary": "WoW: Forever launched worldwide on November 4, 2026, with new zones, the Skyborne, rulesets, and a first-login interface preset.",
+    "tags": ["wow-forever", "launch", "blizzard", "skyborne"],
+    "file": "wow-forever-now-live.md"
+  },
+  {
+    "slug": "midnight-12-1-5-mid-season",
+    "title": "Midnight 12.1.5 Is Live: Kith'ix, the Labyrinth, and Season 2's Mid-Season Refresh",
+    "date": "2026-11-11",
+    "summary": "Midnight's 12.1.5 update is live, adding the Unbinding of Kith'ix, the Labyrinth of Kindo'jan, Aqir Invasions, and Season 2 catch-up.",
+    "tags": ["midnight", "patch-12-1-5", "season-2", "mythic-plus"],
+    "file": "midnight-12-1-5-mid-season.md"
+  },
+  {
+    "slug": "wow-forever-november-hotfixes",
+    "title": "WoW: Forever Hotfixes Tune Classes, Buff Dungeon XP, and Tighten PvP Balance",
+    "date": "2026-11-11",
+    "summary": "Launch-week Forever hotfixes buff dungeon XP by 50%, retune Enhancement, Hunters, and Warlocks, and tighten PvP faction creation.",
+    "tags": ["wow-forever", "hotfixes", "class-tuning", "pvp"],
+    "file": "wow-forever-november-hotfixes.md"
+  },
+  {
+    "slug": "discord-guild-chat-linking",
+    "title": "Discord Account Linking and Guild Chat Mirroring Come to WoW and Forever",
+    "date": "2026-11-11",
+    "summary": "Modern WoW and WoW: Forever now support Discord account linking and two-way guild chat mirroring for players and officers.",
+    "tags": ["discord", "guilds", "midnight", "wow-forever"],
+    "file": "discord-guild-chat-linking.md"
+  },
+  {
+    "slug": "pouch-of-violet-dust-launch-celebration",
+    "title": "Claim the Pouch of Violet Dust Before the Forever Twitch Drop Ends",
+    "date": "2026-11-11",
+    "summary": "The Pouch of Violet Dust Twitch Drop for WoW: Forever closes November 12 at 4:30 p.m. PST. Watch four hours to claim the camp toy.",
+    "tags": ["wow-forever", "twitch-drops", "events", "camping"],
+    "file": "pouch-of-violet-dust-launch-celebration.md"
+  }
+]

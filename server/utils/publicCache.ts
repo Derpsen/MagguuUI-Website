@@ -51,6 +51,7 @@ export const CDN_CACHEABLE_PATHS = new Set([
   '/guide',
   '/faq',
   '/changelog',
+  '/news',
   '/about',
   '/addons',
   '/strings',
@@ -73,5 +74,6 @@ export function isCdnCacheable(method: string, path: string, status: number): bo
   if (query) return false
   const normalized = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname
   if (normalized === '/meta' || normalized.startsWith('/meta/')) return true
+  if (/^\/news\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(normalized)) return true
   return CDN_CACHEABLE_PATHS.has(normalized)
 }

@@ -18,6 +18,7 @@ interface LogOptions {
     | 'changelog'
     | 'content'
     | 'faq'
+    | 'news'
     | 'user'
     | 'api-key'
     | 'field'

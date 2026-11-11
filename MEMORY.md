@@ -615,3 +615,7 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 - Forever product truth: MagguuUI one-package + Camelot WowUp (5+8). Website `c6320e1` reads Camelot WowUp.lua from MagguuUI. Forever Magguu Settings (Smart Tab, keybinds, Boost, BigWigsStyle, MapNotes) documented 2026-11-09 from MagguuUI main portable EUI; Zygor/RXP internal only.
 
 - 2026-11-09 Berlin: A) Dependabot #14 minimatch: override 11.0.1 breaks eslint-plugin-import-x (no makeRe); left osv ignore GHSA-g3hv-75wg-m249, no parent major. B) `c6320e1` Forever one-package + Camelot WowUp (5+8); Gate 0, mutation 97 killed. CI: Build/CodeQL/Quality green; docker #42672840649 FAIL (only verify+e2e 2/2, no build-and-push/digest — left alone). Docs-drift FAIL unclear. Live still 5c6faa4 / digest 2ab45ef… Forever QoL public copy (Smart Tab, keybinds, Boost, BigWigs styles, MapNotes) + AGENTS/MEMORY + product-facts skill; Zygor/RXP public-tree free; forever.spec 9/9.
+
+## 2026-11-11 News scaffold
+
+- Public `/news` + `/news/[slug]` (SSR), RSS `/news/feed.xml`, sitemap + Takumi OG + NewsArticle JSON-LD. Admin `/admin/content/news`. Schema and seed rules: `docs/news.md`. Author is always Magguu. Pouch-of-violet-dust seed stays unpublished until someone publishes it after the 2026-11-13 01:30 Europe/Berlin drop cutoff.

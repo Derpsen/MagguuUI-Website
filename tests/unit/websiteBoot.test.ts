@@ -58,6 +58,9 @@ function snapshot(sqlite: Database.Database) {
     changelogs: sqlite.prepare(
       'SELECT version, content, content_en AS contentEn, is_published AS isPublished FROM changelogs ORDER BY version',
     ).all(),
+    news: sqlite.prepare(
+      'SELECT slug, title, is_published AS isPublished FROM news_articles ORDER BY slug',
+    ).all(),
     indexes: sqlite.prepare(
       "SELECT name FROM sqlite_master WHERE type = 'index' AND name LIKE 'idx_%' ORDER BY name",
     ).all(),
@@ -87,7 +90,7 @@ function firstBootLogs(logs: string[]) {
 describe('website boot characterization', () => {
   it('boot helpers do not import the process database module', () => {
     const dir = join(repoRoot, 'server/utils')
-    for (const name of ['websiteBoot.ts', 'bootSeed.ts', 'bootMigrations.ts', 'bootContentMarkers.ts', 'websiteBootTypes.ts']) {
+    for (const name of ['websiteBoot.ts', 'bootSeed.ts', 'bootNews.ts', 'bootMigrations.ts', 'bootContentMarkers.ts', 'websiteBootTypes.ts']) {
       const src = readFileSync(join(dir, name), 'utf8')
       assert.doesNotMatch(src, /from ['"]~\/server\/database['"]/)
       assert.doesNotMatch(src, /from ['"]\.\.\/database['"]/)
@@ -102,6 +105,9 @@ describe('website boot characterization', () => {
     assert.equal(n('SELECT count(*) AS n FROM site_content'), DEFAULT_SITE_CONTENT.length)
     assert.equal(n('SELECT count(*) AS n FROM faqs'), DEFAULT_FAQS.length)
     assert.equal(n('SELECT count(*) AS n FROM changelogs'), 1 + PREVIOUS_ADDON_CHANGELOGS.length)
+    assert.equal(n('SELECT count(*) AS n FROM news_articles'), 5)
+    assert.equal(n("SELECT count(*) AS n FROM news_articles WHERE slug = 'pouch-of-violet-dust-launch-celebration' AND is_published = 0"), 1)
+    assert.equal(n('SELECT count(*) AS n FROM news_articles WHERE is_published = 1'), 4)
     const settingKeys = (sqlite.prepare('SELECT key FROM settings').all() as Array<{ key: string }>).map(row => row.key).sort()
     assert.deepEqual(settingKeys, Object.keys(SITE_SETTINGS_DEFAULTS).sort())
 
@@ -145,6 +151,8 @@ describe('website boot characterization', () => {
     assert.ok(!second.some(line => line.includes('default FAQ entries seeded')))
     assert.ok(!second.some(line => line.startsWith('[Init] Added current addon changelog')))
     assert.ok(!second.some(line => line.startsWith('[Init] Added addon changelog')))
+    assert.ok(first.some(line => line.startsWith('[Init] Seeded 5 news articles')))
+    assert.ok(!second.some(line => line.startsWith('[Init] Seeded ')))
     // Today's changelog repair may still match a stale-text predicate on the
     // current default body, so a second start can log an update while writing
     // the same bytes (snapshot above must stay equal). Do not tighten this.

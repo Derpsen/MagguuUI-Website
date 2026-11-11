@@ -139,6 +139,27 @@ export const faqs = sqliteTable('faqs', {
   visibleSortIdx: index('idx_faqs_visible_sort').on(table.isVisible, table.sortOrder),
 }))
 
+
+// ─── News articles ────────────────────────────────
+// Public SSR /news and admin-editable rows. Author is always Magguu.
+
+export const newsArticles = sqliteTable('news_articles', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  slug: text('slug').notNull().unique(),
+  title: text('title').notNull(),
+  summary: text('summary').notNull(),
+  body: text('body').notNull(),
+  sourceUrl: text('source_url'),
+  sourceName: text('source_name'),
+  publishedAt: integer('published_at').notNull(),
+  author: text('author').notNull().default('Magguu'),
+  tags: text('tags').notNull().default('[]'),
+  isPublished: integer('is_published', { mode: 'boolean' }).notNull().default(false),
+  ...timestamps,
+}, (table) => ({
+  publishedIdx: index('idx_news_articles_published').on(table.isPublished, table.publishedAt),
+}))
+
 // ─── Activity Log ─────────────────────────────────
 // Tracks all admin actions (string changes, content edits, etc.)
 

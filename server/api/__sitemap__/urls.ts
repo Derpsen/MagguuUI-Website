@@ -11,7 +11,7 @@
  */
 import { desc, eq } from 'drizzle-orm'
 import { db } from '~/server/database'
-import { changelogs } from '~/server/database/schema'
+import { changelogs, newsArticles } from '~/server/database/schema'
 
 const PAGES = [
   { loc: '/', changefreq: 'weekly', priority: 1.0, lastmodFromChangelog: true },
@@ -21,6 +21,7 @@ const PAGES = [
   { loc: '/configurator', changefreq: 'monthly', priority: 0.6 },
   { loc: '/changelog', changefreq: 'weekly', priority: 0.6, lastmodFromChangelog: true },
   { loc: '/faq', changefreq: 'monthly', priority: 0.5 },
+  { loc: '/news', changefreq: 'daily', priority: 0.7 },
   { loc: '/forever', changefreq: 'weekly', priority: 0.6 },
   { loc: '/forever/download', changefreq: 'weekly', priority: 0.5 },
   { loc: '/forever/guide', changefreq: 'monthly', priority: 0.4 },
@@ -50,10 +51,31 @@ export default defineSitemapEventHandler(() => {
     // DB not ready: serve the sitemap without lastmod.
   }
 
-  return PAGES.map(page => ({
+  const pages = PAGES.map(page => ({
     loc: page.loc,
     changefreq: page.changefreq,
     priority: page.priority,
     ...('lastmodFromChangelog' in page && lastmod ? { lastmod } : {}),
   }))
+
+  let articles: Array<{ loc: string, changefreq: 'weekly', priority: 0.6, lastmod: string }> = []
+  try {
+    articles = db.select({
+      slug: newsArticles.slug,
+      publishedAt: newsArticles.publishedAt,
+    }).from(newsArticles)
+      .where(eq(newsArticles.isPublished, true))
+      .orderBy(desc(newsArticles.publishedAt))
+      .all()
+      .map(article => ({
+        loc: `/news/${article.slug}`,
+        changefreq: 'weekly' as const,
+        priority: 0.6 as const,
+        lastmod: toDate(article.publishedAt).toISOString().slice(0, 10),
+      }))
+  } catch {
+    // DB not ready: list /news without article locs.
+  }
+
+  return [...pages, ...articles]
 })

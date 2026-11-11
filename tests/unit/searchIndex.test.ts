@@ -57,3 +57,19 @@ describe('public search index', () => {
     assert.equal(buildSearchIndex({ guideSteps: {}, faqs: [], profiles: [{ id: 1, addon: 'A', profile: 'B' }], layouts: [], wowupPacks: ['P'] }).filter(e => e.group === 'Strings').some(e => e.body !== undefined), false)
   })
 })
+
+  it('indexes published news articles', () => {
+    const index = buildSearchIndex({
+      guideSteps: {},
+      faqs: [],
+      profiles: [],
+      layouts: [],
+      wowupPacks: [],
+      news: [{ slug: 'wow-forever-now-live', title: 'Forever Is Live', summary: 'Launch notes.', body: 'Hello **there**.' }],
+    })
+    const news = index.filter(e => e.group === 'News')
+    assert.deepEqual(news.map(e => e.to), ['/news/wow-forever-now-live'])
+    assert.equal(news[0]!.label, 'Forever Is Live')
+    assert.equal(news[0]!.text, 'Launch notes.')
+    assert.match(news[0]!.body || '', /Hello there/)
+  })

@@ -6,7 +6,7 @@ import { canonicalizeMetaPath } from './metaRoutes'
 
 /** Public routes that are counted. Anything else (admin, api, 404s, junk) is ignored. */
 export const TRACKED_ROUTES = [
-  '/', '/strings', '/addons', '/configurator', '/guide', '/changelog', '/faq', '/about', '/imprint', '/privacy', '/status', '/submit-preset',
+  '/', '/strings', '/addons', '/configurator', '/guide', '/news', '/changelog', '/faq', '/about', '/imprint', '/privacy', '/status', '/submit-preset',
   '/forever', '/forever/guide', '/forever/download', '/forever/strings',
   '/meta',
 ] as const
@@ -23,6 +23,7 @@ export function normalizeTrackedPath(raw: unknown): string | null {
     const meta = canonicalizeMetaPath(path)
     return meta?.valid && TRACKED.has('/meta') ? '/meta' : null
   }
+  if (/^\/news\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(path)) return '/news'
   return TRACKED.has(path) ? path : null
 }
 

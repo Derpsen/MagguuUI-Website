@@ -34,7 +34,7 @@ const siteSettings = usePublicSiteSettings()
 const fill = (html: string) => fillCopyTokens(html, { retention_days: siteSettings.value.data_retention_days })
 
 const isDark = useIsDark()
-const sectionIds = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12'] as const
+const sectionIds = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12', 's13'] as const
 </script>
 
 <style scoped>

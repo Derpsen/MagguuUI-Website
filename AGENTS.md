@@ -65,6 +65,19 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     `X-RateLimit-Remaining`/`Reset`, skip/back off). Audit/sync history must
     not record tokens. Tests: `tests/unit/githubSchedule.test.ts`,
     `tests/unit/githubScheduledSync.test.ts`, `tests/admin-github-scheduled.spec.ts`.
+  - Meta prototype (`/meta`, EU Mythic+): public class and spec routes with a
+    trademark-neutral title and path (`Meta`, `/meta/...` — never "World of
+    Warcraft" or "WoW"). English copy lives in `utils/metaCopy.ts` (`META_COPY`,
+    German strings kept beside it unused). Empty pages show "No data yet."
+    The aggregated snapshot schema is `utils/metaTypes.ts`, documented in
+    `docs/meta-snapshot.md`, with a fixture at
+    `tests/fixtures/blizzard-meta/snapshot.json` (never served on live pages).
+    SQLite table `meta_snapshots` holds a payload for at most 30 days.
+    Privacy section 13 describes server-side retrieval (no visitor data is
+    sent to Blizzard). A later PR adds the Blizzard client and nightly job;
+    another adds the full spec layout. Tests: `tests/unit/metaSnapshot.test.ts`,
+    `tests/unit/blizzardMetaStore.test.ts`, `tests/unit/metaCopy.test.ts`,
+    `tests/meta.spec.ts`.
   - Settings header/metric also shows `App {version} · sha-{short}` (or `dev`)
     from the same `GIT_SHA` via `/api/v1/admin/system/info`. docker.yml already
     passes `GIT_SHA=${{ github.sha }}`.

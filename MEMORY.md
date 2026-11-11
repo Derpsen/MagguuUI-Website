@@ -265,6 +265,13 @@
   runs if the release check fails (`partial` / `error` with both results).
   Shared lock with Check/Resync; rate-limit skip on remaining=0 / 429 /
   rate-limit 403.
+- Meta prototype (`/meta`): EU Mythic+ routes, snapshot schema
+  (`utils/metaTypes.ts`, `docs/meta-snapshot.md`, fixture
+  `tests/fixtures/blizzard-meta/snapshot.json`). English centralized copy
+  (`utils/metaCopy.ts`). No "World of Warcraft"/"WoW" in our titles or URLs.
+  Empty pages show "No data yet." until a snapshot is written. Privacy s13
+  (server-side retrieval, no visitor data passed on). The nightly Blizzard
+  job and the full spec layout come in follow-up PRs.
 - Build info: Dockerfile `GIT_SHA`/`BUILD_TIME` args -> env; admin dashboard
   shows `Live: <sha7> · built <UTC>` (fallback `dev`) via
   `/api/v1/admin/system/build`.

@@ -421,6 +421,20 @@ export const DATABASE_BOOTSTRAP_SQL = `
     updated_at INTEGER NOT NULL DEFAULT (unixepoch())
   );
   CREATE INDEX IF NOT EXISTS idx_addons_category_sort ON addons(category, sort_order);
+
+  CREATE TABLE IF NOT EXISTS meta_snapshots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    region TEXT NOT NULL,
+    season TEXT,
+    period TEXT,
+    fetched_at INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'blizzard'
+  );
+  CREATE INDEX IF NOT EXISTS idx_meta_snapshots_expires_at ON meta_snapshots(expires_at);
+  CREATE INDEX IF NOT EXISTS idx_meta_snapshots_region_fetched ON meta_snapshots(region, fetched_at);
 `
 
 export const SAFE_COLUMN_MIGRATIONS = [

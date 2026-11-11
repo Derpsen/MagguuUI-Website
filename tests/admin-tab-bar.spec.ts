@@ -117,3 +117,25 @@ test('Settings header shows the app version and build SHA', async () => {
     await page.close()
   }
 })
+
+test('arrow keys move between tabs; reduced-motion still reaches Community', async () => {
+  const page = await context.newPage()
+  try {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await page.addInitScript(([tabs]) => {
+      localStorage.setItem('admin-tabs', JSON.stringify(tabs))
+    }, [SEEDED_TABS])
+    await page.goto('/admin/strings/community')
+    await expect(page.getByTestId('admin-tab-bar')).toBeVisible({ timeout: 30_000 })
+    const community = page.getByTestId('admin-tab').filter({ hasText: 'Community' })
+    await community.focus()
+    await page.keyboard.press('ArrowLeft')
+    await expect(page).toHaveURL(/\/admin\/strings\/wowup/)
+    await page.keyboard.press('ArrowRight')
+    await expect(page).toHaveURL(/\/admin\/strings\/community/)
+    await expect(community).toBeFocused()
+  } finally {
+    await page.close()
+  }
+})

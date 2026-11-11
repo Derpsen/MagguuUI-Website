@@ -22,18 +22,46 @@ function updateOverflow() {
   canScrollRight.value = max > 1 && el.scrollLeft < max - 1
 }
 
+const router = useRouter()
+
+function scrollBehavior(): ScrollBehavior {
+  if (import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return 'auto'
+  return 'smooth'
+}
+
 function scrollTabs(dir: -1 | 1) {
   const el = scroller.value
   if (!el) return
   const delta = Math.max(160, Math.floor(el.clientWidth * 0.7))
-  el.scrollBy({ left: dir * delta, behavior: 'smooth' })
+  el.scrollBy({ left: dir * delta, behavior: scrollBehavior() })
 }
 
 function scrollActiveIntoView() {
   const el = scroller.value
   if (!el) return
   const active = el.querySelector('[data-active="true"]') as HTMLElement | null
-  active?.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' })
+  active?.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: scrollBehavior() })
+}
+
+function onTabListKeydown(event: KeyboardEvent) {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+  const items = tabs.value
+  if (!items.length) return
+  event.preventDefault()
+  let idx = items.findIndex(t => t.path === route.path)
+  if (idx < 0) idx = 0
+  if (event.key === 'ArrowRight') idx = Math.min(items.length - 1, idx + 1)
+  else if (event.key === 'ArrowLeft') idx = Math.max(0, idx - 1)
+  else if (event.key === 'Home') idx = 0
+  else idx = items.length - 1
+  const next = items[idx]
+  if (!next) return
+  void router.push(next.path)
+  nextTick(() => {
+    const el = scroller.value?.querySelector(`[data-tab-path="${CSS.escape(next.path)}"]`) as HTMLElement | null
+    el?.focus()
+    scrollActiveIntoView()
+  })
 }
 
 function refreshOverflow() {
@@ -116,7 +144,7 @@ watch(() => route.path, () => {
         :class="[canScrollLeft ? 'pl-7' : '', canScrollRight ? 'pr-7' : '']"
         @scroll="updateOverflow"
       >
-        <div class="flex h-[38px] w-max items-center gap-0" role="tablist" aria-label="Open admin pages">
+        <div class="flex h-[38px] w-max items-center gap-0" role="tablist" aria-label="Open admin pages" @keydown="onTabListKeydown">
           <NuxtLink
             v-for="tab in tabs"
             :key="tab.path"

@@ -3,7 +3,7 @@
 import { gte } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { webVitals } from '~/server/database/schema'
-import { aggregateVitals } from '~/server/utils/webVitals'
+import { summarizeVitals } from '~/server/utils/webVitals'
 
 export default defineEventHandler((event) => {
   requireAdminAccess(event)
@@ -11,5 +11,5 @@ export default defineEventHandler((event) => {
   const since = new Date(Date.now() - days * 86_400_000)
   const rows = db.select({ path: webVitals.path, metric: webVitals.metric, value: webVitals.value })
     .from(webVitals).where(gte(webVitals.createdAt, since)).all()
-  return apiSuccess({ days, total: rows.length, rows: aggregateVitals(rows) })
+  return apiSuccess(summarizeVitals(rows, days))
 })

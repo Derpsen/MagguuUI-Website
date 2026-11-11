@@ -50,6 +50,8 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
   - Admin tab bar (`components/admin/TabBar.vue`): hidden scrollbar plus fade
     and arrow buttons when tabs overflow; Playwright `tests/admin-tab-bar.spec.ts`
     at 1280px and 390px, light and dark. Community must stay reachable.
+    Arrow keys / Home / End move between tabs; scroll uses `auto` when
+    `prefers-reduced-motion: reduce` is set.
   - Admin list metrics must not show a counted 0 while the first fetch is in
     flight (skeleton instead). `/admin/**` is `ssr: false` (auth-token flash),
     so the first list wait is SPA download + session check + `apiFetch` after
@@ -58,6 +60,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
   - RUM: `/api/v1/vitals` stores path + metric + value only (no IP/UA/cookie);
     never add identifiers. Admin view: `/admin/system/vitals` (p75).
     Collection and the admin table only keep `TRACKED_ROUTES` (404s such as `/doesnotexist` are dropped).
+    Admin `total` is the sample count after that filter, not the raw row count.
   - Search: `/api/v1/search-index` is public data only (full-text since 2026-10-24, see "Full-text search"); `PublicSearch.vue`
     and `web-vitals` stay out of public prefetch (`ADMIN_ONLY_CHUNK`).
   - Speculation Rules (`utils/speculationRules.ts`) must keep excluding

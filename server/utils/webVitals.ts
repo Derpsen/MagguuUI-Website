@@ -68,3 +68,9 @@ export function aggregateVitals(rows: Array<{ path: string, metric: string, valu
   }
   return out.sort((a, b) => a.path.localeCompare(b.path) || VITAL_METRICS.indexOf(a.metric) - VITAL_METRICS.indexOf(b.metric))
 }
+
+/** Admin payload: p75 rows plus a sample total that excludes 404 / unknown paths. */
+export function summarizeVitals(rows: Array<{ path: string, metric: string, value: number }>, days: number) {
+  const aggregated = aggregateVitals(rows)
+  return { days, total: aggregated.reduce((n, r) => n + r.samples, 0), rows: aggregated }
+}

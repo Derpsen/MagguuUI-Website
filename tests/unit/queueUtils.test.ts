@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { aggregateVitals, normalizeVitalPath, p75, parseVitalsBeacon, vitalRating } from '../../server/utils/webVitals'
+import { aggregateVitals, normalizeVitalPath, p75, parseVitalsBeacon, summarizeVitals, vitalRating } from '../../server/utils/webVitals'
 import { diffContentForms } from '../../utils/contentChanges'
 import { SPECULATION_RULES } from '../../utils/speculationRules'
 
@@ -46,6 +46,17 @@ describe('web vitals', () => {
       { path: '/faq', metric: 'LCP', value: 1200 },
     ])
     assert.deepEqual(filtered, [{ path: '/faq', metric: 'LCP', p75: 1200, samples: 1, rating: 'good' }])
+  })
+
+  it('admin total counts only allowed samples, not stored 404 rows', () => {
+    const report = summarizeVitals([
+      { path: '/doesnotexist', metric: 'LCP', value: 3324 },
+      { path: '/faq', metric: 'LCP', value: 1200 },
+      { path: '/faq', metric: 'LCP', value: 1100 },
+    ], 28)
+    assert.equal(report.total, 2)
+    assert.equal(report.days, 28)
+    assert.deepEqual(report.rows, [{ path: '/faq', metric: 'LCP', p75: 1200, samples: 2, rating: 'good' }])
   })
 })
 

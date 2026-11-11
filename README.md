@@ -19,6 +19,7 @@ This repository contains the public website for MagguuUI, the internal admin are
   - site settings
 - REST API for website content and admin operations
 - SQLite-backed storage for content, analytics, sessions, and activity logs
+- Public `/meta` pages for an EU Mythic+ aggregate (snapshot schema in `docs/meta-snapshot.md`; live pages never serve the test fixture). Empty state: "Collecting data." After a snapshot expires (30 days): "Data unavailable."
 
 ## Stack
 
@@ -36,7 +37,7 @@ This repository contains the public website for MagguuUI, the internal admin are
 ## Main Areas
 
 - `pages/`
-  - public pages such as `index`, `strings`, `guide`, `faq`, `changelog`
+  - public pages such as `index`, `strings`, `guide`, `faq`, `changelog`, and `/meta` (EU Mythic+ meta; empty until a snapshot exists)
   - admin pages under `pages/admin/`
 - `components/admin/` and `composables/useAdminNavigation.ts`
   - shared admin primitives for headers, panels, metrics, empty states, sticky save bars, and navigation context

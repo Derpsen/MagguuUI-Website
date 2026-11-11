@@ -3,7 +3,7 @@
     :title="copy.specTitle(found.classEntry.name, found.spec.name)"
     :lead="copy.specDescription(found.classEntry.name, found.spec.name)"
     :empty="empty"
-    :empty-text="copy.noSpecData"
+    :empty-text="statusText"
     :murlok-href="murlokSpecUrl(found.classEntry.slug, found.spec.slug)"
     :archon-href="archonSpecUrl(found.classEntry.slug, found.spec.slug)"
     :icy-veins-href="icyVeinsGuideUrl(found.classEntry.slug, found.spec.slug)"
@@ -30,10 +30,12 @@ usePublicPageSeo({
 
 type SpecResponse = {
   empty: boolean
+  unavailable?: boolean
 }
 
 const { data } = await useFetch<SpecResponse>(() => `/api/v1/meta/${found.value!.classEntry.slug}/${found.value!.spec.slug}`)
-const empty = computed(() => data.value?.empty !== false)
+const empty = computed(() => data.value?.empty !== false || data.value?.unavailable === true)
+const statusText = computed(() => data.value?.unavailable ? copy.unavailable : copy.noSpecData)
 const crumbs = computed(() => [
   { to: '/meta', label: copy.indexTitle },
   { to: `/meta/${found.value!.classEntry.slug}`, label: found.value!.classEntry.name },

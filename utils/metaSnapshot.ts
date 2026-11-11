@@ -24,6 +24,7 @@ import type {
   MetaTalentTree,
   MetaTalentTreeState,
 } from './metaTypes'
+import { findMetaClass, findMetaSpec } from './metaCatalog'
 import { META_FOCUS, META_MIN_BUILD_SAMPLE, META_REGION, specDataState } from './metaTypes'
 
 const FORBIDDEN_KEYS = new Set([
@@ -64,10 +65,15 @@ function hasForbiddenKey(value: unknown): boolean {
   if (Array.isArray(value)) return value.some(hasForbiddenKey)
   if (!isRecord(value)) return false
   for (const key of Object.keys(value)) {
-    if (FORBIDDEN_KEYS.has(key)) return true
+    if (FORBIDDEN_KEYS.has(key) || FORBIDDEN_KEYS.has(key.toLowerCase())) return true
     if (hasForbiddenKey(value[key])) return true
   }
   return false
+}
+
+/** Unix seconds (not milliseconds, not negative). */
+function isFetchedAtSeconds(value: unknown): value is number {
+  return isFiniteNumber(value) && value >= 0 && value < 1e12
 }
 
 function parseKeySpan(value: unknown): { min: number, max: number } | null {
@@ -116,7 +122,7 @@ function parseTalentTreeState(value: unknown): MetaTalentTreeState | null {
 }
 
 function parseFreshness(value: unknown): MetaFreshness | null {
-  if (!isRecord(value) || !isFiniteNumber(value.fetchedAt) || !isNonNeg(value.players)) return null
+  if (!isRecord(value) || !isFetchedAtSeconds(value.fetchedAt) || !isNonNeg(value.players)) return null
   if (value.region !== META_REGION || value.source !== 'blizzard') return null
   const keyLevels = parseKeySpan(value.keyLevels)
   if (value.keyLevels != null && !keyLevels) return null
@@ -285,6 +291,34 @@ function parseSpec(value: unknown): MetaSpecSummary | null {
   }
 }
 
+
+function catalogSlugsAreValid(classes: MetaClassSummary[]): boolean {
+  const classSlugs = new Set<string>()
+  for (const cls of classes) {
+    if (!findMetaClass(cls.slug) || classSlugs.has(cls.slug)) return false
+    classSlugs.add(cls.slug)
+    const specSlugs = new Set<string>()
+    for (const spec of cls.specs) {
+      if (!findMetaSpec(cls.slug, spec.slug) || specSlugs.has(spec.slug)) return false
+      specSlugs.add(spec.slug)
+    }
+  }
+  return true
+}
+
+function loadoutsMatchCurrentTree(classes: MetaClassSummary[], currentHash: string | null): boolean {
+  if (!currentHash) return true
+  for (const cls of classes) {
+    for (const spec of cls.specs) {
+      if (spec.bestBuild?.treeHash && spec.bestBuild.treeHash !== currentHash) return false
+      for (const loadout of spec.loadouts) {
+        if (loadout.treeHash && loadout.treeHash !== currentHash) return false
+      }
+    }
+  }
+  return true
+}
+
 function parseClass(value: unknown): MetaClassSummary | null {
   if (!isRecord(value) || !isStr(value.slug) || !isStr(value.label) || !isNonNeg(value.n)) return null
   const specs = mapList(value.specs, parseSpec)
@@ -346,6 +380,8 @@ export function parseMetaSnapshotPayload(input: unknown): MetaSnapshotPayload | 
   if (!basis) return null
   const classes = mapList(value.classes, parseClass)
   if (!classes) return null
+  if (!catalogSlugsAreValid(classes)) return null
+  if (!loadoutsMatchCurrentTree(classes, talentTree?.hash ?? null)) return null
   return {
     region: META_REGION,
     focus: META_FOCUS,

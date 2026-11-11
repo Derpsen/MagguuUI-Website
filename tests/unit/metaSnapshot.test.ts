@@ -57,9 +57,28 @@ describe('meta snapshot fixture', () => {
     const ok = parseMetaSnapshotPayload(readFileSync(fixturePath, 'utf8'))
     assert.ok(ok)
     assert.equal(parseMetaSnapshotPayload({ ...ok, playerName: 'Someone' }), null)
-    const withName = structuredClone(ok)
-    withName.classes[0]!.label = withName.classes[0]!.label
+    assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, Name: 'nope' } }), null)
     assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, name: 'nope' } }), null)
+    assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, fetchedAt: ok.freshness.fetchedAt * 1000 } }), null)
+    assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, fetchedAt: -1 } }), null)
+    assert.equal(parseMetaSnapshotPayload({
+      ...ok,
+      classes: [...ok.classes, { ...ok.classes[0]!, slug: 'not-a-class' }],
+    }), null)
+    assert.equal(parseMetaSnapshotPayload({
+      ...ok,
+      classes: [...ok.classes, ok.classes[0]!],
+    }), null)
+    const staleHash = ok.talentTree?.hash ? `${ok.talentTree.hash}-old` : 'stale'
+    assert.equal(parseMetaSnapshotPayload({
+      ...ok,
+      classes: ok.classes.map(cls => ({
+        ...cls,
+        specs: cls.specs.map(spec => spec.slug === 'fire'
+          ? { ...spec, loadouts: spec.loadouts.map((row, i) => i === 0 ? { ...row, treeHash: staleHash } : row) }
+          : spec),
+      })),
+    }), null)
     const fire = ok.classes.flatMap(cls => cls.specs).find(spec => spec.slug === 'fire')
     assert.ok(fire)
     assert.equal(parseMetaSnapshotPayload({

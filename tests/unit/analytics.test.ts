@@ -88,6 +88,9 @@ describe('request rules', () => {
     assert.equal(normalizeTrackedPath('/meta'), '/meta')
     assert.equal(normalizeTrackedPath('/meta/mage'), '/meta')
     assert.equal(normalizeTrackedPath('/meta/mage/fire/'), '/meta')
+    assert.equal(normalizeTrackedPath('/meta/foo/bar'), null)
+    assert.equal(normalizeTrackedPath('/meta/mage/holy'), null)
+    assert.equal(normalizeTrackedPath('/meta/mage/fire/extra'), null)
     for (const bad of ['/admin', '/admin/login', '/api/v1/x', '/nope', 'strings', '', '/strings/extra', `/${'a'.repeat(400)}`, 5, null, undefined]) {
       assert.equal(normalizeTrackedPath(bad), null, String(bad))
     }

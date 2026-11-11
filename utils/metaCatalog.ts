@@ -183,19 +183,56 @@ function hexLuminance(hex: string): number {
   return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
 }
 
-function darkenHex(hex: string, factor: number): string {
+export const META_TEXT_BG_LIGHT = '#eef4fb'
+export const META_TEXT_BG_DARK = '#0b1118'
+export const META_MIN_CONTRAST_RATIO = 4.5
+
+function hexChannel(hex: string): [number, number, number] | null {
   const raw = hex.replace('#', '')
-  if (raw.length !== 6) return hex
-  const ch = (i: number) => Math.max(0, Math.round(Number.parseInt(raw.slice(i, i + 2), 16) * factor)).toString(16).padStart(2, '0')
-  return `#${ch(0)}${ch(2)}${ch(4)}`
+  if (raw.length !== 6) return null
+  return [
+    Number.parseInt(raw.slice(0, 2), 16),
+    Number.parseInt(raw.slice(2, 4), 16),
+    Number.parseInt(raw.slice(4, 6), 16),
+  ]
 }
 
-/** Contrast-safe text color derived from an official class/quality hex. */
+function toHex(r: number, g: number, b: number): string {
+  const ch = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0')
+  return `#${ch(r)}${ch(g)}${ch(b)}`
+}
+
+function mixHex(from: string, to: string, amount: number): string {
+  const a = hexChannel(from)
+  const b = hexChannel(to)
+  if (!a || !b) return from
+  const t = Math.max(0, Math.min(1, amount))
+  return toHex(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t)
+}
+
+/** WCAG 2 relative-luminance contrast ratio of two #rrggbb colors. */
+export function contrastRatio(foreground: string, background: string): number {
+  const a = hexLuminance(foreground)
+  const b = hexLuminance(background)
+  const hi = Math.max(a, b)
+  const lo = Math.min(a, b)
+  return (hi + 0.05) / (lo + 0.05)
+}
+
+/**
+ * Contrast-safe text color derived from an official class/quality hex.
+ * Light theme is measured on `#eef4fb`; dark on `#0b1118`. Hue is kept;
+ * the color is darkened or lightened until the contrast ratio is ≥ 4.5:1.
+ */
 export function contrastSafeColor(hex: string, dark: boolean): string {
-  const lum = hexLuminance(hex)
-  if (!dark && lum >= 0.45) return darkenHex(hex, lum >= 0.8 ? 0.42 : 0.62)
-  if (dark && lum < 0.18) return '#d4d4d8'
-  return hex
+  const bg = dark ? META_TEXT_BG_DARK : META_TEXT_BG_LIGHT
+  if (contrastRatio(hex, bg) >= META_MIN_CONTRAST_RATIO) return hex
+  const toward = dark ? '#ffffff' : '#000000'
+  for (let step = 1; step <= 50; step++) {
+    const mixed = mixHex(hex, toward, step / 50)
+    if (contrastRatio(mixed, bg) >= META_MIN_CONTRAST_RATIO) return mixed
+  }
+  return dark ? '#e5e7eb' : '#111827'
 }
 
 export function metaClassColor(slug: string): string {

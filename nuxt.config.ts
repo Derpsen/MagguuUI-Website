@@ -409,8 +409,10 @@ export default defineNuxtConfig({
     '/configurator': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
     '/imprint': { swr: 120 },
     '/privacy': { swr: 120 },
-    '/meta': { swr: 120 },
-    '/meta/**': { swr: 120 },
+    // No page-level swr for /meta: filters (?role=, ?hero=) and tracking
+    // query strings would otherwise each get their own route-cache entry
+    // (Nitro keys on the full URL). The pages read /api/v1/meta (bare path,
+    // swr 120 below). See the /changelog note above (DoD 2.07).
     '/api/v1/meta': { swr: 120 },
     '/api/v1/meta/**': { swr: 120 },
     '/forever': { swr: 120 },

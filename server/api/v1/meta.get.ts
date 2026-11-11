@@ -1,10 +1,21 @@
 import { sqlite } from '~/server/database'
-import { readCurrentMetaSnapshot } from '~/server/utils/blizzardMetaStore'
+import { readMetaSnapshotState } from '~/server/utils/blizzardMetaStore'
+import { assertMetaApiRateLimit } from '~/server/utils/metaRateLimit'
 import { META_CLASSES } from '~/utils/metaCatalog'
 import { META_COPY } from '~/utils/metaCopy'
 
-export default defineEventHandler(() => {
-  const snapshot = readCurrentMetaSnapshot(sqlite)
+function catalogLabel() {
+  return META_CLASSES.map(entry => ({
+    slug: entry.slug,
+    label: entry.name,
+    specs: entry.specs.map(spec => ({ slug: spec.slug, label: spec.name })),
+  }))
+}
+
+export default defineEventHandler((event) => {
+  assertMetaApiRateLimit(event)
+  const state = readMetaSnapshotState(sqlite)
+  const snapshot = state.status === 'ok' ? state.snapshot : null
   return {
     data: snapshot
       ? {
@@ -19,8 +30,9 @@ export default defineEventHandler(() => {
           classes: snapshot.payload.classes,
         }
       : null,
-    catalog: META_CLASSES.map(entry => ({ slug: entry.slug, name: entry.name, specs: entry.specs })),
-    empty: !snapshot,
-    copy: { empty: META_COPY.empty, attribution: META_COPY.attribution },
+    catalog: catalogLabel(),
+    empty: state.status === 'empty' || (state.status === 'ok' && !snapshot),
+    unavailable: state.status === 'unavailable',
+    copy: { empty: META_COPY.empty, unavailable: META_COPY.unavailable, attribution: META_COPY.attribution },
   }
 })

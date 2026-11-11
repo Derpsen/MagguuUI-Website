@@ -1,3 +1,4 @@
+import { canonicalizeMetaPath } from './metaRoutes'
 /**
  * Rules shared by the browser beacon and the server counting endpoints.
  * Pure and dependency-free so both sides (and the unit tests) use one source.
@@ -18,7 +19,10 @@ export function normalizeTrackedPath(raw: unknown): string | null {
   let path = raw.split(/[?#]/)[0] ?? ''
   if (!path.startsWith('/')) return null
   if (path.length > 1) path = path.replace(/\/+$/, '')
-  if (path === '/meta' || path.startsWith('/meta/')) return TRACKED.has('/meta') ? '/meta' : null
+  if (path === '/meta' || path.startsWith('/meta/')) {
+    const meta = canonicalizeMetaPath(path)
+    return meta?.valid && TRACKED.has('/meta') ? '/meta' : null
+  }
   return TRACKED.has(path) ? path : null
 }
 

@@ -581,6 +581,6 @@ export const metaSnapshots = sqliteTable('meta_snapshots', {
 
 export const metaSnapshotActive = sqliteTable('meta_snapshot_active', {
   region: text('region').primaryKey(),
-  snapshotId: integer('snapshot_id').notNull(),
+  snapshotId: integer('snapshot_id').notNull().references(() => metaSnapshots.snapshotId, { onDelete: 'cascade' }),
 })
 

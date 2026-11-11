@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { archonSpecUrl, metaClassPath, metaSpecPath, murlokSpecUrl, META_CLASSES, toMetaSlug } from '../../utils/metaCatalog'
 import { META_COPY, META_COPY_DE, META_COPY_EN } from '../../utils/metaCopy'
+import { META_MIN_BUILD_SAMPLE, META_MIN_ITEM_SAMPLE, META_MIN_SHOW_SAMPLE } from '../../utils/metaTypes'
 
 const TRADEMARK = /\b(?:WoW|World of Warcraft)\b/i
 
@@ -52,5 +53,15 @@ describe('meta copy and paths', () => {
       const withoutOutbound = src.replace(/https:\/\/(www\.)?(murlok\.io|archon\.gg)[^"'`\s]*/g, '')
       assert.doesNotMatch(withoutOutbound, TRADEMARK, rel)
     }
+  })
+})
+
+describe('methodology thresholds', () => {
+  it('uses the same sample constants as the snapshot schema', () => {
+    assert.match(META_COPY.minSample, new RegExp(`${META_MIN_BUILD_SAMPLE} sampled players`))
+    assert.match(META_COPY.minSample, new RegExp(`Below ${META_MIN_SHOW_SAMPLE}`))
+    assert.match(META_COPY.minSample, new RegExp(`below ${META_MIN_ITEM_SAMPLE} samples`))
+    assert.match(META_COPY.faqSampleA, new RegExp(`minimum sample of ${META_MIN_BUILD_SAMPLE} characters`))
+    assert.doesNotMatch(META_COPY.faqSampleA, /minimum sample of 20 characters/)
   })
 })

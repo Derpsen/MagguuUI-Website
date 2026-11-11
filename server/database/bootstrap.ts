@@ -436,7 +436,7 @@ export const DATABASE_BOOTSTRAP_SQL = `
   CREATE TABLE IF NOT EXISTS meta_snapshot_active (
     region TEXT PRIMARY KEY,
     snapshot_id INTEGER NOT NULL,
-    FOREIGN KEY (snapshot_id) REFERENCES meta_snapshots(snapshot_id)
+    FOREIGN KEY (snapshot_id) REFERENCES meta_snapshots(snapshot_id) ON DELETE CASCADE
   );
   CREATE INDEX IF NOT EXISTS idx_meta_snapshots_expires_at ON meta_snapshots(expires_at);
   CREATE INDEX IF NOT EXISTS idx_meta_snapshots_region_fetched ON meta_snapshots(region, fetched_at);

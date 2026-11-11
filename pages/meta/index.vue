@@ -7,7 +7,7 @@
     :murlok-href="META_MURLLOK_HOME"
     :archon-href="META_ARCHON_HOME"
   >
-    <p v-if="noData" class="text-sm" role="status" :class="muted">{{ copy.empty }}</p>
+    <p v-if="noData" class="text-sm" role="status" :class="muted">{{ statusText }}</p>
 
     <section class="mt-10">
       <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="label">{{ copy.classGrid }}</h2>
@@ -17,7 +17,7 @@
             :to="metaClassPath(cls.slug)"
             class="underline underline-offset-4"
             :style="{ color: metaClassTextColor(cls.slug, isDark) }"
-          >{{ cls.name }}</NuxtLink>
+          >{{ cls.label ?? cls.name }}</NuxtLink>
         </li>
       </ul>
     </section>
@@ -63,13 +63,15 @@ usePublicPageSeo({
 
 type MetaIndexResponse = {
   data: unknown | null
-  catalog?: Array<{ slug: string, name: string, specs: Array<{ slug: string, name: string }> }>
+  catalog?: Array<{ slug: string, label?: string, name?: string, specs: Array<{ slug: string, label?: string, name?: string }> }>
   empty: boolean
+  unavailable?: boolean
 }
 
 const { data } = await useFetch<MetaIndexResponse>('/api/v1/meta')
-const noData = computed(() => !data.value?.data || data.value.empty)
-const catalog = computed(() => data.value?.catalog ?? [...META_CLASSES])
+const noData = computed(() => !data.value?.data || data.value.empty || data.value.unavailable)
+const statusText = computed(() => data.value?.unavailable ? copy.unavailable : copy.empty)
+const catalog = computed(() => data.value?.catalog ?? META_CLASSES.map(cls => ({ slug: cls.slug, label: cls.name, specs: cls.specs.map(spec => ({ slug: spec.slug, label: spec.name })) })))
 const isDark = useIsDark()
 const label = computed(() => (isDark.value ? 'text-brand-300' : 'text-brand-700'))
 const muted = computed(() => (isDark.value ? 'text-silver-400' : 'text-gray-600'))

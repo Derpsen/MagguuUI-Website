@@ -3,7 +3,7 @@
     :title="copy.classTitle(entry.name)"
     :lead="copy.classDescription(entry.name)"
     :empty="empty"
-    :empty-text="copy.noClassData"
+    :empty-text="statusText"
     :murlok-href="murlokClassUrl(entry.slug)"
     :archon-href="archonClassUrl(entry.slug)"
     :crumbs="crumbs"
@@ -43,10 +43,12 @@ usePublicPageSeo({
 
 type ClassResponse = {
   empty: boolean
+  unavailable?: boolean
 }
 
 const { data } = await useFetch<ClassResponse>(() => `/api/v1/meta/${entry.value!.slug}`)
-const empty = computed(() => data.value?.empty !== false)
+const empty = computed(() => data.value?.empty !== false || data.value?.unavailable === true)
+const statusText = computed(() => data.value?.unavailable ? copy.unavailable : copy.noClassData)
 const crumbs = computed(() => [{ to: '/meta', label: copy.indexTitle }])
 const isDark = useIsDark()
 const label = computed(() => (isDark.value ? 'text-brand-300' : 'text-brand-700'))

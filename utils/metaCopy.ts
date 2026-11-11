@@ -1,3 +1,5 @@
+import { META_MIN_BUILD_SAMPLE, META_MIN_ITEM_SAMPLE, META_MIN_SHOW_SAMPLE, META_SNAPSHOT_TTL_MS } from './metaTypes'
+
 /**
  * Centralized Meta page copy. English is the confirmed language.
  * German strings stay next to it so a later switch does not scatter text.
@@ -99,6 +101,23 @@ export type MetaCopy = {
   specDescription: (className: string, specName: string) => string
 }
 
+
+const META_RETAIN_DAYS = META_SNAPSHOT_TTL_MS / (24 * 60 * 60 * 1000)
+const META_LOW_SAMPLE_MAX = META_MIN_BUILD_SAMPLE - 1
+
+function stripEndPeriod(value: string): string {
+  return value.endsWith('.') ? value.slice(0, -1) : value
+}
+
+function methodologyThresholds(empty: string, unavailable: string): { minSample: string, faqSampleA: string } {
+  return {
+    minSample: `A specialization needs ${META_MIN_BUILD_SAMPLE} sampled players for a best build. Between ${META_MIN_SHOW_SAMPLE} and ${META_LOW_SAMPLE_MAX} players the figures are shown with a low-sample badge. Below ${META_MIN_SHOW_SAMPLE}, and when no snapshot is available, the page says ${stripEndPeriod(empty)}. Slot items below ${META_MIN_ITEM_SAMPLE} samples get a low-sample badge. After ${META_RETAIN_DAYS} days without a fresh snapshot the page says ${stripEndPeriod(unavailable)}.`,
+    faqSampleA: `It is below the minimum sample of ${META_MIN_BUILD_SAMPLE} characters in this snapshot. The row stays visible so you can still see the trend.`,
+  }
+}
+
+const META_THRESHOLD_COPY = methodologyThresholds('Collecting data.', 'Data unavailable.')
+
 export const META_COPY_EN: MetaCopy = {
   eyebrow: 'Meta',
   indexTitle: 'Mythic+ Meta',
@@ -140,11 +159,11 @@ export const META_COPY_EN: MetaCopy = {
   topKey: 'Top key',
   methodology: 'Methodology',
   methodologyBody: 'Figures come from a capped sample of EU Mythic+ leaderboard entries, then a further capped look at character specializations and equipment. Totals are counts in that sample, not a complete region census. The nightly job stores only aggregates — no character names. Consumables are omitted because the APIs used here do not provide them.',
-  minSample: 'A specialization needs 50 sampled players for a best build. Between 10 and 49 players the figures are shown with a low-sample badge. Below 10, and when no snapshot is available, the page says Collecting data. Slot items below 20 samples get a low-sample badge. After 30 days without a fresh snapshot the page says Data unavailable.',
+  minSample: META_THRESHOLD_COPY.minSample,
   lowPopularity: 'Low popularity ≠ unplayable.',
   faqTitle: 'FAQ',
   faqSampleQ: 'Why is a specialization faded?',
-  faqSampleA: 'It is below the minimum sample of 20 characters in this snapshot. The row stays visible so you can still see the trend.',
+  faqSampleA: META_THRESHOLD_COPY.faqSampleA,
   faqLowPopQ: 'Does a low share mean a specialization is weak?',
   faqLowPopA: 'No. Low popularity ≠ unplayable. This page reports what the sample used, not a tier list.',
   faqSourceQ: 'Where does the data come from?',

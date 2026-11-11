@@ -48,6 +48,7 @@ ENV NODE_ENV=production \
     NODE_OPTIONS=--enable-source-maps \
     GIT_SHA=${GIT_SHA} \
     BUILD_TIME=${BUILD_TIME} \
+    TZ=Europe/Berlin \
     PUID=99 \
     PGID=100
 

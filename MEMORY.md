@@ -255,6 +255,9 @@
   Local prod build `/`: modulepreload 30 -> 25, prefetch 8 -> 3, no admin CSS.
 - WowUp list: `/api/v1/wowup?view=meta` (length, preview, addonNames) and
   `/api/v1/wowup/:id`; the plain list endpoint stays fat for old clients.
+- Nightly GitHub sync: Nitro task `github:nightly` at 03:30 Europe/Berlin
+  (container `TZ=Europe/Berlin`), shared lock with Check/Resync, rate-limit
+  skip on remaining=0 / 429 / rate-limit 403, status on system/github.
 - Build info: Dockerfile `GIT_SHA`/`BUILD_TIME` args -> env; admin dashboard
   shows `Live: <sha7> · built <UTC>` (fallback `dev`) via
   `/api/v1/admin/system/build`.

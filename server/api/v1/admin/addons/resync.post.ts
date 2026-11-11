@@ -9,67 +9,28 @@
  * webhook, so a rejected token comes back as 401 instead of a raw 404.
  */
 
-import { db } from '~/server/database'
-import { syncHistory } from '~/server/database/schema'
-import {
-  fetchGitHubTextFile,
-  getGitHubBranchHeadSha,
-  githubErrorHint,
-  parseGitHubError,
-  parseGitHubRepo,
-} from '~/server/utils/github'
-import { syncAddonsFromToc } from '~/server/utils/syncAddons'
-
-const MAIN_BRANCH = 'main'
-const MAX_TOC_BYTES = 256 * 1024
+import { resyncAddonsFromToc } from '~/server/utils/githubAddonSync'
+import { isGitHubRateLimitError } from '~/server/utils/githubRateLimit'
+import { withGithubSyncLock } from '~/server/utils/githubSyncLock'
 
 export default defineEventHandler(async (event) => {
   requireAdminAccess(event)
-  const config = useRuntimeConfig()
-  const token = (config.githubToken as string | undefined) || ''
-  const repoRef = parseGitHubRepo(config.githubRepo || 'Derpsen/MagguuUI')
-  if (!repoRef) {
-    throw createError({ statusCode: 500, message: 'GitHub repo not configured' })
-  }
-  if (!token) {
-    throw createError({ statusCode: 400, message: 'GitHub token not configured' })
-  }
-
-  const { owner, repo } = repoRef
 
   try {
-    const snapshotSha = await getGitHubBranchHeadSha({ owner, repo, branch: MAIN_BRANCH, token })
-    const tocContent = await fetchGitHubTextFile({
-      owner,
-      repo,
-      path: 'MagguuUI.toc',
-      ref: snapshotSha,
-      token,
-      maxBytes: MAX_TOC_BYTES,
-    })
-    const result = syncAddonsFromToc(tocContent)
-
-    db.insert(syncHistory).values({
-      triggerSource: 'admin-toc-resync',
-      status: 'success',
-      details: `Inserted ${result.inserted}, updated ${result.updated}, removed ${result.unavailable} (toc deps: ${result.total})`,
-    }).run()
-
-    logActivity({
-      action: 'updated',
-      entityType: 'addon',
-      entityName: `Resynced ${result.total} addons from .toc`,
-      details: `inserted=${result.inserted}, updated=${result.updated}, removed=${result.unavailable}`,
-    })
-    return apiSuccess(result)
+    const locked = await withGithubSyncLock(() => resyncAddonsFromToc('admin-toc-resync'))
+    if (!locked.ok) {
+      throw createError({ statusCode: 409, message: 'A GitHub check or catalogue sync is already running.' })
+    }
+    return apiSuccess(locked.value)
   } catch (err: unknown) {
-    const { status, message } = parseGitHubError(err)
-    const friendly = githubErrorHint(owner, repo, status, message)
-    db.insert(syncHistory).values({
-      triggerSource: 'admin-toc-resync',
-      status: 'error',
-      details: friendly,
-    }).run()
-    throw createError({ statusCode: 502, message: friendly })
+    if (isErrorWithStatus(err)) throw err
+    if (isGitHubRateLimitError(err)) {
+      throw createError({ statusCode: 429, message: err.message })
+    }
+    throw err
   }
 })
+
+function isErrorWithStatus(err: unknown): boolean {
+  return Boolean(err && typeof err === 'object' && 'statusCode' in err)
+}

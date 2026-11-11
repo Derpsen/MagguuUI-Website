@@ -8,6 +8,13 @@
     >
       <template #meta>
         <span v-if="status?.lastCheck" class="admin-pill">Last check {{ formatDate(status.lastCheck) }}</span>
+        <span class="admin-pill" data-testid="admin-github-scheduled">
+          <template v-if="status?.scheduledRun">
+            Scheduled {{ status.scheduledRun.status }} {{ formatDate(status.scheduledRun.at) }}
+            <template v-if="status.scheduledRun.reason"> — {{ status.scheduledRun.reason }}</template>
+          </template>
+          <template v-else>No scheduled run yet</template>
+        </span>
       </template>
 
       <template #actions>
@@ -28,6 +35,22 @@
         :hint="metric.hint"
       />
     </div>
+
+    <AdminPanel title="Scheduled run" description="Nightly GitHub release check and addon catalogue sync at 03:30 Europe/Berlin." icon="i-heroicons-clock">
+      <div class="flex flex-wrap items-center gap-3" data-testid="admin-github-scheduled-panel">
+        <UBadge
+          :color="scheduledBadgeColor(status?.scheduledRun?.status)"
+          variant="subtle"
+        >
+          {{ status?.scheduledRun?.status || "none" }}
+        </UBadge>
+        <p v-if="status?.scheduledRun" class="text-sm text-slate-600 dark:text-slate-400">
+          {{ formatDate(status.scheduledRun.at) }}
+          <span v-if="status.scheduledRun.reason"> — {{ status.scheduledRun.reason }}</span>
+        </p>
+        <p v-else class="text-sm text-slate-600 dark:text-slate-400">No scheduled run yet.</p>
+      </div>
+    </AdminPanel>
 
     <div class="grid gap-5 xl:grid-cols-2">
       <AdminPanel title="Connection" description="Repository status and permissions." icon="i-simple-icons-github">
@@ -385,6 +408,7 @@ interface StatusData {
   latestVersion: string | null
   localVersion: string | null
   lastCheck: string | null
+  scheduledRun: { at: string, status: "ok" | "error" | "skipped", reason: string } | null
   syncPage: number
   syncTotalPages: number
   recentSyncs: SyncEntry[]
@@ -493,6 +517,13 @@ function formatDate(value: string | number | null) {
     hour: "2-digit",
     minute: "2-digit",
   })
+}
+
+function scheduledBadgeColor(statusValue?: string) {
+  if (statusValue === "ok") return "success"
+  if (statusValue === "error") return "error"
+  if (statusValue === "skipped") return "warning"
+  return "neutral"
 }
 
 function syncBadgeColor(statusValue: string) {

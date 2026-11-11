@@ -6,8 +6,9 @@
  * "Addon version outdated" bell clears after a check.
  */
 
-import { recordLatestRelease } from '~/server/utils/addonVersion'
-import { githubErrorHint, parseGitHubError, parseGitHubRepo } from '~/server/utils/github'
+import { checkLatestRelease, githubSyncFailureHint } from '~/server/utils/githubAddonSync'
+import { isGitHubRateLimitError } from '~/server/utils/githubRateLimit'
+import { withGithubSyncLock } from '~/server/utils/githubSyncLock'
 
 export default defineEventHandler(async (event) => {
   requireAdminAccess(event)
@@ -26,49 +27,22 @@ export default defineEventHandler(async (event) => {
     throw apiError('RATE_LIMITED', 'Too many version checks. Please wait a moment.', 429)
   }
 
-  const config = useRuntimeConfig()
-  const token = typeof config.githubToken === 'string' ? config.githubToken : ''
-  const repoRef = parseGitHubRepo(typeof config.githubRepo === 'string' ? config.githubRepo : '')
-  if (!token) {
-    throw apiError('MISSING_TOKEN', 'NUXT_GITHUB_TOKEN is not set', 400)
-  }
-  if (!repoRef) {
-    throw apiError('MISSING_REPO', 'NUXT_GITHUB_REPO is not set', 400)
-  }
-
-  const { owner, repo } = repoRef
-
   try {
-    // MagguuUI is private. releases/latest 404s without the same token the pull uses.
-    const response = await $fetch<{ tag_name: string; name: string; published_at: string }>(
-      `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases/latest`,
-      {
-        headers: {
-          Accept: 'application/vnd.github+json',
-          Authorization: `Bearer ${token}`,
-          'User-Agent': 'MagguuUI-WebAdmin',
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-        timeout: 10000,
-      }
-    )
-
-    const applied = recordLatestRelease(response.tag_name)
-    if (!applied) throw apiError('GITHUB_ERROR', 'Latest release has no tag name', 502)
-    const { latestVersion, localVersion } = applied
-
-    return apiSuccess({
-      latestVersion,
-      localVersion,
-      isUpToDate: localVersion === latestVersion,
-      releaseName: response.name,
-      publishedAt: response.published_at,
-    })
+    const locked = await withGithubSyncLock(() => checkLatestRelease())
+    if (!locked.ok) {
+      throw apiError('SYNC_IN_PROGRESS', 'A GitHub check or catalogue sync is already running.', 409)
+    }
+    return apiSuccess(locked.value)
   } catch (e: unknown) {
-    const parsed = parseGitHubError(e)
-    const message = parsed.status === 404
-      ? `No published release for ${owner}/${repo}, or the token cannot read releases.`
-      : githubErrorHint(owner, repo, parsed.status, 'GitHub release check failed')
-    throw apiError('GITHUB_ERROR', message, 502)
+    if (isErrorWithStatus(e)) throw e
+    if (isGitHubRateLimitError(e)) {
+      throw apiError('GITHUB_RATE_LIMIT', e.message, 429)
+    }
+    const hint = githubSyncFailureHint(e, 'GitHub release check failed')
+    throw apiError('GITHUB_ERROR', hint.message, hint.soft ? 429 : 502)
   }
 })
+
+function isErrorWithStatus(err: unknown): boolean {
+  return Boolean(err && typeof err === 'object' && 'statusCode' in err)
+}

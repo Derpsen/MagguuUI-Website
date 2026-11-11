@@ -44,6 +44,14 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     keeps admin chunks out of public prefetch/modulepreload.
   - `/strings` lists use `view=meta`; full strings load per id on copy/edit.
   - Admin dashboard `Live:` line reads `GIT_SHA`/`BUILD_TIME` (docker.yml).
+  - Nightly GitHub job (`github:nightly`, Nitro `experimental.tasks` +
+    `scheduledTasks` `30 3 * * *`): release check + addon catalogue sync,
+    same functions as the admin Check / Resync buttons, shared lock.
+    403/429 are soft (read `X-RateLimit-Remaining`/`Reset`, skip/back off).
+    Status lives on `/admin/system/github` (ok/error/skipped, time, reason).
+    Cron is 03:30 in the container TZ; the image default is `TZ=Europe/Berlin`.
+    Audit/sync history must not record tokens. Tests: `tests/unit/githubScheduledSync.test.ts`,
+    `tests/admin-github-scheduled.spec.ts`.
   - Settings header/metric also shows `App {version} · sha-{short}` (or `dev`)
     from the same `GIT_SHA` via `/api/v1/admin/system/info`. docker.yml already
     passes `GIT_SHA=${{ github.sha }}`.

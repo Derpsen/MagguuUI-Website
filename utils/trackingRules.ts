@@ -7,6 +7,7 @@
 export const TRACKED_ROUTES = [
   '/', '/strings', '/addons', '/configurator', '/guide', '/changelog', '/faq', '/about', '/imprint', '/privacy', '/status', '/submit-preset',
   '/forever', '/forever/guide', '/forever/download', '/forever/strings',
+  '/meta',
 ] as const
 
 const TRACKED = new Set<string>(TRACKED_ROUTES)
@@ -17,6 +18,7 @@ export function normalizeTrackedPath(raw: unknown): string | null {
   let path = raw.split(/[?#]/)[0] ?? ''
   if (!path.startsWith('/')) return null
   if (path.length > 1) path = path.replace(/\/+$/, '')
+  if (path === '/meta' || path.startsWith('/meta/')) return TRACKED.has('/meta') ? '/meta' : null
   return TRACKED.has(path) ? path : null
 }
 

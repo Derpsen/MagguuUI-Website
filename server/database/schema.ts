@@ -561,3 +561,21 @@ export const rateLimits = sqliteTable('rate_limits', {
 }, (table) => ({
   updatedAtIdx: index('idx_rate_limits_updated_at').on(table.updatedAt),
 }))
+
+// ─── Meta snapshots (EU Mythic+ aggregates, <= 30 days) ──
+
+export const metaSnapshots = sqliteTable('meta_snapshots', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  region: text('region').notNull(),
+  season: text('season'),
+  period: text('period'),
+  fetchedAt: integer('fetched_at').notNull(),
+  expiresAt: integer('expires_at').notNull(),
+  status: text('status').notNull(), // 'ok'
+  payload: text('payload').notNull(), // JSON
+  source: text('source').notNull().default('blizzard'),
+}, (table) => ({
+  expiresAtIdx: index('idx_meta_snapshots_expires_at').on(table.expiresAt),
+  regionFetchedIdx: index('idx_meta_snapshots_region_fetched').on(table.region, table.fetchedAt),
+}))
+

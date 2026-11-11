@@ -65,6 +65,28 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     `X-RateLimit-Remaining`/`Reset`, skip/back off). Audit/sync history must
     not record tokens. Tests: `tests/unit/githubSchedule.test.ts`,
     `tests/unit/githubScheduledSync.test.ts`, `tests/admin-github-scheduled.spec.ts`.
+  - Meta prototype (`/meta`, EU Mythic+): compact class/spec pages from a
+    nightly server-side snapshot of the Blizzard Game Data and Profile APIs
+    (OAuth client credentials). Titles and URLs stay trademark-neutral
+    (`Meta`, `/meta/...` — never "World of Warcraft" or "WoW"). English copy
+    lives in `utils/metaCopy.ts` (`META_COPY`, German strings kept beside it
+    unused). Pages link out to murlok.io and Archon; those sites are never
+    scraped, and fixture data is never served on real pages (empty state:
+    "No data yet."). Attribution: "Data: Blizzard Entertainment".
+    Nightly task `blizzard:nightly` is armed at **03:15 UTC** by
+    `server/plugins/blizzard-meta-schedule.ts` (UTC date math, after
+    `github:nightly` at 02:30). Default **off**. Kill switch:
+    `NUXT_BLIZZARD_META_NIGHTLY` / `runtimeConfig.blizzardMetaNightly`, same
+    on/true/1/yes and off/false/0/no parsing (unknown warns once per process
+    and stays off). Also off without `NUXT_BLIZZARD_CLIENT_ID` and
+    `NUXT_BLIZZARD_CLIENT_SECRET` (`runtimeConfig.blizzardClientId` /
+    `blizzardClientSecret`, server-only, never logged). SQLite cache
+    `meta_snapshots` expires in 30 days (old rows are deleted). In-process
+    lock and 429 Retry-After backoff. Tests stay fixture-only (no network).
+    Privacy section 13 describes the server-side retrieval (no visitor data
+    is sent to Blizzard). Tests: `tests/unit/metaSchedule.test.ts`,
+    `tests/unit/blizzardMetaSync.test.ts`, `tests/unit/blizzardMetaStore.test.ts`,
+    `tests/unit/metaCopy.test.ts`, `tests/meta.spec.ts`.
   - Settings header/metric also shows `App {version} · sha-{short}` (or `dev`)
     from the same `GIT_SHA` via `/api/v1/admin/system/info`. docker.yml already
     passes `GIT_SHA=${{ github.sha }}`.

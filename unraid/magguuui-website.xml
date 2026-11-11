@@ -58,6 +58,12 @@
 
   <Config Name="NUXT_TRUSTED_PROXIES" Target="NUXT_TRUSTED_PROXIES" Default="" Mode="" Description="Address of the reverse proxy / cloudflared (IP or CIDR, comma separated) whose client-IP headers are believed. Empty = loopback only, so every visitor counts as the proxy address. Use &apos;private&apos; to trust any LAN/container address." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
+  <Config Name="NUXT_BLIZZARD_CLIENT_ID" Target="NUXT_BLIZZARD_CLIENT_ID" Default="" Mode="" Description="Optional Blizzard OAuth client id for the Meta snapshot (EU Mythic+). Server-only; leave empty to keep the job off." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+
+  <Config Name="NUXT_BLIZZARD_CLIENT_SECRET" Target="NUXT_BLIZZARD_CLIENT_SECRET" Default="" Mode="" Description="Optional Blizzard OAuth client secret for the Meta snapshot. Host/container secret only. Leave empty to keep the job off." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+
+  <Config Name="NUXT_BLIZZARD_META_NIGHTLY" Target="NUXT_BLIZZARD_META_NIGHTLY" Default="" Mode="" Description="Optional. Default off. Set to on/true/1/yes to arm the 03:15 UTC Meta snapshot after credentials are set. off/false/0/no forces it off." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
   <Config Name="NODE_ENV" Target="NODE_ENV" Default="production" Mode="" Description="Keep as 'production' on Unraid." Type="Variable" Display="advanced" Required="false" Mask="false">production</Config>
 
   <Config Name="HOST" Target="HOST" Default="0.0.0.0" Mode="" Description="Interface the Nuxt server binds to." Type="Variable" Display="advanced" Required="false" Mask="false">0.0.0.0</Config>

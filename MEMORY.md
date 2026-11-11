@@ -97,7 +97,7 @@
 - `requireAuth(event)` accepts legacy bearer tokens and HttpOnly cookie sessions. Session validation is bound to browser + OS family (`server/utils/session.ts`). Keep the softer `/api/v1/auth/session` endpoint aligned with `requireAuth`.
 - OG images: templates need a renderer suffix; we use `.takumi.vue` (`components/OgImage/MagguuOg.takumi.vue`). `satori` ^0.47.1 (nuxt-og-image 7 peer; no active `.satori.vue`); >=0.48 blocked.
 - GitHub webhook `server/api/v1/webhooks/github.post.ts` accepts signed events only from the configured repository, imports main pushes from the immutable after SHA, and handles `CHANGELOG.md`, `MagguuUI.toc`, and `MagguuUI_Data/AddOns|Classes/*.lua` independently. Manual pulls resolve main once and fetch the MagguuUI_Data snapshot at that SHA.
-- Required production env: `NUXT_JWT_SECRET`, `NUXT_ADMIN_PASSWORD`. Optional: `NUXT_GITHUB_TOKEN`, `NUXT_WEBAUTHN_*`, `API_BEARER_TOKEN`, `NUXT_OG_IMAGE_SECRET`. See `.env.example` and `docs/env-vars.md`.
+- Required production env: `NUXT_JWT_SECRET`, `NUXT_ADMIN_PASSWORD`. Optional: `NUXT_GITHUB_TOKEN`, `NUXT_WEBAUTHN_*`, `API_BEARER_TOKEN`, `NUXT_OG_IMAGE_SECRET`, `NUXT_BLIZZARD_CLIENT_ID`, `NUXT_BLIZZARD_CLIENT_SECRET`, `NUXT_BLIZZARD_META_NIGHTLY`. See `.env.example` and `docs/env-vars.md`.
 
 ## Current Hardening State
 
@@ -265,6 +265,16 @@
   runs if the release check fails (`partial` / `error` with both results).
   Shared lock with Check/Resync; rate-limit skip on remaining=0 / 429 /
   rate-limit 403.
+- Meta prototype (`/meta`): EU Mythic+ popular specs, talents and gear from
+  the Blizzard Game Data + Profile APIs. English centralized copy
+  (`utils/metaCopy.ts`). No "World of Warcraft"/"WoW" in our titles or URLs.
+  Links to murlok.io and Archon (no scraping). Nightly `blizzard:nightly` at
+  03:15 UTC, default off (`NUXT_BLIZZARD_META_NIGHTLY`), also off without
+  `NUXT_BLIZZARD_CLIENT_ID` / `NUXT_BLIZZARD_CLIENT_SECRET` (runtimeConfig
+  `blizzardClientId` / `blizzardClientSecret`, never logged). SQLite snapshot
+  cache ≤30 days. Empty pages show "No data yet." until a successful run.
+  Privacy s13 (server-side retrieval, no visitor data passed on). Creds are
+  not on Unraid until they are added there; the job stays off until then.
 - Build info: Dockerfile `GIT_SHA`/`BUILD_TIME` args -> env; admin dashboard
   shows `Live: <sha7> · built <UTC>` (fallback `dev`) via
   `/api/v1/admin/system/build`.

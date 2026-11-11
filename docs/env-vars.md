@@ -29,10 +29,13 @@ Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` 
 | `CLOUDFLARE_API_TOKEN` | empty | API token with only *Zone → Cache Purge → Purge* on that zone. Host/container secret only. |
 | `GIT_SHA` / `BUILD_TIME` | `dev` | Image commit + build time shown in the admin. Set by `docker.yml` build-args; no manual value needed. |
 | `NODE_ENV` | `production` in Docker | Runtime mode |
+| `NUXT_BLIZZARD_CLIENT_ID` | empty | OAuth client id for the Blizzard Game Data and Profile APIs (client credentials). Server-only via `runtimeConfig.blizzardClientId`. Never log or expose to the browser. The Meta nightly job stays off while this or the secret is empty. |
+| `NUXT_BLIZZARD_CLIENT_SECRET` | empty | Matching OAuth client secret (`runtimeConfig.blizzardClientSecret`). Host/container secret only. |
+| `NUXT_BLIZZARD_META_NIGHTLY` | off | Arms the 03:15 UTC Meta snapshot (`blizzard:nightly`). Default **off** in every environment. Recognised values (case-insensitive): `on`/`true`/`1`/`yes` and `off`/`false`/`0`/`no`. Unknown values warn once per process and stay off. Also off without both Blizzard credentials. |
 
 ## Notes
 
-- Edge caching: public pages (`/`, `/guide`, `/faq`, `/changelog`, `/about`, `/addons`, `/imprint`, `/privacy`) and `/api/v1/catalog-summary` send `CDN-Cache-Control: public, max-age=120, stale-while-revalidate=600`. Browsers still get `Cache-Control: public, max-age=0, must-revalidate` (ETag → 304), so admin edits show on the next reload. Cloudflare only stores HTML when a Cache Rule marks these URLs *Eligible for cache* (origin cache control respected); without that rule nothing changes at the edge.
+- Edge caching: public pages (`/`, `/guide`, `/faq`, `/changelog`, `/about`, `/addons`, `/imprint`, `/privacy`, `/meta` and `/meta/...`) and `/api/v1/catalog-summary` send `CDN-Cache-Control: public, max-age=120, stale-while-revalidate=600`. Browsers still get `Cache-Control: public, max-age=0, must-revalidate` (ETag → 304), so admin edits show on the next reload. Cloudflare only stores HTML when a Cache Rule marks these URLs *Eligible for cache* (origin cache control respected); without that rule nothing changes at the edge.
 
 - Passkeys require matching `NUXT_WEBAUTHN_RP_ID` and `NUXT_WEBAUTHN_ORIGIN` in production.
 - Changing `NUXT_JWT_SECRET` invalidates all existing sessions. Users must log in again.

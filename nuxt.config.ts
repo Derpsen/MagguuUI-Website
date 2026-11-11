@@ -1,5 +1,6 @@
 import { PUBLIC_SITE_ORIGIN, PUBLIC_SITE_SETTINGS_DEFAULTS } from './utils/siteSettingsDefaults'
 import { isGithubNightlyEnabled } from './utils/githubSchedule'
+import { isBlizzardMetaNightlyEnabled } from './utils/metaSchedule'
 
 const defaultSiteName = PUBLIC_SITE_SETTINGS_DEFAULTS.site_name
 const defaultMetaTitle = PUBLIC_SITE_SETTINGS_DEFAULTS.meta_title
@@ -112,6 +113,11 @@ export default defineNuxtConfig({
       '/api/**',
       // CurseForge answers bots with 403 (every link is a false positive).
       /^https:\/\/www\.curseforge\.com\//,
+      // Independent Meta overviews; do not fetch or scrape these in CI.
+      /^https:\/\/(www\.)?murlok\.io\//,
+      /^https:\/\/(www\.)?archon\.gg\//,
+      /^https:\/\/(www\.)?wowhead\.com\//,
+      /^https:\/\/(www\.)?icy-veins\.com\//,
     ],
     // Addon names in ?addon= values are intentionally mixed case.
     skipInspections: ['no-uppercase-chars'],
@@ -222,6 +228,12 @@ export default defineNuxtConfig({
     // Read back at runtime via githubNightlyFromRuntimeConfig(useRuntimeConfig())
     // so a string "false" is not treated as on. Unknown values warn once and use the default.
     githubNightly: isGithubNightlyEnabled(),
+    // Meta snapshot (EU Mythic+). Default off; also skipped without credentials.
+    // Override with NUXT_BLIZZARD_META_NIGHTLY=on|true|1|yes or off|false|0|no.
+    // Credentials: NUXT_BLIZZARD_CLIENT_ID / NUXT_BLIZZARD_CLIENT_SECRET (server-only, never logged).
+    blizzardClientId: process.env.NUXT_BLIZZARD_CLIENT_ID || '',
+    blizzardClientSecret: process.env.NUXT_BLIZZARD_CLIENT_SECRET || '',
+    blizzardMetaNightly: isBlizzardMetaNightlyEnabled(),
 
     webauthnRpName: 'MagguuUI Admin',
     webauthnRpId: process.env.NUXT_WEBAUTHN_RP_ID || '',
@@ -253,7 +265,7 @@ export default defineNuxtConfig({
       ? {
           prerender: {
             failOnError: false,
-            routes: ['/', '/guide', '/faq', '/changelog', '/about', '/addons', '/configurator', '/imprint', '/privacy', '/strings', '/forever', '/forever/guide', '/forever/download', '/forever/strings'],
+            routes: ['/', '/guide', '/faq', '/changelog', '/about', '/addons', '/configurator', '/imprint', '/privacy', '/strings', '/forever', '/forever/guide', '/forever/download', '/forever/strings', '/meta'],
           },
         }
       : {}),
@@ -427,6 +439,10 @@ export default defineNuxtConfig({
     '/configurator': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
     '/imprint': { swr: 120 },
     '/privacy': { swr: 120 },
+    '/meta': { swr: 120 },
+    '/meta/**': { swr: 120 },
+    '/api/v1/meta': { swr: 120 },
+    '/api/v1/meta/**': { swr: 120 },
     '/forever': { swr: 120 },
     '/forever/**': { swr: 120 },
     '/api/v1/forever/release': { swr: 120 },

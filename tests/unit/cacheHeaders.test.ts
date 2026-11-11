@@ -6,7 +6,7 @@ import { cloudflarePurgeConfigured, purgeCloudflareCache } from '../../server/ut
 describe('edge cache headers', () => {
   it('lets Cloudflare cache public pages and catalog-summary for 120s + SWR', () => {
     assert.equal(CDN_CACHE_CONTROL, 'public, max-age=120, stale-while-revalidate=600')
-    for (const path of ['/', '/guide', '/faq/', '/api/v1/catalog-summary']) {
+    for (const path of ['/', '/guide', '/faq/', '/meta', '/meta/mage', '/meta/mage/fire/', '/api/v1/catalog-summary']) {
       assert.equal(isCdnCacheable('GET', path, 200), true, path)
     }
   })

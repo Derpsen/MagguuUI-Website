@@ -417,6 +417,10 @@ export default defineNuxtConfig({
     '/changelog': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
     '/about': { swr: 120 },
     '/addons': { swr: 120 },
+    // Same as /changelog: /strings takes ?class/?spec/?pack, so no page-level
+    // swr (Nitro would cache every query variant). The bare URL is edge-cached
+    // via CDN-Cache-Control (publicCache.ts); query variants never are.
+    '/strings': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
     // /profiles ("Previews") was removed on 2026-11-02; old links land on /addons.
     '/profiles': { redirect: { to: '/addons', statusCode: 301 } },
     '/profiles/**': { redirect: { to: '/addons', statusCode: 301 } },

@@ -151,10 +151,10 @@
                   {{ stepStage(idx) }}
                 </span>
               </div>
-              <h3 class="guide-step-title text-xl sm:text-2xl font-bold leading-tight mb-4"
+              <h2 class="guide-step-title text-xl sm:text-2xl font-bold leading-tight mb-4"
                 :class="isDark ? 'text-white' : 'text-gray-900'">
                 {{ step.editableTitle || `Step ${idx + 1}` }}
-              </h3>
+              </h2>
 
               <template v-if="!editMode">
                 <SafeHtml

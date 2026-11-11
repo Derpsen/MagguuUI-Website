@@ -19,7 +19,8 @@ describe('edge cache headers', () => {
     assert.equal(isCdnCacheable('POST', '/api/v1/catalog-summary', 200), false)
     assert.equal(isCdnCacheable('GET', '/', 404), false)
     assert.equal(isCdnCacheable('GET', '/?utm=x', 200), false)
-    assert.equal(isCdnCacheable('GET', '/strings', 200), false)
+    assert.equal(isCdnCacheable('GET', '/strings?class=mage', 200), false)
+    assert.equal(isCdnCacheable('GET', '/strings?pack=x', 200), false)
   })
 
   it('browsers keep revalidating every visit', () => {

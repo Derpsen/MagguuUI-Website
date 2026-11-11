@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { formatBuildLabel, readBuildInfo } from '../../utils/buildInfo'
+import { formatAppVersionLabel, formatBuildLabel, readBuildInfo } from '../../utils/buildInfo'
 
 describe('admin live build info', () => {
   it('falls back to dev without build args', () => {
@@ -13,5 +13,13 @@ describe('admin live build info', () => {
     const info = readBuildInfo({ GIT_SHA: '0123456789abcdef0123456789abcdef01234567', BUILD_TIME: '2026-10-14T10:20:30Z' })
     assert.equal(info.shortSha, '0123456')
     assert.equal(formatBuildLabel(info), '0123456 · built 2026-10-14 10:20 UTC')
+  })
+
+  it('shows the app version next to the image SHA tag', () => {
+    assert.equal(formatAppVersionLabel('3.0.0', readBuildInfo({})), '3.0.0 · dev')
+    assert.equal(
+      formatAppVersionLabel('3.0.0', readBuildInfo({ GIT_SHA: '0123456789abcdef0123456789abcdef01234567' })),
+      '3.0.0 · sha-0123456',
+    )
   })
 })

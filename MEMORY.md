@@ -258,6 +258,11 @@
 - Build info: Dockerfile `GIT_SHA`/`BUILD_TIME` args -> env; admin dashboard
   shows `Live: <sha7> · built <UTC>` (fallback `dev`) via
   `/api/v1/admin/system/build`.
+- Settings (`/admin/system/settings`) shows `App {version} · sha-{short}` from
+  `/api/v1/admin/system/info` (same `GIT_SHA`). Tab bar fade/arrows:
+  `tests/admin-tab-bar.spec.ts`. Activity/addons metrics use a skeleton instead
+  of a false 0 on first load. First-load ~4s on those lists is the admin SPA
+  (`ssr: false`) plus onMounted fetch; list endpoints still return full strings.
 - CI: weekly `lighthouse-live.yml` (Mon 05:17 UTC, artifact + summary);
   `build.yml` has an experimental Node 26 matrix entry (continue-on-error; superseded 2026-10-16: CI is Node 26 only).
 

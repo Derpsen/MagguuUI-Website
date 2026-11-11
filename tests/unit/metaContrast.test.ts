@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, it } from 'node:test'
 import {
   META_CLASSES,
@@ -37,5 +39,23 @@ describe('class color contrast', () => {
     const b = Number.parseInt(channels.slice(4, 6), 16)
     assert.ok(b > r && b > g, `expected a blue-leaning tint, got ${dark}`)
     assert.ok(!['#e5e7eb', '#111827', '#9ca3af', '#6b7280'].includes(dark.toLowerCase()))
+  })
+})
+
+describe('low-sample rows stay contrast-safe', () => {
+  it('does not dim Meta rows with opacity-60', () => {
+    const dir = join(process.cwd(), 'components')
+    const leftovers: string[] = []
+    for (const name of readdirSync(dir)) {
+      if (!/^Meta.*\.vue$/.test(name)) continue
+      const text = readFileSync(join(dir, name), 'utf8')
+      if (text.includes('opacity-60')) leftovers.push(name)
+    }
+    assert.deepEqual(leftovers, [])
+    const index = readFileSync(join(dir, 'MetaSpecIndex.vue'), 'utf8')
+    assert.match(index, /tone\.lowRow/)
+    const tone = readFileSync(join(process.cwd(), 'composables/useMetaTone.ts'), 'utf8')
+    assert.match(tone, /lowRow:[\s\S]*shadow-\[inset_3px_0_0_0_/)
+    assert.equal(/lowRow:[\s\S]*?bg-/.test(tone), false)
   })
 })

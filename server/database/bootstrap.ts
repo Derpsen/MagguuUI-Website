@@ -526,6 +526,9 @@ export const SAFE_COLUMN_MIGRATIONS = [
   'CREATE INDEX IF NOT EXISTS idx_wowup_strings_visible_sort ON wowup_strings(is_visible, sort_order)',
   'CREATE INDEX IF NOT EXISTS idx_character_layouts_visible_sort ON character_layouts(is_visible, sort_order)',
   'CREATE INDEX IF NOT EXISTS idx_faqs_visible_sort ON faqs(is_visible, sort_order)',
+  // Early local/dev meta_snapshots used `id`; the store reads and writes snapshot_id.
+  // CREATE TABLE IF NOT EXISTS cannot rename an existing primary key.
+  'ALTER TABLE meta_snapshots RENAME COLUMN id TO snapshot_id',
 ] as const
 
 type SqliteBootstrapConnection = {

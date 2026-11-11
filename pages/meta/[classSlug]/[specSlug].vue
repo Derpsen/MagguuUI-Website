@@ -42,7 +42,6 @@
             :show-best="!spec.lowSample"
             :empty-text="spec.lowSample ? copy.belowSample : copy.noSpecData"
           />
-          <AdSlot class="mt-8" placement="after-build" />
           <div class="mt-8 grid gap-8 md:grid-cols-[minmax(0,1fr)_18rem]">
             <MetaHeroTrees :hero-split="spec.heroSplit" :loadouts="spec.loadouts" />
             <MetaAtAGlance :spec="spec" />
@@ -65,6 +64,8 @@
           </ul>
           <p class="mt-2 text-xs leading-relaxed" :class="tone.muted.value">{{ copy.statBias }}</p>
         </section>
+
+        <AdSlot class="mt-12" placement="after-build" />
 
         <MetaGearSlots id="gear" class="mt-12 scroll-mt-28" :gear-slots="spec.gearSlots" :rings="spec.rings" :trinkets="spec.trinkets" />
 

@@ -14,7 +14,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="row in rows" :key="row.key" class="border-b" :class="[tone.rule.value, row.low ? 'opacity-60' : '']">
+        <tr v-for="row in rows" :key="row.key" class="border-b" :class="[tone.rule.value, row.low ? tone.lowRow.value : '']">
           <th scope="row" class="py-1.5 pr-3 text-left font-normal whitespace-nowrap">
             <span class="inline-flex items-center gap-2">
               <img v-if="row.icon" :src="row.icon" alt="" width="20" height="20" class="h-5 w-5 shrink-0" loading="lazy" decoding="async">

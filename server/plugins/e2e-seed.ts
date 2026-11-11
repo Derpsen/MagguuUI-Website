@@ -3,9 +3,13 @@
  * outside production, make sure one visible WowUp pack and two unique class
  * layouts exist so the Import Strings tests run in CI. Never runs in the Docker image.
  */
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { eq } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
 import { characterLayouts, changelogs, wowupStrings } from '~/server/database/schema'
+import { readCurrentMetaSnapshot, writeMetaSnapshot } from '~/server/utils/blizzardMetaStore'
+import { parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
 
 const E2E_WOWUP_PACK = 'E2E Test Pack'
 
@@ -15,7 +19,21 @@ export default defineNitroPlugin(() => {
   seedLayouts()
   seedAddon()
   seedChangelog()
+  seedMetaSnapshot()
 })
+
+function seedMetaSnapshot() {
+  try {
+    if (readCurrentMetaSnapshot(sqlite)) return
+    const raw = readFileSync(join(process.cwd(), 'tests/fixtures/blizzard-meta/snapshot.json'), 'utf8')
+    const payload = parseMetaSnapshotPayload(raw)
+    if (!payload) throw new Error('Meta snapshot fixture failed validation')
+    writeMetaSnapshot(sqlite, payload)
+    console.info('[E2E] Seeded Meta snapshot fixture')
+  } catch (err) {
+    console.error('[E2E] Meta snapshot seed failed:', err)
+  }
+}
 
 function seedWowupPack() {
   try {

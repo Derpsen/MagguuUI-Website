@@ -52,10 +52,18 @@ lightened toward white, not greyed out.
 fixed height (100px inline, 250px sidebar) so consent cannot cause CLS.
 
 Master switch: `NUXT_ADS` / `runtimeConfig.public.ads`. Default **off** =
-**no markup**. Recognised on-values: `on`, `true`, `1`, `yes`. The slot
-does not receive spec or class data and is not used in the best-build
-area. This PR does not load AdSense; the existing `AdBanner` stays for
-the later ads PR.
+**no markup**. Recognised on-values: `on`, `true`, `1`, `yes`. The value is
+mapped at runtime from `NUXT_ADS` (see `server/plugins/runtime-ads.ts`), so
+a container env change is picked up without a rebuild. The slot does not
+receive spec or class data, is not placed inside the best-build block, and
+is not immediately under it (no 32px gap under the card). Inline
+`after-build` sits after Stats, before Gear; `between-sections` sits after
+the heatmap; `sidebar` stays in the aside. This PR does not load AdSense;
+the existing `AdBanner` stays for the later ads PR D.
+
+Low-sample rows in the popularity table use an inset rail
+(`useMetaTone.lowRow`) instead of `opacity-60` or a background wash,
+so class-colored text stays contrast-safe in dark and light.
 
 ## Typecheck
 
@@ -65,8 +73,11 @@ vue-tsc error set is a separate audit PR.
 
 ## Not in this PR
 
-- AdSense / TCF / `AdBanner` migration (PR D)
+- AdSense / TCF / `AdBanner` migration (PR D, DoD 11.02)
 - Header/footer 10–11px labels (audit)
-- Lighthouse budgets for `/meta` (calibrate after a live snapshot)
+- Lighthouse budget, own tooltips, and putting `/meta` in the header, footer
+  and sitemap (stacked PR C2, DoD 6.01 / 14.07 / 3.08). `/meta` stays off
+  nav/sitemap until C2 *and* that budget are green. The fixture snapshot is
+  the measurement baseline until a live one exists.
 - Deleting `MetaLoadoutCopy`, `MetaGearRow`, `MetaPopularityBars`,
   `MetaShareBar` — those unused prototype components are not in this tree

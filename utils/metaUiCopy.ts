@@ -104,3 +104,18 @@ export function isNuxtAdsEnabled(raw: unknown): boolean {
   const value = String(raw ?? '').trim().toLowerCase()
   return value === 'on' || value === 'true' || value === '1' || value === 'yes'
 }
+
+/**
+ * Copy NUXT_ADS onto runtimeConfig.public.ads at process start so the
+ * Unraid/container env wins over a build-time default. NUXT_PUBLIC_ADS is
+ * only used when NUXT_ADS is unset (Nuxt's usual public-env overlay).
+ */
+export function applyNuxtAdsRuntimeConfig(
+  config: { public?: { ads?: unknown } },
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  const publicConfig = (config.public ??= {})
+  if (env.NUXT_ADS !== undefined) publicConfig.ads = env.NUXT_ADS
+  else if (env.NUXT_PUBLIC_ADS !== undefined) publicConfig.ads = env.NUXT_PUBLIC_ADS
+  return String(publicConfig.ads ?? '')
+}

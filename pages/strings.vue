@@ -64,92 +64,30 @@
       <!-- ═══ Cooldown Layouts ═══ -->
       <div v-if="activeTab === 'layouts'" role="tabpanel" id="tabpanel-layouts" aria-labelledby="tab-layouts" tabindex="0">
         <div v-if="layoutList.length" class="mx-auto w-full max-w-3xl space-y-5">
-          <div>
-            <label class="block text-center text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Class</label>
-            <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="WoW classes">
-              <button
-                v-for="cls in layoutClasses"
-                :key="cls"
-                type="button"
-                role="option"
-                :aria-selected="selectedClass === cls"
-                class="wow-class-chip"
-                :class="selectedClass === cls ? 'is-active' : ''"
-                @click="pick(() => { selectedClass = cls; pickedSpec = '' })"
-              >
-                <img
-                  v-if="wowClassIcon(cls)"
-                  :src="wowClassIcon(cls)!"
-                  :alt="''"
-                  class="wow-class-chip__icon"
-                  width="24"
-                  height="24"
-                  loading="lazy"
-                />
-                <span
-                  v-else
-                  class="wow-class-chip__icon inline-flex items-center justify-center text-[10px] font-bold"
-                  :style="{ background: wowClassColor(cls) + '33', color: wowClassColor(cls) }"
-                >{{ cls.slice(0, 2) }}</span>
-                <span>{{ cls }}</span>
-              </button>
-            </div>
-          </div>
-          <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1" enter-to-class="opacity-100 translate-y-0">
-            <div v-if="selectedClass && layoutSpecs.length">
-              <label class="block text-center text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Specialization</label>
-              <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="Specializations">
-                <button
-                  v-for="spec in layoutSpecs"
-                  :key="spec"
-                  type="button"
-                  role="option"
-                  :aria-selected="selectedSpec === spec"
-                  class="wow-class-chip"
-                  :class="selectedSpec === spec ? 'is-active' : ''"
-                  @click="pick(() => selectedSpec = spec)"
-                >
-                  <img
-                    v-if="wowSpecIcon(selectedClass, spec)"
-                    :src="wowSpecIcon(selectedClass, spec)!"
-                    alt=""
-                    class="wow-class-chip__icon"
-                    width="24"
-                    height="24"
-                    loading="lazy"
-                  />
-                  <span>{{ spec }}</span>
-                </button>
-              </div>
-              <p v-if="layoutSharesSpecs" class="mt-2.5 text-center text-xs" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-                This string imports {{ sharedSpecList }}.
-              </p>
-            </div>
-          </Transition>
+          <StringsClassSpecPicker
+            :classes="layoutClasses"
+            :selected-class="selectedClass"
+            :specs="layoutSpecs"
+            :selected-spec="selectedSpec"
+            :shares-specs="layoutSharesSpecs"
+            :shared-spec-list="sharedSpecList"
+            @select-class="cls => pick(() => { selectedClass = cls; pickedSpec = '' })"
+            @select-spec="spec => pick(() => selectedSpec = spec)"
+          />
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
-            <div v-if="selectedLayout" class="space-y-4 pt-1">
-              <div class="flex items-center gap-2">
-                <StringCopyButton :copied="layoutCopied" @copy="copyLayout" />
-                <button v-if="isLoggedIn" type="button" class="w-8 h-8 rounded-md border transition-colors inline-flex items-center justify-center"
-                  :class="isDark ? 'border-white/15 text-silver-300 hover:text-white hover:border-white/35' : 'border-gray-300 text-gray-600 hover:text-gray-950 hover:border-gray-400'"
-                  aria-label="Edit layout"
-                  @click="editLayout(selectedLayout)">
-                  <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
-                </button>
-              </div>
-              <div class="flex items-center justify-between text-xs" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-                <div class="flex items-center gap-3">
-                  <span v-if="stampFor(selectedLayout.updatedAt).label" data-testid="string-stamp" :title="stampTitle(selectedLayout.updatedAt)">{{ stampFor(selectedLayout.updatedAt).label }}</span>
-                  <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono" :class="isDark ? 'bg-white/5 text-silver-600 border border-brand-400/10' : 'bg-gray-100 text-gray-400 border border-gray-200'">{{ isMac ? '⌘' : 'Ctrl' }}+C</kbd>
-                </div>
-                <span>{{ stringSizeLabel(layoutSize(selectedLayout)) }}</span>
-              </div>
-              <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24" tabindex="0" role="region" aria-label="String preview">
-                <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-                  {{ layoutPreview(selectedLayout) }}{{ layoutShowsEllipsis(selectedLayout) ? '...' : '' }}
-                </p>
-              </div>
-            </div>
+            <StringsStringCard
+              v-if="selectedLayout"
+              :copied="layoutCopied"
+              edit-aria-label="Edit layout"
+              :stamp-label="stampFor(selectedLayout.updatedAt).label"
+              :stamp-title="stampTitle(selectedLayout.updatedAt)"
+              :size-label="stringSizeLabel(layoutSize(selectedLayout))"
+              :preview="layoutPreview(selectedLayout)"
+              :show-ellipsis="layoutShowsEllipsis(selectedLayout)"
+              :is-mac="isMac"
+              @copy="copyLayout"
+              @edit="editLayout(selectedLayout)"
+            />
           </Transition>
         </div>
         <div v-else class="text-center py-16">
@@ -210,29 +148,19 @@
             </div>
           </Transition>
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
-            <div v-if="selectedProfile" class="space-y-4 pt-1">
-              <div class="flex items-center gap-2">
-                <StringCopyButton :copied="profileCopied" @copy="copyProfile" />
-                <button v-if="isLoggedIn" type="button" class="w-8 h-8 rounded-md border transition-colors inline-flex items-center justify-center"
-                  :class="isDark ? 'border-white/15 text-silver-300 hover:text-white hover:border-white/35' : 'border-gray-300 text-gray-600 hover:text-gray-950 hover:border-gray-400'"
-                  aria-label="Edit profile"
-                  @click="editProfile(selectedProfile)">
-                  <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
-                </button>
-              </div>
-              <div class="flex items-center justify-between text-xs" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-                <div class="flex items-center gap-3">
-                  <span v-if="stampFor(selectedProfile.updatedAt).label" data-testid="string-stamp" :title="stampTitle(selectedProfile.updatedAt)">{{ stampFor(selectedProfile.updatedAt).label }}</span>
-                  <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono" :class="isDark ? 'bg-white/5 text-silver-600 border border-brand-400/10' : 'bg-gray-100 text-gray-400 border border-gray-200'">{{ isMac ? '⌘' : 'Ctrl' }}+C</kbd>
-                </div>
-                <span>{{ stringSizeLabel(profileSize(selectedProfile)) }}</span>
-              </div>
-              <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24" tabindex="0" role="region" aria-label="String preview">
-                <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-                  {{ profilePreview(selectedProfile) }}{{ profileShowsEllipsis(selectedProfile) ? '...' : '' }}
-                </p>
-              </div>
-            </div>
+            <StringsStringCard
+              v-if="selectedProfile"
+              :copied="profileCopied"
+              edit-aria-label="Edit profile"
+              :stamp-label="stampFor(selectedProfile.updatedAt).label"
+              :stamp-title="stampTitle(selectedProfile.updatedAt)"
+              :size-label="stringSizeLabel(profileSize(selectedProfile))"
+              :preview="profilePreview(selectedProfile)"
+              :show-ellipsis="profileShowsEllipsis(selectedProfile)"
+              :is-mac="isMac"
+              @copy="copyProfile"
+              @edit="editProfile(selectedProfile)"
+            />
           </Transition>
         </div>
         <div v-else class="text-center py-16">
@@ -269,7 +197,19 @@
             </div>
           </div>
           <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0">
-            <div v-if="selectedWowup" class="space-y-4 pt-1">
+            <StringsStringCard
+              v-if="selectedWowup"
+              :copied="wowupCopied"
+              edit-aria-label="Edit WowUp package"
+              :stamp-label="stampFor(selectedWowup.updatedAt).label"
+              :stamp-title="stampTitle(selectedWowup.updatedAt)"
+              :size-label="stringSizeLabel(wowupStrings[selectedWowup.id]?.length || selectedWowup.stringLength || 0)"
+              :preview="selectedWowup.preview || ''"
+              :show-ellipsis="(selectedWowup.stringLength || 0) > 200"
+              :is-mac="isMac"
+              @copy="copyWowup"
+              @edit="editWowup(selectedWowup)"
+            >
               <div>
                 <p class="section-eyebrow mb-2.5 text-center">Addons</p>
                 <div class="flex flex-wrap justify-center gap-2">
@@ -292,28 +232,7 @@
                   </span>
                 </div>
               </div>
-              <div class="flex items-center gap-2">
-                <StringCopyButton :copied="wowupCopied" @copy="copyWowup" />
-                <button v-if="isLoggedIn" type="button" class="w-8 h-8 rounded-md border transition-colors inline-flex items-center justify-center"
-                  :class="isDark ? 'border-white/15 text-silver-300 hover:text-white hover:border-white/35' : 'border-gray-300 text-gray-600 hover:text-gray-950 hover:border-gray-400'"
-                  aria-label="Edit WowUp package"
-                  @click="editWowup(selectedWowup)">
-                  <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
-                </button>
-              </div>
-              <div class="flex items-center justify-between text-xs" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-                <div class="flex items-center gap-3">
-                  <span v-if="stampFor(selectedWowup.updatedAt).label" data-testid="string-stamp" :title="stampTitle(selectedWowup.updatedAt)">{{ stampFor(selectedWowup.updatedAt).label }}</span>
-                  <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono" :class="isDark ? 'bg-white/5 text-silver-600 border border-brand-400/10' : 'bg-gray-100 text-gray-400 border border-gray-200'">{{ isMac ? '⌘' : 'Ctrl' }}+C</kbd>
-                </div>
-                <span>{{ stringSizeLabel(wowupStrings[selectedWowup.id]?.length || selectedWowup.stringLength || 0) }}</span>
-              </div>
-              <div class="string-preview string-preview-fade rounded-xl p-4 max-h-24" tabindex="0" role="region" aria-label="String preview">
-                <p class="text-xs font-mono break-all leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-                  {{ selectedWowup.preview || '' }}{{ (selectedWowup.stringLength || 0) > 200 ? '...' : '' }}
-                </p>
-              </div>
-            </div>
+            </StringsStringCard>
           </Transition>
         </div>
         <div v-else class="text-center py-16">
@@ -370,8 +289,7 @@
 <script setup lang="ts">
 import { trackCopy } from '~/utils/beacon'
 import { addonIconForName } from '~/utils/addonIcons'
-import { wowClassIcon, wowClassColor } from '~/utils/wowClassIcons'
-import { layoutSpecChoices, SHARED_LAYOUT_SPEC, wowSpecIcon } from '~/utils/wowSpecs'
+import { layoutSpecChoices, SHARED_LAYOUT_SPEC } from '~/utils/wowSpecs'
 import {
   displayAddonName,
   emojiForAddonName,
@@ -384,7 +302,6 @@ import { copyTextToClipboard } from '~/utils/clipboard'
 import { initialStringsTab, queryFromStringsState, queryText } from '~/utils/stringsDeepLink'
 
 const isDark = useIsDark()
-const { isLoggedIn } = useAuth()
 const { apiFetch } = useApi()
 usePublicPageSeo({
   title: 'Import Strings',

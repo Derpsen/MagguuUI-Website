@@ -1,17 +1,18 @@
 /**
  * Playwright-only fixture: with NUXT_E2E_SEED=true (playwright.config.ts) and
- * outside production, make sure one visible WowUp pack exists so the lazy
- * WowUp string test runs in CI. Never runs in the Docker image.
+ * outside production, make sure one visible WowUp pack and two unique class
+ * layouts exist so the Import Strings tests run in CI. Never runs in the Docker image.
  */
 import { eq } from 'drizzle-orm'
 import { db, sqlite } from '~/server/database'
-import { changelogs, wowupStrings } from '~/server/database/schema'
+import { characterLayouts, changelogs, wowupStrings } from '~/server/database/schema'
 
 const E2E_WOWUP_PACK = 'E2E Test Pack'
 
 export default defineNitroPlugin(() => {
   if (process.env.NUXT_E2E_SEED !== 'true' || process.env.NODE_ENV === 'production') return
   seedWowupPack()
+  seedLayouts()
   seedAddon()
   seedChangelog()
 })
@@ -25,6 +26,32 @@ function seedWowupPack() {
     console.info('[E2E] Seeded WowUp test pack')
   } catch (err) {
     console.error('[E2E] WowUp seed failed:', err)
+  }
+}
+
+const E2E_LAYOUTS = [
+  { name: 'E2E Test Layout', className: 'E2E Test Class', spec: 'E2E Spec', importString: 'E2E-LAYOUT-STRING-TEST-CLASS' },
+  { name: 'E2E Other Layout', className: 'E2E Other Class', spec: 'E2E Other Spec', importString: 'E2E-LAYOUT-STRING-OTHER-CLASS' },
+]
+
+function seedLayouts() {
+  try {
+    for (const row of E2E_LAYOUTS) {
+      const exists = db.select({ id: characterLayouts.id }).from(characterLayouts).where(eq(characterLayouts.name, row.name)).get()
+      if (exists) continue
+      db.insert(characterLayouts).values({
+        name: row.name,
+        className: row.className,
+        spec: row.spec,
+        importString: row.importString,
+        description: 'Playwright fixture',
+        sortOrder: 999,
+        isVisible: true,
+      }).run()
+      console.info(`[E2E] Seeded layout fixture ${row.name}`)
+    }
+  } catch (err) {
+    console.error('[E2E] Layout seed failed:', err)
   }
 }
 

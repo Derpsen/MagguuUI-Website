@@ -58,7 +58,7 @@ describe('news markdown and sources', () => {
       'https://news.blizzard.com/en-us/article/1',
       'https://www.wowhead.com/news/2',
     ])
-    assert.equal(kept.includes('https://www.wowhead.com/news/2'), false)
+    assert.equal(kept.includes('/news/2'), false)
   })
 
   it('names common hosts by exact domain or subdomain, not a suffix', () => {

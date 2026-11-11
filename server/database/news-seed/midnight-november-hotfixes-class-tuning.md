@@ -41,7 +41,7 @@ October 27 also fixed Labyrinth scenarios that were not granting Great Vault cre
 
 ## What this means for your UI / MagguuUI
 
-These are combat and encounter changes, not a new interface patch. MagguuUI does not need an update for the damage and healing adjustments to apply. Update WeakAuras or rotation notes for the buffed and nerfed specs, and note that several of the October 27 PvE changes explicitly do not affect PvP. The official Cooldown Manager fix for Summon Darkglare is already in the default UI.
+These are combat and encounter changes, not a new interface patch. MagguuUI does not need an update for the damage and healing adjustments to apply. Review rotation notes for the buffed and nerfed specs, and note that several of the October 27 PvE changes explicitly do not affect PvP. The official Cooldown Manager fix for Summon Darkglare is already in the default UI.
 
 ## Sources
 

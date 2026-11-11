@@ -16,9 +16,21 @@ test('sitemap.xml lists the public pages, never admin, api, feeds or query varia
     expect(xml).toMatch(new RegExp(`<loc>https?://[^/<]+${path}</loc>`))
   }
   const locs = [...xml.matchAll(/<loc>([^<]*)<\/loc>/g)].map(m => m[1]!)
-  expect(locs).toHaveLength(19)
+  const publishedNewsPaths = [
+    '/news/midnight-season-2-mythic-plus-pool',
+    '/news/midnight-november-hotfixes-class-tuning',
+    '/news/echoes-of-the-worldcore-announced',
+    '/news/november-trading-post-sweet-tooth',
+    '/news/wow-forever-now-live',
+    '/news/midnight-12-1-5-mid-season',
+    '/news/wow-forever-november-hotfixes',
+    '/news/discord-guild-chat-linking',
+  ]
+  for (const path of publishedNewsPaths) {
+    expect(locs.some(loc => loc.endsWith(path)), path).toBe(true)
+  }
+  expect(locs.filter(loc => /\/news\//.test(loc))).toHaveLength(publishedNewsPaths.length)
   expect(locs.join('\n')).not.toMatch(/\/admin|\/api\/|feed\.xml|atom\.xml|\?/)
-  expect(locs.join('\n')).toMatch(/\/news\/wow-forever-now-live/)
   expect(locs.join('\n')).not.toMatch(/pouch-of-violet-dust-launch-celebration/)
   expect(xml.toLowerCase()).not.toContain('nuxtjs/sitemap')
   expect(xml).not.toContain('<xhtml:link')

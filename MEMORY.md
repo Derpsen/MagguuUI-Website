@@ -263,6 +263,8 @@
   `tests/admin-tab-bar.spec.ts`. Activity/addons metrics use a skeleton instead
   of a false 0 on first load. First-load ~4s on those lists is the admin SPA
   (`ssr: false`) plus onMounted fetch; list endpoints still return full strings.
+  Tab bar: Arrow/Home/End keyboard navigation; instant scroll when
+  prefers-reduced-motion is reduce. Admin vitals `total` excludes 404 samples.
 - CI: weekly `lighthouse-live.yml` (Mon 05:17 UTC, artifact + summary);
   `build.yml` has an experimental Node 26 matrix entry (continue-on-error; superseded 2026-10-16: CI is Node 26 only).
 

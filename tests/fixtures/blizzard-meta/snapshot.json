@@ -3,14 +3,31 @@
   "focus": "mythic-plus",
   "season": {
     "id": 14,
-    "name": "Season 14"
+    "label": "Season 14"
   },
-  "period": {
-    "id": 999
+  "periods": {
+    "current": {
+      "id": 999
+    },
+    "included": [
+      {
+        "id": 999
+      },
+      {
+        "id": 998
+      },
+      {
+        "id": 997
+      }
+    ]
+  },
+  "talentTree": {
+    "hash": "tree-hash-example-11.2",
+    "build": "11.2.5"
   },
   "freshness": {
     "fetchedAt": 1794355200,
-    "characters": 114,
+    "players": 175,
     "keyLevels": {
       "min": 10,
       "max": 22
@@ -18,25 +35,74 @@
     "region": "eu",
     "source": "blizzard"
   },
+  "basis": {
+    "region": "eu",
+    "focus": "mythic-plus",
+    "season": {
+      "id": 14,
+      "label": "Season 14"
+    },
+    "periods": {
+      "current": {
+        "id": 999
+      },
+      "included": [
+        {
+          "id": 999
+        },
+        {
+          "id": 998
+        },
+        {
+          "id": 997
+        }
+      ]
+    },
+    "talentTree": {
+      "hash": "tree-hash-example-11.2",
+      "build": "11.2.5"
+    },
+    "keyLevels": {
+      "min": 10,
+      "max": 22
+    },
+    "players": 175,
+    "profiles": 40,
+    "source": "blizzard"
+  },
   "sampled": {
     "realms": 8,
     "leaderboards": 40,
-    "characters": 114,
-    "profiles": 40
+    "players": 175,
+    "profiles": 40,
+    "skipped404": 3,
+    "specMismatch": 2
   },
   "classes": [
     {
       "slug": "mage",
-      "name": "Mage",
-      "characterCount": 56,
+      "label": "Mage",
+      "n": 88,
       "specs": [
         {
           "slug": "fire",
-          "name": "Fire",
-          "characterCount": 48,
-          "share": 0.42,
+          "label": "Fire",
+          "n": 80,
+          "share": 0.457,
           "profileCount": 40,
-          "belowMinSample": false,
+          "empty": false,
+          "collecting": false,
+          "lowSample": false,
+          "bestBuild": {
+            "code": "CODE-FIRE-A",
+            "count": 44,
+            "share": 0.55,
+            "heroTree": {
+              "id": 800,
+              "label": "Sunfury"
+            },
+            "treeHash": "tree-hash-example-11.2"
+          },
           "keyLevels": {
             "min": 12,
             "max": 22,
@@ -45,59 +111,61 @@
           "heroSplit": [
             {
               "id": 800,
-              "name": "Sunfury",
-              "count": 30,
+              "label": "Sunfury",
+              "count": 50,
               "share": 0.625
             },
             {
               "id": 801,
-              "name": "Spellslinger",
-              "count": 18,
+              "label": "Spellslinger",
+              "count": 30,
               "share": 0.375
             }
           ],
           "loadouts": [
             {
               "code": "CODE-FIRE-A",
-              "count": 22,
+              "count": 44,
               "share": 0.55,
               "heroTree": {
                 "id": 800,
-                "name": "Sunfury"
-              }
+                "label": "Sunfury"
+              },
+              "treeHash": "tree-hash-example-11.2"
             },
             {
               "code": "CODE-FIRE-B",
-              "count": 8,
+              "count": 16,
               "share": 0.2,
               "heroTree": {
                 "id": 801,
-                "name": "Spellslinger"
-              }
+                "label": "Spellslinger"
+              },
+              "treeHash": "tree-hash-example-11.2"
             }
           ],
           "talents": {
             "class": [
               {
                 "id": 101,
-                "name": "Overflowing Fire",
-                "count": 40,
+                "label": "Overflowing Fire",
+                "count": 80,
                 "share": 1.0,
                 "tree": "class",
                 "band": "core"
               },
               {
                 "id": 102,
-                "name": "Improved Scorch",
-                "count": 28,
+                "label": "Improved Scorch",
+                "count": 56,
                 "share": 0.7,
                 "tree": "class",
                 "band": "flexible"
               },
               {
                 "id": 103,
-                "name": "Side Node",
-                "count": 4,
+                "label": "Side Node",
+                "count": 8,
                 "share": 0.1,
                 "tree": "class",
                 "band": "rare"
@@ -106,16 +174,16 @@
             "spec": [
               {
                 "id": 201,
-                "name": "Combustion",
-                "count": 40,
+                "label": "Combustion",
+                "count": 80,
                 "share": 1.0,
                 "tree": "spec",
                 "band": "core"
               },
               {
                 "id": 202,
-                "name": "Sun King's Blessing",
-                "count": 18,
+                "label": "Sun King's Blessing",
+                "count": 36,
                 "share": 0.45,
                 "tree": "spec",
                 "band": "flexible"
@@ -124,16 +192,16 @@
             "hero": [
               {
                 "id": 901,
-                "name": "Sunfury Core",
-                "count": 25,
+                "label": "Sunfury Core",
+                "count": 50,
                 "share": 0.625,
                 "tree": "hero",
                 "band": "flexible"
               },
               {
                 "id": 902,
-                "name": "Spellslinger Core",
-                "count": 15,
+                "label": "Spellslinger Core",
+                "count": 30,
                 "share": 0.375,
                 "tree": "hero",
                 "band": "flexible"
@@ -143,22 +211,22 @@
           "stats": [
             {
               "id": "CRIT_RATING",
-              "name": "Critical Strike",
+              "label": "Critical Strike",
               "average": 2100
             },
             {
               "id": "HASTE_RATING",
-              "name": "Haste",
+              "label": "Haste",
               "average": 1800
             },
             {
               "id": "MASTERY_RATING",
-              "name": "Mastery",
+              "label": "Mastery",
               "average": 1500
             },
             {
               "id": "VERSATILITY",
-              "name": "Versatility",
+              "label": "Versatility",
               "average": 900
             }
           ],
@@ -169,29 +237,35 @@
                 {
                   "slot": "HEAD",
                   "itemId": 22001,
-                  "name": "Crown of Cinders",
-                  "count": 32,
+                  "label": "Crown of Cinders",
+                  "count": 64,
                   "share": 0.8,
                   "quality": "EPIC",
                   "setName": "Cinder Set",
                   "crafted": false,
                   "embellished": false,
+                  "ilvl": 684,
+                  "source": "Raid",
+                  "lowSample": false,
                   "enchant": {
                     "id": 90,
-                    "name": "Enchant Helm"
+                    "label": "Enchant Helm"
                   },
                   "gems": []
                 },
                 {
                   "slot": "HEAD",
                   "itemId": 22011,
-                  "name": "Ember Circlet",
-                  "count": 6,
+                  "label": "Ember Circlet",
+                  "count": 12,
                   "share": 0.15,
                   "quality": "EPIC",
                   "setName": null,
                   "crafted": false,
                   "embellished": false,
+                  "ilvl": 671,
+                  "source": "Dungeon",
+                  "lowSample": true,
                   "enchant": null,
                   "gems": []
                 }
@@ -203,26 +277,32 @@
                 {
                   "slot": "CHEST",
                   "itemId": 22002,
-                  "name": "Robes of Embers",
-                  "count": 24,
+                  "label": "Robes of Embers",
+                  "count": 48,
                   "share": 0.6,
                   "quality": "EPIC",
                   "setName": "Cinder Set",
                   "crafted": false,
                   "embellished": false,
+                  "ilvl": 684,
+                  "source": "Raid",
+                  "lowSample": false,
                   "enchant": null,
                   "gems": []
                 },
                 {
                   "slot": "CHEST",
                   "itemId": 22012,
-                  "name": "Crafted Ember Robe",
-                  "count": 10,
+                  "label": "Crafted Ember Robe",
+                  "count": 20,
                   "share": 0.25,
                   "quality": "EPIC",
                   "setName": null,
                   "crafted": true,
                   "embellished": true,
+                  "ilvl": 678,
+                  "source": "Crafted",
+                  "lowSample": false,
                   "enchant": null,
                   "gems": []
                 }
@@ -234,18 +314,21 @@
                 {
                   "slot": "NECK",
                   "itemId": 22010,
-                  "name": "Ember Pendant",
-                  "count": 18,
+                  "label": "Ember Pendant",
+                  "count": 36,
                   "share": 0.45,
                   "quality": "EPIC",
                   "setName": null,
                   "crafted": false,
                   "embellished": false,
+                  "ilvl": 684,
+                  "source": "Dungeon",
+                  "lowSample": false,
                   "enchant": null,
                   "gems": [
                     {
                       "id": 501,
-                      "name": "Deadly Ruby"
+                      "label": "Deadly Ruby"
                     }
                   ]
                 }
@@ -257,26 +340,32 @@
                 {
                   "slot": "TRINKET_1",
                   "itemId": 23001,
-                  "name": "Cinder Hourglass",
-                  "count": 20,
+                  "label": "Cinder Hourglass",
+                  "count": 40,
                   "share": 0.5,
                   "quality": "EPIC",
                   "setName": null,
                   "crafted": false,
                   "embellished": false,
+                  "ilvl": 684,
+                  "source": "Dungeon",
+                  "lowSample": false,
                   "enchant": null,
                   "gems": []
                 },
                 {
                   "slot": "TRINKET_1",
                   "itemId": 23002,
-                  "name": "Whispering Ember",
-                  "count": 12,
+                  "label": "Whispering Ember",
+                  "count": 24,
                   "share": 0.3,
                   "quality": "EPIC",
                   "setName": null,
                   "crafted": false,
                   "embellished": false,
+                  "ilvl": 684,
+                  "source": "Dungeon",
+                  "lowSample": false,
                   "enchant": null,
                   "gems": []
                 }
@@ -288,16 +377,19 @@
                 {
                   "slot": "FINGER_1",
                   "itemId": 24001,
-                  "name": "Signet of Cinders",
-                  "count": 16,
+                  "label": "Signet of Cinders",
+                  "count": 32,
                   "share": 0.4,
                   "quality": "EPIC",
                   "setName": null,
                   "crafted": false,
                   "embellished": false,
+                  "ilvl": 684,
+                  "source": "Dungeon",
+                  "lowSample": false,
                   "enchant": {
                     "id": 91,
-                    "name": "Enchant Ring"
+                    "label": "Enchant Ring"
                   },
                   "gems": []
                 }
@@ -308,26 +400,32 @@
             {
               "slot": "TRINKET_1",
               "itemId": 23001,
-              "name": "Cinder Hourglass",
-              "count": 20,
+              "label": "Cinder Hourglass",
+              "count": 40,
               "share": 0.5,
               "quality": "EPIC",
               "setName": null,
               "crafted": false,
               "embellished": false,
+              "ilvl": 684,
+              "source": "Dungeon",
+              "lowSample": false,
               "enchant": null,
               "gems": []
             },
             {
               "slot": "TRINKET_1",
               "itemId": 23002,
-              "name": "Whispering Ember",
-              "count": 12,
+              "label": "Whispering Ember",
+              "count": 24,
               "share": 0.3,
               "quality": "EPIC",
               "setName": null,
               "crafted": false,
               "embellished": false,
+              "ilvl": 684,
+              "source": "Dungeon",
+              "lowSample": false,
               "enchant": null,
               "gems": []
             }
@@ -336,16 +434,19 @@
             {
               "slot": "FINGER_1",
               "itemId": 24001,
-              "name": "Signet of Cinders",
-              "count": 16,
+              "label": "Signet of Cinders",
+              "count": 32,
               "share": 0.4,
               "quality": "EPIC",
               "setName": null,
               "crafted": false,
               "embellished": false,
+              "ilvl": 684,
+              "source": "Dungeon",
+              "lowSample": false,
               "enchant": {
                 "id": 91,
-                "name": "Enchant Ring"
+                "label": "Enchant Ring"
               },
               "gems": []
             }
@@ -354,13 +455,16 @@
             {
               "slot": "CHEST",
               "itemId": 22012,
-              "name": "Crafted Ember Robe",
-              "count": 10,
+              "label": "Crafted Ember Robe",
+              "count": 20,
               "share": 0.25,
               "quality": "EPIC",
               "setName": null,
               "crafted": true,
               "embellished": true,
+              "ilvl": 678,
+              "source": "Crafted",
+              "lowSample": false,
               "enchant": null,
               "gems": []
             }
@@ -368,47 +472,50 @@
           "enchants": [
             {
               "id": 90,
-              "name": "Enchant Helm",
-              "count": 32,
+              "label": "Enchant Helm",
+              "count": 64,
               "share": 0.8
             },
             {
               "id": 91,
-              "name": "Enchant Ring",
-              "count": 16,
+              "label": "Enchant Ring",
+              "count": 32,
               "share": 0.4
             }
           ],
           "gems": [
             {
               "id": 501,
-              "name": "Deadly Ruby",
-              "count": 18,
+              "label": "Deadly Ruby",
+              "count": 36,
               "share": 0.45
             }
           ],
           "races": [
             {
               "id": 7,
-              "name": "Gnome",
-              "count": 16,
-              "share": 0.333
+              "label": "Gnome",
+              "count": 27,
+              "share": 0.338
             },
             {
               "id": 1,
-              "name": "Human",
-              "count": 10,
-              "share": 0.208
+              "label": "Human",
+              "count": 17,
+              "share": 0.213
             }
           ]
         },
         {
           "slug": "frost",
-          "name": "Frost",
-          "characterCount": 8,
-          "share": 0.07,
+          "label": "Frost",
+          "n": 8,
+          "share": 0.046,
           "profileCount": 6,
-          "belowMinSample": true,
+          "empty": false,
+          "collecting": true,
+          "lowSample": true,
+          "bestBuild": null,
           "keyLevels": {
             "min": 10,
             "max": 14,
@@ -417,7 +524,7 @@
           "heroSplit": [
             {
               "id": 801,
-              "name": "Spellslinger",
+              "label": "Spellslinger",
               "count": 8,
               "share": 1.0
             }
@@ -429,15 +536,16 @@
               "share": 0.833,
               "heroTree": {
                 "id": 801,
-                "name": "Spellslinger"
-              }
+                "label": "Spellslinger"
+              },
+              "treeHash": "tree-hash-example-11.2"
             }
           ],
           "talents": {
             "class": [
               {
                 "id": 101,
-                "name": "Overflowing Fire",
+                "label": "Overflowing Fire",
                 "count": 6,
                 "share": 1.0,
                 "tree": "class",
@@ -447,7 +555,7 @@
             "spec": [
               {
                 "id": 401,
-                "name": "Icy Veins",
+                "label": "Icy Veins",
                 "count": 6,
                 "share": 1.0,
                 "tree": "spec",
@@ -457,8 +565,118 @@
             "hero": [
               {
                 "id": 902,
-                "name": "Spellslinger Core",
+                "label": "Spellslinger Core",
                 "count": 6,
+                "share": 1.0,
+                "tree": "hero",
+                "band": "core"
+              }
+            ]
+          },
+          "stats": [],
+          "gearSlots": [],
+          "trinkets": [],
+          "rings": [],
+          "embellishments": [],
+          "enchants": [],
+          "gems": [],
+          "races": []
+        },
+        {
+          "slug": "arcane",
+          "label": "Arcane",
+          "n": 0,
+          "share": 0,
+          "profileCount": 0,
+          "empty": true,
+          "collecting": false,
+          "lowSample": true,
+          "bestBuild": null,
+          "keyLevels": null,
+          "heroSplit": [],
+          "loadouts": [],
+          "talents": {
+            "class": [],
+            "spec": [],
+            "hero": []
+          },
+          "stats": [],
+          "gearSlots": [],
+          "trinkets": [],
+          "rings": [],
+          "embellishments": [],
+          "enchants": [],
+          "gems": [],
+          "races": []
+        }
+      ]
+    },
+    {
+      "slug": "evoker",
+      "label": "Evoker",
+      "n": 60,
+      "specs": [
+        {
+          "slug": "augmentation",
+          "label": "Augmentation",
+          "n": 60,
+          "share": 0.343,
+          "profileCount": 40,
+          "empty": false,
+          "collecting": false,
+          "lowSample": false,
+          "bestBuild": {
+            "code": "CODE-AUG",
+            "count": 36,
+            "share": 0.6,
+            "heroTree": {
+              "id": 910,
+              "label": "Scalecommander"
+            },
+            "treeHash": "tree-hash-example-11.2"
+          },
+          "keyLevels": {
+            "min": 14,
+            "max": 20,
+            "average": 16.8
+          },
+          "heroSplit": [
+            {
+              "id": 910,
+              "label": "Scalecommander",
+              "count": 60,
+              "share": 1.0
+            }
+          ],
+          "loadouts": [
+            {
+              "code": "CODE-AUG",
+              "count": 36,
+              "share": 0.6,
+              "heroTree": {
+                "id": 910,
+                "label": "Scalecommander"
+              },
+              "treeHash": "tree-hash-example-11.2"
+            }
+          ],
+          "talents": {
+            "class": [],
+            "spec": [
+              {
+                "id": 710,
+                "label": "Ebon Might",
+                "count": 40,
+                "share": 1.0,
+                "tree": "spec",
+                "band": "core"
+              }
+            ],
+            "hero": [
+              {
+                "id": 911,
+                "label": "Scalecommander Core",
+                "count": 40,
                 "share": 1.0,
                 "tree": "hero",
                 "band": "core"
@@ -468,23 +686,8 @@
           "stats": [
             {
               "id": "HASTE_RATING",
-              "name": "Haste",
-              "average": 2000
-            },
-            {
-              "id": "CRIT_RATING",
-              "name": "Critical Strike",
-              "average": 1700
-            },
-            {
-              "id": "MASTERY_RATING",
-              "name": "Mastery",
-              "average": 1100
-            },
-            {
-              "id": "VERSATILITY",
-              "name": "Versatility",
-              "average": 800
+              "label": "Haste",
+              "average": 1900
             }
           ],
           "gearSlots": [
@@ -493,14 +696,17 @@
               "items": [
                 {
                   "slot": "HEAD",
-                  "itemId": 25011,
-                  "name": "Frost Crown",
-                  "count": 5,
-                  "share": 0.833,
+                  "itemId": 27001,
+                  "label": "Scale Circlet",
+                  "count": 32,
+                  "share": 0.533,
                   "quality": "EPIC",
                   "setName": null,
                   "crafted": false,
                   "embellished": false,
+                  "ilvl": 684,
+                  "source": "Raid",
+                  "lowSample": false,
                   "enchant": null,
                   "gems": []
                 }
@@ -514,27 +720,85 @@
           "gems": [],
           "races": [
             {
-              "id": 1,
-              "name": "Human",
-              "count": 5,
-              "share": 0.625
+              "id": 70,
+              "label": "Dracthyr",
+              "count": 40,
+              "share": 0.667
             }
           ]
         }
       ]
     },
     {
+      "slug": "demon-hunter",
+      "label": "Demon Hunter",
+      "n": 15,
+      "specs": [
+        {
+          "slug": "devourer",
+          "label": "Devourer",
+          "n": 15,
+          "share": 0.086,
+          "profileCount": 12,
+          "empty": false,
+          "collecting": false,
+          "lowSample": true,
+          "bestBuild": null,
+          "keyLevels": {
+            "min": 11,
+            "max": 16,
+            "average": 13.2
+          },
+          "heroSplit": [],
+          "loadouts": [
+            {
+              "code": "CODE-DEV",
+              "count": 8,
+              "share": 0.667,
+              "heroTree": null,
+              "treeHash": "tree-hash-example-11.2"
+            }
+          ],
+          "talents": {
+            "class": [],
+            "spec": [
+              {
+                "id": 810,
+                "label": "Void Devourer",
+                "count": 12,
+                "share": 1.0,
+                "tree": "spec",
+                "band": "core"
+              }
+            ],
+            "hero": []
+          },
+          "stats": [],
+          "gearSlots": [],
+          "trinkets": [],
+          "rings": [],
+          "embellishments": [],
+          "enchants": [],
+          "gems": [],
+          "races": []
+        }
+      ]
+    },
+    {
       "slug": "warrior",
-      "name": "Warrior",
-      "characterCount": 12,
+      "label": "Warrior",
+      "n": 12,
       "specs": [
         {
           "slug": "protection",
-          "name": "Protection",
-          "characterCount": 12,
-          "share": 0.105,
+          "label": "Protection",
+          "n": 12,
+          "share": 0.069,
           "profileCount": 10,
-          "belowMinSample": true,
+          "empty": false,
+          "collecting": false,
+          "lowSample": true,
+          "bestBuild": null,
           "keyLevels": {
             "min": 11,
             "max": 18,
@@ -546,7 +810,8 @@
               "code": "CODE-PROT",
               "count": 7,
               "share": 0.7,
-              "heroTree": null
+              "heroTree": null,
+              "treeHash": "tree-hash-example-11.2"
             }
           ],
           "talents": {
@@ -554,7 +819,7 @@
             "spec": [
               {
                 "id": 501,
-                "name": "Shield Specialization",
+                "label": "Shield Specialization",
                 "count": 10,
                 "share": 1.0,
                 "tree": "spec",
@@ -566,7 +831,7 @@
           "stats": [
             {
               "id": "HASTE_RATING",
-              "name": "Haste",
+              "label": "Haste",
               "average": 1600
             }
           ],
@@ -577,13 +842,16 @@
                 {
                   "slot": "HEAD",
                   "itemId": 26001,
-                  "name": "War Helm",
+                  "label": "War Helm",
                   "count": 8,
-                  "share": 0.8,
+                  "share": 0.667,
                   "quality": "EPIC",
                   "setName": null,
                   "crafted": false,
                   "embellished": false,
+                  "ilvl": 684,
+                  "source": "Dungeon",
+                  "lowSample": true,
                   "enchant": null,
                   "gems": []
                 }
@@ -598,7 +866,7 @@
           "races": [
             {
               "id": 2,
-              "name": "Orc",
+              "label": "Orc",
               "count": 6,
               "share": 0.5
             }

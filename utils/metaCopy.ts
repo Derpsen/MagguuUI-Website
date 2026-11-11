@@ -9,6 +9,7 @@ export type MetaCopy = {
   indexDescription: string
   indexLead: string
   empty: string
+  unavailable: string
   attribution: string
   alsoSee: string
   murlokLabel: string
@@ -103,7 +104,8 @@ export const META_COPY_EN: MetaCopy = {
   indexTitle: 'Mythic+ Meta',
   indexDescription: 'Popular specializations, talents and gear for EU Mythic+, aggregated from public game data.',
   indexLead: 'What shows up most often in EU Mythic+, from a nightly server-side snapshot. Independent overviews stay on their own sites.',
-  empty: 'No data yet. This page is filled by a nightly update once the game data source is configured.',
+  empty: 'Collecting data.',
+  unavailable: 'Data unavailable.',
   attribution: "Data provided by Blizzard's Battle.net API. Not affiliated with or endorsed by Blizzard Entertainment.",
   alsoSee: 'Also see',
   murlokLabel: 'murlok.io',
@@ -114,8 +116,8 @@ export const META_COPY_EN: MetaCopy = {
   popularSpecs: 'Popular specializations',
   talents: 'Talents',
   gear: 'Gear',
-  noSpecData: 'No data yet for this specialization.',
-  noClassData: 'No data yet for this class.',
+  noSpecData: 'Collecting data.',
+  noClassData: 'Collecting data.',
   characters: 'characters',
   share: 'Share',
   count: 'Count',
@@ -138,7 +140,7 @@ export const META_COPY_EN: MetaCopy = {
   topKey: 'Top key',
   methodology: 'Methodology',
   methodologyBody: 'Figures come from a capped sample of EU Mythic+ leaderboard entries, then a further capped look at character specializations and equipment. Totals are counts in that sample, not a complete region census. The nightly job stores only aggregates — no character names. Consumables are omitted because the APIs used here do not provide them.',
-  minSample: 'A specialization with fewer than 20 sampled characters is shown faded. Treat those numbers as indicative, not conclusive.',
+  minSample: 'A specialization needs 50 sampled players for a best build. Between 10 and 49 players the figures are shown with a low-sample badge. Below 10, and when no snapshot is available, the page says Collecting data. Slot items below 20 samples get a low-sample badge. After 30 days without a fresh snapshot the page says Data unavailable.',
   lowPopularity: 'Low popularity ≠ unplayable.',
   faqTitle: 'FAQ',
   faqSampleQ: 'Why is a specialization faded?',
@@ -196,7 +198,8 @@ export const META_COPY_EN: MetaCopy = {
 export const META_COPY_DE: MetaCopy = {
   ...META_COPY_EN,
   attribution: 'Daten bereitgestellt von der Battle.net-API von Blizzard. Nicht affiliert mit oder empfohlen von Blizzard Entertainment.',
-  empty: 'Noch keine Daten. Diese Seite wird durch ein nächtliches Update gefüllt, sobald die Spieldatenquelle eingerichtet ist.',
+  empty: 'Daten werden gesammelt.',
+  unavailable: 'Daten nicht verfügbar.',
 }
 
 /** Confirmed language: English. */

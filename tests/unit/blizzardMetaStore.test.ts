@@ -1,14 +1,16 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
+import { readFileSync } from 'node:fs'
 import Database from 'better-sqlite3'
-import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload } from '../../utils/metaTypes'
+import { parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
+import { META_REGION, META_SNAPSHOT_TTL_MS } from '../../utils/metaTypes'
 import { deleteExpiredMetaSnapshots, readCurrentMetaSnapshot, writeMetaSnapshot } from '../../server/utils/blizzardMetaStore'
 
 function open() {
   const sqlite = new Database(':memory:')
   sqlite.exec(`
     CREATE TABLE meta_snapshots (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      snapshot_id INTEGER PRIMARY KEY AUTOINCREMENT,
       region TEXT NOT NULL,
       season TEXT,
       period TEXT,
@@ -18,55 +20,30 @@ function open() {
       payload TEXT NOT NULL,
       source TEXT NOT NULL DEFAULT 'blizzard'
     );
+    CREATE TABLE meta_snapshot_active (
+      region TEXT PRIMARY KEY,
+      snapshot_id INTEGER NOT NULL
+    );
   `)
   return sqlite
 }
 
-function payload(overrides: Partial<MetaSnapshotPayload> = {}): MetaSnapshotPayload {
-  return {
-    region: META_REGION,
-    focus: 'mythic-plus',
-    season: { id: 14, name: 'Season 14' },
-    period: { id: 999 },
-    sampled: { realms: 1, leaderboards: 1, characters: 2, profiles: 1 },
-    freshness: { fetchedAt: 1_700_000_000, characters: 2, keyLevels: { min: 18, max: 20 }, region: META_REGION, source: 'blizzard' },
-    classes: [{
-      slug: 'mage',
-      name: 'Mage',
-      characterCount: 2,
-      specs: [{
-        slug: 'fire',
-        name: 'Fire',
-        characterCount: 2,
-        share: 1,
-        profileCount: 1,
-        belowMinSample: true,
-        keyLevels: { min: 18, max: 20, average: 19 },
-        heroSplit: [],
-        loadouts: [],
-        talents: { class: [], spec: [], hero: [] },
-        stats: [],
-        gearSlots: [],
-        trinkets: [],
-        rings: [],
-        embellishments: [],
-        enchants: [],
-        gems: [],
-        races: [],
-      }],
-    }],
-    ...overrides,
-  }
+function payload() {
+  const parsed = parseMetaSnapshotPayload(readFileSync(new URL('../fixtures/blizzard-meta/snapshot.json', import.meta.url), 'utf8'))
+  assert.ok(parsed)
+  return parsed
 }
 
 describe('meta snapshot store', () => {
   it('reads a current snapshot and hides expired rows after they are deleted', () => {
     const sqlite = open()
     const now = 1_700_000_000_000
-    writeMetaSnapshot(sqlite, payload(), now, META_SNAPSHOT_TTL_MS)
+    const written = writeMetaSnapshot(sqlite, payload(), now, META_SNAPSHOT_TTL_MS)
+    assert.ok(written.snapshotId >= 1)
     const current = readCurrentMetaSnapshot(sqlite, META_REGION, now)
     assert.ok(current)
     assert.equal(current.payload.classes[0]?.slug, 'mage')
+    assert.equal(current.snapshotId, written.snapshotId)
     assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + META_SNAPSHOT_TTL_MS + 1), null)
     const removed = deleteExpiredMetaSnapshots(sqlite, now + META_SNAPSHOT_TTL_MS + 1)
     assert.equal(removed, 1)

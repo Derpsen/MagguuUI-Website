@@ -19,7 +19,7 @@ export function statPrioritySymbol(current: number, next: number): '>>' | '>' | 
 
 export function statPriorityParts(stats: MetaStatBar[]): Array<{ name: string, symbol: string | null }> {
   return stats.map((stat, index) => ({
-    name: stat.name,
+    name: stat.label,
     symbol: index < stats.length - 1 ? statPrioritySymbol(stat.average, stats[index + 1]!.average) : null,
   }))
 }

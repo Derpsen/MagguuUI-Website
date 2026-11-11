@@ -269,7 +269,7 @@
   (`utils/metaTypes.ts`, `docs/meta-snapshot.md`, fixture
   `tests/fixtures/blizzard-meta/snapshot.json`). English centralized copy
   (`utils/metaCopy.ts`). No "World of Warcraft"/"WoW" in our titles or URLs.
-  Empty pages show "No data yet." until a snapshot is written. Privacy s13
+  Empty pages show "Collecting data." Expired snapshots (over 30 days) show "Data unavailable." /meta changes go through a PR, Code-Review Ship, and green CI (docs-only may still go direct). Privacy s13
   (server-side retrieval, no visitor data passed on). The nightly Blizzard
   job and the full spec layout come in follow-up PRs.
 - Build info: Dockerfile `GIT_SHA`/`BUILD_TIME` args -> env; admin dashboard

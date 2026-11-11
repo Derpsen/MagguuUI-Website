@@ -68,7 +68,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
   - Meta prototype (`/meta`, EU Mythic+): public class and spec routes with a
     trademark-neutral title and path (`Meta`, `/meta/...` — never "World of
     Warcraft" or "WoW"). English copy lives in `utils/metaCopy.ts` (`META_COPY`,
-    German strings kept beside it unused). Empty pages show "No data yet."
+    German strings kept beside it unused). Empty pages show "Collecting data." Expired snapshots show "Data unavailable." /meta changes go through a PR, Code-Review Ship, and green CI (docs-only may still go direct).
     The aggregated snapshot schema is `utils/metaTypes.ts`, documented in
     `docs/meta-snapshot.md`, with a fixture at
     `tests/fixtures/blizzard-meta/snapshot.json` (never served on live pages).

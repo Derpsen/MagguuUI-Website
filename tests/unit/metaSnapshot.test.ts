@@ -2,43 +2,72 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { readFileSync } from 'node:fs'
 import { parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
-import { META_MIN_SAMPLE } from '../../utils/metaTypes'
+import { META_MIN_BUILD_SAMPLE, META_MIN_SHOW_SAMPLE, specDataState } from '../../utils/metaTypes'
 
 const fixturePath = new URL('../fixtures/blizzard-meta/snapshot.json', import.meta.url)
 
 describe('meta snapshot fixture', () => {
-  it('parses the canonical fixture and keeps player names out of the schema', () => {
+  it('parses the canonical fixture, including normal, low-sample, collecting, empty, Augmentation and Devourer', () => {
     const raw = readFileSync(fixturePath, 'utf8')
     const payload = parseMetaSnapshotPayload(raw)
     assert.ok(payload)
     assert.equal(payload.region, 'eu')
     assert.equal(payload.focus, 'mythic-plus')
     assert.ok(payload.season && Number.isFinite(payload.season.id))
-    assert.ok(payload.period && Number.isFinite(payload.period.id))
+    assert.ok(payload.periods && payload.periods.included.length === 3)
+    assert.equal(payload.periods.current.id, payload.periods.included[0]?.id)
+    assert.ok(payload.talentTree?.hash)
     assert.equal(payload.freshness.source, 'blizzard')
-    assert.equal(payload.freshness.region, 'eu')
     assert.ok(payload.freshness.fetchedAt < 1e12, 'fetchedAt is Unix seconds')
+    assert.equal(payload.basis.players, payload.sampled.players)
     const fire = payload.classes.flatMap(cls => cls.specs).find(spec => spec.slug === 'fire')
     assert.ok(fire)
-    assert.ok(fire.loadouts.length >= 1)
-    assert.ok(fire.loadouts.every(row => typeof row.code === 'string' && row.code.length > 0))
+    assert.equal(fire.lowSample, false)
+    assert.equal(fire.empty, false)
+    assert.equal(fire.collecting, false)
+    assert.ok(fire.n >= META_MIN_BUILD_SAMPLE)
+    assert.ok(fire.bestBuild?.code)
+    assert.ok(fire.loadouts.every(row => typeof row.code === 'string' && row.treeHash))
     assert.ok(fire.heroSplit.length >= 1)
-    assert.ok(fire.gearSlots.some(slot => slot.items[0] && slot.items[0].share >= 0 && slot.items[0].share <= 1))
-    assert.ok(fire.stats.length >= 1)
-    assert.equal(fire.belowMinSample, fire.characterCount < META_MIN_SAMPLE)
+    assert.ok(fire.gearSlots.some(slot => slot.items[0] && slot.items[0].ilvl != null))
     const frost = payload.classes.flatMap(cls => cls.specs).find(spec => spec.slug === 'frost')
     assert.ok(frost)
-    assert.equal(frost.belowMinSample, true)
-    assert.ok(frost.characterCount < META_MIN_SAMPLE)
-    assert.doesNotMatch(raw, /playerName|characterName|battletag/i)
+    assert.equal(specDataState(frost.n), 'collecting')
+    assert.equal(frost.collecting, true)
+    assert.ok(frost.n < META_MIN_SHOW_SAMPLE)
+    assert.equal(frost.bestBuild, null)
+    const arcane = payload.classes.flatMap(cls => cls.specs).find(spec => spec.slug === 'arcane')
+    assert.ok(arcane)
+    assert.equal(arcane.empty, true)
+    assert.equal(arcane.n, 0)
+    const aug = payload.classes.flatMap(cls => cls.specs).find(spec => spec.slug === 'augmentation')
+    assert.ok(aug)
+    assert.equal(aug.lowSample, false)
+    assert.ok(aug.bestBuild)
+    const devourer = payload.classes.flatMap(cls => cls.specs).find(spec => spec.slug === 'devourer')
+    assert.ok(devourer)
+    assert.equal(devourer.lowSample, true)
+    assert.equal(devourer.bestBuild, null)
+    assert.doesNotMatch(raw, /"name"|"realm"|"character"|playerName|characterName|battletag/i)
   })
 
-  it('rejects malformed payloads and player-name keys', () => {
+  it('rejects malformed payloads, reserved keys, and mismatched sample flags', () => {
     assert.equal(parseMetaSnapshotPayload('{'), null)
     assert.equal(parseMetaSnapshotPayload({ region: 'us', focus: 'mythic-plus' }), null)
     const ok = parseMetaSnapshotPayload(readFileSync(fixturePath, 'utf8'))
     assert.ok(ok)
     assert.equal(parseMetaSnapshotPayload({ ...ok, playerName: 'Someone' }), null)
-    assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, region: 'us' } }), null)
+    const withName = structuredClone(ok)
+    withName.classes[0]!.label = withName.classes[0]!.label
+    assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, name: 'nope' } }), null)
+    const fire = ok.classes.flatMap(cls => cls.specs).find(spec => spec.slug === 'fire')
+    assert.ok(fire)
+    assert.equal(parseMetaSnapshotPayload({
+      ...ok,
+      classes: ok.classes.map(cls => ({
+        ...cls,
+        specs: cls.specs.map(spec => spec.slug === 'fire' ? { ...spec, lowSample: true } : spec),
+      })),
+    }), null)
   })
 })

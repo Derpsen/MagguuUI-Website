@@ -1,24 +1,39 @@
 # Meta snapshot fixture schema
 
-Canonical fixture in the repo: `tests/fixtures/blizzard-meta/snapshot.json`
-Types: `utils/metaTypes.ts`
-Parser: `utils/metaSnapshot.ts` (`parseMetaSnapshotPayload`)
+Canonical fixture in the repo: `tests/fixtures/blizzard-meta/snapshot.json`  
+Types: `utils/metaTypes.ts`  
+Parser: `utils/metaSnapshot.ts` (`parseMetaSnapshotPayload`)  
+Storage: SQLite `meta_snapshots` (primary key `snapshot_id`) plus `meta_snapshot_active` (region → active `snapshot_id`)
 
-This is the **aggregated** snapshot shape stored in SQLite (`meta_snapshots.payload`) and served by `/api/v1/meta`. It is not a raw Blizzard API response. Buddy can generate a real EU Mythic+ aggregate in this format and drop it in as the same JSON.
+This is the **aggregated** snapshot shape stored as `meta_snapshots.payload` and served by `/api/v1/meta`. It is not a raw Blizzard API response. Buddy can generate a real EU Mythic+ aggregate in this format and drop it in as the same JSON.
 
-Rules:
+## Hard rules
 
-- No character or player names, battletags, or realm+character profile identifiers.
+- **No player names, realm names, or character ids.** Reserved JSON keys (rejected by the parser, at any depth): `name`, `realm`, `character`, `playerName`, `characterName`, `characterId`, `battletag` (and snake_case / battleTag variants). Display strings use **`label`**, never `name`.
 - `share` values are fractions from `0` to `1` (not 0–100). `0.42` is 42%.
-- `count`, `characterCount`, `profileCount`, and `sampled.*` are non-negative numbers (sample sizes in this snapshot).
-- `fetchedAt` in `freshness` is Unix time in **seconds** (UTC). Values `>= 1e12` are treated as milliseconds by the display helper; do not send milliseconds here.
-- `region` is always `"eu"`. `focus` is always `"mythic-plus"`. `freshness.source` is always `"blizzard"`.
-- `belowMinSample` must be `true` when `characterCount < 20` (`META_MIN_SAMPLE`), otherwise `false`. Grey the row in the UI; do not omit it.
-- Talent `band`: `"core"` if `share >= 0.8`, `"flexible"` if `share >= 0.2`, otherwise `"rare"`.
-- Gear `slot` uses Blizzard slot types (`HEAD`, `CHEST`, `TRINKET_1`, `FINGER_1`, …). Each `gearSlots[]` entry lists the top items for that slot (up to 5), each with pick-rate `share` and `count`.
-- `trinkets`, `rings`, and `embellishments` are separate flat lists (same item object shape). Leave an array empty when the API has nothing; do not invent consumables (not in this schema).
-- `season` and `period` may be `null` when unknown. `heroTree` on a loadout may be `null`.
-- Extra JSON keys are ignored. Unknown required-field types fail the parser (returns `null`; a failed run must not replace a still-valid snapshot).
+- Counts (`count`, `n`, `profileCount`, `sampled.*`) are non-negative numbers.
+- `fetchedAt` in `freshness` is Unix time in **seconds** (UTC). Do not send milliseconds.
+- `region` is always `"eu"`. `focus` is always `"mythic-plus"`. `freshness.source` and `basis.source` are always `"blizzard"`.
+- Sample thresholds (also in methodology copy):
+  - `META_MIN_BUILD_SAMPLE` = **50** — best-build and headline figures.
+  - `META_MIN_ITEM_SAMPLE` = **20** — slot items below this get `lowSample: true`.
+  - `META_MIN_SHOW_SAMPLE` = **10** — below this the spec shows **Collecting data** and no figures.
+  - After 30 days with no valid snapshot the page shows **Data unavailable**.
+- Spec flags must match `n` or the parser returns null:
+  - `empty` = `n === 0`
+  - `collecting` = `0 < n < 10`
+  - `lowSample` = `n < 50` (includes empty and collecting)
+  - `bestBuild` is a loadout only when `n >= 50`; otherwise it must be `null`
+- Loadout `code` values are counted only for the **current talent tree** (`treeHash` / snapshot `talentTree.hash`). Outdated trees are omitted.
+- Periods: **current season**, **current period plus the two previous** (`periods.included`, current first).
+- Extra JSON keys are ignored. Invalid types or flags fail the parser (returns `null`). A failed run must not replace a still-valid snapshot (the active pointer stays put).
+- The live site must not serve this fixture; pages stay on "Collecting data." until a real snapshot is written and promoted.
+
+## Storage (0.08)
+
+- `meta_snapshots.snapshot_id` is the stable id.
+- `meta_snapshot_active.region` points at the promoted snapshot. Readers join this pointer; they never see a half-written row.
+- Promotion happens in one transaction after the payload is complete. Sanity gates that may refuse to promote belong to the nightly job (later PR). Failed or expired rows do not move the pointer; if the active row expires or is deleted (retention 30 days) the page is **Data unavailable**.
 
 ## Root object (`MetaSnapshotPayload`)
 
@@ -26,51 +41,57 @@ Rules:
 |---|---|---|
 | `region` | `"eu"` | Fixed. |
 | `focus` | `"mythic-plus"` | Fixed. |
-| `season` | `{ id: number, name: string } \| null` | Current season from Game Data, or null. |
-| `period` | `{ id: number } \| null` | Current Mythic+ period id, or null. |
-| `freshness` | `MetaFreshness` | Displayed under the page heading. |
+| `season` | `{ id: number, label: string } \| null` | Current season, or null. |
+| `periods` | `{ current: { id: number }, included: { id: number }[] } \| null` | Current + two previous; `current.id` must appear in `included`. |
+| `talentTree` | `{ hash: string \| null, build: string \| null } \| null` | Current talent tree state used to filter loadout codes. |
+| `freshness` | `MetaFreshness` | Displayed under the heading. |
+| `basis` | `MetaDataBasis` | Data basis shown on the page (must agree with season, periods, freshness.players, sampled.profiles). |
 | `sampled` | object | How wide the capped sample was. |
-| `sampled.realms` | number | Connected realms visited (cap: 8). |
-| `sampled.leaderboards` | number | Leaderboard maps read (cap: 40). |
-| `sampled.characters` | number | Distinct characters in the leaderboard sample. |
-| `sampled.profiles` | number | Character profile fetches (specializations + equipment, cap: 40). |
-| `classes` | `MetaClassSummary[]` | Only classes that appeared in the sample need be present. |
+| `sampled.realms` | number | Connected realms visited. |
+| `sampled.leaderboards` | number | Leaderboard maps read. |
+| `sampled.players` | number | Distinct players in the counted population. |
+| `sampled.profiles` | number | Profile fetches (specializations + equipment). |
+| `sampled.skipped404` | number | Private/missing profiles skipped. |
+| `sampled.specMismatch` | number | Profiles dropped because the active spec ≠ the leaderboard spec. |
+| `classes` | `MetaClassSummary[]` | Classes that appeared in the sample. |
 
-### `freshness` (`MetaFreshness`)
+### `freshness`
 
 | Field | Type | Notes |
 |---|---|---|
 | `fetchedAt` | number | Unix **seconds** (UTC) when this snapshot was built. |
-| `characters` | number | Characters represented in the snapshot (usually equals `sampled.characters`). |
-| `keyLevels` | `{ min: number, max: number } \| null` | Key levels from leaderboards, not Raider.IO rating. |
+| `players` | number | Usually equals `sampled.players`. |
+| `keyLevels` | `{ min: number, max: number } \| null` | From leaderboards, not Raider.IO rating. |
 | `region` | `"eu"` | Fixed. |
 | `source` | `"blizzard"` | Fixed. |
 
+### `basis` (shown on the page)
+
+`region`, `focus`, `season`, `periods`, `talentTree`, `keyLevels`, `players`, `profiles`, `source: "blizzard"`.
+
 ## Per class (`MetaClassSummary`)
 
-| Field | Type |
-|---|---|
-| `slug` | string (URL slug, e.g. `"mage"`) |
-| `name` | string (e.g. `"Mage"`) |
-| `characterCount` | number |
-| `specs` | `MetaSpecSummary[]` |
+`slug` (e.g. `"mage"`, `"demon-hunter"`), `label` (e.g. `"Mage"`), `n` (sample size), `specs`.
 
 ## Per specialization (`MetaSpecSummary`)
 
 | Field | Type | Notes |
 |---|---|---|
-| `slug` | string | e.g. `"fire"` |
-| `name` | string | e.g. `"Fire"` |
-| `characterCount` | number | Sample size for this spec. |
-| `share` | number `0..1` | Share of the snapshot's characters. |
-| `profileCount` | number | Profiles actually inspected for talents/gear. |
-| `belowMinSample` | boolean | `true` when `characterCount < 20`. |
-| `keyLevels` | `{ min, max, average: number } \| null` | From leaderboards for this spec. |
+| `slug` | string | e.g. `"fire"`, `"augmentation"`, `"devourer"` |
+| `label` | string | e.g. `"Fire"` |
+| `n` | number | Sample size for this spec. |
+| `share` | number `0..1` | Share of the snapshot's players. |
+| `profileCount` | number | Profiles inspected for talents/gear. |
+| `empty` | boolean | `n === 0` |
+| `collecting` | boolean | `0 < n < 10` |
+| `lowSample` | boolean | `n < 50` |
+| `bestBuild` | `MetaLoadout \| null` | Only when `n >= 50` |
+| `keyLevels` | `{ min, max, average: number } \| null` | From the same counted population. |
 | `heroSplit` | `MetaHeroSplit[]` | Hero-tree popularity. |
-| `loadouts` | `MetaLoadout[]` | Talent loadout codes, most popular first. |
-| `talents` | `{ class, spec, hero: MetaTalentCount[] }` | Heatmap counters, not a visual talent calculator. |
-| `stats` | `MetaStatBar[]` | Average ratings, highest first (UI uses `>>` / `>` / `≥`). |
-| `gearSlots` | `MetaSlotGroup[]` | Two-column slot list in the UI; schema is a list of slots. |
+| `loadouts` | `MetaLoadout[]` | Current-tree talent codes, most popular first. |
+| `talents` | `{ class, spec, hero: MetaTalentCount[] }` | Heatmap counters, not a visual calculator. |
+| `stats` | `MetaStatBar[]` | Average ratings, highest first (`>>` / `>` / `≥` in the UI). |
+| `gearSlots` | `MetaSlotGroup[]` | Slot list (UI may render two columns). |
 | `trinkets` | `MetaGearCount[]` | Flat trinket list. |
 | `rings` | `MetaGearCount[]` | Flat ring list. |
 | `embellishments` | `MetaGearCount[]` | Only items flagged embellished; empty array is fine. |
@@ -78,51 +99,64 @@ Rules:
 | `gems` | `MetaEnchantGem[]` | Aggregated gem picks. |
 | `races` | `MetaRaceCount[]` | Race popularity for this spec. |
 
-### `heroSplit[]` (`MetaHeroSplit`)
+### `heroSplit[]`
 
-`id: number`, `name: string`, `count: number`, `share: number (0..1)`.
+`id: number`, `label: string`, `count: number`, `share: number (0..1)`.
 
-### `loadouts[]` (`MetaLoadout`)
+### `loadouts[]` / `bestBuild`
 
 | Field | Type | Notes |
 |---|---|---|
 | `code` | string | `talent_loadout_code` (one copy button in the UI). |
 | `count` | number | |
 | `share` | number `0..1` | |
-| `heroTree` | `{ id: number, name: string } \| null` | Active hero tree for that loadout. |
+| `heroTree` | `{ id: number, label: string } \| null` | |
+| `treeHash` | string \| null | Must match the snapshot's current tree, or the row is omitted. |
 
-### `talents.class|spec|hero[]` (`MetaTalentCount`)
+### `talents.class\|spec\|hero[]`
 
-`id: number`, `name: string`, `count: number`, `share: number (0..1)`, `tree: "class" \| "spec" \| "hero"`, `band: "core" \| "flexible" \| "rare"`.
+`id`, `label`, `count`, `share` (`0..1`), `tree: "class"\|"spec"\|"hero"`, `band: "core"\|"flexible"\|"rare"` (`core` ≥ 0.8, `flexible` ≥ 0.2, else `rare`).
 
-### `stats[]` (`MetaStatBar`)
+### `stats[]`
 
-`id: string` (e.g. `"CRIT_RATING"`), `name: string`, `average: number`.
+`id` (e.g. `"CRIT_RATING"`), `label`, `average`.
 
-### `gearSlots[]` (`MetaSlotGroup`)
+### `gearSlots[]`
 
-`slot: string`, `items: MetaGearCount[]` (top 3–5 for that slot).
+`slot` (Blizzard type: `HEAD`, `CHEST`, `TRINKET_1`, `FINGER_1`, …), `items` (top 3–5).
 
-### Item object (`MetaGearCount`) — also used by `trinkets`, `rings`, `embellishments`
+### Item object — also `trinkets`, `rings`, `embellishments`
 
 | Field | Type | Notes |
 |---|---|---|
 | `slot` | string | Blizzard slot type. |
 | `itemId` | number | |
-| `name` | string | Item name only, never a player. |
+| `label` | string | Item label only, never a player. |
 | `count` | number | |
 | `share` | number `0..1` | Pick rate. |
-| `quality` | string \| null | e.g. `"EPIC"`, `"RARE"`. |
-| `setName` | string \| null | Set badge when present. |
+| `quality` | string \| null | e.g. `"EPIC"`. |
+| `setName` | string \| null | Set badge when present. (`setName` is allowed; `name` is not.) |
 | `crafted` | boolean | |
 | `embellished` | boolean | |
-| `enchant` | `{ id: number, name: string } \| null` | Enchant on this row. |
-| `gems` | `{ id: number, name: string }[]` | Gems on this row; empty array when none. |
+| `ilvl` | number \| null | Item level. |
+| `source` | string \| null | e.g. `"Dungeon"`, `"Raid"`, `"Crafted"`. |
+| `lowSample` | boolean | `true` when `count < 20`. |
+| `enchant` | `{ id: number, label: string } \| null` | |
+| `gems` | `{ id: number, label: string }[]` | Empty array when none. |
 
-### `enchants[]` / `gems[]` (`MetaEnchantGem`) and `races[]` (`MetaRaceCount`)
+### `enchants[]` / `gems[]` / `races[]`
 
-`id: number`, `name: string`, `count: number`, `share: number (0..1)`.
+`id`, `label`, `count`, `share` (`0..1`).
 
-## Example
+## Fixture coverage
 
-See `tests/fixtures/blizzard-meta/snapshot.json` (Mage Fire fully filled, Frost and Warrior Protection below the minimum sample). The live site must not serve this fixture; pages stay on "No data yet." until a real snapshot is written to `meta_snapshots`.
+`tests/fixtures/blizzard-meta/snapshot.json` includes:
+
+- **Fire Mage** — `n >= 50`, full build, `bestBuild` set (normal case)
+- **Frost Mage** — `n = 8`, `collecting: true`, no figures in the UI
+- **Arcane Mage** — `n = 0`, `empty: true`
+- **Augmentation Evoker** — normal case (`n >= 50`)
+- **Devourer Demon Hunter** — `lowSample: true` (`10 ≤ n < 50`), no `bestBuild`
+- **Protection Warrior** — `lowSample: true`
+
+Season / period / tree hash values in the fixture are examples. Replace them with the live season, the current period plus the two previous, and the current talent-tree hash.

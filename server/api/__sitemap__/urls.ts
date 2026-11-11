@@ -28,7 +28,6 @@ const PAGES = [
   { loc: '/about', changefreq: 'monthly', priority: 0.3 },
   { loc: '/imprint', changefreq: 'yearly', priority: 0.2 },
   { loc: '/privacy', changefreq: 'yearly', priority: 0.2 },
-  { loc: '/meta', changefreq: 'daily', priority: 0.5 },
 ] as const
 
 function toDate(value: Date | number | string): Date {

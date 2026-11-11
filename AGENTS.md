@@ -78,6 +78,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     another adds the full spec layout. Tests: `tests/unit/metaSnapshot.test.ts`,
     `tests/unit/blizzardMetaStore.test.ts`, `tests/unit/metaCopy.test.ts`,
     `tests/meta.spec.ts`.
+    **DoD / rollout:** `/meta` stays off the header, footer and sitemap until stacked PR C2 is green *and* the Lighthouse budget for `/meta` (measured against the fixture snapshot until a live one exists) is green. Then the links go back in. Own tooltips and that budget belong in C2, not in A–C. AdBanner / AdSense migration is PR D. Routes and APIs stay reachable by direct URL in A–C so the pages can be reviewed and budgeted.
   - Settings header/metric also shows `App {version} · sha-{short}` (or `dev`)
     from the same `GIT_SHA` via `/api/v1/admin/system/info`. docker.yml already
     passes `GIT_SHA=${{ github.sha }}`.

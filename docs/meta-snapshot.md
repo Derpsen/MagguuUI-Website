@@ -7,6 +7,15 @@ Storage: SQLite `meta_snapshots` (primary key `snapshot_id`) plus `meta_snapshot
 
 This is the **aggregated** snapshot shape stored as `meta_snapshots.payload` and served by `/api/v1/meta`. It is not a raw Blizzard API response. Buddy can generate a real EU Mythic+ aggregate in this format and drop it in as the same JSON.
 
+## Rollout (nav, sitemap, budget)
+
+`/meta` is **not** linked in the header, footer, or sitemap in PRs A–C. Those
+links land only after stacked PR **C2** is green **and** the Lighthouse budget
+for `/meta` is green. C2 will add that budget, using this fixture as the
+measurement baseline until a live snapshot exists, plus own tooltips. AdBanner
+/ AdSense migration is a later ads PR (D), not C2.
+
+
 ## Hard rules
 
 - **No player names, realm names, or character ids.** Reserved JSON keys (rejected by the parser, at any depth): `name`, `realm`, `character`, `playerName`, `characterName`, `characterId`, `battletag` (and snake_case / battleTag variants). Display strings use **`label`**, never `name`.

@@ -23,7 +23,7 @@ test('/meta shows the empty state, methodology and attribution in light and dark
     await expect(page.getByText('Data provided by Blizzard')).toBeVisible()
     await expect(page.getByText('Not affiliated with or endorsed by Blizzard Entertainment.')).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Methodology' })).toBeVisible()
-    await expect(page.getByText('Low popularity ≠ unplayable.')).toBeVisible()
+    await expect(page.getByText('Low popularity ≠ unplayable.', { exact: true })).toBeVisible()
     const title = await page.title()
     expect(title).not.toMatch(TRADEMARK)
     expect(page.url()).not.toMatch(TRADEMARK)

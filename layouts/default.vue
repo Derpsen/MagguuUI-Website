@@ -371,7 +371,6 @@ const footerLinks = computed(() => [
   { label: 'Guide', to: '/guide' },
   { label: 'Addons', to: '/addons' },
   { label: 'Configurator', to: '/configurator' },
-  { label: 'Meta', to: '/meta' },
   { label: 'WoW Forever', to: '/forever' },
   { label: 'Changelog', to: '/changelog' },
   { label: 'FAQ', to: '/faq' },

@@ -11,11 +11,12 @@ export interface NavLink { to: string, label: string }
 export const FOREVER_BASE = '/forever'
 
 export const RETAIL_NAV: readonly NavLink[] = [
+  // /meta stays off the nav (and footer/sitemap) until PR C2 and the /meta
+  // Lighthouse budget are both green. See docs/meta-snapshot.md.
   { to: '/', label: 'Home' },
   { to: '/strings', label: 'Import Strings' },
   { to: '/addons', label: 'Addons' },
   { to: '/guide', label: 'Guides' },
-  { to: '/meta', label: 'Meta' },
   { to: '/changelog', label: 'Changelog' },
   { to: '/faq', label: 'FAQ' },
 ]

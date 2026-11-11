@@ -1,5 +1,7 @@
+import { CURRENT_ADDON_VERSION } from '~/utils/currentAddonVersion'
+
 export const CURRENT_ADDON_CHANGELOG = {
-  version: 'v12.1.9',
+  version: CURRENT_ADDON_VERSION,
   publishedAt: new Date('2026-11-08T00:00:00Z'),
   content: `Ready for WoW 12.1.5 and now also on WoW Forever. MagguuUI lives inside EllesmereUI. Type \`/mui\` to open it. One changelog for both clients: entries marked **Retail** or **WoW Forever** apply only there.
 

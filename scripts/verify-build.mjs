@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { setTimeout as delay } from 'node:timers/promises'
 
@@ -153,6 +153,53 @@ async function verifyDraftsNotPublic() {
 }
 
 // A scoped `:global(html.light) .x :deep(y)` compiles to a bare `html.light{...}` rule that restyles the whole page.
+
+async function verifyTipTapNotPrefetched() {
+  const manifestPath = '.output/server/chunks/virtual/precomputed.mjs'
+  if (!existsSync(manifestPath)) {
+    fail(`missing client manifest at ${manifestPath}`)
+  }
+  const manifest = readFileSync(manifestPath, 'utf8')
+  if (!manifest.includes('TipTapEditor')) {
+    fail(`${manifestPath} has no TipTapEditor entry`)
+  }
+  const objects = []
+  const collect = (index) => {
+    const start = manifest.lastIndexOf('{', index)
+    const end = manifest.indexOf('}', index)
+    if (start >= 0 && end > start) objects.push(manifest.slice(start, end + 1))
+  }
+  for (let from = 0; ;) {
+    const i = manifest.indexOf('name:"TipTapEditor"', from)
+    if (i < 0) break
+    collect(i)
+    from = i + 1
+  }
+  for (let from = 0; ;) {
+    const i = manifest.indexOf('TipTapEditor', from)
+    if (i < 0) break
+    const start = manifest.lastIndexOf('{', i)
+    const end = manifest.indexOf('}', i)
+    if (start >= 0 && end > start) {
+      const obj = manifest.slice(start, end + 1)
+      if (obj.includes('.css') || obj.includes('resourceType:"style"')) objects.push(obj)
+    }
+    from = i + 1
+  }
+  const leftovers = objects.filter(obj => obj.includes('prefetch:true') || obj.includes('preload:true'))
+  if (leftovers.length) {
+    fail(`TipTap chunk is still prefetched/preloaded in ${manifestPath}: ${leftovers[0].slice(0, 240)}`)
+  }
+
+  const response = await fetch(`${baseUrl}/guide`)
+  if (response.status !== 200) fail(`/guide returned ${response.status}`)
+  const html = await response.text()
+  const tags = [...html.matchAll(/<link[^>]+rel=["'](prefetch|modulepreload)["'][^>]*>/gi)].map(m => m[0])
+  const bad = tags.filter(tag => /tiptap|prosemirror/i.test(tag))
+  if (bad.length) fail(`/guide HTML prefetches TipTap: ${bad[0]}`)
+  console.log('[verify] /guide -> TipTap chunk is not prefetched in the client manifest or HTML')
+}
+
 async function verifyNoBareThemeRules() {
   for (const path of ['/', '/guide', '/faq', '/strings', '/changelog', '/about']) {
     const html = await (await fetch(`${baseUrl}${path}`)).text()
@@ -909,6 +956,7 @@ try {
   await waitForServer()
   await verifyEndpoints()
   await verifyDraftsNotPublic()
+  await verifyTipTapNotPrefetched()
   await verifyNoBareThemeRules()
   await verifyHotlinkLogos()
   await verifyPublicApiFlows()

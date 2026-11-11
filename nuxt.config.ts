@@ -1,5 +1,6 @@
 import { PUBLIC_SITE_ORIGIN, PUBLIC_SITE_SETTINGS_DEFAULTS } from './utils/siteSettingsDefaults'
 import { isGithubNightlyEnabled } from './utils/githubSchedule'
+import { applyAdminManifestPolicy } from './utils/adminManifest'
 
 const defaultSiteName = PUBLIC_SITE_SETTINGS_DEFAULTS.site_name
 const defaultMetaTitle = PUBLIC_SITE_SETTINGS_DEFAULTS.meta_title
@@ -36,8 +37,9 @@ const publicSecurityHeaders = {
 /**
  * Client manifest keys never prefetched on public pages: admin-only code, plus
  * on-demand public extras (Ctrl+K search, the idle-loaded web-vitals module).
+ * Pattern: ADMIN_ONLY_CHUNK in utils/adminManifest.ts (also matches Vite 8
+ * `name` / CSS, e.g. TipTapEditor with no `src`).
  */
-const ADMIN_ONLY_CHUNK = /(^|\/)(components\/PublicSearch\.vue|layouts\/admin\.vue|pages\/admin\/(?!login\.vue)|components\/admin\/|components\/TipTapEditor\.vue|components\/CommandPalette\.vue|components\/KeyboardShortcuts\.vue)|node_modules\/(@tiptap|prosemirror-|echarts|zrender|vue-echarts|web-vitals)/
 
 const hotlinkAssetHeaders = {
   ...publicSecurityHeaders,
@@ -298,50 +300,7 @@ export default defineNuxtConfig({
     // ride along on public pages as <link rel="prefetch"> / modulepreload.
     // Shared chunks/CSS that only admin chunks import are admin-only too.
     'build:manifest'(manifest) {
-      const isAdminKey = (key: string, chunk?: { file?: string, src?: string }) =>
-        ADMIN_ONLY_CHUNK.test(key)
-        || (chunk?.file ? ADMIN_ONLY_CHUNK.test(chunk.file) : false)
-        || (chunk?.src ? ADMIN_ONLY_CHUNK.test(chunk.src) : false)
-      const adminOnly = new Set(
-        Object.entries(manifest)
-          .filter(([key, chunk]) => isAdminKey(key, chunk))
-          .map(([key]) => key),
-      )
-      const importers = new Map<string, Set<string>>()
-      for (const [key, chunk] of Object.entries(manifest)) {
-        for (const dep of [...(chunk.imports ?? []), ...(chunk.dynamicImports ?? [])]) {
-          if (!importers.has(dep)) importers.set(dep, new Set())
-          importers.get(dep)!.add(key)
-        }
-      }
-      let grew = true
-      while (grew) {
-        grew = false
-        for (const [key, chunk] of Object.entries(manifest)) {
-          if (adminOnly.has(key) || chunk.isEntry) continue
-          const from = importers.get(key)
-          if (from?.size && [...from].every(k => adminOnly.has(k))) {
-            adminOnly.add(key)
-            grew = true
-          }
-        }
-      }
-      for (const key of adminOnly) {
-        const chunk = manifest[key]
-        if (!chunk) continue
-        chunk.prefetch = false
-        chunk.preload = false
-        for (const css of chunk.css ?? []) {
-          const cssChunk = manifest[css]
-          if (cssChunk) cssChunk.prefetch = false
-        }
-      }
-      // Public pages (including /guide after a late import()) must not emit
-      // <link rel="prefetch"> for TipTap/admin chunks still listed as dynamicImports.
-      for (const [key, chunk] of Object.entries(manifest)) {
-        if (adminOnly.has(key) || !chunk.dynamicImports?.length) continue
-        chunk.dynamicImports = chunk.dynamicImports.filter(dep => !adminOnly.has(dep))
-      }
+      applyAdminManifestPolicy(manifest)
     },
   },
 

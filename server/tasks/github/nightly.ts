@@ -1,6 +1,7 @@
 import { defineTask } from 'nitropack/runtime'
 /**
- * 03:30 Europe/Berlin (container TZ) GitHub release check + addon catalogue sync.
+ * 02:30 UTC GitHub release check + addon catalogue sync (armed by
+ * server/plugins/github-nightly-schedule.ts, not Nitro scheduledTasks).
  * Same logic as the admin Check / Resync buttons; lock is shared with those.
  */
 import { runScheduledGithubSync } from '~/server/utils/githubScheduledSync'

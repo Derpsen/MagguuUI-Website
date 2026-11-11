@@ -11,12 +11,13 @@ import { checkLatestRelease, githubRepoCredentials, githubSyncFailureHint, resyn
 import { githubRateLimitSkipReason, shouldSkipGithubCall } from '~/server/utils/githubRateLimit'
 import { withGithubSyncLock } from '~/server/utils/githubSyncLock'
 import { upsertSetting } from '~/server/utils/settings'
+import { isGithubNightlyEnabled } from '~/utils/githubSchedule'
 
 export const GITHUB_SCHEDULED_AT_KEY = 'github_scheduled_last_at'
 export const GITHUB_SCHEDULED_STATUS_KEY = 'github_scheduled_last_status'
 export const GITHUB_SCHEDULED_REASON_KEY = 'github_scheduled_last_reason'
 
-export type ScheduledGithubStatus = 'ok' | 'error' | 'skipped'
+export type ScheduledGithubStatus = 'ok' | 'error' | 'skipped' | 'partial'
 export interface ScheduledGithubRun {
   at: string
   status: ScheduledGithubStatus
@@ -35,7 +36,7 @@ export function sanitizeGithubRunReason(reason: string): string {
 export function scheduledRunFromSettings(values: { at?: string | null, status?: string | null, reason?: string | null }): ScheduledGithubRun | null {
   const at = values.at?.trim()
   const status = values.status?.trim()
-  if (!at || (status !== 'ok' && status !== 'error' && status !== 'skipped')) return null
+  if (!at || (status !== 'ok' && status !== 'error' && status !== 'skipped' && status !== 'partial')) return null
   return { at, status, reason: sanitizeGithubRunReason(values.reason || '') }
 }
 
@@ -65,7 +66,44 @@ export function readScheduledGithubRun(): ScheduledGithubRun | null {
   return scheduledRunFromSettings({ at, status, reason })
 }
 
+export type ScheduledReleaseResult =
+  | { ok: true, latestVersion: string }
+  | { ok: false, message: string }
+
+export type ScheduledCatalogResult =
+  | { ok: true, inserted: number, updated: number, unavailable: number }
+  | { ok: false, message: string }
+
+/** Combine both nightly steps: catalogue always runs; status is ok, partial, or error. */
+export function scheduledGithubOutcome(
+  release: ScheduledReleaseResult,
+  catalog: ScheduledCatalogResult,
+): { status: ScheduledGithubStatus, reason: string } {
+  const releasePart = release.ok
+    ? `Release ${release.latestVersion}`
+    : `Release check failed: ${release.message}`
+  const catalogPart = catalog.ok
+    ? `catalogue inserted=${catalog.inserted}, updated=${catalog.updated}, removed=${catalog.unavailable}`
+    : `catalogue sync failed: ${catalog.message}`
+  const reason = `${releasePart}; ${catalogPart}`
+  if (release.ok && catalog.ok) return { status: 'ok', reason }
+  if (!release.ok && !catalog.ok) return { status: 'error', reason }
+  return { status: 'partial', reason }
+}
+
+async function settleScheduledStep<T>(fn: () => Promise<T>): Promise<{ ok: true, value: T } | { ok: false, error: unknown }> {
+  try {
+    return { ok: true, value: await fn() }
+  }
+  catch (error) {
+    return { ok: false, error }
+  }
+}
+
 export async function runScheduledGithubSync(): Promise<ScheduledGithubRun> {
+  if (!isGithubNightlyEnabled()) {
+    return recordScheduledGithubRun('skipped', 'Disabled (NUXT_GITHUB_NIGHTLY is off)')
+  }
   const creds = githubRepoCredentials()
   if ('error' in creds) {
     return recordScheduledGithubRun('skipped', creds.error)
@@ -75,17 +113,16 @@ export async function runScheduledGithubSync(): Promise<ScheduledGithubRun> {
     if (shouldSkipGithubCall()) {
       return recordScheduledGithubRun('skipped', githubRateLimitSkipReason())
     }
-    try {
-      const release = await checkLatestRelease()
-      const catalog = await resyncAddonsFromToc('scheduled-nightly')
-      return recordScheduledGithubRun(
-        'ok',
-        `Release ${release.latestVersion}; catalogue inserted=${catalog.inserted}, updated=${catalog.updated}, removed=${catalog.unavailable}`,
-      )
-    } catch (err: unknown) {
-      const hint = githubSyncFailureHint(err, 'Scheduled GitHub sync failed')
-      return recordScheduledGithubRun('error', hint.message)
-    }
+    const releaseStep = await settleScheduledStep(() => checkLatestRelease())
+    const catalogStep = await settleScheduledStep(() => resyncAddonsFromToc('scheduled-nightly'))
+    const release: ScheduledReleaseResult = releaseStep.ok
+      ? { ok: true, latestVersion: releaseStep.value.latestVersion }
+      : { ok: false, message: githubSyncFailureHint(releaseStep.error, 'Scheduled release check failed').message }
+    const catalog: ScheduledCatalogResult = catalogStep.ok
+      ? { ok: true, inserted: catalogStep.value.inserted, updated: catalogStep.value.updated, unavailable: catalogStep.value.unavailable }
+      : { ok: false, message: githubSyncFailureHint(catalogStep.error, 'Scheduled catalogue sync failed').message }
+    const outcome = scheduledGithubOutcome(release, catalog)
+    return recordScheduledGithubRun(outcome.status, outcome.reason)
   })
   if (!locked.ok) return recordScheduledGithubRun('skipped', 'Already running')
   return locked.value

@@ -1,4 +1,5 @@
 import { PUBLIC_SITE_ORIGIN, PUBLIC_SITE_SETTINGS_DEFAULTS } from './utils/siteSettingsDefaults'
+import { isGithubNightlyEnabled } from './utils/githubSchedule'
 
 const defaultSiteName = PUBLIC_SITE_SETTINGS_DEFAULTS.site_name
 const defaultMetaTitle = PUBLIC_SITE_SETTINGS_DEFAULTS.meta_title
@@ -216,6 +217,10 @@ export default defineNuxtConfig({
     // MagguuUI x Forever release source (server/utils/foreverReleaseSource.ts); "off" disables the lookup.
     foreverRepo: process.env.NUXT_FOREVER_REPO || 'Derpsen/MagguuUI-Forever',
     githubWebhookSecret: process.env.NUXT_GITHUB_WEBHOOK_SECRET || '',
+    // Nightly GitHub job. Default on in production, off in development.
+    // Override with NUXT_GITHUB_NIGHTLY=true|false; parsed by isGithubNightlyEnabled
+    // so the string "false" is not treated as on.
+    githubNightly: isGithubNightlyEnabled(),
 
     webauthnRpName: 'MagguuUI Admin',
     webauthnRpId: process.env.NUXT_WEBAUTHN_RP_ID || '',
@@ -231,11 +236,9 @@ export default defineNuxtConfig({
     experimental: {
       tasks: true,
     },
-    // 03:30 in the container timezone. Set TZ=Europe/Berlin on Unraid so this
-    // stays 03:30 local time across CET/CEST.
-    scheduledTasks: {
-      '30 3 * * *': ['github:nightly'],
-    },
+    // The nightly GitHub job is armed in server/plugins/github-nightly-schedule.ts
+    // at 02:30 UTC (UTC date math). Nitro scheduledTasks are not used: that cron
+    // follows the process timezone, and the Unraid container / image have no TZ.
     storage: {
       data: {
         driver: 'fs',

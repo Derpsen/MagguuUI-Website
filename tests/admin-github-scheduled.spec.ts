@@ -1,5 +1,5 @@
 /**
- * Admin GitHub page: last scheduled nightly run (ok/error/skipped, time, reason).
+ * Admin GitHub page: last scheduled nightly run (ok/error/skipped/partial, time, reason).
  * One login per run (login is rate-limited).
  */
 import { expect, test, type BrowserContext } from '@playwright/test'
@@ -78,9 +78,15 @@ test('GitHub page shows no scheduled run, then the stored ok/error/skipped statu
     upsertSetting('github_scheduled_last_reason', 'Release 12.1.9; catalogue inserted=0, updated=2, removed=0')
     await page.reload()
     await expect(line).toContainText(/Scheduled ok/, { timeout: 30_000 })
+    // 2026-11-12T02:30:00.000Z is 03:30 CET — display is always Europe/Berlin, not container TZ.
+    await expect(line).toContainText('12/11/2026, 03:30 CET')
     await expect(line).toContainText('Release 12.1.9')
     await expect(page.getByTestId('admin-github-scheduled-panel')).toContainText('ok')
+    await expect(page.getByTestId('admin-github-scheduled-panel')).toContainText('12/11/2026, 03:30 CET')
     await expect(page.getByTestId('admin-github-scheduled-panel')).toContainText('catalogue inserted=0')
+    const next = page.getByTestId('admin-github-scheduled-next')
+    await expect(next).toBeVisible()
+    await expect(next).toContainText(/Next \d{2}\/\d{2}\/\d{4}, 0[34]:30 CES?T/)
 
     upsertSetting('github_scheduled_last_status', 'error')
     upsertSetting('github_scheduled_last_reason', 'GitHub rate limit reached; retry after 2026-11-12T03:00:00.000Z')
@@ -88,11 +94,17 @@ test('GitHub page shows no scheduled run, then the stored ok/error/skipped statu
     await expect(line).toContainText(/Scheduled error/, { timeout: 30_000 })
     await expect(line).toContainText('rate limit')
 
+    upsertSetting('github_scheduled_last_status', 'partial')
+    upsertSetting('github_scheduled_last_reason', 'Release check failed: timeout; catalogue inserted=1, updated=0, removed=0')
+    await page.reload()
+    await expect(line).toContainText(/Scheduled partial/, { timeout: 30_000 })
+    await expect(line).toContainText('catalogue inserted=1')
+
     upsertSetting('github_scheduled_last_status', 'skipped')
-    upsertSetting('github_scheduled_last_reason', 'Already running')
+    upsertSetting('github_scheduled_last_reason', 'Disabled (NUXT_GITHUB_NIGHTLY is off)')
     await page.reload()
     await expect(line).toContainText(/Scheduled skipped/, { timeout: 30_000 })
-    await expect(line).toContainText('Already running')
+    await expect(line).toContainText('NUXT_GITHUB_NIGHTLY is off')
   } finally {
     await page.close()
   }

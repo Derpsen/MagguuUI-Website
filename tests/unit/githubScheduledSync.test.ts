@@ -18,7 +18,7 @@ import {
   tryAcquireGithubSyncLock,
   withGithubSyncLock,
 } from '../../server/utils/githubSyncLock'
-import { sanitizeGithubRunReason, scheduledRunFromSettings } from '../../server/utils/githubScheduledSync'
+import { sanitizeGithubRunReason, scheduledGithubOutcome, scheduledRunFromSettings } from '../../server/utils/githubScheduledSync'
 
 describe('github sync lock', () => {
   beforeEach(() => resetGithubSyncLock())
@@ -93,7 +93,7 @@ describe('scheduled run status', () => {
     assert.ok(sanitizeGithubRunReason('x'.repeat(500)).length <= 200)
   })
 
-  it('reads only ok/error/skipped runs with a timestamp', () => {
+  it('reads only ok/error/skipped/partial runs with a timestamp', () => {
     assert.equal(scheduledRunFromSettings({}), null)
     assert.equal(scheduledRunFromSettings({ at: '2026-11-12T02:30:00.000Z', status: 'weird' }), null)
     assert.deepEqual(
@@ -101,5 +101,41 @@ describe('scheduled run status', () => {
       { at: '2026-11-12T02:30:00.000Z', status: 'ok', reason: 'Release 12.1.9' },
     )
     assert.equal(scheduledRunFromSettings({ at: '2026-11-12T02:30:00.000Z', status: 'skipped', reason: 'Already running' })?.status, 'skipped')
+    assert.equal(scheduledRunFromSettings({ at: '2026-11-12T02:30:00.000Z', status: 'partial', reason: 'Release check failed: timeout; catalogue inserted=1, updated=0, removed=0' })?.status, 'partial')
+  })
+})
+
+describe('scheduledGithubOutcome', () => {
+  const catalogOk = { ok: true as const, inserted: 1, updated: 2, unavailable: 0 }
+  const catalogErr = { ok: false as const, message: 'toc missing' }
+  const releaseOk = { ok: true as const, latestVersion: '12.1.9' }
+  const releaseErr = { ok: false as const, message: 'timeout' }
+
+  it('is ok when both steps succeed', () => {
+    assert.deepEqual(scheduledGithubOutcome(releaseOk, catalogOk), {
+      status: 'ok',
+      reason: 'Release 12.1.9; catalogue inserted=1, updated=2, removed=0',
+    })
+  })
+
+  it('is partial when the release check fails but the catalogue still runs', () => {
+    assert.deepEqual(scheduledGithubOutcome(releaseErr, catalogOk), {
+      status: 'partial',
+      reason: 'Release check failed: timeout; catalogue inserted=1, updated=2, removed=0',
+    })
+  })
+
+  it('is partial when the catalogue fails after a successful release check', () => {
+    assert.deepEqual(scheduledGithubOutcome(releaseOk, catalogErr), {
+      status: 'partial',
+      reason: 'Release 12.1.9; catalogue sync failed: toc missing',
+    })
+  })
+
+  it('is error when both steps fail, and the reason includes both results', () => {
+    assert.deepEqual(scheduledGithubOutcome(releaseErr, catalogErr), {
+      status: 'error',
+      reason: 'Release check failed: timeout; catalogue sync failed: toc missing',
+    })
   })
 })

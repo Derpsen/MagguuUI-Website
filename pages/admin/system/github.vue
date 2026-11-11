@@ -10,10 +10,13 @@
         <span v-if="status?.lastCheck" class="admin-pill">Last check {{ formatDate(status.lastCheck) }}</span>
         <span class="admin-pill" data-testid="admin-github-scheduled">
           <template v-if="status?.scheduledRun">
-            Scheduled {{ status.scheduledRun.status }} {{ formatDate(status.scheduledRun.at) }}
+            Scheduled {{ status.scheduledRun.status }} {{ formatBerlinTime(status.scheduledRun.at) }}
             <template v-if="status.scheduledRun.reason"> — {{ status.scheduledRun.reason }}</template>
           </template>
           <template v-else>No scheduled run yet</template>
+        </span>
+        <span v-if="status?.nextRunAt" class="admin-pill" data-testid="admin-github-scheduled-next">
+          Next {{ formatBerlinTime(status.nextRunAt) }}
         </span>
       </template>
 
@@ -36,7 +39,7 @@
       />
     </div>
 
-    <AdminPanel title="Scheduled run" description="Nightly GitHub release check and addon catalogue sync at 03:30 Europe/Berlin." icon="i-heroicons-clock">
+    <AdminPanel title="Scheduled run" description="Nightly GitHub release check and addon catalogue sync at 02:30 UTC. Times below are Europe/Berlin." icon="i-heroicons-clock">
       <div class="flex flex-wrap items-center gap-3" data-testid="admin-github-scheduled-panel">
         <UBadge
           :color="scheduledBadgeColor(status?.scheduledRun?.status)"
@@ -45,10 +48,13 @@
           {{ status?.scheduledRun?.status || "none" }}
         </UBadge>
         <p v-if="status?.scheduledRun" class="text-sm text-slate-600 dark:text-slate-400">
-          {{ formatDate(status.scheduledRun.at) }}
+          Last {{ formatBerlinTime(status.scheduledRun.at) }}
           <span v-if="status.scheduledRun.reason"> — {{ status.scheduledRun.reason }}</span>
         </p>
         <p v-else class="text-sm text-slate-600 dark:text-slate-400">No scheduled run yet.</p>
+        <p v-if="status?.nextRunAt" class="text-sm text-slate-600 dark:text-slate-400" data-testid="admin-github-scheduled-next-panel">
+          Next {{ formatBerlinTime(status.nextRunAt) }}
+        </p>
       </div>
     </AdminPanel>
 
@@ -387,6 +393,8 @@
 </template>
 
 <script setup lang="ts">
+import { formatBerlinTime } from "~/utils/githubSchedule"
+
 definePageMeta({ layout: "admin" })
 
 const toast = useToast()
@@ -408,7 +416,8 @@ interface StatusData {
   latestVersion: string | null
   localVersion: string | null
   lastCheck: string | null
-  scheduledRun: { at: string, status: "ok" | "error" | "skipped", reason: string } | null
+  scheduledRun: { at: string, status: "ok" | "error" | "skipped" | "partial", reason: string } | null
+  nextRunAt: string | null
   syncPage: number
   syncTotalPages: number
   recentSyncs: SyncEntry[]
@@ -522,7 +531,8 @@ function formatDate(value: string | number | null) {
 function scheduledBadgeColor(statusValue?: string) {
   if (statusValue === "ok") return "success"
   if (statusValue === "error") return "error"
-  if (statusValue === "skipped") return "warning"
+  if (statusValue === "partial") return "warning"
+  if (statusValue === "skipped") return "neutral"
   return "neutral"
 }
 

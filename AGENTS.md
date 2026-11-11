@@ -242,7 +242,7 @@ Buddy.
 
 ## Private addon repo (2026-10)
 - `Derpsen/MagguuUI` is private: never link it publicly. Downloads → CurseForge, changelog → `/changelog`, issues → `/about#contact`.
-- `utils/privateRepoLinks.ts` (`isPrivateRepoUrl`, `rewritePrivateRepoLinks`); `server/plugins/init.ts` rewrites DB content/FAQs/changelogs and clears a private `github_url` idempotently on boot.
+- `utils/privateRepoLinks.ts` (`isPrivateRepoUrl`, `rewritePrivateRepoLinks`); `server/utils/bootContentMarkers.ts` (`rewritePrivateRepoLinksInDb`, `clearPrivateGithubSetting`) rewrites DB content/FAQs/changelogs and clears a private `github_url` idempotently on boot (called from `websiteBoot.ts`).
 - `NUXT_GITHUB_REPO` sync config (server-side, authenticated) stays as is.
 - Link check: CurseForge/Wago/WoWI 403/429 = pass; real 404s fail. `tests/private-repo-links.spec.ts` guards the public pages.
 
@@ -395,7 +395,7 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 - Kept on purpose: `/api/v1/profiles`, `/api/v1/admin/profiles` and admin strings/profiles (used by `/strings`, `/configurator`, sync and `verify-build`).
 - Starter pack grouping: `WOWUP_STARTER_SLUGS` in `utils/addonChipMeta.ts` is the single source; `addonGroupForSlug` returns `required` (EllesmereUI), `starter`, `optional`; home and `/addons` both group with it. Do not write a literal `starter:` object key there (magguu-drift reads it as a pack list).
 - `error.vue` renders inside the default layout (header/footer, centered, Light + Dark). Mobile header is `z-[70]` while the menu overlay (`z-[65]`) is open, so logo and close button stay on top. The Light theme toggle is a plain icon button (colour change only, no white box).
-- Copy (code defaults + exact-text markers in `server/plugins/init.ts`, so admin edits stay): guide step tags Required/Install/Optional/Apply/Skinning & QoL/Commands; guide step_1 ends "MagguuUI Setup opens on that login instead of the Ellesmere start popup."; home hero description drops the Download clause (the Steps keep it).
+- Copy (code defaults + exact-text markers in `server/utils/bootContentMarkers.ts`, so admin edits stay): guide step tags Required/Install/Optional/Apply/Skinning & QoL/Commands; guide step_1 ends "MagguuUI Setup opens on that login instead of the Ellesmere start popup."; home hero description drops the Download clause (the Steps keep it).
 - Header nav breakpoint stays `lg`; below that the hamburger menu is used.
 
 ## Profile configurator `/configurator` (2026-10-25)
@@ -549,7 +549,7 @@ Nuxt auto-imports every export of utils/ and composables/, Nitro every export of
 - Retail download targets live only in `utils/downloadLinks.ts` (CurseForge from site setting, Wago `5NR84pK3`, WoWInterface `27061`); render them via `<DownloadButtons>` (one `primary` = CurseForge filled). Hero, closing CTA, /guide and /forever share it; `tests/polish.spec.ts` pins the hrefs.
 - Trust line uses only real data (latest changelog version/date, patch parsed from changelog). Never add invented counts.
 - Lightbox (`ScreenshotFrame`): focus trap, Escape, focus return; keep `data-testid="screenshot-lightbox"`.
-- Legacy content markers support `exact: true`: replace a DB row only when it equals the old default verbatim.
+- Legacy content markers (`server/utils/bootContentMarkers.ts`) support `exact: true`: replace a DB row only when it equals the old default verbatim.
 - Discord/GitHub/socials only when `discord_url`/`github_url` are set; none are invented.
 
 ## Renovate wave 2026-11-07
@@ -557,4 +557,5 @@ Nuxt auto-imports every export of utils/ and composables/, Nitro every export of
 - #171 Node digest, #172 docker/login-action, #173 npm non-major merged after every check passed; TS7, h3 2/Nitro3 and @types/node27 locks unchanged. Auto-pull owns deployment; no manual pull.
 
 ## Hard-refactor (Website, 2026-11-09)
-- Perf wave `22ac182..4ff3a8b`: public addon thumbs, `/api/v1/configurator` swr 120, configurator hydration shell, LazyAdBanner, LazyCommunityPresets. Behavior-neutral. Next ROI: init.ts split (characterization first), strings.vue extract.
+- Perf wave `22ac182..4ff3a8b`: public addon thumbs, `/api/v1/configurator` swr 120, configurator hydration shell, LazyAdBanner, LazyCommunityPresets. Behavior-neutral.
+- **init.ts split (2026-11-11, branch `refactor/init-split`):** boot work lives in `server/utils/bootMigrations.ts` (index ensure + imprint_* cleanup), `bootSeed.ts` (content/settings/FAQ/changelog seeds), `bootContentMarkers.ts` (exact/substring repairs + private-repo rewrite), orchestrated by `websiteBoot.ts`. `server/plugins/init.ts` keeps admin user creation, `NUXT_FORCE_PASSWORD_RESET`, route-cache clear, and addon-catalogue seed. Do not fold passkey/lockout/force-reset into the new modules. Characterization: `tests/unit/websiteBoot.test.ts` (in-memory DB only). Known-stale seed claims still need a `LEGACY_*` marker or `NUXT_SYNC_SEEDED_CONTENT=true`. Next ROI: strings.vue extract.

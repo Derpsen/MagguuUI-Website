@@ -250,6 +250,10 @@ export default defineNuxtConfig({
     public: {
       appName: defaultSiteName,
       appVersion: '3.0.0',
+      // Master ads switch for reserved AdSlot markup. Default off (no markup).
+      // NUXT_ADS=on|true|1|yes to enable the reserved slots. AdSense itself
+      // still needs adsense_enabled + a slot id + consent (later ads PR).
+      ads: process.env.NUXT_ADS || '',
     },
   },
 

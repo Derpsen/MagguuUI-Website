@@ -625,3 +625,7 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 ## 2026-11-11 News scaffold
 
 - Public `/news` + `/news/[slug]` (SSR), RSS `/news/feed.xml`, sitemap + Takumi OG + NewsArticle JSON-LD. Admin `/admin/content/news`. Schema and seed rules: `docs/news.md`. Author is always Magguu. Pouch-of-violet-dust seed stays unpublished until someone publishes it after the 2026-11-13 01:30 Europe/Berlin drop cutoff.
+
+## 2026-11-11 Meta UI (PR C)
+
+- Public /meta UI on top of the A/B snapshot APIs. Docs: `docs/meta-ui.md`. NUXT_ADS default off (no AdSlot markup). Author of news stays Magguu; this PR does not touch /news.

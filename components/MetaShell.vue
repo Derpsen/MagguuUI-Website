@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
+  <div class="mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20" :class="wide ? 'max-w-6xl' : 'max-w-3xl'">
     <nav v-if="crumbs.length" class="mb-6 text-sm" aria-label="Breadcrumb">
       <ol class="flex flex-wrap gap-x-2 gap-y-1">
         <li v-for="(crumb, index) in crumbs" :key="crumb.to" class="flex items-center gap-2">
@@ -13,7 +13,7 @@
       </ol>
     </nav>
 
-    <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="label">{{ copy.eyebrow }}</p>
+    <p class="font-mono text-xs uppercase tracking-[0.16em] mb-3" :class="label">{{ copy.eyebrow }}</p>
     <h1 class="text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">{{ title }}</h1>
     <p class="mt-3 max-w-xl text-sm leading-relaxed" :class="muted">{{ lead }}</p>
 
@@ -51,9 +51,11 @@ withDefaults(defineProps<{
   archonHref: string
   icyVeinsHref?: string
   crumbs?: Array<{ to: string, label: string }>
+  wide?: boolean
 }>(), {
   crumbs: () => [],
   icyVeinsHref: '',
+  wide: false,
 })
 
 const isDark = useIsDark()

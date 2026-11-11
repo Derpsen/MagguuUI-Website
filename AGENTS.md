@@ -348,7 +348,14 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 - SQLite `news_articles` (see `docs/news.md`): slug, title, summary (<=160), body, sourceUrl/sourceName, publishedAt (unix seconds), author always `Magguu`, tags, isPublished. Admin at `/admin/content/news`.
 - Seed from `server/database/news-seed/*.md` is insert-if-slug-missing. `pouch-of-violet-dust-launch-celebration` is always unpublished (drop ends 2026-11-13 01:30 Europe/Berlin).
 - No ad slots here. Blizzard news RSS admin notice (title+link only, no auto-publish) is a TODO in `docs/news.md`.
-- Internal "Also on this site" links to `/guide` and `/meta`. `/meta` may 404 until the Meta PRs land; link-check is advisory.
+- Internal "Also on this site" links to `/guide` and `/meta`. `/meta` stays out of the nav, sitemap and footer until this PR lands and the remaining C2/Lighthouse items are met; link-check is advisory.
+
+## Meta UI (2026-11-11, PR C)
+
+- `/meta` pages are English, SSR, plain site style (no boxed cards). Copy and figures come from the snapshot APIs. See `docs/meta-ui.md`.
+- Best build: one copy control with visible “Copied!” and `aria-live`. Hero toggle is `?hero=<id>` and also switches `talentsByHero` when present. Unmapped choice nodes are labelled in the heatmap.
+- Ads: `AdSlot` behind `NUXT_ADS` (default off = no markup). No spec/class data on the slot. Not inside the best-build area. AdSense is a later PR.
+- `npm run typecheck` is still `tsc`. New `/meta` Vue files must stay clean under `vue-tsc`. Repo-wide vue-tsc debt is a separate audit.
 
 ## Changelog feeds, filter and ?since= (2026-10-24)
 

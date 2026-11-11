@@ -25,4 +25,17 @@ describe('class color contrast', () => {
     }
     assert.equal(contrastSafeColor('#ffffff', false) === '#ffffff', false)
   })
+
+  it('lightens Shaman on dark backgrounds instead of greying it out', () => {
+    const official = metaClassColor('shaman')
+    const dark = metaClassTextColor('shaman', true)
+    assert.notEqual(dark.toLowerCase(), official.toLowerCase())
+    assert.ok(contrastRatio(dark, META_TEXT_BG_DARK) >= META_MIN_CONTRAST_RATIO)
+    const channels = dark.replace('#', '')
+    const r = Number.parseInt(channels.slice(0, 2), 16)
+    const g = Number.parseInt(channels.slice(2, 4), 16)
+    const b = Number.parseInt(channels.slice(4, 6), 16)
+    assert.ok(b > r && b > g, `expected a blue-leaning tint, got ${dark}`)
+    assert.ok(!['#e5e7eb', '#111827', '#9ca3af', '#6b7280'].includes(dark.toLowerCase()))
+  })
 })

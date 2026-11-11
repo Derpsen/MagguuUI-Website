@@ -3,46 +3,39 @@
     :title="copy.indexTitle"
     :lead="copy.indexLead"
     :empty="false"
-    :empty-text="copy.empty"
+    :empty-text="statusText"
     :murlok-href="META_MURLLOK_HOME"
     :archon-href="META_ARCHON_HOME"
   >
-    <p v-if="noData" class="text-sm" role="status" :class="muted">{{ statusText }}</p>
+    <template #intro>
+      <MetaFreshness v-if="freshness" :freshness="freshness" :season="seasonLabel" />
+    </template>
 
-    <section class="mt-10">
-      <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="label">{{ copy.classGrid }}</h2>
-      <ul class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm border-t pt-3" :class="rule">
-        <li v-for="cls in catalog" :key="cls.slug">
-          <NuxtLink
-            :to="metaClassPath(cls.slug)"
-            class="underline underline-offset-4"
-            :style="{ color: metaClassTextColor(cls.slug, isDark) }"
-          >{{ cls.label ?? cls.name }}</NuxtLink>
-        </li>
-      </ul>
+    <p v-if="noData" class="text-sm" role="status" :class="tone.muted.value">{{ statusText }}</p>
+
+    <MetaHomeHero :freshness="freshness" cta-href="#classes" />
+
+    <MetaClassPicker id="classes" class="mt-8 scroll-mt-24" />
+
+    <MetaFilterBar class="mt-8" :role="filters.role" :by="filters.by" :season="seasonLabel || '—'" :key-range="keyLabel" />
+
+    <MetaSpecIndex v-if="!noData" class="mt-8" :classes="classes" :role="filters.role" :by="filters.by" />
+
+    <AdSlot v-if="!noData" class="mt-8" placement="index-inline" />
+
+    <section class="mt-10" aria-labelledby="meta-method">
+      <h2 id="meta-method" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.methodology }}</h2>
+      <p class="mt-3 text-sm leading-relaxed" :class="tone.muted.value">{{ copy.methodologyBody }}</p>
+      <p class="mt-2 text-sm leading-relaxed" :class="tone.muted.value">{{ copy.minSample }}</p>
+      <p class="mt-2 text-sm font-medium" :class="tone.strong.value">{{ copy.lowPopularity }}</p>
     </section>
 
-    <section class="mt-10">
-      <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="label">{{ copy.methodology }}</h2>
-      <p class="mt-3 text-sm leading-relaxed" :class="muted">{{ copy.methodologyBody }}</p>
-      <p class="mt-2 text-sm leading-relaxed" :class="muted">{{ copy.minSample }}</p>
-      <p class="mt-2 text-sm font-medium" :class="strong">{{ copy.lowPopularity }}</p>
-    </section>
-
-    <section class="mt-10">
-      <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="label">{{ copy.faqTitle }}</h2>
+    <section class="mt-10" aria-labelledby="meta-faq">
+      <h2 id="meta-faq" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.faqTitle }}</h2>
       <dl class="mt-3 space-y-4 text-sm">
-        <div>
-          <dt class="font-medium" :class="strong">{{ copy.faqSampleQ }}</dt>
-          <dd class="mt-1" :class="muted">{{ copy.faqSampleA }}</dd>
-        </div>
-        <div>
-          <dt class="font-medium" :class="strong">{{ copy.faqLowPopQ }}</dt>
-          <dd class="mt-1" :class="muted">{{ copy.faqLowPopA }}</dd>
-        </div>
-        <div>
-          <dt class="font-medium" :class="strong">{{ copy.faqSourceQ }}</dt>
-          <dd class="mt-1" :class="muted">{{ copy.faqSourceA }}</dd>
+        <div v-for="item in faq" :key="item.q">
+          <dt class="font-medium" :class="tone.strong.value">{{ item.q }}</dt>
+          <dd class="mt-1" :class="tone.muted.value">{{ item.a }}</dd>
         </div>
       </dl>
     </section>
@@ -50,31 +43,46 @@
 </template>
 
 <script setup lang="ts">
+import { META_ARCHON_HOME, META_MURLLOK_HOME } from '~/utils/metaCatalog'
 import { META_COPY } from '~/utils/metaCopy'
-import { META_ARCHON_HOME, META_CLASSES, META_MURLLOK_HOME, metaClassPath, metaClassTextColor } from '~/utils/metaCatalog'
+import type { MetaClassSummary, MetaFreshness } from '~/utils/metaTypes'
+import { parseMetaIndexQuery } from '~/utils/metaUiCopy'
 
 const copy = META_COPY
+const tone = useMetaTone()
+const route = useRoute()
 
 usePublicPageSeo({
   title: copy.indexTitle,
-  description: copy.indexLead,
+  description: copy.indexDescription,
   path: '/meta',
 })
 
 type MetaIndexResponse = {
-  data: unknown | null
-  catalog?: Array<{ slug: string, label?: string, name?: string, specs: Array<{ slug: string, label?: string, name?: string }> }>
+  data: { classes: MetaClassSummary[], freshness: MetaFreshness, season: { id: number, label: string } | null } | null
+  catalog?: Array<{ slug: string, label?: string }>
   empty: boolean
   unavailable?: boolean
 }
 
+const filters = computed(() => parseMetaIndexQuery(route.query))
+
 const { data } = await useFetch<MetaIndexResponse>('/api/v1/meta')
-const noData = computed(() => !data.value?.data || data.value.empty || data.value.unavailable)
+const classes = computed(() => data.value?.data?.classes ?? [])
+const noData = computed(() => !data.value?.data || data.value.empty || data.value.unavailable || !classes.value.length)
 const statusText = computed(() => data.value?.unavailable ? copy.unavailable : copy.empty)
-const catalog = computed(() => data.value?.catalog ?? META_CLASSES.map(cls => ({ slug: cls.slug, label: cls.name, specs: cls.specs.map(spec => ({ slug: spec.slug, label: spec.name })) })))
-const isDark = useIsDark()
-const label = computed(() => (isDark.value ? 'text-brand-300' : 'text-brand-700'))
-const muted = computed(() => (isDark.value ? 'text-silver-400' : 'text-gray-600'))
-const strong = computed(() => (isDark.value ? 'text-white' : 'text-gray-950'))
-const rule = computed(() => (isDark.value ? 'border-white/10' : 'border-gray-200'))
+const freshness = computed(() => data.value?.data?.freshness ?? null)
+const seasonLabel = computed(() => data.value?.data?.season?.label ?? null)
+const keyLabel = computed(() => {
+  const range = freshness.value?.keyLevels
+  if (!range) return '—'
+  return range.min === range.max ? String(range.min) : `${range.min}–${range.max}`
+})
+
+
+const faq = [
+  { q: copy.faqSampleQ, a: copy.faqSampleA },
+  { q: copy.faqLowPopQ, a: copy.faqLowPopA },
+  { q: copy.faqSourceQ, a: copy.faqSourceA },
+]
 </script>

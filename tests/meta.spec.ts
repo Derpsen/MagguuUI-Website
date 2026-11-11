@@ -56,3 +56,13 @@ test('/meta/mage and /meta/mage/fire are known routes with empty data, 404 is us
   const missing = await page.goto('/meta/not-a-class')
   expect(missing?.status()).toBe(404)
 })
+
+
+test('role filters are plain links and no ad markup ships while NUXT_ADS is off', async ({ page }) => {
+  await page.goto('/meta')
+  await expect(page.getByRole('link', { name: 'DPS' })).toHaveAttribute('href', /role=dps/)
+  await expect(page.getByRole('link', { name: 'Tank' })).toHaveAttribute('href', /role=tank/)
+  await expect(page.getByRole('link', { name: 'Healer' })).toHaveAttribute('href', /role=healer/)
+  await expect(page.getByText('Advertisement')).toHaveCount(0)
+  await expect(page.locator('[data-ad-placement]')).toHaveCount(0)
+})

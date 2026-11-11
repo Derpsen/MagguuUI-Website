@@ -32,7 +32,7 @@ Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` 
 
 ## Notes
 
-- Edge caching: public pages (`/`, `/guide`, `/faq`, `/changelog`, `/about`, `/addons`, `/strings`, `/imprint`, `/privacy`) and `/api/v1/catalog-summary` send `CDN-Cache-Control: public, max-age=120, stale-while-revalidate=600`. Browsers still get `Cache-Control: public, max-age=0, must-revalidate` (ETag → 304), so admin edits show on the next reload. Cloudflare only stores HTML when a Cache Rule marks these URLs *Eligible for cache* (origin cache control respected); without that rule nothing changes at the edge.
+- Edge caching: public pages (`/`, `/guide`, `/faq`, `/changelog`, `/about`, `/addons`, `/strings`, `/imprint`, `/privacy`, `/meta` and `/meta/...`) and `/api/v1/catalog-summary` send `CDN-Cache-Control: public, max-age=120, stale-while-revalidate=600`. Browsers still get `Cache-Control: public, max-age=0, must-revalidate` (ETag → 304), so admin edits show on the next reload. Cloudflare only stores HTML when a Cache Rule marks these URLs *Eligible for cache* (origin cache control respected); without that rule nothing changes at the edge.
 
 - Passkeys require matching `NUXT_WEBAUTHN_RP_ID` and `NUXT_WEBAUTHN_ORIGIN` in production.
 - Changing `NUXT_JWT_SECRET` invalidates all existing sessions. Users must log in again.

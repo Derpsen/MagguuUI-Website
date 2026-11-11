@@ -61,6 +61,7 @@ export const CDN_CACHEABLE_PATHS = new Set([
   '/configurator',
   '/imprint',
   '/privacy',
+  '/meta',
   '/api/v1/catalog-summary',
 ])
 
@@ -71,5 +72,6 @@ export function isCdnCacheable(method: string, path: string, status: number): bo
   // Query strings would split the edge cache key; only the bare URLs are shared.
   if (query) return false
   const normalized = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname
+  if (normalized === '/meta' || normalized.startsWith('/meta/')) return true
   return CDN_CACHEABLE_PATHS.has(normalized)
 }

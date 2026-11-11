@@ -354,6 +354,17 @@ describe('privacy text', () => {
     // A stored edit of s9 itself is kept as well.
     assert.equal(mergePageCopy(PRIVACY_DEFAULTS, { s9: { body: '<p>mine</p>' } }).s9!.body, '<p>mine</p>')
   })
+  it('s13 describes server-side game data and does not overwrite stored edits', () => {
+    const body = PRIVACY_DEFAULTS.s13!.body!.toLowerCase()
+    for (const needle of ['blizzard', 'server', '30 days', 'no information about visitors', 'murlok.io', 'archon']) {
+      assert.ok(body.includes(needle), needle)
+    }
+    assert.ok(!PRIVACY_DEFAULTS.s13!.title!.includes('WoW'))
+    assert.ok(!PRIVACY_DEFAULTS.s13!.title!.includes('World of Warcraft'))
+    const merged = mergePageCopy(PRIVACY_DEFAULTS, { s7: { body: '<p>edited</p>' } })
+    assert.equal(merged.s13!.body, PRIVACY_DEFAULTS.s13!.body)
+    assert.equal(mergePageCopy(PRIVACY_DEFAULTS, { s13: { body: '<p>mine</p>' } }).s13!.body, '<p>mine</p>')
+  })
 })
 
 describe('source guards', () => {

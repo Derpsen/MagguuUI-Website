@@ -85,6 +85,12 @@ describe('request rules', () => {
     assert.equal(normalizeTrackedPath('/strings?x=1#a'), '/strings')
     assert.equal(normalizeTrackedPath('/faq/'), '/faq')
     assert.equal(normalizeTrackedPath('/'), '/')
+    assert.equal(normalizeTrackedPath('/meta'), '/meta')
+    assert.equal(normalizeTrackedPath('/meta/mage'), '/meta')
+    assert.equal(normalizeTrackedPath('/meta/mage/fire/'), '/meta')
+    assert.equal(normalizeTrackedPath('/meta/foo/bar'), null)
+    assert.equal(normalizeTrackedPath('/meta/mage/holy'), null)
+    assert.equal(normalizeTrackedPath('/meta/mage/fire/extra'), null)
     for (const bad of ['/admin', '/admin/login', '/api/v1/x', '/nope', 'strings', '', '/strings/extra', `/${'a'.repeat(400)}`, 5, null, undefined]) {
       assert.equal(normalizeTrackedPath(bad), null, String(bad))
     }
@@ -98,6 +104,10 @@ describe('request rules', () => {
       .filter(e => e.isFile() && e.name.endsWith('.vue'))
       .map(e => e.name === 'index.vue' ? '/forever' : `/forever/${e.name.replace(/\.vue$/, '')}`)
     pages.push(...forever)
+    const skipDirs = new Set(['admin', 'forever', 'api'])
+    for (const entry of readdirSync(new URL('../../pages', import.meta.url), { withFileTypes: true })) {
+      if (entry.isDirectory() && !entry.name.startsWith('_') && !skipDirs.has(entry.name)) pages.push(`/${entry.name}`)
+    }
     pages.sort()
     assert.deepEqual([...TRACKED_ROUTES].sort(), pages)
   })

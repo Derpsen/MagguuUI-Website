@@ -114,6 +114,11 @@ export default defineNuxtConfig({
       '/api/**',
       // CurseForge answers bots with 403 (every link is a false positive).
       /^https:\/\/www\.curseforge\.com\//,
+      // Independent Meta overviews; do not fetch or scrape these in CI.
+      /^https:\/\/(www\.)?murlok\.io\//,
+      /^https:\/\/(www\.)?archon\.gg\//,
+      /^https:\/\/(www\.)?wowhead\.com\//,
+      /^https:\/\/(www\.)?icy-veins\.com\//,
     ],
     // Addon names in ?addon= values are intentionally mixed case.
     skipInspections: ['no-uppercase-chars'],
@@ -255,7 +260,7 @@ export default defineNuxtConfig({
       ? {
           prerender: {
             failOnError: false,
-            routes: ['/', '/guide', '/faq', '/changelog', '/about', '/addons', '/configurator', '/imprint', '/privacy', '/strings', '/forever', '/forever/guide', '/forever/download', '/forever/strings'],
+            routes: ['/', '/guide', '/faq', '/changelog', '/about', '/addons', '/configurator', '/imprint', '/privacy', '/strings', '/forever', '/forever/guide', '/forever/download', '/forever/strings', '/meta'],
           },
         }
       : {}),
@@ -404,6 +409,12 @@ export default defineNuxtConfig({
     '/configurator': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
     '/imprint': { swr: 120 },
     '/privacy': { swr: 120 },
+    // No page-level swr for /meta: filters (?role=, ?hero=) and tracking
+    // query strings would otherwise each get their own route-cache entry
+    // (Nitro keys on the full URL). The pages read /api/v1/meta (bare path,
+    // swr 120 below). See the /changelog note above (DoD 2.07).
+    '/api/v1/meta': { swr: 120 },
+    '/api/v1/meta/**': { swr: 120 },
     '/forever': { swr: 120 },
     '/forever/**': { swr: 120 },
     '/api/v1/forever/release': { swr: 120 },

@@ -8,6 +8,8 @@ import { desc, count, eq } from 'drizzle-orm'
 import { db } from '~/server/database'
 import { syncHistory, settings } from '~/server/database/schema'
 import { resolveLocalAddonVersion } from '~/server/utils/addonVersion'
+import { readScheduledGithubRun } from '~/server/utils/githubScheduledSync'
+import { nextGithubNightlyRun } from '~/utils/githubSchedule'
 
 export default defineEventHandler(async (event) => {
   requireAdminAccess(event)
@@ -45,6 +47,8 @@ export default defineEventHandler(async (event) => {
     latestVersion,
     localVersion,
     lastCheck,
+    scheduledRun: readScheduledGithubRun(),
+    nextRunAt: nextGithubNightlyRun().toISOString(),
     syncPage,
     syncLimit,
     syncTotalPages: Math.max(1, Math.ceil(total / syncLimit)),

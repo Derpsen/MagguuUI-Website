@@ -255,6 +255,13 @@
   Local prod build `/`: modulepreload 30 -> 25, prefetch 8 -> 3, no admin CSS.
 - WowUp list: `/api/v1/wowup?view=meta` (length, preview, addonNames) and
   `/api/v1/wowup/:id`; the plain list endpoint stays fat for old clients.
+- Nightly GitHub sync: Nitro task `github:nightly` at 02:30 UTC
+  (`server/plugins/github-nightly-schedule.ts`, UTC date math; no TZ on the
+  image or Unraid). Admin last/next run is shown in Europe/Berlin. Kill switch
+  `NUXT_GITHUB_NIGHTLY` (default on in prod, off in dev; off → `skipped` in
+  admin). Catalogue sync still runs if the release check fails (`partial` /
+  `error` with both results). Shared lock with Check/Resync; rate-limit skip
+  on remaining=0 / 429 / rate-limit 403.
 - Build info: Dockerfile `GIT_SHA`/`BUILD_TIME` args -> env; admin dashboard
   shows `Live: <sha7> · built <UTC>` (fallback `dev`) via
   `/api/v1/admin/system/build`.

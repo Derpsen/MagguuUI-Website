@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
   const data = validateBody(settingsBodySchema, body)
 
   // Protected keys — managed by version-check/webhook, not editable via settings
-  const protectedKeys = ['addon_version', 'github_latest_version', 'github_last_check']
+  const protectedKeys = ['addon_version', 'github_latest_version', 'github_last_check', 'github_scheduled_last_at', 'github_scheduled_last_status', 'github_scheduled_last_reason']
 
   // Audit: previous values of the keys being written (redacted by key name and value shape).
   const auditBefore: Record<string, string | null> = {}

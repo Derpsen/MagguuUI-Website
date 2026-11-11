@@ -44,6 +44,22 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     keeps admin chunks out of public prefetch/modulepreload.
   - `/strings` lists use `view=meta`; full strings load per id on copy/edit.
   - Admin dashboard `Live:` line reads `GIT_SHA`/`BUILD_TIME` (docker.yml).
+  - Nightly GitHub job (`github:nightly`, Nitro `experimental.tasks`): release
+    check + addon catalogue sync, same functions as the admin Check / Resync
+    buttons, shared lock. Armed at **02:30 UTC** by
+    `server/plugins/github-nightly-schedule.ts` (UTC date math). Nitro
+    `scheduledTasks` is not used — that cron follows the process TZ, and the
+    image / Unraid container have no TZ. Admin last/next run on
+    `/admin/system/github` is formatted in Europe/Berlin (`Intl`,
+    `timeZone: 'Europe/Berlin'`; winter 03:30 CET, summer 04:30 CEST).
+    Kill switch: `NUXT_GITHUB_NIGHTLY` (`runtimeConfig.githubNightly`), default
+    on in production and off in development; when off the run is recorded as
+    `skipped` ("Disabled (NUXT_GITHUB_NIGHTLY is off)"). The catalogue sync
+    still runs if the release check fails; status is then `partial` or `error`
+    with both results in the reason. 403/429 are soft (read
+    `X-RateLimit-Remaining`/`Reset`, skip/back off). Audit/sync history must
+    not record tokens. Tests: `tests/unit/githubSchedule.test.ts`,
+    `tests/unit/githubScheduledSync.test.ts`, `tests/admin-github-scheduled.spec.ts`.
   - Settings header/metric also shows `App {version} · sha-{short}` (or `dev`)
     from the same `GIT_SHA` via `/api/v1/admin/system/info`. docker.yml already
     passes `GIT_SHA=${{ github.sha }}`.

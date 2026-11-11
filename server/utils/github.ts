@@ -6,8 +6,17 @@
  * Default: waits 10 seconds after the last change before triggering.
  */
 
+import { ofetch } from 'ofetch'
 import { db } from '~/server/database'
 import { syncHistory } from '~/server/database/schema'
+import {
+  GitHubRateLimitError,
+  githubRateLimitSkipReason,
+  isGithubRateLimitResponse,
+  rateLimitErrorFrom,
+  rememberGithubRateLimit,
+  shouldSkipGithubCall,
+} from './githubRateLimit'
 
 const GITHUB_API_VERSION = '2022-11-28'
 const SAFE_GITHUB_PATH_SEGMENT_RE = /^[A-Za-z0-9_.!-]+$/
@@ -66,11 +75,12 @@ export async function fetchGitHubTextFile(options: {
   maxBytes: number
 }) {
   const encodedPath = encodeGitHubPath(options.path)
-  const content = await $fetch<string>(
+  const content = await githubFetch<string>(
     `https://api.github.com/repos/${encodeURIComponent(options.owner)}/${encodeURIComponent(options.repo)}/contents/${encodedPath}`,
     {
       query: { ref: options.ref },
-      headers: githubHeaders(options.token, 'application/vnd.github.raw+json'),
+      token: options.token,
+      accept: 'application/vnd.github.raw+json',
       timeout: 15000,
     },
   )
@@ -101,11 +111,11 @@ export async function listGitHubDirectoryFiles(options: {
 }): Promise<GitHubDirectoryFile[]> {
   const encodedPath = encodeGitHubPath(options.path)
   const maxEntries = options.maxEntries ?? 256
-  const payload = await $fetch<unknown>(
+  const payload = await githubFetch<unknown>(
     `https://api.github.com/repos/${encodeURIComponent(options.owner)}/${encodeURIComponent(options.repo)}/contents/${encodedPath}`,
     {
       query: { ref: options.ref },
-      headers: githubHeaders(options.token),
+      token: options.token,
       timeout: 15000,
     },
   )
@@ -153,10 +163,10 @@ export async function getGitHubBranchHeadSha(options: {
   if (!/^[A-Za-z0-9._/-]+$/.test(options.branch) || options.branch.includes('..')) {
     throw new Error('Unsafe GitHub branch name')
   }
-  const ref = await $fetch<{ object?: { sha?: string } }>(
+  const ref = await githubFetch<{ object?: { sha?: string } }>(
     `https://api.github.com/repos/${encodeURIComponent(options.owner)}/${encodeURIComponent(options.repo)}/git/ref/heads/${options.branch.split('/').map(encodeURIComponent).join('/')}`,
     {
-      headers: githubHeaders(options.token),
+      token: options.token,
       timeout: 10000,
     },
   )
@@ -185,6 +195,40 @@ function githubHeaders(token?: string, accept = 'application/vnd.github+json') {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     'X-GitHub-Api-Version': GITHUB_API_VERSION,
     'User-Agent': 'MagguuUI-WebAdmin',
+  }
+}
+
+
+export async function githubFetch<T>(url: string, options: {
+  token?: string
+  accept?: string
+  query?: Record<string, string>
+  timeout?: number
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+  body?: Record<string, unknown>
+} = {}): Promise<T> {
+  if (shouldSkipGithubCall()) {
+    throw new GitHubRateLimitError(githubRateLimitSkipReason())
+  }
+  try {
+    // ofetch, not Nuxt's typed $fetch: GitHub URLs are not app routes.
+    const res = await ofetch.raw<T>(url, {
+      method: options.method,
+      query: options.query,
+      body: options.body,
+      headers: githubHeaders(options.token, options.accept),
+      timeout: options.timeout ?? 10_000,
+    })
+    rememberGithubRateLimit(res.headers)
+    return res._data as T
+  } catch (err: unknown) {
+    const headers = (err as { response?: { headers?: unknown } }).response?.headers
+    if (headers) rememberGithubRateLimit(headers)
+    const parsed = parseGitHubError(err)
+    if (isGithubRateLimitResponse(parsed.status, parsed.message, headers)) {
+      throw rateLimitErrorFrom(parsed.status, parsed.message, headers)
+    }
+    throw err
   }
 }
 
@@ -259,12 +303,9 @@ async function doGitHubDispatch(reasons: string[]) {
     : `batch: ${reasons.length} changes`
 
   try {
-    await $fetch(`https://api.github.com/repos/${owner}/${repo}/dispatches`, {
+    await githubFetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/dispatches`, {
       method: 'POST',
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'Authorization': `Bearer ${token}`,
-      },
+      token,
       body: {
         event_type: 'profile-sync',
         client_payload: {

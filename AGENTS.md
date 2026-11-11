@@ -49,7 +49,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     same functions as the admin Check / Resync buttons, shared lock.
     403/429 are soft (read `X-RateLimit-Remaining`/`Reset`, skip/back off).
     Status lives on `/admin/system/github` (ok/error/skipped, time, reason).
-    Cron is 03:30 in the container TZ; the image default is `TZ=Europe/Berlin`.
+    Cron is 03:30 in the container TZ; set `TZ=Europe/Berlin` on Unraid so it stays Berlin time across CET/CEST.
     Audit/sync history must not record tokens. Tests: `tests/unit/githubScheduledSync.test.ts`,
     `tests/admin-github-scheduled.spec.ts`.
   - Settings header/metric also shows `App {version} · sha-{short}` (or `dev`)

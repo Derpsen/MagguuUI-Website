@@ -231,8 +231,8 @@ export default defineNuxtConfig({
     experimental: {
       tasks: true,
     },
-    // 03:30 in the container timezone. The image sets TZ=Europe/Berlin so this
-    // stays 03:30 local time across CET/CEST. Unraid can still override TZ.
+    // 03:30 in the container timezone. Set TZ=Europe/Berlin on Unraid so this
+    // stays 03:30 local time across CET/CEST.
     scheduledTasks: {
       '30 3 * * *': ['github:nightly'],
     },

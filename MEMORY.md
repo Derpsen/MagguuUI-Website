@@ -266,6 +266,7 @@
 - A RUM: `plugins/web-vitals.client.ts` (idle import, public only) → `POST
   /api/v1/vitals` (text/plain beacon, 30/min/IP, tracking setting) →
   `web_vitals`; admin p75 table `/admin/system/vitals`.
+  Unknown/404 paths are dropped on ingest and in the admin aggregate (`TRACKED_ROUTES` only).
 - B `scripts/check-links.mjs` + weekly `linkcheck.yml`. CurseForge/Wago/WoWI
   answer 403 to bots → "unverified", not failures. First run found 404s on
   every `github.com/Derpsen/MagguuUI` link (repo not public).

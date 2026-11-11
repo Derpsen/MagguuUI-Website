@@ -7,15 +7,16 @@
  * and Global Privacy Control are honoured here as well (the server checks too).
  */
 import { clientOptedOut } from '~/utils/beacon'
+import { normalizeTrackedPath } from '~/utils/trackingRules'
 
 export default defineNuxtPlugin(() => {
   if (import.meta.dev) return
   if (clientOptedOut()) return
   const router = useRouter()
-  if (router.currentRoute.value.path.startsWith('/admin')) return
+  const path = normalizeTrackedPath(router.currentRoute.value.path)
+  if (!path) return
 
   const queue: Array<{ name: string, value: number }> = []
-  const path = router.currentRoute.value.path
   let sent = false
 
   function flush() {

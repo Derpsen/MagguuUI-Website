@@ -12,6 +12,8 @@ describe('web vitals', () => {
     assert.equal(normalizeVitalPath('/api/v1/x'), null)
     assert.equal(normalizeVitalPath('https://evil.example/'), null)
     assert.equal(normalizeVitalPath('/<script>'), null)
+    assert.equal(normalizeVitalPath('/doesnotexist'), null)
+    assert.equal(normalizeVitalPath('/favicon.ico'), null)
   })
 
   it('parses beacons, scales CLS, drops junk', () => {
@@ -25,6 +27,7 @@ describe('web vitals', () => {
       { path: '/', metric: 'INP', value: 80 },
     ])
     assert.deepEqual(parseVitalsBeacon({ path: '/admin', metrics: [{ name: 'LCP', value: 1 }] }), [])
+    assert.deepEqual(parseVitalsBeacon({ path: '/doesnotexist', metrics: [{ name: 'LCP', value: 3324 }] }), [])
   })
 
   it('p75 + ratings + aggregation', () => {
@@ -38,6 +41,11 @@ describe('web vitals', () => {
       { path: '/', metric: 'LCP', value: 2000 }, { path: '/', metric: 'LCP', value: 4000 },
     ])
     assert.deepEqual(rows, [{ path: '/', metric: 'LCP', p75: 3000, samples: 4, rating: 'needs improvement' }])
+    const filtered = aggregateVitals([
+      { path: '/doesnotexist', metric: 'LCP', value: 3324 },
+      { path: '/faq', metric: 'LCP', value: 1200 },
+    ])
+    assert.deepEqual(filtered, [{ path: '/faq', metric: 'LCP', p75: 1200, samples: 1, rating: 'good' }])
   })
 })
 

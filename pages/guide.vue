@@ -32,12 +32,15 @@
         </template>
         <template v-else-if="isAdmin">
           <button
-            @click="editMode = true"
-            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+            @click="startEdit"
+            :disabled="editorLoading"
+            :aria-busy="editorLoading"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-60 disabled:cursor-wait"
             :class="isDark ? 'bg-brand-400/10 text-brand-400 hover:bg-brand-400/20 border border-brand-400/20' : 'bg-brand-50 text-brand-600 hover:bg-brand-100 border border-brand-200'"
           >
-            <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
-            Edit Page
+            <svg v-if="editorLoading" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+            <svg v-else aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+            {{ editorLoading ? 'Loading…' : 'Edit Page' }}
           </button>
           <NuxtLink
             to="/admin/content/guide"
@@ -178,7 +181,13 @@
                   <div>
                     <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-silver-500' : 'text-gray-400'">Content</label>
                     <ClientOnly>
-                      <LazyTipTapEditor v-model="step.editableContent" placeholder="Step content..." min-height="120px" />
+                      <component
+                        :is="TipTapEditor"
+                        v-if="TipTapEditor"
+                        v-model="step.editableContent"
+                        placeholder="Step content..."
+                        min-height="120px"
+                      />
                       <template #fallback>
                         <div class="min-h-[120px] rounded-xl" aria-hidden="true" />
                       </template>
@@ -290,6 +299,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Component } from 'vue'
 
 const toast = useToast()
 const { apiFetch } = useApi()
@@ -369,6 +379,31 @@ const steps = ref<EditableStep[]>([])
 const editMode = ref(false)
 const saving = ref(false)
 const showSaved = ref(false)
+// Loaded only after "Edit Page" — not a Lazy* child in the public tree, so the
+// TipTap/ProseMirror chunk is not prefetched on guest visits.
+const TipTapEditor = shallowRef<Component | null>(null)
+const editorLoading = ref(false)
+let editorImport: Promise<void> | null = null
+
+async function startEdit() {
+  if (editorLoading.value) return
+  if (!TipTapEditor.value) {
+    editorLoading.value = true
+    try {
+      editorImport ??= import('~/components/TipTapEditor.vue').then((mod) => {
+        TipTapEditor.value = mod.default
+      })
+      await editorImport
+    } catch {
+      editorImport = null
+      toast.add({ title: 'Could not load the editor. Try again.', color: 'error' })
+      return
+    } finally {
+      editorLoading.value = false
+    }
+  }
+  editMode.value = true
+}
 
 // Prefer payload-backed computeds for SSR/hydration; edit refs only while editing.
 const visibleTitle = computed(() => editMode.value ? editableTitle.value : (guidePage.value?.title || ''))

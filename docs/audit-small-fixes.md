@@ -24,3 +24,8 @@ for an actual edge HIT; that setting is not an app PR.
 - Changelog has a page `h1` (“Changelog”). Version numbers, including the current
   release, are `h2` (the current one keeps the larger type). The “Release notes”
   eyebrow is a `p`. Markdown under a version may start at `h3`.
+
+The follow-up on #188 adds `tests/unit/addonVersionCopy.test.ts` so a leftover
+hardcoded addon version in `pages/` (the previous pin was `v12.1.9` on
+`/forever`) fails, and it puts `/strings` on the positive list in
+`tests/unit/cacheHeaders.test.ts`.

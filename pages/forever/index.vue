@@ -40,7 +40,7 @@
       </div>
       <div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-3" data-testid="forever-release-state">
         <dt :class="faint">Release</dt>
-        <dd :class="strong">Ships with MagguuUI v12.1.9</dd>
+        <dd :class="strong">Ships with MagguuUI {{ currentAddonVersion }}</dd>
       </div>
     </dl>
 
@@ -69,7 +69,10 @@
 </template>
 
 <script setup lang="ts">
+import { CURRENT_ADDON_VERSION } from '~/utils/currentAddonVersion'
 import { FOREVER_PACK_ADDONS } from '~/utils/foreverWowup'
+
+const currentAddonVersion = CURRENT_ADDON_VERSION
 
 const isDark = useIsDark()
 

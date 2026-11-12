@@ -22,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+import '~/assets/css/setup-strings.css'
 defineProps<{
   copied: boolean
   editAriaLabel: string

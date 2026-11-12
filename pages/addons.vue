@@ -52,6 +52,8 @@
 </template>
 
 <script setup lang="ts">
+import '~/assets/css/setup.css'
+import '~/assets/css/setup-addons.css'
 import { ADDON_ICONS } from '~/utils/addonIcons'
 import { addonThumbPath } from '~/utils/featureCardMeta'
 import { addonGroupForSlug, addonGroupSubtitle } from '~/utils/addonChipMeta'

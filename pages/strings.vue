@@ -278,6 +278,8 @@
 </template>
 
 <script setup lang="ts">
+import '~/assets/css/setup.css'
+import '~/assets/css/setup-strings.css'
 import { trackCopy } from '~/utils/beacon'
 import { addonIconForName } from '~/utils/addonIcons'
 import { layoutSpecChoices, SHARED_LAYOUT_SPEC } from '~/utils/wowSpecs'

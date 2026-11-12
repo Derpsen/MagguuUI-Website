@@ -9,6 +9,7 @@
 </template>
 
 <script setup lang="ts">
+import '~/assets/css/setup-strings.css'
 /** `text` changes the idle caption, `label` gives repeated buttons a distinct accessible name. */
 defineProps<{ copied: boolean, text?: string, label?: string }>()
 const emit = defineEmits<{ copy: [] }>()

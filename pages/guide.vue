@@ -190,6 +190,8 @@
 </template>
 
 <script setup lang="ts">
+import '~/assets/css/setup.css'
+import '~/assets/css/setup-guide.css'
 import type { Component } from 'vue'
 
 const toast = useToast()

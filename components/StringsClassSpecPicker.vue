@@ -65,6 +65,7 @@
 </template>
 
 <script setup lang="ts">
+import '~/assets/css/setup-strings.css'
 import { wowClassIcon, wowClassColor } from '~/utils/wowClassIcons'
 import { wowSpecIcon } from '~/utils/wowSpecs'
 

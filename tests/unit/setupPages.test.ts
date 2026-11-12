@@ -65,13 +65,31 @@ function themeBlock(css: string, selector: string): Record<string, string> {
   return out
 }
 
-/** Guide / Strings / Addons styles (assets/css/setup.css). */
+const SETUP_CSS = ['assets/css/setup.css', 'assets/css/setup-addons.css', 'assets/css/setup-guide.css', 'assets/css/setup-strings.css']
+
+/** Guide / Strings / Addons styles (assets/css/setup*.css, split per owner so /meta and the other pages do not ship them). */
 describe('setup pages: setup.css', () => {
-  const setup = read('assets/css/setup.css')
+  const setup = SETUP_CSS.map(read).join('\n')
   const tokens = read('assets/css/tokens.css')
 
-  it('is imported by main.css', () => {
-    assert.match(read('assets/css/main.css'), /@import\s+"\.\/setup\.css";/)
+  it('is NOT in the global entry CSS: each page or component imports only what it draws', () => {
+    assert.doesNotMatch(read('assets/css/main.css'), /setup[\w-]*\.css/)
+    const owners: Record<string, string[]> = {
+      'pages/guide.vue': ['setup.css', 'setup-guide.css'],
+      'pages/addons.vue': ['setup.css', 'setup-addons.css'],
+      'pages/strings.vue': ['setup.css', 'setup-strings.css'],
+      'components/PublicSetupNav.vue': ['setup.css'],
+      'components/CommunityPresets.vue': ['setup.css', 'setup-strings.css'],
+      'components/StringsStringCard.vue': ['setup-strings.css'],
+      'components/StringsClassSpecPicker.vue': ['setup-strings.css'],
+      'components/StringCopyButton.vue': ['setup-strings.css'],
+    }
+    for (const [file, css] of Object.entries(owners)) {
+      for (const name of css) assert.match(read(file), new RegExp(`import '~/assets/css/${name.replace('.', '\\.')}'`), `${file} imports ${name}`)
+    }
+    for (const file of ['pages/meta/index.vue', 'pages/news/index.vue', 'pages/index.vue']) {
+      try { assert.doesNotMatch(read(file), /setup[\w-]*\.css/, file) } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e }
+    }
   })
 
   it('every animation sits inside prefers-reduced-motion: no-preference and animates transform only', () => {
@@ -136,7 +154,7 @@ describe('setup pages: setup.css', () => {
 
 /** Only the declared weights exist, so a class never silently resolves to a different face. */
 describe('setup pages: font weights', () => {
-  const files = ['assets/css/setup.css', 'assets/css/main.css', 'assets/css/ui.css', 'assets/css/tokens.css', 'pages/index.vue', 'pages/guide.vue', 'pages/addons.vue', 'components/PublicSetupNav.vue', 'components/StringsStringCard.vue', 'components/StringsClassSpecPicker.vue', 'components/CommunityPresets.vue']
+  const files = [...SETUP_CSS, 'assets/css/main.css', 'assets/css/ui.css', 'assets/css/tokens.css', 'pages/index.vue', 'pages/guide.vue', 'pages/addons.vue', 'components/PublicSetupNav.vue', 'components/StringsStringCard.vue', 'components/StringsClassSpecPicker.vue', 'components/CommunityPresets.vue']
 
   it('public CSS uses only 400/600/700/800 (no 500 or 650: they would resolve to 400 and 700)', () => {
     for (const file of files) {

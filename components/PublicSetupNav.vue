@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+import '~/assets/css/setup.css'
 const route = useRoute()
 
 const links = [

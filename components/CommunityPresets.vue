@@ -34,6 +34,8 @@
 </template>
 
 <script setup lang="ts">
+import '~/assets/css/setup.css'
+import '~/assets/css/setup-strings.css'
 import { trackCopy } from '~/utils/beacon'
 import { copyTextToClipboard } from '~/utils/clipboard'
 

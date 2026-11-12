@@ -1,0 +1,69 @@
+/**
+ * Import Strings, string cards, chips, copy button and community presets (redesign PR 3).
+ * Tokens only (tokens.css), unlayered on purpose (it replaces legacy rules). Split per owner so the pages that do not use it
+ * (/meta, /news, ...) do not pay for it: each page or component imports what it draws (see AGENTS.md "Setup pages").
+ */
+
+/* ─── Import Strings ──────────────────────────────── */
+.strings-intro { margin-top: 2rem; border: 1px solid var(--mg-line-strong); border-radius: var(--mg-r-lg); background: var(--mg-surface); }
+.strings-intro > summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3.25rem; padding: 0.5rem 1.125rem; cursor: pointer; list-style: none; font-weight: 700; color: var(--mg-fg); }
+.strings-intro > summary::-webkit-details-marker { display: none; }
+.strings-intro__chev { flex: none; color: var(--mg-fg-subtle); transition: transform var(--mg-dur) var(--mg-ease); }
+.strings-intro[open] .strings-intro__chev { transform: rotate(180deg); }
+.strings-intro__body { padding: 0.25rem 1.125rem 1.25rem; display: grid; gap: 0.75rem; max-width: 46rem; font-size: var(--mg-fs-small); line-height: 1.65; color: var(--mg-fg-muted); }
+.strings-intro__body strong { color: var(--mg-fg); font-weight: 700; }
+.strings-intro__body a { color: var(--mg-accent-text); text-decoration: underline; text-underline-offset: 0.2em; }
+.strings-intro__body code { padding: 0.12em 0.4em; border-radius: var(--mg-r-sm); border: 1px solid var(--mg-line); background: var(--mg-surface-2); font-family: var(--font-mono); font-size: 0.9em; }
+
+.strings-tabs { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 0 1.25rem; margin-bottom: 2rem; padding: 0 0.25rem; border-bottom: 1px solid var(--mg-line-strong); }
+@media (min-width: 768px) { .strings-tabs { position: sticky; top: calc(var(--mg-header-h, 3.5rem) + 3rem); z-index: 30; justify-content: center; gap: 0 1.75rem; padding-top: 0.5rem; background: color-mix(in srgb, var(--mg-bg) 92%, transparent); backdrop-filter: blur(10px); } }
+.strings-tab { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.5rem; padding: 0 0.125rem 0.5rem; margin-bottom: -1px; border-bottom: 2px solid transparent; font-size: 0.875rem; font-weight: 700; color: var(--mg-fg-muted); transition: color var(--mg-dur) var(--mg-ease), border-color var(--mg-dur) var(--mg-ease); }
+@media (min-width: 640px) { .strings-tab { min-height: 2.75rem; padding-bottom: 0.625rem; font-size: 0.9375rem; } }
+.strings-tab:hover { color: var(--mg-fg); }
+.strings-tab[aria-selected='true'] { color: var(--mg-fg); border-bottom-color: var(--mg-accent-text); }
+.strings-tab__count { font-family: var(--font-mono); font-size: var(--mg-fs-micro); color: var(--mg-fg-subtle); }
+.strings-tab[aria-selected='true'] .strings-tab__count { color: var(--mg-accent-text); }
+
+.strings-panel { margin-inline: auto; width: 100%; max-width: 48rem; }
+.strings-label { display: block; margin-bottom: 0.625rem; text-align: center; font-family: var(--font-mono); font-size: var(--mg-fs-micro); font-weight: 400; letter-spacing: var(--mg-track-kicker); text-transform: uppercase; color: var(--mg-fg-subtle); }
+.strings-note { margin-inline: auto; margin-bottom: 1.5rem; max-width: 48rem; padding: 0.875rem 1.125rem; border: 1px solid var(--mg-line-strong); border-left: 3px solid var(--mg-accent-text); border-radius: var(--mg-r-md); background: var(--mg-surface); font-size: var(--mg-fs-small); line-height: 1.6; color: var(--mg-fg-muted); }
+.strings-empty { padding-block: 4rem; text-align: center; color: var(--mg-fg-muted); }
+.strings-empty svg { margin: 0 auto 1rem; width: 3rem; height: 3rem; color: var(--mg-fg-subtle); }
+
+/* Option chips (class / spec / addon / profile / package). */
+.wow-class-chip { display: inline-flex; align-items: center; gap: 0.6rem; min-height: 2.75rem; max-width: 100%; padding: 0.4rem 0.9rem 0.4rem 0.45rem; border: 1px solid var(--mg-line-strong); border-radius: 999px; background: var(--mg-surface); color: var(--mg-fg-muted); font-size: 0.875rem; font-weight: 600; transition: border-color var(--mg-dur) var(--mg-ease), background-color var(--mg-dur) var(--mg-ease), color var(--mg-dur) var(--mg-ease); }
+button.wow-class-chip { cursor: pointer; }
+button.wow-class-chip:hover { border-color: var(--mg-fg-subtle); color: var(--mg-fg); background: var(--mg-surface-2); }
+.wow-class-chip.is-active { border-color: var(--mg-accent-text); color: var(--mg-fg); background: color-mix(in srgb, var(--mg-accent) 14%, var(--mg-surface)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--mg-accent) 30%, transparent); }
+.wow-class-chip__icon { width: 1.75rem; height: 1.75rem; border-radius: 999px; object-fit: cover; flex: none; box-shadow: 0 0 0 1px var(--mg-line-strong); }
+.wow-class-chip > span:last-child { min-width: 0; overflow-wrap: anywhere; text-align: left; }
+
+/* The string itself: a copy bar and a mono well. */
+.string-card { border: 1px solid var(--mg-line-strong); border-radius: var(--mg-r-xl); background: linear-gradient(180deg, var(--mg-surface-2), var(--mg-surface)); box-shadow: var(--mg-shadow); padding: 1.25rem; display: grid; gap: 1rem; min-width: 0; }
+@media (min-width: 640px) { .string-card { padding: 1.5rem; } }
+.string-card__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; }
+.string-card__meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--mg-fg-muted); }
+.string-card__edit { width: 2.5rem; height: 2.5rem; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--mg-line-strong); border-radius: var(--mg-r-md); color: var(--mg-fg-muted); transition: color var(--mg-dur) var(--mg-ease), border-color var(--mg-dur) var(--mg-ease); }
+.string-card__edit:hover { color: var(--mg-fg); border-color: var(--mg-fg-subtle); }
+.string-card__kbd { display: none; }
+@media (min-width: 640px) { .string-card__kbd { display: inline-flex; align-items: center; padding: 0.1rem 0.4rem; border: 1px solid var(--mg-line-strong); border-radius: var(--mg-r-sm); background: var(--mg-surface); font-size: 0.6875rem; color: var(--mg-fg-muted); } }
+
+.string-copy-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 2.75rem; padding: 0.5rem 1.375rem; border: 1px solid transparent; border-radius: var(--mg-r-md); background: var(--mg-accent); color: var(--mg-on-accent); box-shadow: var(--mg-cta-shadow); font-size: 0.9375rem; font-weight: 700; line-height: 1.2; cursor: pointer; transition: background-color var(--mg-dur) var(--mg-ease), transform var(--mg-dur) var(--mg-ease); }
+.string-copy-btn:hover { background: color-mix(in srgb, var(--mg-accent) 88%, #fff); transform: translateY(-1px); }
+.string-copy-btn:active { transform: none; }
+.string-copy-btn.is-copied { background: var(--mg-surface-3); color: var(--mg-accent-text); border-color: var(--mg-accent-text); box-shadow: none; }
+
+.string-preview { position: relative; overflow-y: auto; border: 1px solid var(--mg-line); border-radius: var(--mg-r-lg); background: var(--mg-bg); padding: 1rem; }
+.string-preview > p { font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.7; word-break: break-all; color: var(--mg-fg-muted); }
+.string-preview-fade::after { content: ''; position: absolute; inset: auto 0 0 0; height: 2.5rem; background: linear-gradient(transparent, var(--mg-bg)); pointer-events: none; }
+
+/* Community presets */
+.community { margin-top: 5rem; padding-top: 2.5rem; border-top: 1px solid var(--mg-line-strong); }
+.community__lead { margin-top: 0.75rem; max-width: 46rem; font-size: var(--mg-fs-small); line-height: 1.65; color: var(--mg-fg-muted); }
+.community__lead--tight { margin-top: 0.25rem; }
+.community__lead a { color: var(--mg-accent-text); text-decoration: underline; text-underline-offset: 0.2em; }
+.community__list { margin-top: 1.5rem; border-top: 1px solid var(--mg-line-strong); }
+.community__item { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 0.5rem 1rem; padding-block: 1.125rem; border-bottom: 1px solid var(--mg-line); }
+.community__item > div { min-width: 0; flex: 1 1 14rem; overflow-wrap: anywhere; }
+.community__empty { margin-top: 1.5rem; padding: 1.5rem; border: 1px dashed var(--mg-line-strong); border-radius: var(--mg-r-lg); font-size: var(--mg-fs-small); color: var(--mg-fg-muted); }
+

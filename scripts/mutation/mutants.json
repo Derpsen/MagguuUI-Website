@@ -757,26 +757,26 @@
   },
   {
     "name": "setup.css: strings tabs sticky on mobile",
-    "file": "assets/css/setup.css",
+    "file": "assets/css/setup-strings.css",
     "find": ".strings-tabs { display: flex; flex-wrap: wrap;",
     "repl": ".strings-tabs { position: sticky; display: flex; flex-wrap: wrap;"
   },
   {
     "name": "setup.css: tab uses an undeclared weight",
-    "file": "assets/css/setup.css",
+    "file": "assets/css/setup-strings.css",
     "find": "font-size: 0.875rem; font-weight: 700; color: var(--mg-fg-muted); transition: color var(--mg-dur) var(--mg-ease), border-color",
     "repl": "font-size: 0.875rem; font-weight: 500; color: var(--mg-fg-muted); transition: color var(--mg-dur) var(--mg-ease), border-color"
   },
   {
     "name": "setup.css: guide layout column can't shrink",
-    "file": "assets/css/setup.css",
+    "file": "assets/css/setup-guide.css",
     "find": ".guide-layout { display: grid; grid-template-columns: minmax(0, 1fr);",
     "repl": ".guide-layout { display: grid; grid-template-columns: 1fr;"
   },
   {
-    "name": "main.css: setup.css not imported",
-    "file": "assets/css/main.css",
-    "find": "@import \"./setup.css\";\n",
+    "name": "PublicSetupNav: setup.css not imported",
+    "file": "components/PublicSetupNav.vue",
+    "find": "import '~/assets/css/setup.css'\n",
     "repl": ""
   },
   {
@@ -796,5 +796,17 @@
     "file": "pages/guide.vue",
     "find": "          eager\n",
     "repl": "          \n"
+  },
+  {
+    "name": "main.css: setup.css back in the global entry CSS",
+    "file": "assets/css/main.css",
+    "find": "@import \"./fonts.css\";",
+    "repl": "@import \"./fonts.css\";\n@import \"./setup.css\";"
+  },
+  {
+    "name": "strings: string card loses its css import",
+    "file": "components/StringsStringCard.vue",
+    "find": "import '~/assets/css/setup-strings.css'\n",
+    "repl": ""
   }
 ]

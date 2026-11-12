@@ -36,6 +36,7 @@ Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` 
 | `NUXT_META_KUMA_PUSH_URL` | empty | Optional Uptime Kuma push URL (token in the path). The job pushes `up` on `ok`/`skipped` and `down` on `partial`/`error`/`locked`. Never logged. Empty = no-op. |
 | `NUXT_META_SAMPLE_PER_SPEC` | `200` | Profile sample target per spec (default in the 150–200 range). |
 | `NUXT_META_MAX_ATTEMPTS_PER_SPEC` | `400` | Max profile attempts per spec before giving up. |
+| `NUXT_ADS` | off | Master switch for reserved `AdSlot` markup on `/meta`. Default **off** = no markup. Recognised on-values: `on`/`true`/`1`/`yes`. Resolved at **runtime** (`plugins/nuxt-ads.ts` via `useState`, not by mutating `runtimeConfig`). Empty or missing `NUXT_ADS` is off. A container env change does not need a rebuild. `NUXT_PUBLIC_ADS` is a fallback if `NUXT_ADS` is unset. AdSense loading is a later PR. |
 
 ## Notes
 

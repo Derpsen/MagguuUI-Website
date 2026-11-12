@@ -1,56 +1,74 @@
 <template>
   <MetaShell
-    :title="copy.classTitle(entry.name)"
-    :lead="copy.classDescription(entry.name)"
+    :title="copy.classTitle(found.name)"
+    :lead="copy.classDescription(found.name)"
     :empty="empty"
     :empty-text="statusText"
-    :murlok-href="murlokClassUrl(entry.slug)"
-    :archon-href="archonClassUrl(entry.slug)"
+    :murlok-href="murlokClassUrl(found.slug)"
+    :archon-href="archonClassUrl(found.slug)"
     :crumbs="crumbs"
   >
+    <template #intro>
+      <MetaFreshness v-if="freshness" :freshness="freshness" :sample-size="snapshot?.n ?? null" />
+    </template>
+
     <section>
-      <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="label">{{ copy.popularSpecs }}</h2>
-      <ul class="mt-3 space-y-2 text-sm border-t pt-3" :class="rule">
-        <li v-for="spec in entry.specs" :key="spec.slug">
+      <h2 class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.popularSpecs }}</h2>
+      <ul class="mt-3 space-y-2 border-t pt-3 text-sm" :class="tone.rule.value">
+        <li v-for="spec in found.specs" :key="spec.slug">
           <NuxtLink
-            :to="metaSpecPath(entry.slug, spec.slug)"
+            :to="metaSpecPath(found.slug, spec.slug)"
             class="underline underline-offset-4"
-            :style="{ color: metaClassTextColor(entry.slug, isDark) }"
+            :style="{ color: metaClassTextColor(found.slug, tone.isDark.value) }"
           >{{ spec.name }}</NuxtLink>
+          <span v-if="specNote(spec.slug)" class="ml-2 font-mono text-xs uppercase tracking-[0.12em]" :class="tone.muted.value">{{ specNote(spec.slug) }}</span>
         </li>
       </ul>
     </section>
+
+    <MetaClassPicker class="mt-10" :current="found.slug" />
   </MetaShell>
 </template>
 
 <script setup lang="ts">
-import { META_COPY } from '~/utils/metaCopy'
 import { archonClassUrl, findMetaClass, metaClassTextColor, metaSpecPath, murlokClassUrl } from '~/utils/metaCatalog'
+import { META_COPY } from '~/utils/metaCopy'
+import type { MetaClassSummary, MetaFreshness } from '~/utils/metaTypes'
+import { META_UI_COPY } from '~/utils/metaUiCopy'
 
 const copy = META_COPY
+const tone = useMetaTone()
 const route = useRoute()
-const classSlug = computed(() => String(route.params.classSlug || ''))
-const entry = computed(() => findMetaClass(classSlug.value))
-if (!entry.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Not found' })
+const resolved = findMetaClass(String(route.params.classSlug || ''))
+if (!resolved) {
+  throw createError({ statusCode: 404, statusMessage: 'Not found', fatal: true })
 }
+const found = resolved
 
 usePublicPageSeo({
-  title: copy.classTitle(entry.value.name),
-  description: copy.classDescription(entry.value.name),
-  path: `/meta/${entry.value.slug}`,
+  title: copy.classTitle(found.name),
+  description: copy.classDescription(found.name),
+  path: `/meta/${found.slug}`,
 })
 
 type ClassResponse = {
+  data: { snapshot: MetaClassSummary | null, freshness: MetaFreshness | null } | null
   empty: boolean
   unavailable?: boolean
 }
 
-const { data } = await useFetch<ClassResponse>(() => `/api/v1/meta/${entry.value!.slug}`)
+const { data } = await useFetch<ClassResponse>(`/api/v1/meta/${found.slug}`)
+const snapshot = computed(() => data.value?.data?.snapshot ?? null)
+const freshness = computed(() => data.value?.data?.freshness ?? null)
 const empty = computed(() => data.value?.empty !== false || data.value?.unavailable === true)
 const statusText = computed(() => data.value?.unavailable ? copy.unavailable : copy.noClassData)
-const crumbs = computed(() => [{ to: '/meta', label: copy.indexTitle }])
-const isDark = useIsDark()
-const label = computed(() => (isDark.value ? 'text-brand-300' : 'text-brand-700'))
-const rule = computed(() => (isDark.value ? 'border-white/10' : 'border-gray-200'))
+const crumbs = [{ to: '/meta', label: copy.indexTitle }]
+
+function specNote(slug: string) {
+  const spec = snapshot.value?.specs.find(item => item.slug === slug)
+  if (!spec) return ''
+  if (spec.collecting || spec.empty) return copy.empty
+  if (spec.lowSample) return META_UI_COPY.lowSample
+  return ''
+}
 </script>

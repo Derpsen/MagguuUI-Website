@@ -128,6 +128,7 @@ Important values include:
 - `NUXT_BLIZZARD_CLIENT_ID` / `NUXT_BLIZZARD_CLIENT_SECRET` (optional, server-only: Meta snapshot; leave empty until configured)
 - `NUXT_BLIZZARD_REGION` (optional, phase 1: `eu` only)
 - `NUXT_META_NIGHTLY` (optional, default off; `on`/`true`/`1`/`yes` to arm the 03:15 UTC job once credentials exist)
+- `NUXT_ADS` (optional, default off: no reserved AdSlot markup on /meta; `on`/`true`/`1`/`yes` to enable the reserved boxes. AdSense itself is a later PR.)
 - `NUXT_META_KUMA_PUSH_URL` (optional Kuma push URL; never logged)
 - `NUXT_META_SAMPLE_PER_SPEC` / `NUXT_META_MAX_ATTEMPTS_PER_SPEC` (optional; defaults 200 / 400)
 - `NUXT_GITHUB_REPO`

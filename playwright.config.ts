@@ -49,6 +49,8 @@ export default defineConfig({
       // NUXT_VISITOR_LOG is deliberately NOT set: the detailed visitor log (banner, consent, capture) is on by default
       // and tests/consent.spec.ts exercises exactly that default. (NUXT_VISITOR_LOG=false switches it off.)
       NUXT_JWT_SECRET: process.env.NUXT_JWT_SECRET || 'playwright-dummy-jwt-secret-32-chars-long-XXXXXXXX',
+      // Empty or unset = ads off. Set NUXT_ADS=on for tests/meta-ads.spec.ts after the main suite.
+      NUXT_ADS: process.env.NUXT_ADS || '',
     },
     // Health probe: a cold SSR probe on / could hang past the timeout while
     // Vite optimizes deps. tests/support/warmup.ts then warms the pages.

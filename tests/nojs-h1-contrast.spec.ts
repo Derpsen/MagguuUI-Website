@@ -24,6 +24,9 @@ for (const path of paths) {
     const response = await page.goto(path, { waitUntil: 'load' })
     expect(response?.status(), path).toBe(200)
 
+    // public-shell uses transition-colors duration-300; disable it so axe
+    // does not sample a mid-transition gray background.
+    await page.addStyleTag({ content: '*, *::before, *::after { transition: none !important; }' })
     await page.evaluate(() => {
       const html = document.documentElement
       html.classList.remove('dark')

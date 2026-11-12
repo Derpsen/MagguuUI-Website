@@ -9,8 +9,7 @@ import type Database from 'better-sqlite3'
  */
 
 import { clampMetaSnapshotShares, explainMetaSnapshotRejection, parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
-import { metaSnapshotCoverage } from './blizzardMetaPolicy'
-import { META_MIN_BUILD_SAMPLE, META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload, type MetaTalentLayout } from '~/utils/metaTypes'
+import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload, type MetaTalentLayout } from '~/utils/metaTypes'
 import { BLIZZARD_META_LOCK_TTL_MS } from './blizzardMetaLock'
 import type { MetaKeyLevelStats, SerializedProfileBucket, SpecPop } from './blizzardMetaAggregate'
 import { META_SYNC_STAGING_TABLES_SQL } from '../database/metaSyncStagingSql'
@@ -309,10 +308,8 @@ export function writeMetaSnapshot(
 
 /**
  * Re-activate the newest unexpired ok snapshot before the current one
- * (DoD 1.27). Older rows are skipped only when their wellCoveredSpecs are
- * below that predecessor's — thin partial intermediates are walked past,
- * but a slightly lower per-spec sample must not jump back to a much older
- * fuller snapshot.
+ * (DoD 1.27). Skip only rows marked freshness.partial; otherwise take the
+ * newest predecessor, even when an older row covers more specs.
  */
 export function rollbackMetaSnapshot(
   sqlite: MetaSqlite,
@@ -328,24 +325,13 @@ export function rollbackMetaSnapshot(
       AND snapshot_id != ?
     ORDER BY fetched_at DESC, snapshot_id DESC
   `).all(region, nowSec, current?.snapshotId ?? -1) as SnapshotRow[]
-  let pick: StoredMetaSnapshot | null = null
-  let pickWellCovered = 0
   for (const row of rows) {
     const stored = rowToStored(row)
     if (!stored) continue
-    const coverage = metaSnapshotCoverage(stored.payload, META_MIN_BUILD_SAMPLE)
-    if (!pick) {
-      pick = stored
-      pickWellCovered = coverage.wellCoveredSpecs
-      continue
-    }
-    if (coverage.wellCoveredSpecs > pickWellCovered) {
-      pick = stored
-      pickWellCovered = coverage.wellCoveredSpecs
-    }
+    if (stored.payload.freshness.partial) continue
+    return promoteMetaSnapshot(sqlite, stored.snapshotId, region, now)
   }
-  if (!pick) return null
-  return promoteMetaSnapshot(sqlite, pick.snapshotId, region, now)
+  return null
 }
 
 export function recordMetaRun(

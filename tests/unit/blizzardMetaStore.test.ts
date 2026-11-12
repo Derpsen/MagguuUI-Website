@@ -3,7 +3,9 @@ import { describe, it } from 'node:test'
 import { readFileSync } from 'node:fs'
 import Database from 'better-sqlite3'
 import { initializeDatabase } from '../../server/database/bootstrap'
+import { META_CLASSES } from '../../utils/metaCatalog'
 import { parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
+import { markMetaSnapshotPartial } from '../../server/utils/blizzardMetaPolicy'
 import { META_REGION, META_SNAPSHOT_TTL_MS } from '../../utils/metaTypes'
 import {
   deleteExpiredMetaSnapshots,
@@ -37,6 +39,32 @@ function withProfileCounts(base: ReturnType<typeof payload>, profileCount: numbe
       specs: cls.specs.map(spec => ({ ...spec, profileCount })),
     })),
   }
+}
+
+
+function specCountPayload(perSpec: number, specCount: number): ReturnType<typeof payload> {
+  const base = payload()
+  const template = base.classes[0]!.specs[0]!
+  let left = specCount
+  const classes = []
+  for (const cls of META_CLASSES) {
+    const specs = []
+    for (const spec of cls.specs) {
+      if (left <= 0) break
+      left -= 1
+      specs.push({
+        ...template,
+        slug: spec.slug,
+        label: spec.name,
+        n: 8000,
+        share: 0,
+        profileCount: perSpec,
+      })
+    }
+    if (specs.length) classes.push({ slug: cls.slug, label: cls.name, n: specs.reduce((sum, spec) => sum + spec.n, 0), specs })
+    if (left <= 0) continue
+  }
+  return { ...base, classes }
 }
 
 function oneSpecPayload(base: ReturnType<typeof payload>, profileCount: number): ReturnType<typeof payload> {
@@ -146,7 +174,7 @@ describe('meta snapshot store', () => {
     const sqlite = open()
     const now = Date.now()
     const full = writeMetaSnapshot(sqlite, withProfileCounts(payload(), 200), now, META_SNAPSHOT_TTL_MS)
-    const thin = writeMetaSnapshot(sqlite, oneSpecPayload(payload(), 1), now + 1_000, META_SNAPSHOT_TTL_MS)
+    const thin = writeMetaSnapshot(sqlite, markMetaSnapshotPartial(oneSpecPayload(payload(), 1)), now + 1_000, META_SNAPSHOT_TTL_MS)
     const current = writeMetaSnapshot(sqlite, withProfileCounts(payload(), 200), now + 2_000, META_SNAPSHOT_TTL_MS)
     assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + 3_000)?.snapshotId, current.snapshotId)
     const rolled = rollbackMetaSnapshot(sqlite, META_REGION, now + 3_000)
@@ -168,6 +196,21 @@ describe('meta snapshot store', () => {
     assert.ok(rolled)
     assert.equal(rolled.snapshotId, predecessor.snapshotId)
     assert.notEqual(rolled.snapshotId, oldest.snapshotId)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + 3_000)?.snapshotId, predecessor.snapshotId)
+  })
+
+
+  it('rolls back to the newest non-partial predecessor even when an older row covers more specs', () => {
+    const sqlite = open()
+    const now = Date.now()
+    const olderFull = writeMetaSnapshot(sqlite, specCountPayload(200, 40), now, META_SNAPSHOT_TTL_MS)
+    const predecessor = writeMetaSnapshot(sqlite, specCountPayload(200, 39), now + 1_000, META_SNAPSHOT_TTL_MS)
+    const current = writeMetaSnapshot(sqlite, specCountPayload(200, 40), now + 2_000, META_SNAPSHOT_TTL_MS)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + 3_000)?.snapshotId, current.snapshotId)
+    const rolled = rollbackMetaSnapshot(sqlite, META_REGION, now + 3_000)
+    assert.ok(rolled)
+    assert.equal(rolled.snapshotId, predecessor.snapshotId)
+    assert.notEqual(rolled.snapshotId, olderFull.snapshotId)
     assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + 3_000)?.snapshotId, predecessor.snapshotId)
   })
 

@@ -60,3 +60,46 @@ describe('design tokens: contrast', () => {
     assert.match(main, new RegExp(`html\\.light body \\{\\s*background: ${THEMES.light.bg};`))
   })
 })
+
+/** Shell rules that live in CSS or templates and cannot be seen by the colour tests above (Code-Review LOWs of PR 1). */
+describe('design system: shell source rules', () => {
+  const ui = readFileSync(join(process.cwd(), 'assets/css/ui.css'), 'utf8')
+  const layout = readFileSync(join(process.cwd(), 'layouts/default.vue'), 'utf8')
+
+  it('skip link: accent fill + on-accent text (AA pair, tested above), not white on teal', () => {
+    const block = ui.match(/\.mg-skip:focus \{([^}]*)\}/)?.[1] ?? ''
+    assert.match(block, /background:\s*var\(--mg-accent\)/)
+    assert.match(block, /color:\s*var\(--mg-on-accent\)/)
+    assert.match(layout, /class="mg-skip /)
+    assert.doesNotMatch(layout, /focus:bg-brand|focus:text-white/)
+    for (const [theme, t] of Object.entries(THEMES)) {
+      assert.ok(contrastRatio(t['on-accent']!, t['accent']!) >= 4.5, `${theme}: skip link pair`)
+    }
+  })
+
+  it('ad region only takes margin when an ad rendered', () => {
+    assert.match(ui, /\.mg-ad-region:has\(> \.ad-banner\) \{ margin-top/)
+    assert.doesNotMatch(ui, /\.mg-ad-region \{ margin-top/)
+  })
+
+  it('header is exactly the header height: hairline is a shadow, not a border', () => {
+    const block = ui.match(/\.mg-header \{([^}]*)\}/)?.[1] ?? ''
+    assert.match(block, /box-shadow:\s*inset 0 -1px 0/)
+    assert.doesNotMatch(block, /border-bottom/)
+  })
+
+  it('admin live preview frame uses the flat shell (no glow, no grid)', () => {
+    assert.match(ui, /\.public-shell--flat::before,\s*\.public-shell--flat::after \{ content: none; \}/)
+    const pages = readFileSync(join(process.cwd(), 'pages/admin/content/pages.vue'), 'utf8')
+    assert.match(pages, /admin-draft-preview__frame public-shell public-shell--flat/)
+  })
+
+  it('hamburger exposes expanded state and the controlled dialog; menu has a no-JS fallback', () => {
+    assert.match(layout, /:aria-expanded="mobileOpen"/)
+    assert.match(layout, /aria-controls="mobile-menu"/)
+    assert.match(layout, /id="mobile-menu"/)
+    assert.match(layout, /<details v-else class="mg-nojs-menu/)
+    assert.match(layout, /mg-scroll-lock/)
+  })
+})
+

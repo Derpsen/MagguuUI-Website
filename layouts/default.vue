@@ -8,7 +8,7 @@
 <template>
   <UApp>
   <div class="public-shell min-h-screen flex flex-col">
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:px-3 focus:py-2 focus:bg-brand-500 focus:text-white focus:text-sm focus:font-medium">
+    <a href="#main-content" class="mg-skip sr-only focus:not-sr-only">
       Skip to main content
     </a>
 
@@ -62,11 +62,32 @@
           <NuxtLink v-if="primaryAction" :to="primaryAction.to" data-cta="header-setup" class="mg-btn mg-btn--primary mg-btn--sm hidden sm:inline-flex">
             {{ primaryAction.label }}
           </NuxtLink>
-          <button class="mg-icon-btn xl:hidden"
+          <button
+            v-if="menuReady"
+            ref="menuButton"
+            type="button"
+            class="mg-icon-btn xl:hidden"
             :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
+            :aria-expanded="mobileOpen"
+            aria-controls="mobile-menu"
             @click="mobileOpen = !mobileOpen">
             <UIcon :name="mobileOpen ? 'i-heroicons-x-mark' : 'i-heroicons-bars-3'" class="w-5 h-5" />
           </button>
+          <!-- No JavaScript (or before hydration): the same links in a native <details>. Replaced by the button above on mount. -->
+          <details v-else class="mg-nojs-menu xl:hidden" data-testid="nojs-menu">
+            <summary class="mg-icon-btn" aria-label="Menu">
+              <UIcon name="i-heroicons-bars-3" class="w-5 h-5" />
+            </summary>
+            <div class="mg-sheet mg-nojs-menu__panel">
+              <nav class="mg-segment grid grid-cols-2 w-full mb-3" aria-label="Product (menu)">
+                <NuxtLink v-for="p in PRODUCT_SWITCH" :key="p.product" :to="p.to" :aria-current="product === p.product ? 'page' : undefined" class="min-h-11 flex items-center justify-center">{{ p.label }}</NuxtLink>
+              </nav>
+              <nav aria-label="Site menu" class="grid">
+                <NuxtLink v-for="link in navLinks" :key="link.to" :to="link.to" class="mg-sheet-link" :aria-current="isActive(link.to) ? 'page' : undefined">{{ link.label }}</NuxtLink>
+              </nav>
+              <NuxtLink v-if="primaryAction" :to="primaryAction.to" class="mg-btn mg-btn--primary mg-btn--lg w-full mt-4">{{ primaryAction.label }}</NuxtLink>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -91,11 +112,11 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-if="mobileOpen" class="fixed inset-0 z-[65] xl:hidden" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+      <div v-if="mobileOpen" id="mobile-menu" class="fixed inset-0 z-[65] xl:hidden" role="dialog" aria-modal="true" aria-label="Mobile navigation">
         <button
           class="absolute inset-0 bg-black/60"
           aria-label="Close mobile menu"
-          @click="mobileOpen = false"
+          @click="closeMenu(true)"
         />
 
         <div ref="mobileMenuPanel" class="absolute inset-x-3 top-16 max-h-[calc(100dvh-5rem)] overflow-y-auto">
@@ -258,6 +279,9 @@ const colorMode = useColorMode()
 const route = useRoute()
 const mobileOpen = ref(false)
 const mobileMenuPanel = ref<HTMLElement | null>(null)
+const menuButton = ref<HTMLButtonElement | null>(null)
+// The menu button replaces the native <details> fallback once hydrated (the fallback is what works without JavaScript).
+const menuReady = ref(false)
 const showBackToTop = ref(false)
 const { user, isLoggedIn, logout } = useAuth()
 const isDark = useIsDark()
@@ -374,10 +398,16 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+/** Close the menu; `returnFocus` puts focus back on the hamburger (Escape, backdrop), a link click navigates instead. */
+function closeMenu(returnFocus = false) {
+  mobileOpen.value = false
+  if (returnFocus) nextTick(() => menuButton.value?.focus())
+}
+
 function handleMobileKeydown(e: KeyboardEvent) {
   if (!mobileOpen.value) return
   if (e.key === 'Escape') {
-    mobileOpen.value = false
+    closeMenu(true)
     return
   }
   if (e.key !== 'Tab' || !mobileMenuPanel.value) return
@@ -399,6 +429,8 @@ function handleMobileKeydown(e: KeyboardEvent) {
 
 watch(mobileOpen, async (open) => {
   if (!import.meta.client) return
+  // Scroll lock on <html> while the menu is open; released on close, on route change (it closes the menu) and on unmount.
+  document.documentElement.classList.toggle('mg-scroll-lock', open)
   if (open) {
     await nextTick()
     const firstLink = mobileMenuPanel.value?.querySelector<HTMLElement>('a[href], button')
@@ -407,6 +439,7 @@ watch(mobileOpen, async (open) => {
 })
 
 onMounted(() => {
+  menuReady.value = true
   handleWindowScroll()
   window.addEventListener('scroll', handleWindowScroll, { passive: true })
   window.addEventListener('keydown', handleMobileKeydown)
@@ -414,6 +447,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (import.meta.client) {
+    document.documentElement.classList.remove('mg-scroll-lock')
     window.removeEventListener('scroll', handleWindowScroll)
     window.removeEventListener('keydown', handleMobileKeydown)
   }

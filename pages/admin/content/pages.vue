@@ -103,7 +103,7 @@
 
       <aside v-if="previewOpen" class="admin-draft-preview" aria-label="Live preview" data-testid="pages-preview">
         <p class="admin-draft-preview__label">Live preview · {{ currentPath }} · draft</p>
-        <div class="admin-draft-preview__frame public-shell" :class="isDark ? 'text-silver-200' : 'text-gray-800'">
+        <div class="admin-draft-preview__frame public-shell public-shell--flat" :class="isDark ? 'text-silver-200' : 'text-gray-800'">
           <PageViewAbout v-if="page === 'about'" :copy="previewCopy" :contact-email="contactEmail" />
           <PageViewImprint v-else-if="page === 'imprint'" :copy="previewCopy" :contact-email="contactEmail" />
           <PageViewPrivacy v-else :copy="previewCopy" />

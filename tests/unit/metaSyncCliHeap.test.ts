@@ -38,9 +38,18 @@ describe('meta sync CLI heap options', () => {
   })
 
   it('ignores an inherited META_SYNC_CLI_HEAP_APPLIED env and requires a re-exec marker plus execArgv cap', () => {
-    assert.equal(metaSyncCliHeapAlreadyApplied(['node', 'cli.mjs'], []), false)
-    assert.equal(metaSyncCliHeapAlreadyApplied(['node', 'cli.mjs', META_SYNC_CLI_HEAP_MARKER], []), false)
-    assert.equal(metaSyncCliHeapAlreadyApplied(['node', 'cli.mjs', META_SYNC_CLI_HEAP_MARKER], ['--max-old-space-size=192']), true)
+    const env = { META_SYNC_CLI_HEAP_APPLIED: '1', META_SYNC_CLI_HEAP_APPLIED_ENV: '1' }
+    assert.equal(metaSyncCliHeapAlreadyApplied(['node', 'cli.mjs'], [], env), false)
+    assert.equal(metaSyncCliHeapAlreadyApplied(['node', 'cli.mjs', META_SYNC_CLI_HEAP_MARKER], [], env), false)
+    assert.equal(metaSyncCliHeapAlreadyApplied(['node', 'cli.mjs', META_SYNC_CLI_HEAP_MARKER], ['--max-old-space-size=192'], env), true)
+    const previous = process.env.META_SYNC_CLI_HEAP_APPLIED
+    process.env.META_SYNC_CLI_HEAP_APPLIED = '1'
+    try {
+      assert.equal(metaSyncCliHeapAlreadyApplied(['node', 'cli.mjs'], []), false)
+    } finally {
+      if (previous == null) delete process.env.META_SYNC_CLI_HEAP_APPLIED
+      else process.env.META_SYNC_CLI_HEAP_APPLIED = previous
+    }
     const args = metaSyncCliReexecArgs('/app/meta-sync-cli.mjs', ['node', '/app/meta-sync-cli.mjs', 'extra'])
     assert.equal(args[0], `--max-old-space-size=${META_SYNC_CLI_DEFAULT_HEAP_MB}`)
     assert.equal(args[1], '/app/meta-sync-cli.mjs')
@@ -65,7 +74,9 @@ describe('meta sync CLI heap options', () => {
       killed.push(signal)
       return true
     }
-    const listeners: { SIGTERM: Array<() => void>, SIGINT: Array<() => void> } = { SIGTERM: [], SIGINT: [] }
+    const listeners: { SIGTERM: Array<() => void>, SIGINT: Array<() => void>, SIGHUP: Array<() => void> } = {
+      SIGTERM: [], SIGINT: [], SIGHUP: [],
+    }
     let exitCode: number | null = null
     attachForwardedChild(child as unknown as ChildProcess, {
       on: (event, listener) => { listeners[event].push(listener) },
@@ -76,9 +87,44 @@ describe('meta sync CLI heap options', () => {
     assert.ok(term)
     term()
     assert.deepEqual(killed, ['SIGTERM'])
+    assert.ok(listeners.SIGHUP[0], 'SIGHUP must be forwarded')
+    listeners.SIGHUP[0]!()
+    assert.deepEqual(killed, ['SIGTERM', 'SIGHUP'])
     child.emit('exit', null, 'SIGTERM')
     assert.equal(exitCode, 143)
     child.emit('error', new Error('spawn failed'))
+  })
+
+  it('aborts when the parent pid changes or the IPC channel disconnects', async () => {
+    const { installMetaSyncCliParentWatch } = await import('../../server/utils/metaSyncCliHeap')
+    const abort = new AbortController()
+    const ppid = 100
+    const listeners: { disconnect: Array<() => void> } = { disconnect: [] }
+    const stop = installMetaSyncCliParentWatch(abort, {
+      on: (event, listener) => { listeners[event].push(listener) },
+      off: (event, listener) => { listeners[event] = listeners[event].filter(fn => fn !== listener) },
+      ppid: () => ppid,
+      channel: {},
+      intervalMs: 10,
+    })
+    assert.equal(abort.signal.aborted, false)
+    listeners.disconnect[0]!()
+    assert.equal(abort.signal.aborted, true)
+    stop()
+
+    const abort2 = new AbortController()
+    let current = 200
+    const stop2 = installMetaSyncCliParentWatch(abort2, {
+      on: () => {},
+      off: () => {},
+      ppid: () => current,
+      channel: null,
+      intervalMs: 10,
+    })
+    current = 1
+    await new Promise(resolve => setTimeout(resolve, 40))
+    assert.equal(abort2.signal.aborted, true)
+    stop2()
   })
 })
 

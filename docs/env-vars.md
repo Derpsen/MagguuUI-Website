@@ -37,7 +37,7 @@ Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` 
 | `NUXT_META_SAMPLE_PER_SPEC` | `200` | Profile sample target per spec (default in the 150–200 range). |
 | `NUXT_META_MAX_ATTEMPTS_PER_SPEC` | `400` | Max profile attempts per spec before giving up. |
 | `NUXT_META_MAX_CONCURRENT_SPECS` | `1` | Max specs sampled in parallel during the nightly snapshot (1–8). Keep at 1 on the Unraid host. |
-| `NUXT_META_HEAP_LIMIT_MB` | (V8 `heap_size_limit`) | Optional cap for the Meta nightly heap guard, in MB. The guard compares `process.memoryUsage().heapUsed` only (not RSS or external) against 85% of `min(this, heap_size_limit)` and leaves the last-good snapshot in place. |
+| `NUXT_META_HEAP_LIMIT_MB` | (V8 `heap_size_limit`) | Optional cap for the Meta nightly heap guard, in MB. The guard compares `process.memoryUsage().heapUsed` only (not RSS or external) against 85% of the website process ceiling (544 MB of a 640 MB cap) or 70% of a CLI-sized cap, and leaves the last-good snapshot in place. |
 | `NUXT_ADS` | off | Master switch for reserved `AdSlot` markup on `/meta`. Default **off** = no markup. Recognised on-values: `on`/`true`/`1`/`yes`. Resolved at **runtime** (`plugins/nuxt-ads.ts` via `useState`, not by mutating `runtimeConfig`). The client payload is a boolean (`nuxt-ads-enabled`), not the raw env string. Empty or missing `NUXT_ADS` is off. A container env change does not need a rebuild. `NUXT_PUBLIC_ADS` is a fallback if `NUXT_ADS` is unset. AdSense loading is a later PR. |
 
 ## Notes

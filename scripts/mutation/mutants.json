@@ -670,5 +670,23 @@
     "file": "server/utils/metaSyncCliHeap.ts",
     "find": "return Math.floor(Math.min(META_SYNC_CLI_HEAP_MAX_MB, Math.max(META_SYNC_CLI_HEAP_MIN_MB, n)))",
     "repl": "return Math.floor(Math.min(5120, Math.max(META_SYNC_CLI_HEAP_MIN_MB, n)))"
+  },
+  {
+    "name": "meta: heap fraction stays at 85% instead of 70% on a CLI-sized old-space",
+    "file": "server/utils/blizzardMetaHeap.ts",
+    "find": "if (oldSpaceMb != null && oldSpaceMb <= META_HEAP_CLI_OLD_SPACE_MAX_MB) return META_HEAP_FRACTION",
+    "repl": "if (oldSpaceMb != null && oldSpaceMb <= META_HEAP_CLI_OLD_SPACE_MAX_MB) return META_HEAP_FRACTION_SERVER"
+  },
+  {
+    "name": "meta: in-board heap check is removed",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "      processedGroups += 1\n      if (processedGroups % META_HEAP_CHECK_EVERY_GROUPS === 0) {\n        runGuards(abort, options.deadline, asClock(options.now), heap)\n        if (syncAborted(abort)) return\n      }",
+    "repl": "      processedGroups += 1"
+  },
+  {
+    "name": "meta: inherited META_SYNC_CLI_HEAP_APPLIED env skips the re-exec",
+    "file": "server/utils/metaSyncCliHeap.ts",
+    "find": "  void env.META_SYNC_CLI_HEAP_APPLIED\n  if (!argv.includes(META_SYNC_CLI_HEAP_MARKER)) return false",
+    "repl": "  if (env.META_SYNC_CLI_HEAP_APPLIED) return true\n  if (!argv.includes(META_SYNC_CLI_HEAP_MARKER)) return false"
   }
 ]

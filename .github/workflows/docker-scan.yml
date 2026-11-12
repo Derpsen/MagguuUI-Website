@@ -92,10 +92,14 @@ jobs:
           peak=$(printf '%s\n' "$line" | jq -r '.peakHeapBytes')
           rss=$(printf '%s\n' "$line" | jq -r '.rssAfterGcBytes')
           kept=$(printf '%s\n' "$line" | jq -r '.candidates')
-          echo "pre-spec peak heap=$peak rss=$rss kept=$kept (budget heap<188743680 rss<314572800 kept<=32000)"
+          incoming=$(printf '%s\n' "$line" | jq -r '.incomingPlayers')
+          dropped=$(printf '%s\n' "$line" | jq -r '.dropped.ingest')
+          echo "pre-spec peak heap=$peak rss=$rss kept=$kept incoming=$incoming dropped=$dropped (budget heap<188743680 rss<314572800 kept<=32000)"
           test "$peak" -lt 188743680
           test "$rss" -lt 314572800
           test "$kept" -le 32000
+          test "$incoming" -gt "$kept"
+          test "$dropped" -eq $((incoming - kept))
 
       - name: Run Trivy
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0

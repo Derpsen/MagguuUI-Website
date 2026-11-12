@@ -7,10 +7,14 @@
  *
  * Default 256 MB: an EU-scale pre-spec run peaks around 130 MB heap, and
  * 70% of a 192 MB cap (134 MB) is too tight once in-flight boards are
- * counted. 70% of 256 MB is 179 MB. Sized for the 1 GB container next to
- * a website process of up to 640 MB heap (640 + 256 = 896 MB, about
- * 128 MB slack for RSS overhead). Measured CLI RSS is ~200–240 MB.
- * See docs/meta-nightly.md.
+ * counted. 70% of 256 MB is 179 MB. The wrapper prefers process.execve so
+ * it does not stay resident (~40–70 MB saved). Sized for the 1 GB
+ * container next to a website process of up to 640 MB heap. Typical
+ * website RSS is 150–200 MB plus CLI 200–240 MB. Worst case, a website
+ * already at its 640 MB cap (RSS often 700–800 MB with native addons)
+ * plus CLI 200–240 MB is about 0.90–1.04 GB — tight against 1 GB if the
+ * website is already at the cap; do not fire the CLI then. See
+ * docs/meta-nightly.md.
  */
 import type { ChildProcess } from 'node:child_process'
 import { constants } from 'node:os'
@@ -24,6 +28,9 @@ export const META_SYNC_CLI_HEAP_MAX_MB = 512
 export const META_SYNC_CLI_HEAP_ENV = 'NUXT_META_CLI_HEAP_MB'
 /** argv marker set only by our re-exec; an inherited env flag is ignored. */
 export const META_SYNC_CLI_HEAP_MARKER = '--meta-sync-cli-heap'
+/** Test-only: skip process.execve and keep a spawn wrapper (SIGKILL / parent-death tests). */
+export const META_SYNC_CLI_FORCE_SPAWN_ENV = 'META_SYNC_CLI_FORCE_SPAWN'
+export const META_SYNC_CLI_FORWARD_SIGNALS = ['SIGTERM', 'SIGINT', 'SIGHUP'] as const
 /** Start-of-run RSS budget used by CI image smoke and the unit spawn test. */
 export const META_SYNC_CLI_START_RSS_BUDGET_BYTES = 150 * 1024 * 1024
 export const META_SYNC_CLI_START_HEAP_BUDGET_BYTES = 50 * 1024 * 1024
@@ -51,10 +58,27 @@ export function resolveMetaSyncCliNodeOptions(env: NodeJS.ProcessEnv = process.e
 export function metaSyncCliHeapAlreadyApplied(
   argv: readonly string[] = process.argv,
   execArgv: readonly string[] = process.execArgv,
+  env: NodeJS.ProcessEnv = process.env,
 ): boolean {
+  void env.META_SYNC_CLI_HEAP_APPLIED
   if (!argv.includes(META_SYNC_CLI_HEAP_MARKER)) return false
   const mb = readMaxOldSpaceSizeMb(execArgv, '')
   return mb != null && mb >= META_SYNC_CLI_HEAP_MIN_MB && mb <= META_SYNC_CLI_HEAP_MAX_MB
+}
+
+export function shouldSpawnMetaSyncCliWrapper(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env[META_SYNC_CLI_FORCE_SPAWN_ENV] === '1' || typeof process.execve !== 'function'
+}
+
+/** Replace this process with the heap-capped CLI. Does not return on success. */
+export function execveMetaSyncCli(
+  selfPath: string,
+  argv: readonly string[] = process.argv,
+  env: NodeJS.ProcessEnv = process.env,
+): void {
+  const args = [process.execPath, ...metaSyncCliReexecArgs(selfPath, argv, env)]
+  const childEnv = { ...env, NODE_OPTIONS: resolveMetaSyncCliNodeOptions(env) }
+  process.execve!(process.execPath, args, childEnv)
 }
 
 export function metaSyncCliReexecArgs(
@@ -81,8 +105,8 @@ export function childExitStatus(code: number | null, signal: NodeJS.Signals | st
 export function attachForwardedChild(
   child: ChildProcess,
   hooks: {
-    on: (event: 'SIGTERM' | 'SIGINT', listener: () => void) => void
-    off: (event: 'SIGTERM' | 'SIGINT', listener: () => void) => void
+    on: (event: 'SIGTERM' | 'SIGINT' | 'SIGHUP', listener: () => void) => void
+    off: (event: 'SIGTERM' | 'SIGINT' | 'SIGHUP', listener: () => void) => void
     exit: (code: number) => void
   } = process,
 ): void {
@@ -93,13 +117,13 @@ export function attachForwardedChild(
       /* child already gone */
     }
   }
-  const onTerm = () => forward('SIGTERM')
-  const onInt = () => forward('SIGINT')
-  hooks.on('SIGTERM', onTerm)
-  hooks.on('SIGINT', onInt)
+  const listeners = META_SYNC_CLI_FORWARD_SIGNALS.map(signal => {
+    const listener = () => forward(signal)
+    hooks.on(signal, listener)
+    return { signal, listener }
+  })
   const cleanup = () => {
-    hooks.off('SIGTERM', onTerm)
-    hooks.off('SIGINT', onInt)
+    for (const { signal, listener } of listeners) hooks.off(signal, listener)
   }
   child.on('error', () => {
     cleanup()
@@ -109,4 +133,37 @@ export function attachForwardedChild(
     cleanup()
     hooks.exit(childExitStatus(code, signal))
   })
+}
+
+/** Abort when the wrapper dies (IPC disconnect or ppid change after SIGKILL). */
+export function installMetaSyncCliParentWatch(
+  abort: AbortController,
+  hooks: {
+    on: (event: 'disconnect', listener: () => void) => void
+    off: (event: 'disconnect', listener: () => void) => void
+    ppid: () => number
+    channel?: object | null
+    intervalMs?: number
+  } = {
+    on: (event, listener) => process.on(event, listener),
+    off: (event, listener) => process.off(event, listener),
+    ppid: () => process.ppid,
+    channel: process.channel ?? null,
+  },
+): () => void {
+  const die = () => {
+    if (!abort.signal.aborted) abort.abort()
+  }
+  const onDisconnect = () => die()
+  if (hooks.channel) hooks.on('disconnect', onDisconnect)
+  const startPpid = hooks.ppid()
+  const timer = setInterval(() => {
+    const current = hooks.ppid()
+    if (current !== startPpid) die()
+  }, hooks.intervalMs ?? 250)
+  timer.unref?.()
+  return () => {
+    if (hooks.channel) hooks.off('disconnect', onDisconnect)
+    clearInterval(timer)
+  }
 }

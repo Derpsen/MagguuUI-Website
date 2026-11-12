@@ -5,23 +5,26 @@
  */
 import { sanitizeBlizzardLog } from './blizzardAuth'
 import { defaultMetaHeapLimitBytes, readProcessMetaMemory } from './blizzardMetaHeap'
-import { runScheduledBlizzardMetaSyncGuarded, type ScheduledMetaResult } from './blizzardMetaSync'
+import { runScheduledBlizzardMetaSyncGuarded, type MetaSyncDroppedCounts, type ScheduledMetaResult } from './blizzardMetaSync'
 import type { MetaSqlite } from './blizzardMetaStore'
 import type { BlizzardFetcher } from './blizzardHttp'
+import { installMetaSyncCliParentWatch, META_SYNC_CLI_FORWARD_SIGNALS } from './metaSyncCliHeap'
 
 /**
- * SIGINT/SIGTERM abort the in-flight sync so `withBlizzardMetaLock` can
- * release in `finally`. Do not `process.exit` here — that would skip cleanup.
+ * SIGINT/SIGTERM/SIGHUP abort the in-flight sync so `withBlizzardMetaLock` can
+ * release in `finally`. The job also aborts if the wrapper dies (IPC
+ * disconnect or a ppid change after SIGKILL). Do not `process.exit` here —
+ * that would skip cleanup.
  */
 export function installMetaSyncCliSignalHandlers(abort: AbortController): () => void {
   const handler = () => {
     if (!abort.signal.aborted) abort.abort()
   }
-  process.on('SIGINT', handler)
-  process.on('SIGTERM', handler)
+  for (const signal of META_SYNC_CLI_FORWARD_SIGNALS) process.on(signal, handler)
+  const stopWatch = installMetaSyncCliParentWatch(abort)
   return () => {
-    process.off('SIGINT', handler)
-    process.off('SIGTERM', handler)
+    for (const signal of META_SYNC_CLI_FORWARD_SIGNALS) process.off(signal, handler)
+    stopWatch()
   }
 }
 
@@ -41,6 +44,7 @@ export type MetaSyncCliSummary = {
   heapLimitBytes: number
   specsWithData: number
   http429: number
+  dropped?: MetaSyncDroppedCounts
   reason?: string
 }
 
@@ -85,6 +89,9 @@ export function summarizeMetaSyncCli(input: {
     heapLimitBytes: input.heapLimitBytes ?? defaultMetaHeapLimitBytes(),
     specsWithData: input.result.specsWithData ?? 0,
     http429: input.result.http429 ?? 0,
+  }
+  if (input.result.dropped && input.result.dropped.total > 0) {
+    summary.dropped = input.result.dropped
   }
   if (input.result.reason) {
     summary.reason = sanitizeBlizzardLog(input.result.reason, input.secrets ?? [])

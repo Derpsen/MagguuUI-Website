@@ -62,11 +62,44 @@ export type ProfileBucket = {
   unknownTalentNodes: number
 }
 
+export type MetaKeyLevelStats = {
+  min: number
+  max: number
+  sum: number
+  count: number
+}
+
 export type SpecPop = {
   className: string
   specName: string
   count: number
+  /** @deprecated Prefer keyLevelStats; may be empty when stats are present. */
   keyLevels: number[]
+  keyLevelStats?: MetaKeyLevelStats
+}
+
+export function emptyKeyLevelStats(): MetaKeyLevelStats {
+  return { min: 0, max: 0, sum: 0, count: 0 }
+}
+
+export function observeKeyLevel(stats: MetaKeyLevelStats, level: number): void {
+  if (!(level > 0) || !Number.isFinite(level)) return
+  if (stats.count === 0) {
+    stats.min = level
+    stats.max = level
+    stats.sum = level
+    stats.count = 1
+    return
+  }
+  if (level < stats.min) stats.min = level
+  if (level > stats.max) stats.max = level
+  stats.sum += level
+  stats.count += 1
+}
+
+export function metaKeyLevelsFromStats(stats: MetaKeyLevelStats | null | undefined): MetaKeyLevels | null {
+  if (!stats || stats.count <= 0) return null
+  return { min: stats.min, max: stats.max, average: Math.round((stats.sum / stats.count) * 10) / 10 }
 }
 
 export function emptyProfileBucket(): ProfileBucket {
@@ -122,12 +155,13 @@ export function shareOf(count: number, total: number): number {
 }
 
 export function keyLevelsOf(levels: number[]): MetaKeyLevels | null {
-  const usable = levels.filter(level => Number.isFinite(level) && level > 0)
-  if (!usable.length) return null
-  const min = Math.min(...usable)
-  const max = Math.max(...usable)
-  const average = Math.round((usable.reduce((sum, level) => sum + level, 0) / usable.length) * 10) / 10
-  return { min, max, average }
+  const stats = emptyKeyLevelStats()
+  for (const level of levels) observeKeyLevel(stats, level)
+  return metaKeyLevelsFromStats(stats)
+}
+
+export function keyLevelsOfPop(pop: Pick<SpecPop, 'keyLevels' | 'keyLevelStats'>): MetaKeyLevels | null {
+  return metaKeyLevelsFromStats(pop.keyLevelStats) ?? keyLevelsOf(pop.keyLevels)
 }
 
 export function medianNumber(values: number[]): number | null {
@@ -856,7 +890,7 @@ export function buildClassSummaries(
       n: pop.count,
       share: shareOf(pop.count, totalCharacters),
       profileCount: profiles,
-      keyLevels: keyLevelsOf(pop.keyLevels),
+      keyLevels: keyLevelsOfPop(pop),
       heroSplit,
       loadouts,
       bestBuild: majorityBestBuild(bucket.builds),

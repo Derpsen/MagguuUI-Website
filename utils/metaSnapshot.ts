@@ -129,12 +129,14 @@ function parseFreshness(value: unknown): MetaFreshness | null {
   if (value.region !== META_REGION || value.source !== 'blizzard') return null
   const keyLevels = parseKeySpan(value.keyLevels)
   if (value.keyLevels != null && !keyLevels) return null
+  if (value.partial != null && value.partial !== true) return null
   return {
     fetchedAt: value.fetchedAt,
     players: value.players,
     keyLevels,
     region: META_REGION,
     source: 'blizzard',
+    ...(value.partial === true ? { partial: true as const } : {}),
   }
 }
 
@@ -442,6 +444,156 @@ function parseBasis(value: unknown, season: MetaSnapshotPayload['season'], perio
  * Accept a parsed object or a JSON string. Returns null when the payload is
  * missing required fields, uses the wrong types, or contains reserved keys.
  */
+
+function forbiddenKeyPath(value: unknown, path = '$'): string | null {
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      const hit = forbiddenKeyPath(value[i], `${path}[${i}]`)
+      if (hit) return hit
+    }
+    return null
+  }
+  if (!isRecord(value)) return null
+  for (const key of Object.keys(value)) {
+    if (FORBIDDEN_KEYS.has(key) || FORBIDDEN_KEYS.has(key.toLowerCase())) return `${path}.${key}`
+    const hit = forbiddenKeyPath(value[key], `${path}.${key}`)
+    if (hit) return hit
+  }
+  return null
+}
+
+function explainShareOrList(label: string, value: unknown, parse: (item: unknown) => unknown): string | null {
+  if (!Array.isArray(value)) return `${label} is not an array`
+  for (let i = 0; i < value.length; i++) {
+    const item = value[i]
+    if (parse(item)) continue
+    if (isRecord(item) && item.share != null && !isShare(item.share)) return `${label}[${i}].share is ${String(item.share)}`
+    return `${label}[${i}] failed validation`
+  }
+  return null
+}
+
+function explainSpec(classSlug: string, value: unknown): string {
+  const path = `classes.${classSlug}`
+  if (!isRecord(value) || !isStr(value.slug)) return `${path}: missing slug`
+  const specPath = `${path}/${value.slug}`
+  if (!isStr(value.label) || !isNonNeg(value.n) || !isShare(value.share) || !isNonNeg(value.profileCount)) {
+    if (isRecord(value) && !isShare(value.share)) return `${specPath}.share is ${String(value.share)}`
+    return `${specPath}: invalid n/share/profileCount`
+  }
+  if (typeof value.empty !== 'boolean' || typeof value.collecting !== 'boolean' || typeof value.lowSample !== 'boolean') {
+    return `${specPath}: missing empty/collecting/lowSample flags`
+  }
+  const state = specDataState(value.n)
+  if (value.empty !== (state === 'empty') || value.collecting !== (state === 'collecting') || value.lowSample !== (state !== 'ok')) {
+    return `${specPath}: sample flags do not match n=${String(value.n)}`
+  }
+  if (value.keyLevels != null && !parseKeyLevels(value.keyLevels)) return `${specPath}.keyLevels failed validation`
+  const layout = value.talentLayout == null ? true : parseTalentLayout(value.talentLayout)
+  if (!layout) return `${specPath}.talentLayout failed validation`
+  if (value.bestBuild != null && !parseLoadout(value.bestBuild)) return `${specPath}.bestBuild failed validation`
+  if (state !== 'ok' && value.bestBuild) return `${specPath}: bestBuild set while sample state is ${state}`
+  if (state === 'ok' && value.n >= META_MIN_BUILD_SAMPLE && Array.isArray(value.loadouts) && value.loadouts.length > 0 && value.bestBuild == null) {
+    return `${specPath}: missing bestBuild`
+  }
+  for (const [label, field, parse] of [
+    ['heroSplit', value.heroSplit, parseHeroSplit],
+    ['loadouts', value.loadouts, parseLoadout],
+    ['stats', value.stats, parseStat],
+    ['gearSlots', value.gearSlots, parseSlotGroup],
+    ['trinkets', value.trinkets, parseGearItem],
+    ['rings', value.rings, parseGearItem],
+    ['embellishments', value.embellishments, parseGearItem],
+    ['enchants', value.enchants, parseEnchantGem],
+    ['gems', value.gems, parseEnchantGem],
+    ['races', value.races, parseRace],
+  ] as const) {
+    const hit = explainShareOrList(`${specPath}.${label}`, field, parse)
+    if (hit) return hit
+  }
+  if (!parseTalents(value.talents)) return `${specPath}.talents failed validation`
+  if (value.talentsByHero != null && !parseTalentsByHero(value.talentsByHero)) return `${specPath}.talentsByHero failed validation`
+  return `${specPath} failed validation`
+}
+
+/** Human-readable reason when parseMetaSnapshotPayload returns null. No player names. */
+/**
+ * Live aggregates can over-count a share (two active loadouts on the same
+ * hero tree, combined ring/trinket slots). The schema requires [0, 1]; clamp
+ * just before parse so a single overflow cannot reject a finished snapshot.
+ */
+export function clampMetaSnapshotShares<T>(payload: T): T {
+  clampShareFields(payload)
+  return payload
+}
+
+function clampShareFields(value: unknown, seen = new WeakSet<object>()): void {
+  if (Array.isArray(value)) {
+    for (const item of value) clampShareFields(item, seen)
+    return
+  }
+  if (!isRecord(value) || seen.has(value)) return
+  seen.add(value)
+  if (typeof value.share === 'number' && Number.isFinite(value.share)) {
+    value.share = Math.min(1, Math.max(0, value.share))
+  }
+  for (const child of Object.values(value)) clampShareFields(child, seen)
+}
+
+export function explainMetaSnapshotRejection(input: unknown): string {
+  let value = input
+  if (typeof value === 'string') {
+    try { value = JSON.parse(value) }
+    catch { return 'payload is not valid JSON' }
+  }
+  if (!isRecord(value)) return 'payload is not an object'
+  const forbidden = forbiddenKeyPath(value)
+  if (forbidden) return `reserved key at ${forbidden}`
+  if (value.region !== META_REGION || value.focus !== META_FOCUS) return `region/focus must be ${META_REGION}/${META_FOCUS}`
+  if (value.season != null && !parseSeason(value.season)) return 'season failed validation'
+  if (value.periods != null && !parsePeriods(value.periods)) {
+    if (isRecord(value.periods) && isRecord(value.periods.current) && Array.isArray(value.periods.included)) {
+      const currentId = value.periods.current.id
+      const included = value.periods.included.map((item: unknown) => isRecord(item) ? item.id : null)
+      if (!included.some((id: unknown) => id === currentId)) {
+        return `periods.current.id ${String(currentId)} is not in periods.included`
+      }
+    }
+    return 'periods failed validation'
+  }
+  if (value.talentTree != null && !parseTalentTreeState(value.talentTree)) return 'talentTree failed validation'
+  if (!parseFreshness(value.freshness)) return 'freshness failed validation'
+  if (!isRecord(value.sampled)) return 'sampled failed validation'
+  const sampled = value.sampled
+  for (const key of ['realms', 'leaderboards', 'players', 'profiles', 'skipped404', 'specMismatch'] as const) {
+    if (!isNonNeg(sampled[key])) return `sampled.${key} is invalid`
+  }
+  if (sampled.unknownTalentNodes != null && !isNonNeg(sampled.unknownTalentNodes)) return 'sampled.unknownTalentNodes is invalid'
+  const season = parseSeason(value.season)
+  const periods = parsePeriods(value.periods)
+  const talentTree = parseTalentTreeState(value.talentTree)
+  const freshness = parseFreshness(value.freshness)
+  if (!freshness) return 'freshness failed validation'
+  if (!parseBasis(value.basis, season, periods, talentTree, freshness, sampled.profiles as number)) {
+    return 'basis failed validation'
+  }
+  if (!Array.isArray(value.classes)) return 'classes is not an array'
+  for (const cls of value.classes) {
+    if (parseClass(cls)) continue
+    if (!isRecord(cls) || !isStr(cls.slug)) return 'a class entry is invalid'
+    if (!Array.isArray(cls.specs)) return `class ${cls.slug}: specs is not an array`
+    for (const spec of cls.specs) {
+      if (!parseSpec(spec)) return explainSpec(cls.slug, spec)
+    }
+    return `class ${cls.slug} failed validation`
+  }
+  const classes = mapList(value.classes, parseClass)
+  if (!classes) return 'classes failed validation'
+  if (!catalogSlugsAreValid(classes)) return 'unknown or duplicate class/spec slug'
+  if (!loadoutsMatchCurrentTree(classes, talentTree?.hash ?? null)) return 'a loadout treeHash does not match talentTree.hash'
+  return 'payload failed validation'
+}
+
 export function parseMetaSnapshotPayload(input: unknown): MetaSnapshotPayload | null {
   let value = input
   if (typeof value === 'string') {

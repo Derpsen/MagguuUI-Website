@@ -8,7 +8,7 @@ import type Database from 'better-sqlite3'
  * lives in meta_runs and is cleaned up on the same TTL.
  */
 
-import { parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
+import { clampMetaSnapshotShares, explainMetaSnapshotRejection, parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
 import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload, type MetaTalentLayout } from '~/utils/metaTypes'
 import { BLIZZARD_META_LOCK_TTL_MS } from './blizzardMetaLock'
 import type { MetaKeyLevelStats, SerializedProfileBucket, SpecPop } from './blizzardMetaAggregate'
@@ -108,6 +108,12 @@ function rowToStored(row: SnapshotRow | undefined): StoredMetaSnapshot | null {
   return asStored(row, payload)
 }
 
+function parseBuiltMetaSnapshot(payload: MetaSnapshotPayload): MetaSnapshotPayload {
+  const parsed = parseMetaSnapshotPayload(clampMetaSnapshotShares(payload))
+  if (!parsed) throw new Error(`Meta snapshot payload failed validation: ${explainMetaSnapshotRejection(payload)}`)
+  return parsed
+}
+
 function insertSnapshotRow(
   sqlite: MetaSqlite,
   payload: MetaSnapshotPayload,
@@ -119,8 +125,7 @@ function insertSnapshotRow(
   const expiresAt = Math.floor((now + ttlMs) / 1000)
   const season = payload.season ? String(payload.season.id) : null
   const period = payload.periods ? String(payload.periods.current.id) : null
-  const parsed = parseMetaSnapshotPayload(payload)
-  if (!parsed) throw new Error('Meta snapshot payload failed validation')
+  const parsed = parseBuiltMetaSnapshot(payload)
   const inserted = sqlite.prepare(`
     INSERT INTO meta_snapshots (region, season, period, fetched_at, expires_at, status, payload, source)
     VALUES (?, ?, ?, ?, ?, ?, ?, 'blizzard')
@@ -246,6 +251,14 @@ export function writeStagedMetaSnapshot(
   return { snapshotId: id, region: row.region }
 }
 
+/** Drop a staging row that was never promoted (DoD 1.39: leftover staging must not accumulate). */
+export function deleteStagedMetaSnapshot(sqlite: MetaSqlite, snapshotId: number): boolean {
+  const result = sqlite.prepare(
+    "DELETE FROM meta_snapshots WHERE snapshot_id = ? AND status = 'staging'",
+  ).run(snapshotId) as { changes?: number }
+  return (result.changes ?? 0) > 0
+}
+
 /**
  * Switch the active pointer to a staged (or already ok) snapshot in one
  * transaction. A crash before this runs leaves the previous pointer in place.
@@ -281,8 +294,7 @@ export function writeMetaSnapshot(
   now = Date.now(),
   ttlMs = META_SNAPSHOT_TTL_MS,
 ): StoredMetaSnapshot {
-  const parsed = parseMetaSnapshotPayload(payload)
-  if (!parsed) throw new Error('Meta snapshot payload failed validation')
+  const parsed = parseBuiltMetaSnapshot(payload)
   const run = sqlite.transaction(() => {
     const id = insertSnapshotRow(sqlite, parsed, now, ttlMs, 'ok')
     setActivePointer(sqlite, parsed.region, id)
@@ -295,8 +307,9 @@ export function writeMetaSnapshot(
 }
 
 /**
- * Re-activate the previous unexpired ok snapshot for the region.
- * Documented rollback path (also usable as raw SQL — see docs/meta-nightly.md).
+ * Re-activate the newest unexpired ok snapshot before the current one
+ * (DoD 1.27). Skip only rows marked freshness.partial; otherwise take the
+ * newest predecessor, even when an older row covers more specs.
  */
 export function rollbackMetaSnapshot(
   sqlite: MetaSqlite,
@@ -305,17 +318,20 @@ export function rollbackMetaSnapshot(
 ): StoredMetaSnapshot | null {
   const current = readCurrentMetaSnapshot(sqlite, region, now)
   const nowSec = Math.floor(now / 1000)
-  const row = sqlite.prepare(`
+  const rows = sqlite.prepare(`
     SELECT snapshot_id, region, season, period, fetched_at, expires_at, status, payload, source
     FROM meta_snapshots
     WHERE region = ? AND status = 'ok' AND expires_at > ?
       AND snapshot_id != ?
     ORDER BY fetched_at DESC, snapshot_id DESC
-    LIMIT 1
-  `).get(region, nowSec, current?.snapshotId ?? -1) as SnapshotRow | undefined
-  const previous = rowToStored(row)
-  if (!previous) return null
-  return promoteMetaSnapshot(sqlite, previous.snapshotId, region, now)
+  `).all(region, nowSec, current?.snapshotId ?? -1) as SnapshotRow[]
+  for (const row of rows) {
+    const stored = rowToStored(row)
+    if (!stored) continue
+    if (stored.payload.freshness.partial) continue
+    return promoteMetaSnapshot(sqlite, stored.snapshotId, region, now)
+  }
+  return null
 }
 
 export function recordMetaRun(

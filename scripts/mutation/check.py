@@ -32,7 +32,7 @@ try:
         open(f,'w').write(orig.replace(m['find'],m['repl'],1))
         try:
             files=sorted(os.path.join('tests/unit',x) for x in os.listdir(os.path.join(DST,'tests/unit')) if x.endswith('.test.ts') and x != 'mutationRunner.test.ts')
-            how,rc,_=run_limited(['node','--import','tsx','--test','--test-force-exit']+files,cwd=DST,env=env,timeout=PER)
+            how,rc,_=run_limited(['node','--import','tsx','--test','--test-concurrency=2','--test-force-exit']+files,cwd=DST,env=env,timeout=PER)
             st='KILLED (timeout)' if how=='TIMEOUT' else ('KILLED' if rc!=0 else 'SURVIVED')
         finally:
             open(f,'w').write(orig)

@@ -1,0 +1,587 @@
+import assert from 'node:assert/strict'
+import { afterEach, describe, it } from 'node:test'
+import { readFileSync } from 'node:fs'
+import Database from 'better-sqlite3'
+import { initializeDatabase } from '../../server/database/bootstrap'
+import { resetBlizzardAccessTokenCache } from '../../server/utils/blizzardAuth'
+import { META_CLASSES } from '../../utils/metaCatalog'
+import {
+  decideDeadlinePartialPublish,
+  evaluateMetaRunPolicy,
+  metaSnapshotCoverage,
+  omitThinMetaSpecs,
+  shouldKeepLastGoodMetaSnapshot,
+} from '../../server/utils/blizzardMetaPolicy'
+import {
+  buildMetaSnapshot,
+  isMetaDeadlineError,
+  runScheduledBlizzardMetaSync,
+  sleepUntilMetaDeadline,
+  type MetaSyncCaps,
+} from '../../server/utils/blizzardMetaSync'
+import { readCurrentMetaSnapshot, writeMetaSnapshot } from '../../server/utils/blizzardMetaStore'
+import { parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
+import { META_MIN_BUILD_SAMPLE, META_REGION, META_SANITY_SPEC_FLIP_N, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload } from '../../utils/metaTypes'
+import { createHeapFixtureFetcher } from '../fixtures/blizzard-meta/heapFixture'
+
+const CREDENTIALS_CONFIG = {
+  metaNightly: 'on',
+  blizzardClientId: 'id',
+  blizzardClientSecret: 'secret',
+}
+
+function openStore() {
+  const sqlite = new Database(':memory:')
+  initializeDatabase(sqlite)
+  return sqlite
+}
+
+function snapshotPayload(): MetaSnapshotPayload {
+  const parsed = parseMetaSnapshotPayload(readFileSync(new URL('../fixtures/blizzard-meta/snapshot.json', import.meta.url), 'utf8'))
+  assert.ok(parsed)
+  return parsed
+}
+
+
+function profilesPayload(perSpec: number, specCount: number): MetaSnapshotPayload {
+  const base = snapshotPayload()
+  const template = base.classes[0]!.specs[0]!
+  let left = specCount
+  const classes = META_CLASSES.map((cls) => {
+    const specs = cls.specs.map((spec) => {
+      const include = left > 0
+      if (include) left -= 1
+      return {
+        ...template,
+        slug: spec.slug,
+        label: spec.name,
+        n: include ? 8000 : 0,
+        share: 0,
+        profileCount: include ? perSpec : 0,
+      }
+    })
+    return { slug: cls.slug, label: cls.name, n: specs.reduce((sum, spec) => sum + spec.n, 0), specs }
+  })
+  return { ...base, classes }
+}
+
+function tightCaps(overrides: Partial<MetaSyncCaps> = {}): Partial<MetaSyncCaps> {
+  return {
+    maxRealms: 1,
+    periods: 1,
+    concurrency: 8,
+    maxConcurrentSpecs: 1,
+    samplePerSpec: 2,
+    maxAttemptsPerSpec: 2,
+    maxSpecs: 3,
+    ...overrides,
+  }
+}
+
+afterEach(() => {
+  resetBlizzardAccessTokenCache()
+})
+
+describe('metaSnapshotCoverage / shouldKeepLastGoodMetaSnapshot', () => {
+  it('keeps last-good when the incoming snapshot covers fewer specs', () => {
+    const previous = snapshotPayload()
+    const prev = metaSnapshotCoverage(previous)
+    assert.ok(prev.specsWithData >= 2, 'fixture snapshot should cover more than one spec')
+    const incoming: MetaSnapshotPayload = {
+      ...previous,
+      classes: previous.classes.slice(0, 1).map(cls => ({
+        ...cls,
+        specs: cls.specs.slice(0, 1).map(spec => ({ ...spec, n: Math.max(1, spec.n), profileCount: Math.max(1, spec.profileCount ?? spec.n) })),
+      })),
+    }
+    assert.equal(shouldKeepLastGoodMetaSnapshot(previous, incoming), true)
+    assert.equal(shouldKeepLastGoodMetaSnapshot(null, incoming), false)
+    assert.equal(shouldKeepLastGoodMetaSnapshot(incoming, previous), false)
+  })
+
+  it('replaces last-good when the incoming snapshot covers more specs or the same specs with more profiles', () => {
+    const full = snapshotPayload()
+    const thin: MetaSnapshotPayload = {
+      ...full,
+      classes: full.classes.slice(0, 1).map(cls => ({
+        ...cls,
+        specs: cls.specs.slice(0, 1).map(spec => ({ ...spec, n: 1 })),
+      })),
+    }
+    assert.equal(shouldKeepLastGoodMetaSnapshot(thin, full), false)
+    const richerSame: MetaSnapshotPayload = {
+      ...thin,
+      classes: thin.classes.map(cls => ({
+        ...cls,
+        specs: cls.specs.map(spec => ({ ...spec, n: spec.n + 5, profileCount: (spec.profileCount ?? spec.n) + 5 })),
+      })),
+    }
+    assert.equal(shouldKeepLastGoodMetaSnapshot(thin, richerSame), false)
+  })
+
+  it('keeps a 39×200 last-good when the incoming snapshot is 40×1', () => {
+    const previous = profilesPayload(200, 39)
+    const incoming = profilesPayload(1, 40)
+    assert.equal(metaSnapshotCoverage(previous).wellCoveredSpecs, 39)
+    assert.equal(metaSnapshotCoverage(incoming).wellCoveredSpecs, 0)
+    assert.equal(shouldKeepLastGoodMetaSnapshot(previous, incoming), true)
+    const decision = decideDeadlinePartialPublish({
+      payload: incoming,
+      previous,
+      plannedProfiles: 40,
+      successfulProfiles: 40,
+      stats: { calls: 100, http429: 0 },
+    })
+    assert.equal(decision.outcome, 'kept-last-good')
+  })
+
+  it('replaces last-good when coverage is equal (does not keep on a >= tie)', () => {
+    const previous = profilesPayload(200, 39)
+    assert.equal(shouldKeepLastGoodMetaSnapshot(previous, profilesPayload(200, 39)), false)
+  })
+})
+
+describe('decideDeadlinePartialPublish policy', () => {
+  const clean = { plannedProfiles: 8000, successfulProfiles: 8000, stats: { calls: 100, http429: 0 } }
+  const high429 = { ...clean, stats: { calls: 100, http429: 34 } }
+
+  it('keeps last-good when coverage is not thinner but the 429 rate fails policy', () => {
+    const previous = profilesPayload(200, 39)
+    const incoming = profilesPayload(200, 39)
+    assert.equal(shouldKeepLastGoodMetaSnapshot(previous, incoming), false)
+    const decision = decideDeadlinePartialPublish({ payload: incoming, previous, ...high429 })
+    assert.equal(decision.outcome, 'kept-last-good')
+    assert.ok(decision.reasons.some(reason => /429/.test(reason)))
+  })
+
+  it('publishes a marked first partial when there is no last-good, even if the 429 rate fails policy', () => {
+    const incoming = profilesPayload(200, 40)
+    const decision = decideDeadlinePartialPublish({ payload: incoming, previous: null, ...high429 })
+    assert.equal(decision.outcome, 'published')
+    assert.ok(decision.reasons.some(reason => /429/.test(reason)))
+    assert.equal(decision.payload.freshness.partial, true)
+    assert.equal(metaSnapshotCoverage(decision.payload, META_MIN_BUILD_SAMPLE).wellCoveredSpecs, 40)
+  })
+
+  it('does not publish a first partial when every spec is below the build-sample floor', () => {
+    const incoming = profilesPayload(1, 40)
+    const decision = decideDeadlinePartialPublish({ payload: incoming, previous: null, ...high429 })
+    assert.equal(decision.outcome, 'not-published')
+    assert.ok(decision.reasons.some(reason => /build-sample floor|no specs/.test(reason)))
+    assert.equal(decision.payload.classes.length, 0)
+  })
+
+  it('omits specs below the build-sample floor from a first partial', () => {
+    const mixed = profilesPayload(200, 2)
+    mixed.classes[0]!.specs[0]!.profileCount = 200
+    mixed.classes[0]!.specs[1]!.profileCount = 12
+    const omitted = omitThinMetaSpecs(mixed)
+    assert.equal(metaSnapshotCoverage(omitted, META_MIN_BUILD_SAMPLE).wellCoveredSpecs, 1)
+    assert.ok(omitted.classes[0]!.specs.every(spec => (spec.profileCount ?? 0) >= META_MIN_BUILD_SAMPLE))
+    const remainingN = omitted.classes.reduce((sum, cls) => sum + cls.specs.reduce((specSum, spec) => specSum + spec.n, 0), 0)
+    const remainingProfiles = omitted.classes.reduce((sum, cls) => sum + cls.specs.reduce((specSum, spec) => specSum + (spec.profileCount ?? 0), 0), 0)
+    assert.ok(omitted.classes.every(cls => cls.n === cls.specs.reduce((sum, spec) => sum + spec.n, 0)))
+    assert.equal(omitted.classes[0]!.n, mixed.classes[0]!.specs[0]!.n)
+    assert.equal(omitted.sampled.profiles, remainingProfiles)
+    assert.equal(omitted.sampled.players, remainingN)
+    assert.equal(omitted.freshness.players, remainingN)
+    assert.equal(omitted.basis.players, remainingN)
+    assert.equal(omitted.basis.profiles, remainingProfiles)
+    const shareSum = omitted.classes.flatMap(cls => cls.specs).reduce((sum, spec) => sum + spec.share, 0)
+    assert.ok(Math.abs(shareSum - 1) < 0.002, `remaining spec share should be renormalized, got ${shareSum}`)
+    const parsed = parseMetaSnapshotPayload(JSON.stringify(omitted))
+    assert.ok(parsed, 'omitted payload must still parse')
+  })
+
+  it('marks a deadline publish as partial even when last-good exists and policy is clean', () => {
+    const previous = profilesPayload(200, 39)
+    const incoming = profilesPayload(200, 40)
+    const decision = decideDeadlinePartialPublish({ payload: incoming, previous, ...clean })
+    assert.equal(decision.outcome, 'published')
+    assert.equal(decision.payload.freshness.partial, true)
+  })
+
+  it('can publish an incomplete catalog on the deadline path when there is no last-good', () => {
+    const incoming = profilesPayload(200, 3)
+    const decision = decideDeadlinePartialPublish({ payload: incoming, previous: null, ...clean })
+    assert.equal(decision.outcome, 'published')
+    assert.deepEqual(decision.reasons, [])
+    assert.equal(decision.payload.freshness.partial, true)
+  })
+})
+
+
+describe('evaluateMetaRunPolicy n-flip', () => {
+  const clean = { plannedProfiles: 8000, successfulProfiles: 8000, stats: { calls: 100, http429: 0 } }
+
+  function withSpecN(payload: MetaSnapshotPayload, firstN: number): MetaSnapshotPayload {
+    const classes = payload.classes.map((cls, classIndex) => ({
+      ...cls,
+      specs: cls.specs.map((spec, specIndex) => (
+        classIndex === 0 && specIndex === 0 ? { ...spec, n: firstN, profileCount: firstN > 0 ? (spec.profileCount ?? 0) : 0 } : spec
+      )),
+    }))
+    return {
+      ...payload,
+      classes: classes.map(cls => ({ ...cls, n: cls.specs.reduce((sum, spec) => sum + spec.n, 0) })),
+    }
+  }
+
+  it('flags a flip from n=50 to 0 and ignores a flip from n=49', () => {
+    assert.equal(META_SANITY_SPEC_FLIP_N, 50)
+    const base = profilesPayload(200, 40)
+    const toZero = withSpecN(base, 0)
+    const atFloor = evaluateMetaRunPolicy({ ...clean, payload: toZero, previous: withSpecN(base, 50) })
+    assert.ok(atFloor.reasons.some(reason => /flipped from n=50 to 0/.test(reason)), `expected n=50 flip, got ${atFloor.reasons.join('; ')}`)
+    const belowFloor = evaluateMetaRunPolicy({ ...clean, payload: toZero, previous: withSpecN(base, 49) })
+    assert.ok(!belowFloor.reasons.some(reason => /flipped/.test(reason)), `n=49 must not flip, got ${belowFloor.reasons.join('; ')}`)
+  })
+})
+
+describe('deadline partial snapshot', () => {
+  it('promotes a partial snapshot when the deadline hits after a finished spec and last-good is empty', { timeout: 30_000 }, async () => {
+    const sqlite = openStore()
+    const now = Date.now()
+    let t = now
+    const deadline = now + 10_000_000
+    const baseFetcher = createHeapFixtureFetcher()
+    const originalPrepare = sqlite.prepare.bind(sqlite)
+    let sawMidPromote = false
+    const fetcher = async (request: Parameters<typeof baseFetcher>[0]) => {
+      const staged = (originalPrepare('SELECT COUNT(*) AS n FROM meta_sync_spec_staging').get() as { n: number } | undefined)?.n ?? 0
+      if (staged >= 1) {
+        const current = readCurrentMetaSnapshot(sqlite, META_REGION, t)
+        if (current) sawMidPromote = true
+        t = deadline
+      }
+      return baseFetcher(request)
+    }
+
+    const purges: string[] = []
+    const result = await runScheduledBlizzardMetaSync({
+      sqlite,
+      config: CREDENTIALS_CONFIG,
+      fetcher,
+      now: () => t,
+      deadline,
+      caps: tightCaps({ samplePerSpec: 50, maxAttemptsPerSpec: 50 }),
+      kumaPush: async () => 'pushed',
+      purgeMeta: async () => {
+        purges.push('purged')
+        return 'purged'
+      },
+      sleep: async () => {},
+    })
+
+    assert.equal(result.status, 'partial')
+    assert.match(result.reason || '', /job deadline/)
+    assert.match(result.reason || '', /published partial/)
+    assert.equal(result.partialOutcome, 'published')
+    assert.ok(result.snapshotId != null)
+    assert.ok((result.specsWithData ?? 0) >= 1)
+    assert.equal(sawMidPromote, false)
+    assert.equal(purges.length, 1)
+    const okRows = sqlite.prepare("SELECT COUNT(*) AS n FROM meta_snapshots WHERE status = 'ok'").get() as { n: number }
+    assert.equal(okRows.n, 1)
+    const current = readCurrentMetaSnapshot(sqlite, META_REGION, t)
+    assert.ok(current)
+    assert.equal(current.snapshotId, result.snapshotId)
+    assert.ok(metaSnapshotCoverage(current.payload).specsWithData >= 1)
+    assert.equal(current.payload.freshness.partial, true)
+    assert.ok(current.payload.classes.every(cls => cls.specs.every(spec => (spec.profileCount ?? 0) >= META_MIN_BUILD_SAMPLE)))
+  })
+
+  it('keeps last-good when the deadline hits after a thinner partial', { timeout: 30_000 }, async () => {
+    const sqlite = openStore()
+    const now = Date.now()
+    const previous = writeMetaSnapshot(sqlite, snapshotPayload(), now, META_SNAPSHOT_TTL_MS)
+    let t = now
+    const deadline = now + 10_000_000
+    const baseFetcher = createHeapFixtureFetcher()
+    const originalPrepare = sqlite.prepare.bind(sqlite)
+    let sawMidPromote = false
+    const fetcher = async (request: Parameters<typeof baseFetcher>[0]) => {
+      const staged = (originalPrepare('SELECT COUNT(*) AS n FROM meta_sync_spec_staging').get() as { n: number } | undefined)?.n ?? 0
+      if (staged >= 1) {
+        const current = readCurrentMetaSnapshot(sqlite, META_REGION, t)
+        if (current && current.snapshotId !== previous.snapshotId) sawMidPromote = true
+        t = deadline
+      }
+      return baseFetcher(request)
+    }
+
+    const result = await runScheduledBlizzardMetaSync({
+      sqlite,
+      config: CREDENTIALS_CONFIG,
+      fetcher,
+      now: () => t,
+      deadline,
+      caps: tightCaps(),
+      kumaPush: async () => 'pushed',
+      purgeMeta: async () => 'purged',
+      sleep: async () => {},
+    })
+
+    assert.equal(result.status, 'partial')
+    assert.match(result.reason || '', /job deadline/)
+    assert.match(result.reason || '', /kept last-good/)
+    assert.equal(result.partialOutcome, 'kept-last-good')
+    assert.equal(result.snapshotId, previous.snapshotId)
+    assert.equal(sawMidPromote, false)
+    const current = readCurrentMetaSnapshot(sqlite, META_REGION, t)
+    assert.ok(current)
+    assert.equal(current.snapshotId, previous.snapshotId)
+  })
+
+  it('still errors when the deadline hits before any spec is staged', { timeout: 30_000 }, async () => {
+    const sqlite = openStore()
+    let t = 1_700_000_000_000
+    const deadline = t + 180_000
+    const baseFetcher = createHeapFixtureFetcher()
+    const fetcher = async (request: Parameters<typeof baseFetcher>[0]) => {
+      t += 60_000
+      return baseFetcher(request)
+    }
+
+    const result = await runScheduledBlizzardMetaSync({
+      sqlite,
+      config: CREDENTIALS_CONFIG,
+      fetcher,
+      now: () => t,
+      deadline,
+      caps: tightCaps(),
+      kumaPush: async () => 'pushed',
+      purgeMeta: async () => 'purged',
+      sleep: async () => {},
+    })
+
+    assert.equal(result.status, 'error')
+    assert.match(result.reason || '', /job deadline/)
+    assert.equal(result.snapshotId ?? null, null)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, t), null)
+  })
+
+  it('stops profile sampling at samplePerSpec under intra-spec concurrency', { timeout: 30_000 }, async () => {
+    const sqlite = openStore()
+    const now = Date.now()
+    const result = await runScheduledBlizzardMetaSync({
+      sqlite,
+      config: CREDENTIALS_CONFIG,
+      fetcher: createHeapFixtureFetcher(),
+      now,
+      caps: tightCaps({
+        samplePerSpec: 5,
+        maxAttemptsPerSpec: 40,
+        concurrency: 16,
+        maxSpecs: 1,
+      }),
+      kumaPush: async () => 'pushed',
+      purgeMeta: async () => 'purged',
+      sleep: async () => {},
+    })
+
+    // One spec cannot pass the all-catalog policy; the snapshot may stay unpromoted,
+    // but sampled.profiles on a built run is visible via n / specsWithData when mid-promoted.
+    // Last-good is empty, so the mid-run promote leaves a current snapshot at 5 (+ slight overshoot).
+    const current = readCurrentMetaSnapshot(sqlite, META_REGION, now)
+    assert.ok(current, `expected a mid-run snapshot, status=${result.status} reason=${result.reason}`)
+    const coverage = metaSnapshotCoverage(current.payload)
+    assert.ok(coverage.profiles >= 5, `profiles=${coverage.profiles}`)
+    assert.ok(coverage.profiles <= 5 + 16, `overshoot too large: profiles=${coverage.profiles}`)
+    assert.equal(coverage.specsWithData, 1)
+  })
+
+  it('logs per-spec progress and periodic request rate', { timeout: 30_000 }, async () => {
+    const sqlite = openStore()
+    const messages: string[] = []
+    await runScheduledBlizzardMetaSync({
+      sqlite,
+      config: CREDENTIALS_CONFIG,
+      fetcher: createHeapFixtureFetcher(),
+      now: Date.now(),
+      caps: tightCaps({
+        samplePerSpec: 20,
+        maxAttemptsPerSpec: 20,
+        concurrency: 8,
+        maxSpecs: 1,
+      }),
+      warn: (message) => { messages.push(message) },
+      kumaPush: async () => 'pushed',
+      purgeMeta: async () => 'purged',
+      sleep: async () => {},
+    })
+    assert.ok(messages.some(line => /\[blizzard:nightly\] spec \S+ start candidates=\d+/.test(line)), messages.join('\n'))
+    assert.ok(messages.some(line => /\[blizzard:nightly\] spec \S+ done profiles=\d+ attempts=\d+ duration=\S+s rate=\S+ rps/.test(line)), messages.join('\n'))
+    assert.ok(messages.some(line => /\[blizzard:nightly\] progress calls=\d+ .* rate=\S+ rps/.test(line)), messages.join('\n'))
+  })
+})
+
+describe('sleepUntilMetaDeadline', () => {
+  it('caps a sleep to the remaining time and then trips the deadline', async () => {
+    let t = 1000
+    const waits: number[] = []
+    const sleep = sleepUntilMetaDeadline(async (ms) => { waits.push(ms); t += ms }, 1300, () => t)
+    await assert.rejects(() => sleep(5_000), /job deadline/)
+    assert.deepEqual(waits, [300])
+  })
+})
+
+describe('tripAbort reason', () => {
+  it('aborts the controller with the deadline error as the reason', async () => {
+    const sqlite = openStore()
+    const abort = new AbortController()
+    const now = 1_700_000_000_000
+    await assert.rejects(() => buildMetaSnapshot({
+      fetcher: createHeapFixtureFetcher(),
+      credentials: { id: 'id', secret: 'secret' },
+      sleep: async () => {},
+      now,
+      deadline: now - 1,
+      sqlite,
+      abortController: abort,
+      caps: tightCaps(),
+    }), /job deadline/)
+    assert.ok(abort.signal.aborted)
+    assert.ok(isMetaDeadlineError(abort.signal.reason), `reason was ${String(abort.signal.reason)}`)
+    assert.match((abort.signal.reason as Error).message, /job deadline/)
+  })
+})
+
+describe('policy fail staging cleanup', () => {
+  it('clears the staging snapshot when a finished run fails policy and has no last-good', { timeout: 30_000 }, async () => {
+    const sqlite = openStore()
+    const now = Date.now()
+    const t = now
+    const deadline = now + 10_000_000
+    const baseFetcher = createHeapFixtureFetcher()
+    let calls = 0
+    const fetcher = async (request: Parameters<typeof baseFetcher>[0]) => {
+      const url = request.url
+      if (!url.includes('oauth') && !url.includes('token')) {
+        calls += 1
+        if (calls % 2 === 1) {
+          return {
+            status: 429,
+            headers: { get: (name: string) => name.toLowerCase() === 'retry-after' ? '0' : null },
+            body: null,
+          }
+        }
+      }
+      return baseFetcher(request)
+    }
+    const result = await runScheduledBlizzardMetaSync({
+      sqlite,
+      config: CREDENTIALS_CONFIG,
+      fetcher,
+      now: () => t,
+      deadline,
+      caps: tightCaps(),
+      kumaPush: async () => 'pushed',
+      purgeMeta: async () => 'purged',
+      sleep: async () => {},
+    })
+    assert.equal(result.status, 'partial')
+    assert.equal(result.partialOutcome, 'not-published')
+    assert.equal(result.snapshotId, null)
+    const staging = sqlite.prepare("SELECT COUNT(*) AS n FROM meta_snapshots WHERE status = 'staging'").get() as { n: number }
+    assert.equal(staging.n, 0)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, t), null)
+    assert.ok((result.http429 ?? 0) > 0, `expected 429s in stats, reason=${result.reason}`)
+    assert.match(result.reason || '', /429|catalog|class|spec|success/i)
+  })
+
+  it('publishes a marked first partial on a finished policy-fail run, purges, and leaves no staging', { timeout: 30_000 }, async () => {
+    const sqlite = openStore()
+    const now = Date.now()
+    const deadline = now + 10_000_000
+    const baseFetcher = createHeapFixtureFetcher()
+    let calls = 0
+    const fetcher = async (request: Parameters<typeof baseFetcher>[0]) => {
+      const url = request.url
+      if (!url.includes('oauth') && !url.includes('token')) {
+        calls += 1
+        if (calls % 3 === 0) {
+          return {
+            status: 429,
+            headers: { get: (name: string) => name.toLowerCase() === 'retry-after' ? '0' : null },
+            body: null,
+          }
+        }
+      }
+      return baseFetcher(request)
+    }
+    const purges: string[] = []
+    const result = await runScheduledBlizzardMetaSync({
+      sqlite,
+      config: CREDENTIALS_CONFIG,
+      fetcher,
+      now: () => now,
+      deadline,
+      caps: tightCaps({ samplePerSpec: 50, maxAttemptsPerSpec: 50 }),
+      kumaPush: async () => 'pushed',
+      purgeMeta: async () => {
+        purges.push('purged')
+        return 'purged'
+      },
+      sleep: async () => {},
+    })
+    assert.equal(result.status, 'partial')
+    assert.equal(result.partialOutcome, 'published')
+    assert.match(result.reason || '', /first partial/)
+    assert.equal(purges.length, 1)
+    const leftover = sqlite.prepare("SELECT COUNT(*) AS n FROM meta_snapshots WHERE status = 'staging'").get() as { n: number }
+    assert.equal(leftover.n, 0)
+    const current = readCurrentMetaSnapshot(sqlite, META_REGION, now)
+    assert.ok(current)
+    assert.equal(current.snapshotId, result.snapshotId)
+    assert.equal(current.payload.freshness.partial, true)
+  })
+
+  it('keeps last-good on a finished policy-fail run and does not publish a first partial', { timeout: 30_000 }, async () => {
+    const sqlite = openStore()
+    const now = Date.now()
+    const previous = writeMetaSnapshot(sqlite, snapshotPayload(), now, META_SNAPSHOT_TTL_MS)
+    const deadline = now + 10_000_000
+    const baseFetcher = createHeapFixtureFetcher()
+    let calls = 0
+    const fetcher = async (request: Parameters<typeof baseFetcher>[0]) => {
+      const url = request.url
+      if (!url.includes('oauth') && !url.includes('token')) {
+        calls += 1
+        if (calls % 3 === 0) {
+          return {
+            status: 429,
+            headers: { get: (name: string) => name.toLowerCase() === 'retry-after' ? '0' : null },
+            body: null,
+          }
+        }
+      }
+      return baseFetcher(request)
+    }
+    const purges: string[] = []
+    const result = await runScheduledBlizzardMetaSync({
+      sqlite,
+      config: CREDENTIALS_CONFIG,
+      fetcher,
+      now: () => now,
+      deadline,
+      caps: tightCaps({ samplePerSpec: 50, maxAttemptsPerSpec: 50 }),
+      kumaPush: async () => 'pushed',
+      purgeMeta: async () => {
+        purges.push('purged')
+        return 'purged'
+      },
+      sleep: async () => {},
+    })
+    assert.equal(result.status, 'partial')
+    assert.equal(result.partialOutcome, 'kept-last-good')
+    assert.equal(result.snapshotId, previous.snapshotId)
+    assert.equal(purges.length, 0)
+    const leftover = sqlite.prepare("SELECT COUNT(*) AS n FROM meta_snapshots WHERE status = 'staging'").get() as { n: number }
+    assert.equal(leftover.n, 0)
+    const current = readCurrentMetaSnapshot(sqlite, META_REGION, now)
+    assert.ok(current)
+    assert.equal(current.snapshotId, previous.snapshotId)
+    assert.notEqual(current.payload.freshness.partial, true)
+  })
+})

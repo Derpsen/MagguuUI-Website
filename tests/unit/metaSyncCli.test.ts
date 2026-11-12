@@ -442,3 +442,16 @@ describe('meta sync CLI wrapper signals', () => {
     rmSync(cwd, { recursive: true, force: true })
   })
 })
+
+it('copies partialOutcome onto the CLI summary', () => {
+  const summary = summarizeMetaSyncCli({
+    result: { status: 'partial', reason: 'kept last-good snapshot', snapshotId: 7, partialOutcome: 'kept-last-good', specsWithData: 39, http429: 0 },
+    durationMs: 10,
+    peakRssBytes: 1,
+    peakHeapUsedBytes: 1,
+    heapLimitBytes: 256 * 1024 * 1024,
+  })
+  assert.equal(summary.status, 'partial')
+  assert.equal(summary.partialOutcome, 'kept-last-good')
+  assert.equal(exitCodeForMetaSync(summary.status), META_SYNC_CLI_EXIT.partial)
+})

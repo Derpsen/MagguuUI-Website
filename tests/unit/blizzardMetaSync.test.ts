@@ -7,7 +7,8 @@ import { initializeDatabase } from '../../server/database/bootstrap'
 import { resetBlizzardAccessTokenCache } from '../../server/utils/blizzardAuth'
 import type { BlizzardFetcher } from '../../server/utils/blizzardHttp'
 import { tryAcquireBlizzardMetaLock } from '../../server/utils/blizzardMetaLock'
-import { buildMetaSnapshot, runScheduledBlizzardMetaSync, runScheduledBlizzardMetaSyncGuarded } from '../../server/utils/blizzardMetaSync'
+import { buildMetaSnapshot, runScheduledBlizzardMetaSync, runScheduledBlizzardMetaSyncGuarded,
+  selectMetaPeriods } from '../../server/utils/blizzardMetaSync'
 import { readCurrentMetaSnapshot, readLastMetaRun } from '../../server/utils/blizzardMetaStore'
 import { parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
 import { META_JOB_TIMEOUT_MS, META_MIN_BUILD_SAMPLE, talentBand } from '../../utils/metaTypes'
@@ -346,5 +347,15 @@ describe('share helpers', () => {
     assert.equal(statPrioritySymbol(100, 80), '>>')
     assert.equal(statPrioritySymbol(100, 90), '>')
     assert.equal(statPrioritySymbol(100, 97), '≥')
+  })
+})
+
+describe('selectMetaPeriods', () => {
+  it('always includes the current period even when it is missing from the season list', () => {
+    const periods = selectMetaPeriods(100, [99, 98, 97], 3)
+    assert.equal(periods.current.id, 100)
+    assert.deepEqual(periods.included.map(row => row.id), [100, 99, 98])
+    const already = selectMetaPeriods(99, [99, 98, 97], 3)
+    assert.deepEqual(already.included.map(row => row.id), [99, 98, 97])
   })
 })

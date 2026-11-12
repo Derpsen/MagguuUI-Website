@@ -23,15 +23,17 @@ EU connected realms, current Mythic+ season, current period plus the two previou
 ## Robustness
 
 - OAuth token is refreshed at least five minutes before expiry; a 401 refreshes once and retries once.
-- Global rate gate ≤ 40 requests/s (hard cap 50) and concurrency 16. Per-request timeout 20 s.
+- Global rate gate ≤ 40 requests/s (hard cap 50) and concurrency 8. Per-request timeout 20 s. A 429 pauses the whole gate until `Retry-After`; waiters re-check so a stale slot cannot fire during the pause. The current rps halves on each 429 (floor 8 rps) and climbs back toward 40 after 80 clean responses.
 - 429/5xx: honour `Retry-After` when present, otherwise exponential backoff with jitter, max 6 attempts, then the item counts as failed.
 - 404/403 are not retried (private, renamed, or transferred characters).
-- Job deadline: 45 minutes. Lock TTL is that deadline plus a 5-minute grace (50 minutes), or until a later job deadline — `max(now + TTL, job deadline)`. The extra grace stops a second run from overlapping a job that is still winding down at its deadline. Production uses a live clock on every deadline, rate-gate, and 429 wait — tests may pass an advancing `now` function. The lock is always released in `finally`. Failed leaderboards and profiles are skipped; promote is decided by the sanity gates. A `locked` result is pushed to Kuma as `down`.
+- Job deadline: 45 minutes. Lock TTL is that deadline plus a 5-minute grace (50 minutes), or until a later job deadline — `max(now + TTL, job deadline)`. The extra grace stops a second run from overlapping a job that is still winding down at its deadline. Production uses a live clock on every deadline, rate-gate, and 429 wait — tests may pass an advancing `now` function. The lock is always released in `finally`. Failed leaderboards and profiles are skipped. Within a spec, profile GETs run with `caps.concurrency` (still rate-gated ≤ 40 rps) and stop at `NUXT_META_SAMPLE_PER_SPEC` / `NUXT_META_MAX_ATTEMPTS_PER_SPEC`. Progress is logged per spec and every 50 HTTP calls with a rate. After each finished spec the aggregate is staged, but mid-run snapshots are not promoted (one gated promote at the end or at the deadline, one `ok` row, then a Cloudflare `/meta` purge). If the deadline hits after at least one spec has data, the job returns status `partial` (CLI exit 3) and the CLI summary sets `partialOutcome` to `published`, `kept-last-good`, or `not-published`. A deadline with 0 specs stays `error` / exit 1. External abort mid spec or mid icon still does not promote. A `locked` result is pushed to Kuma as `down`.
 - Secrets never appear in logs. Names and realms are in-memory lookup keys only.
 
 ## Sanity gates (before promote)
 
-The job writes a staging row first, then promotes the active pointer only when every blocking gate passes. Otherwise the previous snapshot stays active (`partial`).
+The job writes a staging row first, then promotes the active pointer only when every blocking gate passes. Otherwise the previous snapshot stays active (`partial`). Deadline partials follow the same rule (DoD 1.24 / 1.26, with the DoD 1.24 first-partial exception below): they still go through `evaluateMetaRunPolicy` (429 rate ≤ `META_MAX_429_RATE` = 5 %, profile success ≥ 70 %, total `n` ≥ 50 % of last-good, no spec flipping from `n ≥ 50` to `0`; DoD 1.26 is 50, matching `META_SANITY_SPEC_FLIP_N`) plus a per-spec sample floor (`profileCount >= META_MIN_BUILD_SAMPLE` = 50, raised from the UI show floor of 10 after the local sync4 run showed a minimum of 208 profiles per spec across 40 specs). A 40×1 snapshot cannot replace a 39×200 last-good. The complete-catalog check is skipped only on the deadline path so an unfinished run can still publish when there is no last-good; mid-run intermediates are never promoted, and `rollbackMetaSnapshot` re-points at the newest prior `ok` snapshot, skipping only rows marked `freshness.partial` (a 39×200 non-partial predecessor wins over an older 40×200 row).
+
+If there has never been a last-good snapshot, a partial with real specs may go live even when the 429-rate gate fails (for example a 34 % 429 rate like local sync4, before the rate-gate stampede fix): CLI exit 3, `partialOutcome=published`, `/meta` shows the data with a visible "Partial data" note (`freshness.partial`). Each published spec must have `profileCount >= META_MIN_BUILD_SAMPLE` (50); thinner specs are omitted. A first partial with no spec at that floor stays `not-published` and `/meta` stays empty. Once a last-good exists, a partial replaces it only if it passes the quality gate (coverage ≥ last-good, every published spec n ≥ 50, 429 rate ≤ 5 %, profile success ≥ 70 %, 50 % n, no n≥50→0 flip). Deadline publishes are always marked partial.
 
 - Leaderboards ≥ 90 % ok
 - All 13 classes and all catalog specs present in the payload (empty specs are filled in)
@@ -52,7 +54,7 @@ Builds are grouped by hero tree + core talents (talents picked by at least 80 % 
 
 ## Rollback
 
-`rollbackMetaSnapshot(sqlite)` re-points the region at the previous unexpired `ok` snapshot. Raw SQL equivalent:
+`rollbackMetaSnapshot(sqlite)` re-points the region at the newest unexpired `ok` snapshot before the current one. Rows marked `freshness.partial` are skipped; otherwise the newest predecessor wins, even when an older row covers more specs (for example a 39×200 non-partial yesterday beats a 40×200 older snapshot). Raw SQL equivalent:
 
 ```sql
 -- inspect

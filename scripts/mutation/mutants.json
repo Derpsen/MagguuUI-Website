@@ -608,8 +608,8 @@
   {
     "name": "meta: 429 pause lands in the past",
     "file": "server/utils/blizzardHttp.ts",
-    "find": "      if (res.status === 429 && options.traffic) options.traffic.pauseUntil(clock() + wait)\n",
-    "repl": "      if (res.status === 429 && options.traffic) options.traffic.pauseUntil(wait)\n"
+    "find": "        options.traffic.pauseUntil(clock() + wait)\n",
+    "repl": "        options.traffic.pauseUntil(wait)\n"
   },
   {
     "name": "meta: scheduled asClock freezes input.now at creation",
@@ -620,8 +620,8 @@
   {
     "name": "meta: buildMetaSnapshot traffic gate uses a frozen clock",
     "file": "server/utils/blizzardMetaSync.ts",
-    "find": "    sleep: options.sleep,\n    now: clock,\n",
-    "repl": "    sleep: options.sleep,\n    now: () => now,\n"
+    "find": "    sleep,\n    now: clock,\n",
+    "repl": "    sleep,\n    now: () => now,\n"
   },
   {
     "name": "meta: scheduled job has no default deadline",
@@ -632,8 +632,8 @@
   {
     "name": "meta: abort checks ignored and mapPool uses Promise.all",
     "file": "server/utils/blizzardMetaSync.ts",
-    "find": "function syncAborted(abort?: AbortController) {\n  return Boolean(abort?.signal.aborted)\n}\n\nasync function mapPool<T>(\n  items: readonly T[],\n  concurrency: number,\n  worker: (item: T, index: number) => Promise<void>,\n  abort?: AbortController,\n): Promise<void> {\n  let next = 0\n  const limit = Math.max(1, Math.min(concurrency, items.length || 1))\n  const run = async () => {\n    while (next < items.length) {\n      if (syncAborted(abort)) return\n      const index = next\n      next += 1\n      try {\n        await worker(items[index]!, index)\n      } catch (error) {\n        if (abort && !abort.signal.aborted) abort.abort()\n        throw error\n      }\n    }\n  }\n  const results = await Promise.allSettled(Array.from({ length: Math.min(limit, Math.max(items.length, 1)) }, () => run()))\n  const rejected = results.find((result): result is PromiseRejectedResult => result.status === 'rejected')\n  if (rejected) throw rejected.reason\n}\n\n",
-    "repl": "function syncAborted(abort?: AbortController) {\n  return false\n}\n\nasync function mapPool<T>(\n  items: readonly T[],\n  concurrency: number,\n  worker: (item: T, index: number) => Promise<void>,\n  abort?: AbortController,\n): Promise<void> {\n  let next = 0\n  const limit = Math.max(1, Math.min(concurrency, items.length || 1))\n  const run = async () => {\n    while (next < items.length) {\n      const index = next\n      next += 1\n      try {\n        await worker(items[index]!, index)\n      } catch (error) {\n        if (abort && !abort.signal.aborted) abort.abort()\n        throw error\n      }\n    }\n  }\n  await Promise.all(Array.from({ length: Math.min(limit, Math.max(items.length, 1)) }, () => run()))\n}\n\n"
+    "find": "function syncAborted(abort?: AbortController) {\n  return Boolean(abort?.signal.aborted)\n}\n\nasync function mapPool<T>(\n  items: readonly T[],\n  concurrency: number,\n  worker: (item: T, index: number) => Promise<void>,\n  abort?: AbortController,\n): Promise<void> {\n  let next = 0\n  const limit = Math.max(1, Math.min(concurrency, items.length || 1))\n  const run = async () => {\n    while (next < items.length) {\n      if (syncAborted(abort)) return\n      const index = next\n      next += 1\n      try {\n        await worker(items[index]!, index)\n      } catch (error) {\n        if (abort && !abort.signal.aborted) abort.abort(error)\n        throw error\n      }\n    }\n  }\n  const results = await Promise.allSettled(Array.from({ length: Math.min(limit, Math.max(items.length, 1)) }, () => run()))\n  const rejected = results.find((result): result is PromiseRejectedResult => result.status === 'rejected')\n  if (rejected) throw rejected.reason\n}\n\n",
+    "repl": "function syncAborted(abort?: AbortController) {\n  return false\n}\n\nasync function mapPool<T>(\n  items: readonly T[],\n  concurrency: number,\n  worker: (item: T, index: number) => Promise<void>,\n  abort?: AbortController,\n): Promise<void> {\n  let next = 0\n  const limit = Math.max(1, Math.min(concurrency, items.length || 1))\n  const run = async () => {\n    while (next < items.length) {\n      if (syncAborted(abort)) return\n      const index = next\n      next += 1\n      try {\n        await worker(items[index]!, index)\n      } catch (error) {\n        if (abort && !abort.signal.aborted) abort.abort(error)\n        throw error\n      }\n    }\n  }\n  await Promise.all(Array.from({ length: Math.min(limit, Math.max(items.length, 1)) }, () => run()))\n}\n\n"
   },
   {
     "name": "meta: lock acquire ignores an active holder",
@@ -754,6 +754,144 @@
     "file": "server/utils/blizzardMetaSync.ts",
     "find": "      if (live.best !== top.best || live.runs !== top.runs) {\n        heap.pop()\n        heap.push({ key: top.key, best: live.best, runs: live.runs })\n        continue\n      }\n",
     "repl": "      if (false) {\n        heap.pop()\n        heap.push({ key: top.key, best: live.best, runs: live.runs })\n        continue\n      }\n"
+  },
+  {
+    "name": "meta: deadline partial treated as error when data exists",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "    if (built.hitDeadline) {\n",
+    "repl": "    if (false && built.hitDeadline) {\n"
+  },
+  {
+    "name": "meta: deadline partial overwrites last-good",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "  if (input.previous && (thinner || policy.reasons.length)) {\n",
+    "repl": "  if (false && input.previous && (thinner || policy.reasons.length)) {\n"
+  },
+  {
+    "name": "meta: empty last-good treated as coverage to keep",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "  if (prev.specsWithData === 0 && prev.profiles === 0) return false\n",
+    "repl": "  if (prev.specsWithData === 0 && prev.profiles === 0) return true\n"
+  },
+  {
+    "name": "meta: combined-slot gear share not clamped",
+    "file": "server/utils/blizzardMetaAggregate.ts",
+    "find": "    share: Math.min(1, share),\n",
+    "repl": "    share,\n"
+  },
+  {
+    "name": "meta: rate-gate rps floor cap removed",
+    "file": "server/utils/blizzardHttp.ts",
+    "find": "      gap = Math.min(maxGap, Math.max(gap * 2, targetGap * 2))\n",
+    "repl": "      gap = Math.max(gap * 2, targetGap * 2)\n"
+  },
+  {
+    "name": "meta: throttle recovery after 10 clean calls instead of 80",
+    "file": "server/utils/blizzardHttp.ts",
+    "find": "      if (healthy >= 80 && gap > targetGap) {\n",
+    "repl": "      if (healthy >= 10 && gap > targetGap) {\n"
+  },
+  {
+    "name": "meta: shouldKeepLastGood treats equal coverage as thinner",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "      if (next.wellCoveredProfiles >= prev.wellCoveredProfiles) return false\n",
+    "repl": "      if (next.wellCoveredProfiles > prev.wellCoveredProfiles) return false\n"
+  },
+  {
+    "name": "meta: store share clamp removed",
+    "file": "server/utils/blizzardMetaStore.ts",
+    "find": "  const parsed = parseMetaSnapshotPayload(clampMetaSnapshotShares(payload))\n",
+    "repl": "  const parsed = parseMetaSnapshotPayload(payload)\n"
+  },
+  {
+    "name": "meta: deadline keep-last-good ignores policy reasons",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "  if (input.previous && (thinner || policy.reasons.length)) {\n",
+    "repl": "  if (input.previous && (thinner)) {\n"
+  },
+  {
+    "name": "meta: first partial is not marked freshness.partial",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "    payload: markMetaSnapshotPartial(publishable),\n",
+    "repl": "    payload: publishable,\n"
+  },
+  {
+    "name": "meta: deadline path requires a complete catalog",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "    requireCompleteCatalog: false,\n",
+    "repl": "    requireCompleteCatalog: true,\n"
+  },
+  {
+    "name": "meta: tripAbort aborts without the error reason",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "  if (!abort.signal.aborted) abort.abort(error)\n",
+    "repl": "  if (!abort.signal.aborted) abort.abort()\n"
+  },
+  {
+    "name": "meta: in-flight 429 debounce does not extend the pause",
+    "file": "server/utils/blizzardHttp.ts",
+    "find": "      if (Number.isFinite(lastThrottleAt) && (startedAt <= lastThrottleAt || startedAt === lastThrottleStartedAt)) {\n        nextSlot = Math.max(nextSlot, t + gap)\n        return\n      }\n",
+    "repl": "      if (Number.isFinite(lastThrottleAt) && (startedAt <= lastThrottleAt || startedAt === lastThrottleStartedAt)) {\n        return\n      }\n"
+  },
+  {
+    "name": "meta: first partial with real specs stays not-published when policy fails",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "  // No last-good has ever existed: a partial with real specs (each n >= 50)\n  // may go live even when the 429-rate gate fails. Always mark deadline /\n  // first-partial publishes so /meta can show \"Partial data\".\n  return {\n    outcome: 'published',\n    reasons: policy.reasons,\n    payload: markMetaSnapshotPartial(publishable),\n  }\n",
+    "repl": "  if (!input.previous && policy.reasons.length) {\n    return { outcome: 'not-published', reasons: policy.reasons, payload: publishable }\n  }\n  return {\n    outcome: 'published',\n    reasons: policy.reasons,\n    payload: markMetaSnapshotPartial(publishable),\n  }\n"
+  },
+  {
+    "name": "meta: omitThin uses the show floor instead of the build-sample floor",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "  const classes = payload.classes\n    .map((cls) => {\n      const specs = cls.specs.filter(spec => (spec.profileCount ?? 0) >= minProfileCount)\n",
+    "repl": "  const classes = payload.classes\n    .map((cls) => {\n      const specs = cls.specs.filter(spec => (spec.profileCount ?? 0) >= 10)\n"
+  },
+  {
+    "name": "meta: first partial publishes specs below the build-sample floor",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "  if (coverage.wellCoveredSpecs === 0) {\n",
+    "repl": "  if (false && coverage.wellCoveredSpecs === 0) {\n"
+  },
+  {
+    "name": "meta: policy-fail with last-good still publishes a first partial",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "      if (!previous) {\n",
+    "repl": "      if (true) {\n"
+  },
+  {
+    "name": "meta: first-partial publish leaves the raw staging row",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "          deleteStagedMetaSnapshot(input.sqlite, stagedId)\n          const stagedFirst = writeStagedMetaSnapshot(input.sqlite, firstPartial.payload, clock())\n",
+    "repl": "          const stagedFirst = writeStagedMetaSnapshot(input.sqlite, firstPartial.payload, clock())\n"
+  },
+  {
+    "name": "meta: first-partial publish skips the Cloudflare purge",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "          const purgeFirst = input.purgeMeta ?? purgeCloudflareMeta\n          await purgeFirst()\n",
+    "repl": ""
+  },
+  {
+    "name": "meta: omitThinMetaSpecs leaves class.n unadjusted",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "      return { ...cls, specs, n: specs.reduce((sum, spec) => sum + spec.n, 0) }\n",
+    "repl": "      return { ...cls, specs, n: cls.n }\n"
+  },
+  {
+    "name": "meta: deadline publish with last-good is not marked partial",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "    payload: markMetaSnapshotPartial(publishable),\n",
+    "repl": "    payload: input.previous ? publishable : markMetaSnapshotPartial(publishable),\n"
+  },
+  {
+    "name": "meta: 429 debounce misses a request started at the throttle instant",
+    "file": "server/utils/blizzardHttp.ts",
+    "find": "      if (Number.isFinite(lastThrottleAt) && (startedAt <= lastThrottleAt || startedAt === lastThrottleStartedAt)) {\n",
+    "repl": "      if (Number.isFinite(lastThrottleAt) && (startedAt < lastThrottleAt || startedAt === lastThrottleStartedAt)) {\n"
+  },
+  {
+    "name": "meta: SPEC_FLIP_N raised from 50 to 500",
+    "file": "utils/metaTypes.ts",
+    "find": "export const META_SANITY_SPEC_FLIP_N = META_MIN_BUILD_SAMPLE\n",
+    "repl": "export const META_SANITY_SPEC_FLIP_N = 500\n"
   },
   {
     "name": "fontPreload: default drops the nav weight (sans 600)",

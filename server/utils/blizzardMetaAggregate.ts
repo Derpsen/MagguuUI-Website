@@ -3,7 +3,7 @@
  * in the output. Used by the nightly sync and by fixture unit tests.
  */
 
-import { META_CLASSES, findMetaClass, toMetaSlug } from '~/utils/metaCatalog'
+import { META_CLASSES, findMetaClass, findMetaSpec, toMetaSlug } from '~/utils/metaCatalog'
 import { decodeLoadoutHeader } from '~/utils/metaLoadout'
 import {
   META_TOP_ITEMS,
@@ -151,7 +151,9 @@ function asBool(value: unknown): boolean {
 
 export function shareOf(count: number, total: number): number {
   const denom = total > 0 ? total : 1
-  return Math.round((count / denom) * 1000) / 1000
+  const share = Math.round((count / denom) * 1000) / 1000
+  if (!Number.isFinite(share) || share < 0) return 0
+  return Math.min(1, share)
 }
 
 export function keyLevelsOf(levels: number[]): MetaKeyLevels | null {
@@ -512,6 +514,7 @@ export function absorbProfile(
   bucket.profiles += 1
   const loadouts = extractActiveLoadouts(input.specsBody)
   const seenTalent = new Set<string>()
+  const seenHeroes = new Set<number>()
   let countedHero: { id: number, label: string } | null = null
   let recordedBuild = false
   for (const loadout of loadouts) {
@@ -524,7 +527,12 @@ export function absorbProfile(
       })
     }
     if (loadout.hero) {
-      increment(bucket.heroes, String(loadout.hero.id), loadout.hero.label, { id: loadout.hero.id })
+      // Players can have more than one active loadout on the same hero tree;
+      // count each tree once per profile so heroSplit.share stays ≤ 1.
+      if (!seenHeroes.has(loadout.hero.id)) {
+        seenHeroes.add(loadout.hero.id)
+        increment(bucket.heroes, String(loadout.hero.id), loadout.hero.label, { id: loadout.hero.id })
+      }
       if (!countedHero) countedHero = loadout.hero
     }
     const talentIds: number[] = []
@@ -697,7 +705,9 @@ function toGear(entry: CountEntry, share: number, bucket?: ProfileBucket, icons?
     itemId: Number(entry.extra.itemId),
     label: entry.label,
     count: entry.count,
-    share,
+    // Combined ring/trinket/embellishment slots can total more than one item
+    // per player; the snapshot schema requires share in [0, 1].
+    share: Math.min(1, share),
     quality: entry.extra.quality ? String(entry.extra.quality) : null,
     setName: entry.extra.setName ? String(entry.extra.setName) : null,
     crafted: entry.extra.crafted === true,
@@ -723,7 +733,9 @@ function mergeSlotItems(map: CountMap, slots: Set<string>, total: number, bucket
   return [...merged.values()]
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
     .slice(0, META_TOP_SLOT_ITEMS)
-    .map(entry => toGear(entry, shareOf(entry.count, total), bucket, icons))
+    // Pass the raw rounded ratio so toGear's clamp is what keeps combined-slot
+    // share at 1 when stacked counts exceed the profile total (e.g. 160/100).
+    .map(entry => toGear(entry, total > 0 ? Math.round((entry.count / total) * 1000) / 1000 : 0, bucket, icons))
 }
 
 function gearSlots(map: CountMap, total: number, bucket?: ProfileBucket, icons?: Map<number, string>): MetaSpecSummary['gearSlots'] {
@@ -829,7 +841,7 @@ export function buildClassSummaries(
   for (const [specKey, pop] of specPop) {
     const classSlug = toMetaSlug(pop.className)
     const specSlug = toMetaSlug(pop.specName)
-    if (!findMetaClass(classSlug)) continue
+    if (!findMetaClass(classSlug) || !findMetaSpec(classSlug, specSlug)) continue
     let cls = byClass.get(classSlug)
     if (!cls) {
       cls = { slug: classSlug, label: pop.className, n: 0, specs: [] }

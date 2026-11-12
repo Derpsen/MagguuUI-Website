@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { after, describe, it } from 'node:test'
@@ -125,11 +126,13 @@ describe('meta sync CLI summary and exit codes', () => {
 })
 
 describe('meta sync CLI build', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'meta-sync-cli-build-'))
-  after(() => rmSync(dir, { recursive: true, force: true }))
+  const outDir = join(process.cwd(), 'node_modules', '.cache', 'meta-sync-cli-test')
+  after(() => rmSync(outDir, { recursive: true, force: true }))
 
   it('emits a standalone .mjs that does not inline secrets or better-sqlite3', { timeout: 30_000 }, async () => {
-    const outFile = join(dir, 'meta-sync-cli.mjs')
+    // Emit next to the repo node_modules so the external better-sqlite3 import resolves.
+    const outFile = join(outDir, 'meta-sync-cli.mjs')
+    mkdirSync(outDir, { recursive: true })
     const built = await buildMetaSyncCli({ repoRoot: process.cwd(), outFile, logLevel: 'silent' })
     assert.equal(built, outFile)
     const source = readFileSync(outFile, 'utf8')
@@ -137,5 +140,19 @@ describe('meta sync CLI build', () => {
     assert.ok(source.includes('import') && source.includes('better-sqlite3'), 'native addon must stay an external import')
     assert.match(source, /already running/)
     assert.doesNotMatch(source, /NUXT_BLIZZARD_CLIENT_SECRET=/)
+
+    const cwd = mkdtempSync(join(tmpdir(), 'meta-sync-cli-run-'))
+    const env: NodeJS.ProcessEnv = { ...process.env, NODE_ENV: 'production' }
+    delete env.NUXT_BLIZZARD_CLIENT_ID
+    delete env.NUXT_BLIZZARD_CLIENT_SECRET
+    delete env.NUXT_META_NIGHTLY
+    const result = spawnSync(process.execPath, [outFile], { cwd, env, encoding: 'utf8' })
+    assert.equal(result.status, 4, `stderr=${result.stderr}\nstdout=${result.stdout}`)
+    const line = (result.stdout || '').trim().split('\n').at(-1) || ''
+    const summary = JSON.parse(line)
+    assert.equal(summary.status, 'skipped')
+    assert.match(String(summary.reason || ''), /NUXT_BLIZZARD_CLIENT_ID/)
+    assert.doesNotMatch(result.stdout + result.stderr, /Dynamic require/)
+    rmSync(cwd, { recursive: true, force: true })
   })
 })

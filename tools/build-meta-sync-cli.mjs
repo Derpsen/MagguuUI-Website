@@ -4,8 +4,14 @@
  * better-sqlite3 stays external (native addon already in the server node_modules).
  */
 import * as esbuild from 'esbuild'
+import { builtinModules } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+const nodeExternals = [
+  ...builtinModules,
+  ...builtinModules.map((name) => `node:${name}`),
+]
 
 const defaultRepoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -20,7 +26,13 @@ export async function buildMetaSyncCli(input = {}) {
     platform: 'node',
     format: 'esm',
     target: 'node22',
-    external: ['better-sqlite3'],
+    // ofetch's CJS build calls require("node:http"). A bare ESM bundle
+    // throws "Dynamic require of node:http is not supported"; createRequire
+    // plus marking Node builtins as external fixes that in the image.
+    banner: {
+      js: "import { createRequire as __metaSyncCreateRequire } from 'node:module'; const require = __metaSyncCreateRequire(import.meta.url);",
+    },
+    external: ['better-sqlite3', ...nodeExternals],
     alias: {
       '~': repoRoot,
       '~~': repoRoot,

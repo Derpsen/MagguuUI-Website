@@ -205,7 +205,7 @@ describe('meta sync CLI signals', () => {
       })
     })
     const sent = child.kill('SIGTERM')
-    assert.equal(sent, true)
+    assert.equal(sent, true, `kill(SIGTERM) returned false (child already exited)\nstdout=${stdout}\nstderr=${stderr}`)
     const { status } = await finished
     assert.notEqual(status, 0, `expected non-zero exit, got ${status}\nstdout=${stdout}\nstderr=${stderr}`)
     assert.equal(isBlizzardMetaLockHeld(sqlite), false, `lock still held after SIGTERM\nstdout=${stdout}\nstderr=${stderr}`)

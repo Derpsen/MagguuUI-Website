@@ -830,8 +830,8 @@
   {
     "name": "meta: in-flight 429 debounce does not extend the pause",
     "file": "server/utils/blizzardHttp.ts",
-    "find": "      if (Number.isFinite(lastThrottleAt) && (startedAt < lastThrottleAt || startedAt === lastThrottleStartedAt)) {\n        nextSlot = Math.max(nextSlot, t + gap)\n        return\n      }\n",
-    "repl": "      if (Number.isFinite(lastThrottleAt) && (startedAt < lastThrottleAt || startedAt === lastThrottleStartedAt)) {\n        return\n      }\n"
+    "find": "      if (Number.isFinite(lastThrottleAt) && (startedAt <= lastThrottleAt || startedAt === lastThrottleStartedAt)) {\n        nextSlot = Math.max(nextSlot, t + gap)\n        return\n      }\n",
+    "repl": "      if (Number.isFinite(lastThrottleAt) && (startedAt <= lastThrottleAt || startedAt === lastThrottleStartedAt)) {\n        return\n      }\n"
   },
   {
     "name": "meta: first partial with real specs stays not-published when policy fails",

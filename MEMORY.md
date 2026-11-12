@@ -668,3 +668,7 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 - `MetaHomeHero` "Last update" used `truncate whitespace-nowrap` in a 2-col cell, which clipped the timestamp below ~500 px. The Updated stat is now `col-span-2` with a `title`, and e2e at 390 px asserts the full string is unclipped. Desktop `/meta` CLS must stay under the 0.03 DoD cap (do not bring back the 4-col wrap).
 - Cheap LOWs: baseline numbers taken from Lighthouse run 43148115810 (median of 3; `/meta` mobile TBT 178 ms, 22 ms under the 200 ms cap). Seed guard runs before any `server/database` import and requires `NUXT_ALLOW_META_FIXTURE_SEED=true` in production (`CI=true` is not a bypass). Web-vitals flush listeners register immediately; only the library import is deferred. Gear tooltip e2e walks every `#gear` trigger, not `.first()`.
 - Keep the `/meta` script gate. Do not add the Lighthouse workflow to GitHub branch protection. A gear tooltip near the viewport bottom may flip; left as-is, not changed in this pass.
+
+## 2026-11-12 no-JS H1 contrast
+
+- With JavaScript off (or before `useIsDark` mounts), public page H1s still got `text-white` while `html.light` or a classless document used a light background. CSS now colors `.public-shell h1` as `#0f172a` unless `html.dark` is present. Covered by `tests/nojs-h1-contrast.spec.ts` (site scripts blocked at the network, `html.light` forced, axe color-contrast on `/guide`, `/faq`, `/news`).

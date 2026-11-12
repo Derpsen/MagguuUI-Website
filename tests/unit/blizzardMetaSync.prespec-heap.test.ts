@@ -7,9 +7,11 @@ import { initializeDatabase } from '../../server/database/bootstrap'
 import { resetBlizzardAccessTokenCache } from '../../server/utils/blizzardAuth'
 import {
   META_HEAP_CHECK_EVERY_GROUPS,
+  META_SYNC_DEFAULT_MAX_CANDIDATES,
   META_SYNC_DEFAULT_MAX_PER_SPEC,
   MetaCandidateTable,
   buildMetaSnapshot,
+  mergeMetaSyncCaps,
 } from '../../server/utils/blizzardMetaSync'
 import {
   META_SYNC_CLI_DEFAULT_HEAP_MB,
@@ -187,6 +189,52 @@ describe('meta pre-spec heap (CLI cap, production guard)', () => {
     assert.equal(measured.mode, '400k')
     assert.equal(measured.expectedIncoming, PRE_SPEC_400K_UNIQUE)
     assertBounded(measured, PRE_SPEC_400K_UNIQUE)
+  })
+
+
+  it('does not overwrite a legacy maxCandidates total with the per-spec cap', () => {
+    const caps = mergeMetaSyncCaps({ maxCandidates: 32_000, maxAttemptsPerSpec: 400 })
+    assert.equal(caps.maxCandidates, 32_000)
+    assert.equal(caps.maxCandidatesPerSpec, META_SYNC_DEFAULT_MAX_PER_SPEC)
+    const onlyPerSpec = mergeMetaSyncCaps({ maxCandidatesPerSpec: 50, maxAttemptsPerSpec: 40, samplePerSpec: 20 })
+    assert.equal(onlyPerSpec.maxCandidatesPerSpec, 50)
+    assert.equal(onlyPerSpec.maxCandidates, META_SYNC_DEFAULT_MAX_CANDIDATES)
+  })
+
+  it('warns when ingest drops candidates under the per-spec cap', { timeout: 60_000 }, async () => {
+    resetBlizzardAccessTokenCache()
+    const warnings: string[] = []
+    const sqlite = new Database(':memory:')
+    initializeDatabase(sqlite)
+    const { preSpec } = await buildMetaSnapshot({
+      fetcher: createPreSpecHeapFetcher({
+        realmCount: 1,
+        uniqueAcrossBoards: true,
+        groupsForRealm: () => 40,
+      }),
+      credentials: { id: 'id', secret: 'secret' },
+      sqlite,
+      caps: {
+        concurrency: 4,
+        periods: PRE_SPEC_PERIOD_COUNT,
+        maxRealms: 0,
+        maxRps: 50,
+        samplePerSpec: 5,
+        maxAttemptsPerSpec: 10,
+        maxCandidatesPerSpec: 20,
+        maxConcurrentSpecs: 1,
+      },
+      heap: { used: () => 1, limit: () => 1024 * 1024 * 1024, fraction: 0.70 },
+      sleep: async () => {},
+      stopAfter: 'pre-spec',
+      warn: (message) => { warnings.push(message) },
+    })
+    sqlite.close()
+    assert.ok(preSpec && preSpec.dropped.ingest > 0, 'fixture must exceed the per-spec cap')
+    const line = warnings.find(message => message.includes('Meta ingest dropped'))
+    assert.ok(line, `expected an ingest-dropped warning, got ${JSON.stringify(warnings)}`)
+    assert.match(line, new RegExp(`Meta ingest dropped ${preSpec.dropped.ingest} candidates`))
+    assert.match(line, /per-spec top-20/)
   })
 
   it('checks the heap guard inside a board, not only between boards', { timeout: 60_000 }, async () => {

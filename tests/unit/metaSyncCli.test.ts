@@ -35,7 +35,23 @@ describe('meta sync CLI summary and exit codes', () => {
     assert.equal(exitCodeForMetaSync('skipped'), META_SYNC_CLI_EXIT.skipped)
   })
 
-  it('redacts secrets from the printed reason', () => {
+    it('copies dropped ingest/trim/total onto the printed summary', () => {
+    const summary = summarizeMetaSyncCli({
+      result: {
+        status: 'ok',
+        specsWithData: 2,
+        http429: 0,
+        dropped: { ingest: 12, trim: 3, total: 15 },
+      },
+      durationMs: 10,
+      peakRssBytes: 1,
+      peakHeapUsedBytes: 1,
+      heapLimitBytes: 2,
+    })
+    assert.deepEqual(summary.dropped, { ingest: 12, trim: 3, total: 15 })
+  })
+
+it('redacts secrets from the printed reason', () => {
     const summary = summarizeMetaSyncCli({
       result: { status: 'error', reason: 'token client-secret-value leaked', http429: 0, specsWithData: 0, durationMs: 12 },
       durationMs: 12,

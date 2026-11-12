@@ -92,7 +92,7 @@ The process starts in `/app` (the container `WORKDIR`), opens the same SQLite da
 
 The CLI calls `runScheduledBlizzardMetaSync` (lean sampling, heap guard, deadline, fail-closed promote, last-good snapshot kept). It can run even when `NUXT_META_NIGHTLY` is off, but still needs `NUXT_BLIZZARD_CLIENT_ID` and `NUXT_BLIZZARD_CLIENT_SECRET` from the container environment (same as the app; secrets are never printed). It prints one JSON object to stdout: `status`, `durationMs`, `peakRssBytes`, `peakHeapUsedBytes`, `specsWithData`, `http429`, and `reason` when present. Exit codes: `0` ok, `1` error, `2` locked, `3` partial, `4` skipped.
 
-The CLI is a **separate Node process next to the website**. It inherits the container `NODE_OPTIONS` (including `--max-old-space-size=640` when that is set). Peak memory during a manual run is the website process plus the CLI, not a replacement for the server heap. Do not fire this command until the image that contains the CLI has been pulled by autoupdate.
+The CLI is a **separate Node process next to the website**. It does not keep the website `--max-old-space-size=640`: the entry strips that flag from `NODE_OPTIONS` and replaces itself (`process.execve`) with `--max-old-space-size=256`. Peak memory during a manual run is still the website process plus the CLI, not a replacement for the server heap. `--memory-swap=-1` on the Unraid template is intentional (matches live). Do not fire this command until the image that contains the CLI has been pulled by autoupdate.
 
 Nitro's `/_nitro/tasks` HTTP surface exists in the dev server, not in the production image, and is not the manual trigger.
 

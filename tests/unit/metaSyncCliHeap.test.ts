@@ -38,14 +38,12 @@ describe('meta sync CLI heap options', () => {
   })
 
   it('ignores an inherited META_SYNC_CLI_HEAP_APPLIED env and requires a re-exec marker plus execArgv cap', () => {
-    const env = { META_SYNC_CLI_HEAP_APPLIED: '1', META_SYNC_CLI_HEAP_APPLIED_ENV: '1' }
-    assert.equal(metaSyncCliHeapAlreadyApplied(['node', 'cli.mjs'], [], env), false)
-    assert.equal(metaSyncCliHeapAlreadyApplied(['node', 'cli.mjs', META_SYNC_CLI_HEAP_MARKER], [], env), false)
-    assert.equal(metaSyncCliHeapAlreadyApplied(['node', 'cli.mjs', META_SYNC_CLI_HEAP_MARKER], ['--max-old-space-size=192'], env), true)
     const previous = process.env.META_SYNC_CLI_HEAP_APPLIED
     process.env.META_SYNC_CLI_HEAP_APPLIED = '1'
     try {
       assert.equal(metaSyncCliHeapAlreadyApplied(['node', 'cli.mjs'], []), false)
+      assert.equal(metaSyncCliHeapAlreadyApplied(['node', 'cli.mjs', META_SYNC_CLI_HEAP_MARKER], []), false)
+      assert.equal(metaSyncCliHeapAlreadyApplied(['node', 'cli.mjs', META_SYNC_CLI_HEAP_MARKER], ['--max-old-space-size=192']), true)
     } finally {
       if (previous == null) delete process.env.META_SYNC_CLI_HEAP_APPLIED
       else process.env.META_SYNC_CLI_HEAP_APPLIED = previous

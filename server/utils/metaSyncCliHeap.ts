@@ -20,8 +20,6 @@ import type { ChildProcess } from 'node:child_process'
 import { constants } from 'node:os'
 import { readMaxOldSpaceSizeMb } from './blizzardMetaHeap'
 
-export { readMaxOldSpaceSizeMb }
-
 export const META_SYNC_CLI_DEFAULT_HEAP_MB = 256
 export const META_SYNC_CLI_HEAP_MIN_MB = 64
 export const META_SYNC_CLI_HEAP_MAX_MB = 512
@@ -58,9 +56,7 @@ export function resolveMetaSyncCliNodeOptions(env: NodeJS.ProcessEnv = process.e
 export function metaSyncCliHeapAlreadyApplied(
   argv: readonly string[] = process.argv,
   execArgv: readonly string[] = process.execArgv,
-  env: NodeJS.ProcessEnv = process.env,
 ): boolean {
-  void env.META_SYNC_CLI_HEAP_APPLIED
   if (!argv.includes(META_SYNC_CLI_HEAP_MARKER)) return false
   const mb = readMaxOldSpaceSizeMb(execArgv, '')
   return mb != null && mb >= META_SYNC_CLI_HEAP_MIN_MB && mb <= META_SYNC_CLI_HEAP_MAX_MB

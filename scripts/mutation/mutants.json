@@ -686,7 +686,25 @@
   {
     "name": "meta: inherited META_SYNC_CLI_HEAP_APPLIED env skips the re-exec",
     "file": "server/utils/metaSyncCliHeap.ts",
-    "find": "  void env.META_SYNC_CLI_HEAP_APPLIED\n  if (!argv.includes(META_SYNC_CLI_HEAP_MARKER)) return false",
-    "repl": "  if (env.META_SYNC_CLI_HEAP_APPLIED) return true\n  if (!argv.includes(META_SYNC_CLI_HEAP_MARKER)) return false"
+    "find": "export function metaSyncCliHeapAlreadyApplied(\n  argv: readonly string[] = process.argv,\n  execArgv: readonly string[] = process.execArgv,\n): boolean {\n  if (!argv.includes(META_SYNC_CLI_HEAP_MARKER)) return false\n",
+    "repl": "export function metaSyncCliHeapAlreadyApplied(\n  argv: readonly string[] = process.argv,\n  execArgv: readonly string[] = process.execArgv,\n): boolean {\n  if (process.env.META_SYNC_CLI_HEAP_APPLIED) return true\n  if (!argv.includes(META_SYNC_CLI_HEAP_MARKER)) return false\n"
+  },
+  {
+    "name": "meta: remove Meta ingest dropped warning",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "  if (droppedIngest > 0) {\n    options.warn?.(`Meta ingest dropped ${droppedIngest} candidates under the per-spec top-${caps.maxCandidatesPerSpec} cap (unique ${ingest.uniquePlayers}, kept ${candidateCount})`)\n  }\n",
+    "repl": "  if (droppedIngest > 0) {\n    /* no warning */\n  }\n"
+  },
+  {
+    "name": "meta: remove summary.dropped",
+    "file": "server/utils/metaSyncCli.ts",
+    "find": "  if (input.result.dropped && input.result.dropped.total > 0) {\n    summary.dropped = input.result.dropped\n  }\n",
+    "repl": "  if (input.result.dropped && input.result.dropped.total > 0) {\n    /* omit dropped */\n  }\n"
+  },
+  {
+    "name": "unraid: NODE_OPTIONS Default is 768 instead of 640",
+    "file": "unraid/magguuui-website.xml",
+    "find": "Default=\"--enable-source-maps --max-old-space-size=640\"",
+    "repl": "Default=\"--enable-source-maps --max-old-space-size=768\""
   }
 ]

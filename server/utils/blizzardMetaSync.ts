@@ -350,6 +350,67 @@ export class MetaIngestCounters {
   }
 }
 
+/** Lazy min-heap of per-spec cutoff keys (worst = lowest best, then runs). */
+class SpecCutoffHeap {
+  private readonly items: Array<{ key: string, best: number, runs: number }> = []
+
+  get size() {
+    return this.items.length
+  }
+
+  push(entry: { key: string, best: number, runs: number }) {
+    this.items.push(entry)
+    this.bubbleUp(this.items.length - 1)
+  }
+
+  peek(): { key: string, best: number, runs: number } | undefined {
+    return this.items[0]
+  }
+
+  pop(): { key: string, best: number, runs: number } | undefined {
+    const first = this.items[0]
+    const last = this.items.pop()
+    if (this.items.length && last) {
+      this.items[0] = last
+      this.bubbleDown(0)
+    }
+    return first
+  }
+
+  private worse(a: { best: number, runs: number }, b: { best: number, runs: number }) {
+    return a.best < b.best || (a.best === b.best && a.runs < b.runs)
+  }
+
+  private bubbleUp(index: number) {
+    const items = this.items
+    while (index > 0) {
+      const parent = (index - 1) >> 1
+      if (!this.worse(items[index]!, items[parent]!)) break
+      const tmp = items[parent]!
+      items[parent] = items[index]!
+      items[index] = tmp
+      index = parent
+    }
+  }
+
+  private bubbleDown(index: number) {
+    const items = this.items
+    const n = items.length
+    while (true) {
+      let best = index
+      const left = index * 2 + 1
+      const right = left + 1
+      if (left < n && this.worse(items[left]!, items[best]!)) best = left
+      if (right < n && this.worse(items[right]!, items[best]!)) best = right
+      if (best === index) break
+      const tmp = items[best]!
+      items[best] = items[index]!
+      items[index] = tmp
+      index = best
+    }
+  }
+}
+
 /** Compact per-player table for leaderboard ingest.
  *  A Map of object values retains the parsed board graph (EU-scale fixture:
  *  166k players → ~440 MB live). Parallel arrays stay around 70 MB uncapped.
@@ -366,12 +427,11 @@ export class MetaCandidateTable {
   private readonly bySpec = new Map<number, number[]>()
   private evicted = 0
   readonly capPerSpec: number
-  private readonly slack: number
+  private readonly heaps = new Map<number, SpecCutoffHeap>()
   readonly counters = new MetaIngestCounters()
 
   constructor(capPerSpec: number) {
     this.capPerSpec = Math.max(1, capPerSpec)
-    this.slack = Math.max(32, Math.min(256, Math.floor(this.capPerSpec * 0.125)))
   }
 
   /** @deprecated Use capPerSpec; kept so older tests that read `.cap` still compile. */
@@ -395,52 +455,61 @@ export class MetaCandidateTable {
     return { runs: this.runs[row]![pos]!, best: this.bests[row]![pos]! }
   }
 
-  private worstInSpec(specId: number): { row: number, runs: number, best: number } | null {
-    const list = this.bySpec.get(specId)
-    if (!list || !list.length) return null
-    let worst = { row: list[0]!, runs: 0, best: 0 }
-    const first = this.scoreAt(list[0]!, specId)
-    if (first) worst = { row: list[0]!, ...first }
-    for (let i = 1; i < list.length; i++) {
-      const score = this.scoreAt(list[i]!, specId)
-      if (!score) continue
-      if (score.best < worst.best || (score.best === worst.best && score.runs < worst.runs)) {
-        worst = { row: list[i]!, ...score }
-      }
+  private pushCutoff(specId: number, key: string, best: number, runs: number) {
+    let heap = this.heaps.get(specId)
+    if (!heap) {
+      heap = new SpecCutoffHeap()
+      this.heaps.set(specId, heap)
     }
-    return worst
+    heap.push({ key, best, runs })
+  }
+
+  /** Live worst (lowest best, then runs) for a spec. Heap entries use stable keys so swap-pop row ids cannot go stale. */
+  private peekLiveWorst(specId: number): { key: string, row: number, runs: number, best: number } | null {
+    const heap = this.heaps.get(specId)
+    if (!heap) return null
+    while (heap.peek()) {
+      const top = heap.peek()!
+      const row = this.index.get(top.key)
+      if (row == null) {
+        heap.pop()
+        continue
+      }
+      const live = this.scoreAt(row, specId)
+      if (!live) {
+        heap.pop()
+        continue
+      }
+      if (live.best !== top.best || live.runs !== top.runs) {
+        heap.pop()
+        heap.push({ key: top.key, best: live.best, runs: live.runs })
+        continue
+      }
+      return { key: top.key, row, ...live }
+    }
+    return null
   }
 
   private beatsCutoff(specId: number, best: number, runs: number): boolean {
     const list = this.bySpec.get(specId)
     if (!list || list.length < this.capPerSpec) return true
-    const worst = this.worstInSpec(specId)
+    const worst = this.peekLiveWorst(specId)
     if (!worst) return true
     return best > worst.best || (best === worst.best && runs > worst.runs)
   }
 
-  evictSpecTo(specId: number, keep: number) {
-    const list = this.bySpec.get(specId)
-    if (!list || list.length <= keep) return
-    const scored = list.map((row) => {
-      const score = this.scoreAt(row, specId) ?? { runs: 0, best: 0 }
-      return { row, ...score }
-    })
-    scored.sort((a, b) => b.best - a.best || b.runs - a.runs)
-    const kept = new Set(scored.slice(0, keep).map(item => item.row))
-    const next: number[] = []
-    for (const item of scored) {
-      if (kept.has(item.row)) next.push(item.row)
-    }
-    this.bySpec.set(specId, next)
-    for (const item of scored) {
-      if (!kept.has(item.row)) this.removePlayerSpec(item.row, specId)
-    }
+  private evictWorst(specId: number) {
+    const worst = this.peekLiveWorst(specId)
+    if (!worst) return
+    this.heaps.get(specId)?.pop()
+    this.removePlayerSpec(worst.row, specId)
   }
 
   /** Evict every spec down to capPerSpec (or `keep` when given as a per-spec bound). */
   evictTo(keep: number = this.capPerSpec) {
-    for (const specId of [...this.bySpec.keys()]) this.evictSpecTo(specId, keep)
+    for (const specId of [...this.bySpec.keys()]) {
+      while ((this.bySpec.get(specId)?.length ?? 0) > keep) this.evictWorst(specId)
+    }
   }
 
   private addToSpec(specId: number, row: number) {
@@ -506,16 +575,12 @@ export class MetaCandidateTable {
     const key = `${realm}/${name}`
     let row = this.index.get(key)
     if (row == null) {
-      const list = this.bySpec.get(specId)
-      if (list && list.length >= this.capPerSpec + this.slack) this.evictSpecTo(specId, this.capPerSpec)
       if (!this.beatsCutoff(specId, level, 1)) {
         this.evicted += 1
         return
       }
-      if (list && list.length >= this.capPerSpec) {
-        const worst = this.worstInSpec(specId)
-        if (worst) this.removePlayerSpec(worst.row, specId)
-      }
+      const list = this.bySpec.get(specId)
+      if (list && list.length >= this.capPerSpec) this.evictWorst(specId)
       row = this.names.length
       this.index.set(key, row)
       this.realms.push(realm)
@@ -524,35 +589,31 @@ export class MetaCandidateTable {
       this.runs.push([1])
       this.bests.push([level])
       this.addToSpec(specId, row)
+      this.pushCutoff(specId, key, level, 1)
       return
     }
     const ids = this.specIds[row]!
     const pos = ids.indexOf(specId)
     if (pos < 0) {
-      const list = this.bySpec.get(specId)
-      if (list && list.length >= this.capPerSpec + this.slack) this.evictSpecTo(specId, this.capPerSpec)
       if (!this.beatsCutoff(specId, level, 1)) {
         this.evicted += 1
         return
       }
-      if (list && list.length >= this.capPerSpec) {
-        const worst = this.worstInSpec(specId)
-        if (worst) this.removePlayerSpec(worst.row, specId)
-      }
-      // removePlayerSpec may have swap-popped this row if it was the worst of another... no, other spec
+      const list = this.bySpec.get(specId)
+      if (list && list.length >= this.capPerSpec) this.evictWorst(specId)
       row = this.index.get(key)
-      if (row == null) {
-        // evicted entirely? shouldn't happen when adding a new spec to an existing row
-        return
-      }
+      if (row == null) return
       this.specIds[row]!.push(specId)
       this.runs[row]!.push(1)
       this.bests[row]!.push(level)
       this.addToSpec(specId, row)
+      this.pushCutoff(specId, key, level, 1)
       return
     }
     this.runs[row]![pos]! += 1
     if (level > this.bests[row]![pos]!) this.bests[row]![pos] = level
+    // Score only improves. The heap is refreshed lazily in peekLiveWorst, so
+    // we do not push a new node on every board sighting.
   }
 
   *players(): Iterable<{ realm: string, name: string, specs: Array<{ specId: number, runs: number, best: number }> }> {
@@ -590,6 +651,7 @@ export class MetaCandidateTable {
     this.runs.length = 0
     this.bests.length = 0
     this.bySpec.clear()
+    this.heaps.clear()
     this.evicted = 0
   }
 }
@@ -603,18 +665,28 @@ function dungeonIdOf(board: unknown): number | null {
     ?? asNumber(asRecord(rec?.keystone_map)?.id)
 }
 
-function mergeCaps(partial?: Partial<MetaSyncCaps>): MetaSyncCaps {
+export function mergeMetaSyncCaps(partial?: Partial<MetaSyncCaps>): MetaSyncCaps {
   const caps = { ...META_SYNC_DEFAULT_CAPS, ...partial }
   caps.maxRps = Math.min(Math.max(1, caps.maxRps), 50)
   caps.maxAttemptsPerSpec = Math.max(caps.maxAttemptsPerSpec, caps.samplePerSpec)
   caps.periods = Math.max(1, caps.periods)
   caps.maxConcurrentSpecs = Math.min(Math.max(1, caps.maxConcurrentSpecs), 8)
+  const requestedPerSpec = partial?.maxCandidatesPerSpec
   caps.maxCandidatesPerSpec = Math.max(
     caps.maxAttemptsPerSpec,
-    caps.maxCandidatesPerSpec || META_SYNC_DEFAULT_MAX_PER_SPEC,
+    requestedPerSpec != null && Number.isFinite(requestedPerSpec) && requestedPerSpec > 0
+      ? Math.floor(requestedPerSpec)
+      : META_SYNC_DEFAULT_MAX_PER_SPEC,
   )
-  caps.maxCandidates = caps.maxCandidatesPerSpec
+  const requestedTotal = partial?.maxCandidates
+  caps.maxCandidates = requestedTotal != null && Number.isFinite(requestedTotal) && requestedTotal > 0
+    ? Math.max(1, Math.floor(requestedTotal))
+    : META_SYNC_DEFAULT_MAX_CANDIDATES
   return caps
+}
+
+function mergeCaps(partial?: Partial<MetaSyncCaps>): MetaSyncCaps {
+  return mergeMetaSyncCaps(partial)
 }
 
 function asClock(now?: number | (() => number)): () => number {

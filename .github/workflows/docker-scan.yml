@@ -12,10 +12,15 @@ on:
       - nuxt.config.ts
       - server/cli/**
       - server/utils/metaSyncCli.ts
+      - server/utils/metaSyncCliHeap.ts
+      - server/utils/blizzardMetaHeap.ts
       - server/utils/blizzardMetaSync.ts
       - server/utils/blizzardMetaLock.ts
       - server/database/metaSyncLockSql.ts
       - tools/build-meta-sync-cli.mjs
+      - tests/unit/metaSyncCliHeap.test.ts
+      - tests/unit/blizzardMetaSync.prespec-heap.test.ts
+      - tests/fixtures/blizzard-meta/**
       - .github/workflows/docker-scan.yml
   schedule:
     - cron: "0 6 * * 1"
@@ -55,13 +60,46 @@ jobs:
       - name: Smoke Meta sync CLI (no credentials, expect skipped)
         run: |
           set +e
-          out=$(docker run --rm scan-target:latest node .output/server/meta-sync-cli.mjs)
+          out=$(docker run --rm -e NODE_OPTIONS='--enable-source-maps --max-old-space-size=640' scan-target:latest node .output/server/meta-sync-cli.mjs)
           rc=$?
           set -e
           printf '%s\n' "$out"
           echo "exit=$rc"
           test "$rc" -eq 4
           printf '%s\n' "$out" | tail -n 1 | jq -e '.status == "skipped" and .http429 == 0 and (.reason | test("NUXT_BLIZZARD_CLIENT_ID"))'
+          rss=$(printf '%s\n' "$out" | tail -n 1 | jq -r '.peakRssBytes')
+          heap=$(printf '%s\n' "$out" | tail -n 1 | jq -r '.peakHeapUsedBytes')
+          echo "start rss=$rss heap=$heap"
+          test "$rss" -lt 157286400
+          test "$heap" -lt 52428800
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+          package-manager-cache: false
+
+      - name: Probe Meta pre-spec peak heap
+        run: |
+          npm ci
+          set +e
+          out=$(env NODE_ENV=test node --expose-gc --max-old-space-size=256 --import tsx tests/fixtures/blizzard-meta/runPreSpecHeap.ts)
+          rc=$?
+          set -e
+          printf '%s\n' "$out"
+          test "$rc" -eq 0
+          line=$(printf '%s\n' "$out" | tail -n 1)
+          peak=$(printf '%s\n' "$line" | jq -r '.peakHeapBytes')
+          rss=$(printf '%s\n' "$line" | jq -r '.rssAfterGcBytes')
+          kept=$(printf '%s\n' "$line" | jq -r '.candidates')
+          incoming=$(printf '%s\n' "$line" | jq -r '.incomingPlayers')
+          dropped=$(printf '%s\n' "$line" | jq -r '.dropped.ingest')
+          echo "pre-spec peak heap=$peak rss=$rss kept=$kept incoming=$incoming dropped=$dropped (budget heap<188743680 rss<314572800 kept<=32000)"
+          test "$peak" -lt 188743680
+          test "$rss" -lt 314572800
+          test "$kept" -le 32000
+          test "$incoming" -gt "$kept"
+          test "$dropped" -eq $((incoming - kept))
 
       - name: Run Trivy
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0

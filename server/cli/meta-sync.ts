@@ -3,10 +3,7 @@
  * Packed by tools/build-meta-sync-cli.mjs into .output/server/meta-sync-cli.mjs.
  * Run from /app in the MagguuUI container; never prints secrets.
  */
-import { sqlite } from '../database'
-import { sanitizeBlizzardLog } from '../utils/blizzardAuth'
-import { createOfetchBlizzardFetcher } from '../utils/blizzardHttp'
-import { installMetaSyncCliSignalHandlers, runMetaSyncCli } from '../utils/metaSyncCli'
+import { defaultMetaHeapLimitBytes, readProcessMetaMemory } from '../utils/blizzardMetaHeap'
 
 function secretsFromEnv(): string[] {
   return [
@@ -17,6 +14,15 @@ function secretsFromEnv(): string[] {
 }
 
 async function main() {
+  const atStart = readProcessMetaMemory()
+  const heapLimit = defaultMetaHeapLimitBytes()
+  process.stderr.write(
+    `[meta-sync-cli] process rss=${atStart.rss} heapUsed=${atStart.heapUsed} heapLimit=${heapLimit}\n`,
+  )
+  const { sqlite } = await import('../database')
+  const { sanitizeBlizzardLog } = await import('../utils/blizzardAuth')
+  const { createOfetchBlizzardFetcher } = await import('../utils/blizzardHttp')
+  const { installMetaSyncCliSignalHandlers, runMetaSyncCli } = await import('../utils/metaSyncCli')
   const secrets = secretsFromEnv()
   const warn = (message: string) => {
     process.stderr.write(`${sanitizeBlizzardLog(message, secrets)}\n`)
@@ -46,11 +52,13 @@ async function main() {
     process.exitCode = exitCode
   } catch (error) {
     const reason = sanitizeBlizzardLog(error instanceof Error ? error.message : 'Meta sync CLI failed', secrets)
+    const mem = readProcessMetaMemory()
     process.stdout.write(`${JSON.stringify({
       status: 'error',
       durationMs: 0,
-      peakRssBytes: 0,
-      peakHeapUsedBytes: 0,
+      peakRssBytes: mem.rss,
+      peakHeapUsedBytes: mem.heapUsed,
+      heapLimitBytes: defaultMetaHeapLimitBytes(),
       specsWithData: 0,
       http429: 0,
       reason,

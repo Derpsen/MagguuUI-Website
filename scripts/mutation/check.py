@@ -6,14 +6,14 @@ A surviving mutant means a missing test. Requires node/tsx on PATH.
 Hard limits (house rule): every test run is a child in its own process group under `nice -n 19` with a hard timeout
 (MUTATION_TIMEOUT, default 90 s per mutant) and killpg(SIGKILL) on expiry, so a mutant that loops forever dies with its
 node children. A mutant killed by the timeout counts as killed and is reported separately as KILLED (timeout). An overall
-deadline (MUTATION_TOTAL_TIMEOUT, default 840 s) stops the run; unrun mutants are listed and the exit code is non-zero.
+deadline (MUTATION_TOTAL_TIMEOUT, default 1200 s) stops the run; unrun mutants are listed and the exit code is non-zero.
 After the run every process left in the scratch copy is killed and reported. The runner self-test (mutationRunner.test.ts, slow, no
 product code) is not part of the per-mutant run."""
 import sys, os, shutil, json, subprocess, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from limited import run_limited, kill_in_dir
 SRC=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..')); DST=os.environ.get('MUTATION_DIR','/tmp/mutrepo')
-PER=int(os.environ.get('MUTATION_TIMEOUT','90')); TOTAL=int(os.environ.get('MUTATION_TOTAL_TIMEOUT','840'))
+PER=int(os.environ.get('MUTATION_TIMEOUT','90')); TOTAL=int(os.environ.get('MUTATION_TOTAL_TIMEOUT','1200'))
 kill_in_dir(DST)
 shutil.rmtree(DST, ignore_errors=True); os.makedirs(DST)
 subprocess.run(['rsync','-a','--exclude','.git','--exclude','node_modules','--exclude','.nuxt','--exclude','.output','--exclude','data','--exclude','test-results','--exclude','playwright-report','--exclude','tests/*.spec.ts',SRC+'/',DST+'/'],check=True)

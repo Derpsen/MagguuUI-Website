@@ -35,13 +35,17 @@ import {
   collectItemIds,
   collectSpellIds,
   deserializeProfileBucket,
+  emptyKeyLevelStats,
   emptyProfileBucket,
   extractActiveLoadouts,
   extractMediaIcon,
   knownIdsFromTalentLayout,
+  metaKeyLevelsFromStats,
+  observeKeyLevel,
   parseTalentTreeLayout,
   playableClassName,
   serializeProfileBucket,
+  type MetaKeyLevelStats,
   type ProfileBucket,
   type SpecPop,
 } from './blizzardMetaAggregate'
@@ -97,7 +101,14 @@ export type MetaSyncCaps = {
   maxRealms: number
   periods: number
   maxConcurrentSpecs: number
+  /** Per-spec bound on players kept during ingest, ranked by best then runs. */
+  maxCandidatesPerSpec: number
 }
+
+/** Keep at least 2× the final per-spec sample so multi-spec assignment does not starve a list. */
+export const META_SYNC_DEFAULT_MAX_PER_SPEC = 800
+/** Historical alias for 40 × 800. Eviction is per-spec; this is not a global cap. */
+export const META_SYNC_DEFAULT_MAX_CANDIDATES = 40 * META_SYNC_DEFAULT_MAX_PER_SPEC
 
 export const META_SYNC_DEFAULT_CAPS: MetaSyncCaps = {
   samplePerSpec: 200,
@@ -107,6 +118,7 @@ export const META_SYNC_DEFAULT_CAPS: MetaSyncCaps = {
   maxRealms: 0,
   periods: META_PREVIOUS_PERIODS + 1,
   maxConcurrentSpecs: 1,
+  maxCandidatesPerSpec: META_SYNC_DEFAULT_MAX_PER_SPEC,
 }
 
 const API_ROOT = 'https://eu.api.blizzard.com'
@@ -128,6 +140,11 @@ type SyncOptions = {
   heap?: MetaHeapMonitor
   runToken?: string
   abortController?: AbortController
+  /** Tests only: stop after leaderboard ingest, spec index, and candidate trim. */
+  stopAfter?: 'pre-spec'
+  /** Tests only: called after pre-spec stats are ready, before the candidate table is dropped. */
+  onAfterPreSpec?: (info: MetaPreSpecStats) => void
+  warn?: (message: string) => void
 }
 
 type CharacterCandidate = {
@@ -151,6 +168,12 @@ type ProfileFailures = {
   attempted: number
 }
 
+export type MetaSyncDroppedCounts = {
+  ingest: number
+  trim: number
+  total: number
+}
+
 export type ScheduledMetaResult = {
   status: MetaRunStatus
   reason?: string
@@ -158,6 +181,7 @@ export type ScheduledMetaResult = {
   http429?: number
   specsWithData?: number
   durationMs?: number
+  dropped?: MetaSyncDroppedCounts
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -178,10 +202,466 @@ function asString(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
 
+function minMax(values: readonly number[]): { min: number, max: number } | null {
+  if (!values.length) return null
+  let min = values[0]!
+  let max = values[0]!
+  for (const value of values) {
+    if (value < min) min = value
+    if (value > max) max = value
+  }
+  return { min, max }
+}
+
+
 function idFromHref(href: string): number | null {
   const match = href.match(/connected-realm\/(\d+)/i) || href.match(/\/(\d+)(?:\?|$)/)
   return match ? Number(match[1]) : null
 }
+
+function playerHash(realm: string, name: string): number {
+  let h1 = 0xdeadbeef
+  let h2 = 0x41c6ce57
+  const s = `${realm}/${name}`
+  for (let i = 0; i < s.length; i++) {
+    const ch = s.charCodeAt(i)
+    h1 = Math.imul(h1 ^ ch, 2654435761)
+    h2 = Math.imul(h2 ^ ch, 1597334677)
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909)
+  return (h1 >>> 0) + 4294967296 * (h2 >>> 16)
+}
+
+type IngestSpecScore = { specId: number, runs: number, best: number }
+
+function betterScore(a: IngestSpecScore, b: IngestSpecScore): boolean {
+  return a.runs > b.runs || (a.runs === b.runs && a.best > b.best)
+}
+
+/**
+ * Streaming unique-player / key-level / per-spec population counters.
+ * Updated on every observation, before any selection trim, and kept for
+ * evicted players so snapshot stats are not the capped subset.
+ */
+export class MetaIngestCounters {
+  private readonly index = new Map<number, number>()
+  private specIds = new Int32Array(4096)
+  private runs = new Uint16Array(4096)
+  private bests = new Uint16Array(4096)
+  private size = 0
+  /** Extra specs for the minority of multi-spec players, keyed by row. */
+  private readonly extra = new Map<number, IngestSpecScore[]>()
+
+  get uniquePlayers() {
+    return this.size
+  }
+
+  private grow() {
+    const cap = this.specIds.length * 2
+    const specIds = new Int32Array(cap)
+    const runs = new Uint16Array(cap)
+    const bests = new Uint16Array(cap)
+    specIds.set(this.specIds)
+    runs.set(this.runs)
+    bests.set(this.bests)
+    this.specIds = specIds
+    this.runs = runs
+    this.bests = bests
+  }
+
+  private scores(row: number): IngestSpecScore[] {
+    const primary = { specId: this.specIds[row]!, runs: this.runs[row]!, best: this.bests[row]! }
+    const more = this.extra.get(row)
+    return more ? [primary, ...more] : [primary]
+  }
+
+  private assigned(row: number): IngestSpecScore {
+    const scores = this.scores(row)
+    let best = scores[0]!
+    for (let i = 1; i < scores.length; i++) {
+      if (betterScore(scores[i]!, best)) best = scores[i]!
+    }
+    return best
+  }
+
+  observe(realm: string, name: string, specId: number, level: number) {
+    const hash = playerHash(realm, name)
+    let row = this.index.get(hash)
+    if (row == null) {
+      if (this.size >= this.specIds.length) this.grow()
+      row = this.size++
+      this.index.set(hash, row)
+      this.specIds[row] = specId
+      this.runs[row] = 1
+      this.bests[row] = Math.max(0, level)
+      return
+    }
+    if (this.specIds[row] === specId) {
+      this.runs[row] = Math.min(65535, this.runs[row]! + 1)
+      if (level > this.bests[row]!) this.bests[row] = level
+      return
+    }
+    const list = this.extra.get(row) ?? []
+    const pos = list.findIndex(s => s.specId === specId)
+    if (pos < 0) list.push({ specId, runs: 1, best: Math.max(0, level) })
+    else {
+      list[pos]!.runs = Math.min(65535, list[pos]!.runs + 1)
+      if (level > list[pos]!.best) list[pos]!.best = level
+    }
+    this.extra.set(row, list)
+  }
+
+  snapshot(specMeta: Map<number, { className: string, specName: string }>): {
+    uniquePlayers: number
+    keyLevelStats: MetaKeyLevelStats
+    specPop: SpecPop[]
+  } {
+    const bySpec = new Map<number, { count: number, keyLevels: MetaKeyLevelStats }>()
+    const keyLevelStats = emptyKeyLevelStats()
+    for (let row = 0; row < this.size; row++) {
+      const assigned = this.assigned(row)
+      const rec = bySpec.get(assigned.specId) ?? { count: 0, keyLevels: emptyKeyLevelStats() }
+      rec.count += 1
+      observeKeyLevel(rec.keyLevels, assigned.best)
+      observeKeyLevel(keyLevelStats, assigned.best)
+      bySpec.set(assigned.specId, rec)
+    }
+    const specPop: SpecPop[] = []
+    for (const [specId, rec] of bySpec) {
+      const meta = specMeta.get(specId) || (() => {
+        const looked = lookupBlizzardSpec(specId)
+        return looked && findMetaClass(toMetaSlug(looked.className))
+          ? { className: looked.className, specName: looked.specName }
+          : null
+      })()
+      if (!meta || rec.count <= 0) continue
+      specPop.push({
+        className: meta.className,
+        specName: meta.specName,
+        count: rec.count,
+        keyLevels: [],
+        keyLevelStats: { ...rec.keyLevels },
+      })
+    }
+    return { uniquePlayers: this.size, keyLevelStats, specPop }
+  }
+}
+
+/** Lazy min-heap of per-spec cutoff keys (worst = lowest best, then runs). */
+class SpecCutoffHeap {
+  private readonly items: Array<{ key: string, best: number, runs: number }> = []
+
+  get size() {
+    return this.items.length
+  }
+
+  push(entry: { key: string, best: number, runs: number }) {
+    this.items.push(entry)
+    this.bubbleUp(this.items.length - 1)
+  }
+
+  peek(): { key: string, best: number, runs: number } | undefined {
+    return this.items[0]
+  }
+
+  pop(): { key: string, best: number, runs: number } | undefined {
+    const first = this.items[0]
+    const last = this.items.pop()
+    if (this.items.length && last) {
+      this.items[0] = last
+      this.bubbleDown(0)
+    }
+    return first
+  }
+
+  private worse(a: { best: number, runs: number }, b: { best: number, runs: number }) {
+    return a.best < b.best || (a.best === b.best && a.runs < b.runs)
+  }
+
+  private bubbleUp(index: number) {
+    const items = this.items
+    while (index > 0) {
+      const parent = (index - 1) >> 1
+      if (!this.worse(items[index]!, items[parent]!)) break
+      const tmp = items[parent]!
+      items[parent] = items[index]!
+      items[index] = tmp
+      index = parent
+    }
+  }
+
+  private bubbleDown(index: number) {
+    const items = this.items
+    const n = items.length
+    while (true) {
+      let best = index
+      const left = index * 2 + 1
+      const right = left + 1
+      if (left < n && this.worse(items[left]!, items[best]!)) best = left
+      if (right < n && this.worse(items[right]!, items[best]!)) best = right
+      if (best === index) break
+      const tmp = items[best]!
+      items[best] = items[index]!
+      items[index] = tmp
+      index = best
+    }
+  }
+}
+
+/** Compact per-player table for leaderboard ingest.
+ *  A Map of object values retains the parsed board graph (EU-scale fixture:
+ *  166k players → ~440 MB live). Parallel arrays stay around 70 MB uncapped.
+ *  Each spec keeps only the top `capPerSpec` players by best (then runs), so
+ *  a 400k-player region stays inside the CLI heap cap and the final per-spec
+ *  top-N (by best) matches an uncapped run. */
+export class MetaCandidateTable {
+  private readonly index = new Map<string, number>()
+  private readonly realms: string[] = []
+  private readonly names: string[] = []
+  private readonly specIds: number[][] = []
+  private readonly runs: number[][] = []
+  private readonly bests: number[][] = []
+  private readonly bySpec = new Map<number, number[]>()
+  private evicted = 0
+  readonly capPerSpec: number
+  private readonly heaps = new Map<number, SpecCutoffHeap>()
+  readonly counters = new MetaIngestCounters()
+
+  constructor(capPerSpec: number) {
+    this.capPerSpec = Math.max(1, capPerSpec)
+  }
+
+  /** @deprecated Use capPerSpec; kept so older tests that read `.cap` still compile. */
+  get cap() {
+    return this.capPerSpec
+  }
+
+  get size() {
+    return this.names.length
+  }
+
+  get dropped() {
+    return Math.max(this.evicted, this.counters.uniquePlayers - this.size)
+  }
+
+  private scoreAt(row: number, specId: number): { runs: number, best: number } | null {
+    const ids = this.specIds[row]
+    if (!ids) return null
+    const pos = ids.indexOf(specId)
+    if (pos < 0) return null
+    return { runs: this.runs[row]![pos]!, best: this.bests[row]![pos]! }
+  }
+
+  private pushCutoff(specId: number, key: string, best: number, runs: number) {
+    let heap = this.heaps.get(specId)
+    if (!heap) {
+      heap = new SpecCutoffHeap()
+      this.heaps.set(specId, heap)
+    }
+    heap.push({ key, best, runs })
+  }
+
+  /** Live worst (lowest best, then runs) for a spec. Heap entries use stable keys so swap-pop row ids cannot go stale. */
+  private peekLiveWorst(specId: number): { key: string, row: number, runs: number, best: number } | null {
+    const heap = this.heaps.get(specId)
+    if (!heap) return null
+    while (heap.peek()) {
+      const top = heap.peek()!
+      const row = this.index.get(top.key)
+      if (row == null) {
+        heap.pop()
+        continue
+      }
+      const live = this.scoreAt(row, specId)
+      if (!live) {
+        heap.pop()
+        continue
+      }
+      if (live.best !== top.best || live.runs !== top.runs) {
+        heap.pop()
+        heap.push({ key: top.key, best: live.best, runs: live.runs })
+        continue
+      }
+      return { key: top.key, row, ...live }
+    }
+    return null
+  }
+
+  private beatsCutoff(specId: number, best: number, runs: number): boolean {
+    const list = this.bySpec.get(specId)
+    if (!list || list.length < this.capPerSpec) return true
+    const worst = this.peekLiveWorst(specId)
+    if (!worst) return true
+    return best > worst.best || (best === worst.best && runs > worst.runs)
+  }
+
+  private evictWorst(specId: number) {
+    const worst = this.peekLiveWorst(specId)
+    if (!worst) return
+    this.heaps.get(specId)?.pop()
+    this.removePlayerSpec(worst.row, specId)
+  }
+
+  /** Evict every spec down to capPerSpec (or `keep` when given as a per-spec bound). */
+  evictTo(keep: number = this.capPerSpec) {
+    for (const specId of [...this.bySpec.keys()]) {
+      let left = this.bySpec.get(specId)?.length ?? 0
+      let steps = left
+      while (left > keep) {
+        if (steps-- <= 0) {
+          throw new Error(`MetaCandidateTable.evictTo exceeded the iteration bound on spec ${specId}`)
+        }
+        this.evictWorst(specId)
+        left = this.bySpec.get(specId)?.length ?? 0
+      }
+    }
+  }
+
+  private addToSpec(specId: number, row: number) {
+    const list = this.bySpec.get(specId)
+    if (list) list.push(row)
+    else this.bySpec.set(specId, [row])
+  }
+
+  private removeFromSpecList(specId: number, row: number) {
+    const list = this.bySpec.get(specId)
+    if (!list) return
+    const at = list.indexOf(row)
+    if (at >= 0) list.splice(at, 1)
+  }
+
+  private removePlayerSpec(row: number, specId: number) {
+    this.removeFromSpecList(specId, row)
+    const ids = this.specIds[row]
+    if (!ids) return
+    const pos = ids.indexOf(specId)
+    if (pos >= 0) {
+      ids.splice(pos, 1)
+      this.runs[row]!.splice(pos, 1)
+      this.bests[row]!.splice(pos, 1)
+    }
+    this.evicted += 1
+    if (ids.length === 0) this.removeRow(row)
+  }
+
+  private removeRow(row: number) {
+    const last = this.names.length - 1
+    if (last < 0) return
+    const key = `${this.realms[row]}/${this.names[row]}`
+    this.index.delete(key)
+    if (row !== last) this.moveRow(last, row)
+    this.realms.pop()
+    this.names.pop()
+    this.specIds.pop()
+    this.runs.pop()
+    this.bests.pop()
+  }
+
+  private moveRow(from: number, to: number) {
+    const realm = this.realms[from]!
+    const name = this.names[from]!
+    this.realms[to] = realm
+    this.names[to] = name
+    this.specIds[to] = this.specIds[from]!
+    this.runs[to] = this.runs[from]!
+    this.bests[to] = this.bests[from]!
+    this.index.set(`${realm}/${name}`, to)
+    for (const specId of this.specIds[to]!) {
+      const list = this.bySpec.get(specId)
+      if (!list) continue
+      for (let i = 0; i < list.length; i++) {
+        if (list[i] === from) list[i] = to
+      }
+    }
+  }
+
+  add(realm: string, name: string, specId: number, level: number) {
+    this.counters.observe(realm, name, specId, level)
+    const key = `${realm}/${name}`
+    let row = this.index.get(key)
+    if (row == null) {
+      if (!this.beatsCutoff(specId, level, 1)) {
+        this.evicted += 1
+        return
+      }
+      const list = this.bySpec.get(specId)
+      if (list && list.length >= this.capPerSpec) this.evictWorst(specId)
+      row = this.names.length
+      this.index.set(key, row)
+      this.realms.push(realm)
+      this.names.push(name)
+      this.specIds.push([specId])
+      this.runs.push([1])
+      this.bests.push([level])
+      this.addToSpec(specId, row)
+      this.pushCutoff(specId, key, level, 1)
+      return
+    }
+    const ids = this.specIds[row]!
+    const pos = ids.indexOf(specId)
+    if (pos < 0) {
+      if (!this.beatsCutoff(specId, level, 1)) {
+        this.evicted += 1
+        return
+      }
+      const list = this.bySpec.get(specId)
+      if (list && list.length >= this.capPerSpec) this.evictWorst(specId)
+      row = this.index.get(key)
+      if (row == null) return
+      this.specIds[row]!.push(specId)
+      this.runs[row]!.push(1)
+      this.bests[row]!.push(level)
+      this.addToSpec(specId, row)
+      this.pushCutoff(specId, key, level, 1)
+      return
+    }
+    this.runs[row]![pos]! += 1
+    if (level > this.bests[row]![pos]!) this.bests[row]![pos] = level
+    // Score only improves. The heap is refreshed lazily in peekLiveWorst, so
+    // we do not push a new node on every board sighting.
+  }
+
+  *players(): Iterable<{ realm: string, name: string, specs: Array<{ specId: number, runs: number, best: number }> }> {
+    for (let i = 0; i < this.names.length; i++) {
+      const ids = this.specIds[i]!
+      const specs = ids.map((specId, pos) => ({
+        specId,
+        runs: this.runs[i]![pos]!,
+        best: this.bests[i]![pos]!,
+      }))
+      yield { realm: this.realms[i]!, name: this.names[i]!, specs }
+    }
+  }
+
+  /** Top `n` kept players per spec, ranked by best then runs (same order as final selection). */
+  topBySpec(n: number): Map<number, Array<{ realm: string, name: string, best: number, runs: number }>> {
+    const out = new Map<number, Array<{ realm: string, name: string, best: number, runs: number }>>()
+    for (const [specId, rows] of this.bySpec) {
+      const list = rows.map((row) => {
+        const score = this.scoreAt(row, specId) ?? { runs: 0, best: 0 }
+        return { realm: this.realms[row]!, name: this.names[row]!, ...score }
+      })
+      list.sort((a, b) => b.best - a.best || b.runs - a.runs)
+      if (list.length > n) list.length = n
+      out.set(specId, list)
+    }
+    return out
+  }
+
+  clear() {
+    this.index.clear()
+    this.realms.length = 0
+    this.names.length = 0
+    this.specIds.length = 0
+    this.runs.length = 0
+    this.bests.length = 0
+    this.bySpec.clear()
+    this.heaps.clear()
+    this.evicted = 0
+  }
+}
+
+export const META_HEAP_CHECK_EVERY_GROUPS = 32
 
 function dungeonIdOf(board: unknown): number | null {
   const rec = asRecord(board)
@@ -190,13 +670,24 @@ function dungeonIdOf(board: unknown): number | null {
     ?? asNumber(asRecord(rec?.keystone_map)?.id)
 }
 
-function mergeCaps(partial?: Partial<MetaSyncCaps>): MetaSyncCaps {
+export function mergeMetaSyncCaps(partial?: Partial<MetaSyncCaps>): MetaSyncCaps {
   const caps = { ...META_SYNC_DEFAULT_CAPS, ...partial }
   caps.maxRps = Math.min(Math.max(1, caps.maxRps), 50)
   caps.maxAttemptsPerSpec = Math.max(caps.maxAttemptsPerSpec, caps.samplePerSpec)
   caps.periods = Math.max(1, caps.periods)
   caps.maxConcurrentSpecs = Math.min(Math.max(1, caps.maxConcurrentSpecs), 8)
+  const requestedPerSpec = partial?.maxCandidatesPerSpec
+  caps.maxCandidatesPerSpec = Math.max(
+    caps.maxAttemptsPerSpec,
+    requestedPerSpec != null && Number.isFinite(requestedPerSpec) && requestedPerSpec > 0
+      ? Math.floor(requestedPerSpec)
+      : META_SYNC_DEFAULT_MAX_PER_SPEC,
+  )
   return caps
+}
+
+function mergeCaps(partial?: Partial<MetaSyncCaps>): MetaSyncCaps {
+  return mergeMetaSyncCaps(partial)
 }
 
 function asClock(now?: number | (() => number)): () => number {
@@ -330,11 +821,26 @@ function openStagingDb(sqlite?: MetaSqlite): { sqlite: MetaSqlite, close: () => 
   return { sqlite: db, close: () => { db.close() } }
 }
 
+export type MetaPreSpecStats = {
+  realms: number
+  dungeons: number
+  periods: number
+  planned: number
+  ok: number
+  failed: number
+  candidates: number
+  retained: number
+  incomingPlayers: number
+  dropped: MetaSyncDroppedCounts
+  keyLevelStats: MetaKeyLevelStats
+}
+
 export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   payload: MetaSnapshotPayload
   stats: BlizzardHttpStats
   failures: ProfileFailures
   leaderboards: { planned: number, ok: number, failed: number }
+  preSpec?: MetaPreSpecStats
 }> {
   const caps = mergeCaps(options.caps)
   const clock = asClock(options.now)
@@ -399,9 +905,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     }
   }
 
-  const candidates = new Map<string, { realm: string, name: string, specs: Record<number, { runs: number, best: number }> }>()
-  const specRuns = new Map<number, { appearances: number, levels: number[] }>()
-  const runsSeen = new Set<string>()
+  const candidates = new MetaCandidateTable(caps.maxCandidatesPerSpec)
   let leaderboardsOk = 0
   let leaderboardsFailed = 0
 
@@ -415,18 +919,14 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
       return
     }
     leaderboardsOk += 1
-    for (const rawGroup of asArray(board.leading_groups)) {
+    const groups = asArray(board.leading_groups)
+    board.leading_groups = undefined
+    let processedGroups = 0
+    for (const rawGroup of groups) {
       const group = asRecord(rawGroup)
       if (!group) continue
       const level = asNumber(group.keystone_level) ?? 0
       const members = asArray(group.members)
-      const memberIds = members.map((member) => {
-        const rec = asRecord(member)
-        return asNumber(asRecord(rec?.profile)?.id) ?? 0
-      }).sort((a, b) => a - b)
-      const runKey = `${dungeonId}:${asNumber(group.completed_timestamp) ?? 0}:${asNumber(group.duration) ?? 0}:${memberIds.join(',')}`
-      const dup = runsSeen.has(runKey)
-      runsSeen.add(runKey)
       for (const rawMember of members) {
         const rec = asRecord(rawMember)
         const profile = asRecord(rec?.profile)
@@ -436,30 +936,23 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
         const specRec = asRecord(rec?.specialization)
         const specId = asNumber(specRec?.id)
         if (specId == null) continue
-        if (!dup) {
-          const current = specRuns.get(specId) ?? { appearances: 0, levels: [] }
-          current.appearances += 1
-          current.levels.push(level)
-          specRuns.set(specId, current)
-        }
-        const key = `${realm}/${name}`
-        const candidate = candidates.get(key) ?? { realm, name, specs: {} }
-        const slot = candidate.specs[specId] ?? { runs: 0, best: 0 }
-        slot.runs += 1
-        slot.best = Math.max(slot.best, level)
-        candidate.specs[specId] = slot
-        candidates.set(key, candidate)
+        candidates.add(realm, name, specId, level)
+      }
+      processedGroups += 1
+      if (processedGroups % META_HEAP_CHECK_EVERY_GROUPS === 0) {
+        runGuards(abort, options.deadline, asClock(options.now), heap)
+        if (syncAborted(abort)) return
       }
     }
   }, abort)
 
   const specIndex = asRecord(await get('/data/wow/playable-specialization/index', STATIC))
   const specMeta = new Map<number, { className: string, specName: string, treeHref: string | null }>()
-  await Promise.all(asArray(specIndex?.character_specializations).map(async (item) => {
+  const specEntries = asArray(specIndex?.character_specializations)
+  await mapPool(specEntries, 1, async (item) => {
     if (syncAborted(abort)) return
     const id = asNumber(asRecord(item)?.id)
     if (id == null) return
-    if (syncAborted(abort)) return
     const body = asRecord(await get(`/data/wow/playable-specialization/${id}`, STATIC))
     if (!body) return
     const className = asString(asRecord(body.playable_class)?.name)
@@ -468,15 +961,13 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     if (!looked || !findMetaClass(toMetaSlug(looked.className))) return
     const treeHref = asString(asRecord(asRecord(body.spec_talent_tree)?.key)?.href)
     specMeta.set(id, { className: looked.className, specName: looked.specName, treeHref: treeHref || null })
-  }))
+  }, abort)
 
+  candidates.evictTo(caps.maxCandidatesPerSpec)
+  const ingest = candidates.counters.snapshot(specMeta)
   const perSpec = new Map<number, CharacterCandidate[]>()
-  const specPop = new Map<string, SpecPop>()
-  const allKeyLevels: number[] = []
-  for (const candidate of candidates.values()) {
-    const assigned = Object.entries(candidate.specs)
-      .map(([id, slot]) => ({ specId: Number(id), ...slot }))
-      .sort((a, b) => b.runs - a.runs || b.best - a.best)[0]
+  for (const candidate of candidates.players()) {
+    const assigned = [...candidate.specs].sort((a, b) => b.runs - a.runs || b.best - a.best)[0]
     if (!assigned) continue
     const meta = specMeta.get(assigned.specId) || (() => {
       const looked = lookupBlizzardSpec(assigned.specId)
@@ -497,17 +988,37 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     const list = perSpec.get(assigned.specId) ?? []
     list.push(row)
     perSpec.set(assigned.specId, list)
-    const popKey = `${meta.className}|${meta.specName}`
-    const pop = specPop.get(popKey) ?? { className: meta.className, specName: meta.specName, count: 0, keyLevels: [] }
-    pop.count += 1
-    if (assigned.best > 0) {
-      pop.keyLevels.push(assigned.best)
-      allKeyLevels.push(assigned.best)
-    }
-    specPop.set(popKey, pop)
   }
-  for (const list of perSpec.values()) list.sort((a, b) => b.best - a.best || b.runs - a.runs)
-  const totalCharacters = [...specPop.values()].reduce((sum, pop) => sum + pop.count, 0)
+  let retained = 0
+  let droppedTrim = 0
+  for (const list of perSpec.values()) {
+    list.sort((a, b) => b.best - a.best || b.runs - a.runs)
+    if (list.length > caps.maxAttemptsPerSpec) {
+      droppedTrim += list.length - caps.maxAttemptsPerSpec
+      list.length = caps.maxAttemptsPerSpec
+    }
+    retained += list.length
+  }
+  const totalCharacters = ingest.uniquePlayers
+  const candidateCount = candidates.size
+  const droppedIngest = Math.max(0, ingest.uniquePlayers - candidateCount)
+  const dropped = { ingest: droppedIngest, trim: droppedTrim, total: droppedIngest + droppedTrim }
+  if (droppedIngest > 0) {
+    options.warn?.(`Meta ingest dropped ${droppedIngest} candidates under the per-spec top-${caps.maxCandidatesPerSpec} cap (unique ${ingest.uniquePlayers}, kept ${candidateCount})`)
+  }
+  const preSpec: MetaPreSpecStats = {
+    realms: realmIds.length,
+    dungeons: dungeonIds.length,
+    periods: periodIds.length,
+    planned: jobs.length,
+    ok: leaderboardsOk,
+    failed: leaderboardsFailed,
+    candidates: candidateCount,
+    retained,
+    incomingPlayers: ingest.uniquePlayers,
+    dropped,
+    keyLevelStats: ingest.keyLevelStats,
+  }
 
   runGuards(abort, options.deadline, asClock(options.now), heap)
   if (syncAborted(abort)) throw new Error('Meta nightly aborted')
@@ -516,11 +1027,58 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     periods,
     realmCount: realmIds.length,
     leaderboards: { planned: jobs.length, ok: leaderboardsOk, failed: leaderboardsFailed },
-    specPop: [...specPop.values()],
+    specPop: ingest.specPop,
     totalCharacters,
-    allKeyLevels,
+    allKeyLevels: [],
+    keyLevelStats: ingest.keyLevelStats,
+    dropped,
   })
+  options.onAfterPreSpec?.(preSpec)
   candidates.clear()
+
+  if (options.stopAfter === 'pre-spec') {
+    return {
+      payload: {
+        region: META_REGION,
+        focus: META_FOCUS,
+        season: { id: seasonId, label: seasonLabel },
+        periods,
+        talentTree: null,
+        freshness: {
+          fetchedAt: Math.floor(clock() / 1000),
+          players: totalCharacters,
+          keyLevels: metaKeyLevelsFromStats(ingest.keyLevelStats),
+          region: META_REGION,
+          source: 'blizzard',
+        },
+        basis: {
+          region: META_REGION,
+          focus: META_FOCUS,
+          season: { id: seasonId, label: seasonLabel },
+          periods,
+          talentTree: null,
+          keyLevels: metaKeyLevelsFromStats(ingest.keyLevelStats),
+          players: totalCharacters,
+          profiles: 0,
+          source: 'blizzard',
+        },
+        sampled: {
+          realms: realmIds.length,
+          leaderboards: leaderboardsOk,
+          players: totalCharacters,
+          profiles: 0,
+          skipped404: 0,
+          specMismatch: 0,
+          unknownTalentNodes: 0,
+        },
+        classes: [],
+      },
+      stats,
+      failures,
+      leaderboards: { planned: jobs.length, ok: leaderboardsOk, failed: leaderboardsFailed },
+      preSpec,
+    }
+  }
 
   const specIds = [...perSpec.keys()]
   await mapPool(specIds, caps.maxConcurrentSpecs, async (specId) => {
@@ -699,7 +1257,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     : { hash: null, build: version != null ? String(version) : null }
 
   const successfulProfiles = [...profileBySpec.values()].reduce((sum, bucket) => sum + bucket.profiles, 0)
-  const keyLevels = context.allKeyLevels.length ? { min: Math.min(...context.allKeyLevels), max: Math.max(...context.allKeyLevels) } : null
+  const keyLevels = metaKeyLevelsFromStats(context.keyLevelStats) ?? minMax(context.allKeyLevels)
   const fetchedAt = Math.floor(now / 1000)
   const season = context.season
   const payload: MetaSnapshotPayload = {
@@ -787,7 +1345,7 @@ export async function runScheduledBlizzardMetaSync(input: {
     input.warn,
   )
   blizzardRegionFromRuntimeConfig(input.config, input.warn)
-  const finish = async (status: MetaRunStatus, reason?: string, snapshotId?: number | null, stats?: BlizzardHttpStats, failures?: ProfileFailures, nPerSpec?: Record<string, number> | null) => {
+  const finish = async (status: MetaRunStatus, reason?: string, snapshotId?: number | null, stats?: BlizzardHttpStats, failures?: ProfileFailures, nPerSpec?: Record<string, number> | null, dropped?: MetaSyncDroppedCounts) => {
     const record = recordMetaRun(input.sqlite, {
       startedAt,
       endedAt: clock(),
@@ -810,6 +1368,7 @@ export async function runScheduledBlizzardMetaSync(input: {
       http429: stats?.http429 ?? 0,
       specsWithData,
       durationMs: clock() - startedAt,
+      dropped,
     }
   }
 
@@ -837,6 +1396,7 @@ export async function runScheduledBlizzardMetaSync(input: {
       sleep: input.sleep,
       now: clock,
       caps,
+      warn: input.warn,
       deadline,
       sqlite: input.sqlite,
       heap: input.heap,
@@ -869,6 +1429,7 @@ export async function runScheduledBlizzardMetaSync(input: {
         stats: built.stats,
         failures: built.failures,
         nPerSpec,
+        dropped: built.preSpec?.dropped,
       }
     }
     const promoted = promoteMetaSnapshot(input.sqlite, staged.snapshotId, built.payload.region, clock())
@@ -881,6 +1442,7 @@ export async function runScheduledBlizzardMetaSync(input: {
       stats: built.stats,
       failures: built.failures,
       nPerSpec,
+      dropped: built.preSpec?.dropped,
     }
     } catch (error) {
       if (!isMetaHeapGuardError(error)) throw error
@@ -891,13 +1453,14 @@ export async function runScheduledBlizzardMetaSync(input: {
         stats: undefined,
         failures: undefined,
         nPerSpec: null,
+        dropped: undefined,
       }
     }
   }, clock, deadline)
 
   if (!locked.ok) return finish('locked', 'A Meta update is already running')
   const value = locked.value
-  return finish(value.status, value.reason, value.snapshotId, value.stats, value.failures, value.nPerSpec)
+  return finish(value.status, value.reason, value.snapshotId, value.stats, value.failures, value.nPerSpec, value.dropped)
 }
 
 export async function runScheduledBlizzardMetaSyncGuarded(input: Parameters<typeof runScheduledBlizzardMetaSync>[0]): Promise<ScheduledMetaResult> {

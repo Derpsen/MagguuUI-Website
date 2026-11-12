@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { hydrated } from './support/hydrated'
+import { formatMetaFetchedAt } from '../utils/metaSchedule'
 
 const TRADEMARK = /\b(?:WoW|World of Warcraft|Warcraft)\b/i
 
@@ -119,6 +120,32 @@ test('/meta shows the fixture snapshot, methodology and attribution in light and
   }
 })
 
+test('the /meta Last update timestamp is fully visible at 390 px and does not raise desktop CLS', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 800 })
+  const { response } = await visit('/meta', 'light', page)
+  expect(response?.status()).toBe(200)
+  const time = page.locator('section[aria-labelledby="meta-hero-cta"] time')
+  await expect(time).toBeVisible()
+  const datetime = await time.getAttribute('datetime')
+  expect(datetime).toBeTruthy()
+  const expected = formatMetaFetchedAt(datetime)
+  expect(expected).not.toBe('')
+  await expect(time).toHaveText(expected)
+  const value = page.locator('section[aria-labelledby="meta-hero-cta"] dd', { has: page.locator('time') })
+  await expect(value).toHaveAttribute('title', expected)
+  const box = await value.evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth, text: el.textContent?.trim() ?? '' }))
+  expect(box.text).toBe(expected)
+  expect(box.scrollWidth, `timestamp truncated at 390 px: scrollWidth ${box.scrollWidth} vs clientWidth ${box.clientWidth}`).toBeLessThanOrEqual(box.clientWidth + 1)
+
+  await page.setViewportSize({ width: 1280, height: 800 })
+  const desktop = await visit('/meta', 'light', page, { measureCls: true })
+  expect(desktop.response?.status()).toBe(200)
+  await expect(page.locator('section[aria-labelledby="meta-hero-cta"] time')).toHaveText(expected)
+  const cls = await readCls(page)
+  console.log(`CLS /meta desktop=${cls}`)
+  expect(cls, `desktop /meta CLS was ${cls}`).toBeLessThan(0.03)
+})
+
 test('/meta/mage/fire is a filled fixture spec page with CLS under 0.1, and empty/unknown slugs stay 404 or collecting', async ({ page }) => {
   const fire = await visit('/meta/mage/fire', 'light', page, { measureCls: true })
   expect(fire.response?.status()).toBe(200)
@@ -176,10 +203,14 @@ test('gear tooltips stay visible and unclipped at 390 and 1280 px, and Escape cl
     await page.setViewportSize({ width, height: 800 })
     await page.locator('#gear').scrollIntoViewIfNeeded()
     await expect(page.locator('[data-meta-below-fold][data-hydrated="true"]')).toBeVisible()
-    const trigger = page.locator('#gear ol [data-meta-tooltip-trigger]').first()
-    const tip = await assertUnclippedOpenTooltip(page, trigger)
-    await page.keyboard.press('Escape')
-    await expect(tip).toBeHidden()
+    const triggers = page.locator('#gear ol [data-meta-tooltip-trigger]')
+    const count = await triggers.count()
+    expect(count, `expected gear tooltip triggers at ${width}px`).toBeGreaterThan(0)
+    for (let i = 0; i < count; i++) {
+      const tip = await assertUnclippedOpenTooltip(page, triggers.nth(i))
+      await page.keyboard.press('Escape')
+      await expect(tip).toBeHidden()
+    }
   }
 
   await page.setViewportSize({ width: 1280, height: 800 })

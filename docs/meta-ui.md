@@ -81,7 +81,7 @@ vue-tsc error set is a separate audit PR.
 - Lighthouse budgets for `/meta` and `/meta/mage/fire` follow DoD 6.01 and are
   a hard CI gate (other pages in the same workflow stay advisory). The numbers
   and the CLS fix are recorded in `docs/meta-lighthouse-baseline.md`. CI seeds
-  the fixture with `scripts/seed-meta-fixture.ts` before the production
+  the fixture with `scripts/seed-meta-fixture.ts` (and `NUXT_ALLOW_META_FIXTURE_SEED=true`) before the production
   Lighthouse server starts; the script refuses to run in production outside
   CI and must never be used on Unraid. The spec page SSR-renders the heatmap,
   gear and tooltips, then hydrates that below-fold block only when it is

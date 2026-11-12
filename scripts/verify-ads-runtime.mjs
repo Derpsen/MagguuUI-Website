@@ -43,7 +43,7 @@ function runSeed() {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, ['--import', 'tsx', 'scripts/seed-meta-fixture.ts'], {
       stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env },
+      env: { ...process.env, NUXT_ALLOW_META_FIXTURE_SEED: 'true' },
     })
     let output = ''
     child.stdout.on('data', (chunk) => { output += chunk.toString() })

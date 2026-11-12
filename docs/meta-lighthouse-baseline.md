@@ -3,8 +3,9 @@
 Budgets for `/meta` and `/meta/mage/fire` are a hard CI gate (see
 `.github/lighthouse-budgets.json` and `tools/lighthouse-budget.mjs`). Other
 pages in that file stay advisory. CI seeds the checked-in fixture with
-`scripts/seed-meta-fixture.ts` before the production server starts. Never run
-that seed on Unraid.
+`scripts/seed-meta-fixture.ts` before the production server starts
+(`NUXT_ALLOW_META_FIXTURE_SEED=true` in the Lighthouse job). Never run that
+seed on Unraid. `CI=true` is not a bypass.
 
 ## DoD 6.01 targets used here
 
@@ -47,6 +48,26 @@ unattributable long task started at 4.0 s, lined up with
 `requestIdleCallback(..., { timeout: 4000 })` in `plugins/web-vitals.client.ts`
 (and the 3 s WhatsNew fallback). Those deadlines were moved to 15 s so the
 import no longer lands in the TBT window; the 200 ms budget was not loosened.
+
+## CI reference (green hard gate on `f99a4d3`)
+
+PR #190, head `f99a4d3`, Lighthouse run
+<https://github.com/Derpsen/MagguuUI-Website/actions/runs/43148115810>
+(finished 04:34 Europe/Berlin on 12 Nov 2026). Per-metric median of 3 runs
+(the budget script now uses that median, not only LHCI's single
+`isRepresentativeRun`):
+
+| Page | Mode | Perf | LCP | CLS | TBT | JS | TBT margin |
+|---|---|---|---|---|---|---|---|
+| `/meta` | mobile | 83 | 3790 ms | 0 | 178 ms | 175 KB | 22 ms (budget 200) |
+| `/meta/mage/fire` | mobile | 81 | 3886 ms | 0.001 | 168 ms | 176 KB | 32 ms |
+| `/meta` | desktop | 99 | 957 ms | 0 | 22 ms | 175 KB | 38 ms (budget 60) |
+| `/meta/mage/fire` | desktop | 99 | 968 ms | 0.001 | 17 ms | 176 KB | 43 ms |
+
+One `/meta` mobile run had TBT 242 ms; the median stayed at 178 ms. Desktop
+`/meta` CLS stayed at 0. Keep the `/meta` script gate in
+`tools/lighthouse-budget.mjs` (job already fails on a miss). Do **not** add
+the Lighthouse workflow as a GitHub branch-protection required check.
 
 Re-calibrate this file from a green hard-gate CI run if a later intentional
 change moves the numbers a long way from the limits.

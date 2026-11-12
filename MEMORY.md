@@ -662,3 +662,9 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 - `/meta` Lighthouse budgets now match DoD 6.01 and are a hard gate (`tools/lighthouse-budget.mjs` exits 1 on a /meta miss). `/meta` desktop CLS 0.033 was a wrap in the index hero/class picker, not a looser budget. Baseline: `docs/meta-lighthouse-baseline.md`.
 - Cheap LOWs: seed script refuses to run in production outside CI; `e2e-ads` is in the required `build (26, false)` aggregator.
 - Pre-existing, not this PR: with JavaScript off, the H1 can be white-on-white on a light page (and under `prefers-color-scheme` / system) on `/guide`, `/faq` and `/news` — `MetaShell` / `useIsDark` still SSR the dark text classes until mount. Follow up separately; do not fold it into C2.
+
+## 2026-11-12 Meta C2 Code-Review pass 2 (#190)
+
+- `MetaHomeHero` "Last update" used `truncate whitespace-nowrap` in a 2-col cell, which clipped the timestamp below ~500 px. The Updated stat is now `col-span-2` with a `title`, and e2e at 390 px asserts the full string is unclipped. Desktop `/meta` CLS must stay under the 0.03 DoD cap (do not bring back the 4-col wrap).
+- Cheap LOWs: baseline numbers taken from Lighthouse run 43148115810 (median of 3; `/meta` mobile TBT 178 ms, 22 ms under the 200 ms cap). Seed guard runs before any `server/database` import and requires `NUXT_ALLOW_META_FIXTURE_SEED=true` in production (`CI=true` is not a bypass). Web-vitals flush listeners register immediately; only the library import is deferred. Gear tooltip e2e walks every `#gear` trigger, not `.first()`.
+- Keep the `/meta` script gate. Do not add the Lighthouse workflow to GitHub branch protection. A gear tooltip near the viewport bottom may flip; left as-is, not changed in this pass.

@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { test } from 'node:test'
-import { annotations, compare, extractMetrics, hardBudgetFailed, isHardBudgetPage, missingHardCoverage, summaryMarkdown } from './lighthouse-budget.mjs'
+import { aggregateRuns, annotations, compare, extractMetrics, hardBudgetFailed, isHardBudgetPage, median, medianMetrics, missingHardCoverage, readRuns, summaryMarkdown } from './lighthouse-budget.mjs'
 
 const lhr = {
   categories: { performance: { score: 0.83 } },
@@ -64,4 +67,42 @@ test('missing /meta coverage is reported', () => {
   const budgets = { '/': { mobile: {} }, '/meta': { mobile: {}, desktop: {} }, '/meta/mage/fire': { mobile: {}, desktop: {} } }
   const missing = missingHardCoverage([{ page: '/meta', mode: 'mobile' }], budgets)
   assert.deepEqual(missing, ['/meta (desktop)', '/meta/mage/fire (mobile)', '/meta/mage/fire (desktop)'])
+})
+
+test('median is the middle value, or the average of the two middle values', () => {
+  assert.equal(median([242, 165, 178]), 178)
+  assert.equal(median([10, 20]), 15)
+  assert.equal(median([]), null)
+})
+
+test('medianMetrics takes each metric independently and keeps CLS to three decimals', () => {
+  const measured = medianMetrics([
+    { performance: 80, lcp: 3790, cls: 0, tbt: 242, scriptKb: 175 },
+    { performance: 83, lcp: 3793, cls: 0, tbt: 165, scriptKb: 175 },
+    { performance: 83, lcp: 3784, cls: 0, tbt: 178, scriptKb: 175 },
+  ])
+  assert.deepEqual(measured, { performance: 83, lcp: 3790, cls: 0, tbt: 178, scriptKb: 175 })
+})
+
+test('aggregateRuns medians every LHR for a path, including folders without a manifest', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'lh-budget-'))
+  const write = (name, url, tbt) => writeFileSync(join(dir, name), JSON.stringify({
+    requestedUrl: url,
+    finalUrl: url,
+    categories: { performance: { score: 0.83 } },
+    audits: {
+      'largest-contentful-paint': { numericValue: 3790 },
+      'cumulative-layout-shift': { numericValue: 0 },
+      'total-blocking-time': { numericValue: tbt },
+      'resource-summary': { details: { items: [{ resourceType: 'script', transferSize: 175 * 1024 }] } },
+    },
+  }))
+  write('lhr-1.json', 'http://localhost/meta', 242)
+  write('lhr-2.json', 'http://localhost/meta', 165)
+  write('lhr-3.json', 'http://localhost/meta', 178)
+  const [page] = aggregateRuns(readRuns(dir))
+  assert.equal(page.path, '/meta')
+  assert.equal(page.samples, 3)
+  assert.equal(page.metrics.tbt, 178)
+  rmSync(dir, { recursive: true, force: true })
 })

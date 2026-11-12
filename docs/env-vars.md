@@ -46,5 +46,5 @@ Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` 
 - Changing `NUXT_JWT_SECRET` invalidates all existing sessions. Users must log in again.
 - The admin password can also be changed via the admin UI after first login.
 - Mirror `API_BEARER_TOKEN` as the AddOn repository secret `WEBSITE_API_KEY`. The workflow consumes the coherent `/api/v1/sync/snapshot` contract; its component projections live under the same `/api/v1/sync/*` namespace. The token must never be exposed to browser code.
-- Lighthouse and `scripts/verify-ads-runtime.mjs` seed the `/meta` fixture with `npx tsx scripts/seed-meta-fixture.ts` before a production start. That is a CI/dev script, not an env flag. Never run it on Unraid; `NUXT_E2E_SEED` already stays off in production.
+- Lighthouse and `scripts/verify-ads-runtime.mjs` seed the `/meta` fixture with `npx tsx scripts/seed-meta-fixture.ts` before a production start. In production the script exits unless `NUXT_ALLOW_META_FIXTURE_SEED=true` is set explicitly (`CI=true` / `GITHUB_ACTIONS` are not a bypass). Never run it on Unraid; `NUXT_E2E_SEED` already stays off in production.
 - Set `NUXT_OG_IMAGE_SECRET` in production if dynamic OG image generation stays enabled. Generate it outside the repo with `npx nuxt-og-image generate-secret` and store it only as a host/container secret.

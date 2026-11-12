@@ -5,7 +5,7 @@
 // Writes a markdown table to $GITHUB_STEP_SUMMARY (or stdout) and prints one
 // annotation per exceeded budget. /meta and /meta/* are a hard gate (::error,
 // exit 1). Other pages stay advisory (::warning, do not fail the process).
-import { appendFileSync, existsSync, readFileSync } from 'node:fs'
+import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -41,6 +41,25 @@ export function extractMetrics(lhr) {
  * @param {Record<string, number> | undefined} budget
  * @returns {{ key: string, label: string, value: number | null, limit: number | null, kind: string, unit: string, ok: boolean | null }[]}
  */
+
+/** @param {(number | null | undefined)[]} values */
+export function median(values) {
+  const a = values.filter((v) => typeof v === 'number' && Number.isFinite(v)).sort((x, y) => x - y)
+  if (a.length === 0) return null
+  const mid = Math.floor(a.length / 2)
+  return a.length % 2 ? a[mid] : (a[mid - 1] + a[mid]) / 2
+}
+
+/** Per-metric median of several extractMetrics() results. */
+export function medianMetrics(samples) {
+  return Object.fromEntries(METRICS.map((m) => {
+    const raw = median(samples.map((s) => s[m.key]))
+    if (raw == null) return [m.key, null]
+    if (m.key === 'cls') return [m.key, Math.round(raw * 1000) / 1000]
+    return [m.key, Math.round(raw)]
+  }))
+}
+
 export function compare(measured, budget) {
   return METRICS.map((m) => {
     const value = measured[m.key] ?? null
@@ -105,7 +124,7 @@ export function summaryMarkdown(results) {
   const lines = [
     '## Lighthouse budgets (advisory)',
     '',
-    'Production build served locally on a shared runner, median of 3 runs per URL. ' +
+    'Production build served locally on a shared runner, per-metric median of all Lighthouse CI runs per URL (typically 3). ' +
       'Budgets live in `.github/lighthouse-budgets.json`. `/meta` pages are a hard gate; other pages are advisory.',
     '',
     `| Page | Mode | ${METRICS.map((m) => m.label).join(' | ')} |`,
@@ -117,19 +136,45 @@ export function summaryMarkdown(results) {
   return lines.join('\n') + '\n'
 }
 
-/** @param {string} dir @returns {{ path: string, lhr: any }[]} representative run per URL */
+/** @param {string} dir @returns {{ path: string, lhr: any }[]} every LHR in the folder */
 export function readRuns(dir) {
+  if (!existsSync(dir)) return []
+  const files = new Set()
   const manifestPath = join(dir, 'manifest.json')
-  if (!existsSync(manifestPath)) return []
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  if (existsSync(manifestPath)) {
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+    for (const entry of manifest) {
+      const candidates = [entry.jsonPath, join(dir, basename(entry.jsonPath ?? ''))]
+      const file = candidates.find((p) => p && existsSync(p))
+      if (file) files.add(file)
+    }
+  }
+  // treosh/lighthouse-ci-action artifacts often ship lhr-*.json without a manifest.
+  if (files.size === 0) {
+    for (const name of readdirSync(dir)) {
+      if (name.startsWith('lhr-') && name.endsWith('.json')) files.add(join(dir, name))
+    }
+  }
   const runs = []
-  for (const entry of manifest.filter((e) => e.isRepresentativeRun)) {
-    const candidates = [entry.jsonPath, join(dir, basename(entry.jsonPath ?? ''))]
-    const file = candidates.find((p) => p && existsSync(p))
-    if (!file) continue
-    runs.push({ path: new URL(entry.url).pathname || '/', lhr: JSON.parse(readFileSync(file, 'utf8')) })
+  for (const file of files) {
+    const lhr = JSON.parse(readFileSync(file, 'utf8'))
+    const rawUrl = lhr.requestedUrl || lhr.finalUrl
+    if (!rawUrl) continue
+    runs.push({ path: new URL(rawUrl).pathname || '/', lhr })
   }
   return runs
+}
+
+/** One median-metrics row per URL. */
+export function aggregateRuns(runs) {
+  const byPath = new Map()
+  for (const run of runs) {
+    if (!byPath.has(run.path)) byPath.set(run.path, [])
+    byPath.get(run.path).push(extractMetrics(run.lhr))
+  }
+  return [...byPath.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([path, samples]) => ({ path, metrics: medianMetrics(samples), samples: samples.length }))
 }
 
 export function main(argv) {
@@ -139,12 +184,12 @@ export function main(argv) {
   const warnings = []
   for (const arg of dirs) {
     const [mode, dir] = arg.split('=')
-    const runs = readRuns(dir)
-    if (runs.length === 0) warnings.push(`::warning title=Lighthouse budget::No Lighthouse results found for ${mode} (${dir}). Advisory only.`)
-    for (const run of runs) {
-      const rows = compare(extractMetrics(run.lhr), budgets[run.path]?.[mode])
-      results.push({ page: run.path, mode, rows })
-      warnings.push(...annotations(run.path, mode, rows))
+    const pages = aggregateRuns(readRuns(dir))
+    if (pages.length === 0) warnings.push(`::warning title=Lighthouse budget::No Lighthouse results found for ${mode} (${dir}). Advisory only.`)
+    for (const page of pages) {
+      const rows = compare(page.metrics, budgets[page.path]?.[mode])
+      results.push({ page: page.path, mode, rows })
+      warnings.push(...annotations(page.path, mode, rows))
     }
   }
   const md = summaryMarkdown(results)

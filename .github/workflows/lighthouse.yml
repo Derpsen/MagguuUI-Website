@@ -68,6 +68,8 @@ jobs:
       - run: npm run build
 
       - name: Seed Meta fixture into the local database
+        env:
+          NUXT_ALLOW_META_FIXTURE_SEED: 'true'
         run: npx tsx scripts/seed-meta-fixture.ts
 
       - name: Start production server

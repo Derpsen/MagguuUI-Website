@@ -660,6 +660,54 @@
     "repl": "  const row = sqlite.prepare('SELECT held_until FROM meta_sync_lock WHERE id = ?').get(LOCK_ID) as { held_until: number } | undefined\n  if (row && row.held_until > t) return { ok: false }\n  sqlite.prepare('INSERT OR REPLACE INTO meta_sync_lock (id, owner_token, held_until) VALUES (?, ?, ?)').run(LOCK_ID, ownerToken, heldUntil)\n  return { ok: true, ownerToken, heldUntil }\n"
   },
   {
+    "name": "meta: heap guard reads container cgroup memory.current",
+    "file": "server/utils/blizzardMetaHeap.ts",
+    "find": "export function readProcessMetaMemory(): ProcessMetaMemory {\n  const usage = process.memoryUsage()\n  return { rss: usage.rss, heapUsed: usage.heapUsed }\n}\n",
+    "repl": "export function readProcessMetaMemory(): ProcessMetaMemory {\n  const usage = process.memoryUsage()\n  try {\n    const current = Number(require('node:fs').readFileSync('/sys/fs/cgroup/memory.current', 'utf8'))\n    if (Number.isFinite(current) && current > 0) return { rss: current, heapUsed: current }\n  } catch {}\n  return { rss: usage.rss, heapUsed: usage.heapUsed }\n}\n"
+  },
+  {
+    "name": "meta: CLI heap env above 512 is accepted instead of clamped",
+    "file": "server/utils/metaSyncCliHeap.ts",
+    "find": "return Math.floor(Math.min(META_SYNC_CLI_HEAP_MAX_MB, Math.max(META_SYNC_CLI_HEAP_MIN_MB, n)))",
+    "repl": "return Math.floor(Math.min(5120, Math.max(META_SYNC_CLI_HEAP_MIN_MB, n)))"
+  },
+  {
+    "name": "meta: heap fraction stays at 85% instead of 70% on a CLI-sized old-space",
+    "file": "server/utils/blizzardMetaHeap.ts",
+    "find": "if (oldSpaceMb != null && oldSpaceMb <= META_HEAP_CLI_OLD_SPACE_MAX_MB) return META_HEAP_FRACTION",
+    "repl": "if (oldSpaceMb != null && oldSpaceMb <= META_HEAP_CLI_OLD_SPACE_MAX_MB) return META_HEAP_FRACTION_SERVER"
+  },
+  {
+    "name": "meta: in-board heap check is removed",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "      processedGroups += 1\n      if (processedGroups % META_HEAP_CHECK_EVERY_GROUPS === 0) {\n        runGuards(abort, options.deadline, asClock(options.now), heap)\n        if (syncAborted(abort)) return\n      }",
+    "repl": "      processedGroups += 1"
+  },
+  {
+    "name": "meta: inherited META_SYNC_CLI_HEAP_APPLIED env skips the re-exec",
+    "file": "server/utils/metaSyncCliHeap.ts",
+    "find": "export function metaSyncCliHeapAlreadyApplied(\n  argv: readonly string[] = process.argv,\n  execArgv: readonly string[] = process.execArgv,\n): boolean {\n  if (!argv.includes(META_SYNC_CLI_HEAP_MARKER)) return false\n",
+    "repl": "export function metaSyncCliHeapAlreadyApplied(\n  argv: readonly string[] = process.argv,\n  execArgv: readonly string[] = process.execArgv,\n): boolean {\n  if (process.env.META_SYNC_CLI_HEAP_APPLIED) return true\n  if (!argv.includes(META_SYNC_CLI_HEAP_MARKER)) return false\n"
+  },
+  {
+    "name": "meta: remove Meta ingest dropped warning",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "  if (droppedIngest > 0) {\n    options.warn?.(`Meta ingest dropped ${droppedIngest} candidates under the per-spec top-${caps.maxCandidatesPerSpec} cap (unique ${ingest.uniquePlayers}, kept ${candidateCount})`)\n  }\n",
+    "repl": "  if (droppedIngest > 0) {\n    /* no warning */\n  }\n"
+  },
+  {
+    "name": "meta: remove summary.dropped",
+    "file": "server/utils/metaSyncCli.ts",
+    "find": "  if (input.result.dropped && input.result.dropped.total > 0) {\n    summary.dropped = input.result.dropped\n  }\n",
+    "repl": "  if (input.result.dropped && input.result.dropped.total > 0) {\n    /* omit dropped */\n  }\n"
+  },
+  {
+    "name": "unraid: NODE_OPTIONS Default is 768 instead of 640",
+    "file": "unraid/magguuui-website.xml",
+    "find": "Default=\"--enable-source-maps --max-old-space-size=640\"",
+    "repl": "Default=\"--enable-source-maps --max-old-space-size=768\""
+  },
+  {
     "name": "home: reduced-motion guard on the rise animation removed",
     "file": "pages/index.vue",
     "find": "@media (prefers-reduced-motion: no-preference) {\n  .home-rise {",
@@ -700,5 +748,11 @@
     "file": "layouts/default.vue",
     "find": "setScrollLock(document.documentElement, false)",
     "repl": "void 0"
+  },
+  {
+    "name": "meta: stale-refresh off",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "      if (live.best !== top.best || live.runs !== top.runs) {\n        heap.pop()\n        heap.push({ key: top.key, best: live.best, runs: live.runs })\n        continue\n      }\n",
+    "repl": "      if (false) {\n        heap.pop()\n        heap.push({ key: top.key, best: live.best, runs: live.runs })\n        continue\n      }\n"
   }
 ]

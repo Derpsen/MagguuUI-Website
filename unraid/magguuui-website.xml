@@ -18,7 +18,8 @@
   <WebUI>http://[IP]:[PORT:3000]/</WebUI>
   <TemplateURL/>
   <Icon>https://raw.githubusercontent.com/Derpsen/MagguuUI-Website/main/public/logo.png</Icon>
-  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <!-- Memory 1g and memory-swap=-1 match the live MagguuUI container (Unraid & Server, backup 20261112-mem1g). Applying this template does not change an already-running container. -->
+  <ExtraParams>--restart=unless-stopped --memory=1g --memory-swap=-1</ExtraParams>
   <PostArgs/>
   <CPUset/>
   <DateInstalled/>
@@ -68,8 +69,10 @@
   <Config Name="NUXT_META_SAMPLE_PER_SPEC" Target="NUXT_META_SAMPLE_PER_SPEC" Default="200" Mode="" Description="Optional. Profile sample per spec (default 200)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="NUXT_META_MAX_ATTEMPTS_PER_SPEC" Target="NUXT_META_MAX_ATTEMPTS_PER_SPEC" Default="400" Mode="" Description="Optional. Max profile attempts per spec (default 400)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="NUXT_META_MAX_CONCURRENT_SPECS" Target="NUXT_META_MAX_CONCURRENT_SPECS" Default="1" Mode="" Description="Optional. Max specs sampled in parallel during the Meta nightly (default 1, max 8). Keep at 1 on this host." Type="Variable" Display="advanced" Required="false" Mask="false"/>
-  <Config Name="NUXT_META_HEAP_LIMIT_MB" Target="NUXT_META_HEAP_LIMIT_MB" Default="" Mode="" Description="Optional. Meta nightly heap-guard cap in MB. Aborts at 85% of min(this, V8 heap_size_limit) and keeps the last-good snapshot. Empty uses the process heap limit." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="NUXT_META_HEAP_LIMIT_MB" Target="NUXT_META_HEAP_LIMIT_MB" Default="" Mode="" Description="Optional. Meta nightly heap-guard cap in MB. The in-process website nightly aborts at 85% of min(this, V8 / 640 MB old-space); the manual CLI aborts at 70% of its 256 MB cap. Keeps the last-good snapshot. Empty uses the process heap limit." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="NUXT_ADS" Target="NUXT_ADS" Default="" Mode="" Description="Optional. Default off (no reserved ad markup). Set to on/true/1/yes to show reserved AdSlot boxes on /meta. Read at container start, not only at image build. AdSense loading is a later change." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <Config Name="NODE_OPTIONS" Target="NODE_OPTIONS" Default="--enable-source-maps --max-old-space-size=640" Mode="" Description="V8 flags for the website process. 640 MB old-space is the host-side buffer inside the 1 GB Memory limit (ExtraParams --memory=1g --memory-swap=-1, matching live). The Meta CLI replaces itself with a 256 MB cap and strips this flag. Do not raise without raising Memory." Type="Variable" Display="advanced" Required="false" Mask="false">--enable-source-maps --max-old-space-size=640</Config>
 
   <Config Name="NODE_ENV" Target="NODE_ENV" Default="production" Mode="" Description="Keep as 'production' on Unraid." Type="Variable" Display="advanced" Required="false" Mask="false">production</Config>
 

@@ -22,7 +22,7 @@ import {
 
 export const HEAP_SPEC_COUNT = 40
 export const HEAP_SAMPLES_PER_SPEC = 200
-export const HEAP_PAD_BYTES = 16 * 1024
+export const HEAP_PAD_BYTES = 24 * 1024
 export const HEAP_REALM = 'heap-realm'
 export const HEAP_REALM_ID = 509
 export const HEAP_DUNGEON_ID = 401

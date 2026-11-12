@@ -11,7 +11,7 @@ import type Database from 'better-sqlite3'
 import { parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
 import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload, type MetaTalentLayout } from '~/utils/metaTypes'
 import { BLIZZARD_META_LOCK_TTL_MS } from './blizzardMetaLock'
-import type { SerializedProfileBucket, SpecPop } from './blizzardMetaAggregate'
+import type { MetaKeyLevelStats, SerializedProfileBucket, SpecPop } from './blizzardMetaAggregate'
 import { META_SYNC_STAGING_TABLES_SQL } from '../database/metaSyncStagingSql'
 
 export type MetaSqlite = Database.Database
@@ -424,7 +424,10 @@ export type MetaSyncRunContext = {
   leaderboards: { planned: number, ok: number, failed: number }
   specPop: SpecPop[]
   totalCharacters: number
+  /** @deprecated Prefer keyLevelStats; kept for mid-run staging compatibility. */
   allKeyLevels: number[]
+  keyLevelStats?: MetaKeyLevelStats
+  dropped?: { ingest: number, trim: number, total: number }
 }
 
 export type MetaSyncSpecStage = {

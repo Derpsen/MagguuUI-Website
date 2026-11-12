@@ -4,23 +4,27 @@
  * behaviour of runScheduledBlizzardMetaSync. Never logs secrets.
  */
 import { sanitizeBlizzardLog } from './blizzardAuth'
-import { runScheduledBlizzardMetaSyncGuarded, type ScheduledMetaResult } from './blizzardMetaSync'
+import { defaultMetaHeapLimitBytes, readProcessMetaMemory } from './blizzardMetaHeap'
+import { runScheduledBlizzardMetaSyncGuarded, type MetaSyncDroppedCounts, type ScheduledMetaResult } from './blizzardMetaSync'
 import type { MetaSqlite } from './blizzardMetaStore'
 import type { BlizzardFetcher } from './blizzardHttp'
+import { installMetaSyncCliParentWatch, META_SYNC_CLI_FORWARD_SIGNALS } from './metaSyncCliHeap'
 
 /**
- * SIGINT/SIGTERM abort the in-flight sync so `withBlizzardMetaLock` can
- * release in `finally`. Do not `process.exit` here — that would skip cleanup.
+ * SIGINT/SIGTERM/SIGHUP abort the in-flight sync so `withBlizzardMetaLock` can
+ * release in `finally`. The job also aborts if the wrapper dies (IPC
+ * disconnect or a ppid change after SIGKILL). Do not `process.exit` here —
+ * that would skip cleanup.
  */
 export function installMetaSyncCliSignalHandlers(abort: AbortController): () => void {
   const handler = () => {
     if (!abort.signal.aborted) abort.abort()
   }
-  process.on('SIGINT', handler)
-  process.on('SIGTERM', handler)
+  for (const signal of META_SYNC_CLI_FORWARD_SIGNALS) process.on(signal, handler)
+  const stopWatch = installMetaSyncCliParentWatch(abort)
   return () => {
-    process.off('SIGINT', handler)
-    process.off('SIGTERM', handler)
+    for (const signal of META_SYNC_CLI_FORWARD_SIGNALS) process.off(signal, handler)
+    stopWatch()
   }
 }
 
@@ -37,8 +41,10 @@ export type MetaSyncCliSummary = {
   durationMs: number
   peakRssBytes: number
   peakHeapUsedBytes: number
+  heapLimitBytes: number
   specsWithData: number
   http429: number
+  dropped?: MetaSyncDroppedCounts
   reason?: string
 }
 
@@ -72,6 +78,7 @@ export function summarizeMetaSyncCli(input: {
   durationMs: number
   peakRssBytes: number
   peakHeapUsedBytes: number
+  heapLimitBytes?: number
   secrets?: readonly string[]
 }): MetaSyncCliSummary {
   const summary: MetaSyncCliSummary = {
@@ -79,8 +86,12 @@ export function summarizeMetaSyncCli(input: {
     durationMs: input.result.durationMs ?? input.durationMs,
     peakRssBytes: input.peakRssBytes,
     peakHeapUsedBytes: input.peakHeapUsedBytes,
+    heapLimitBytes: input.heapLimitBytes ?? defaultMetaHeapLimitBytes(),
     specsWithData: input.result.specsWithData ?? 0,
     http429: input.result.http429 ?? 0,
+  }
+  if (input.result.dropped && input.result.dropped.total > 0) {
+    summary.dropped = input.result.dropped
   }
   if (input.result.reason) {
     summary.reason = sanitizeBlizzardLog(input.result.reason, input.secrets ?? [])
@@ -107,7 +118,7 @@ export async function runMetaSyncCli(input: {
   secrets?: readonly string[]
 }): Promise<{ summary: MetaSyncCliSummary, exitCode: number }> {
   const started = typeof input.now === 'function' ? input.now() : (input.now ?? Date.now())
-  const memory = input.memory ?? (() => process.memoryUsage())
+  const memory = input.memory ?? readProcessMetaMemory
   let peakRssBytes = 0
   let peakHeapUsedBytes = 0
   const sample = () => {

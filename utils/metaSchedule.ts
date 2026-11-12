@@ -133,8 +133,20 @@ export function parseMetaMaxAttemptsPerSpec(value: unknown, sample = parseMetaSa
   return parsePositiveInt(value, Math.max(META_MAX_ATTEMPTS_PER_SPEC, sample * 2), 1, 4000)
 }
 
-export function sampleCapsFromRuntimeConfig(config: { metaSamplePerSpec?: unknown, metaMaxAttemptsPerSpec?: unknown }): { samplePerSpec: number, maxAttemptsPerSpec: number } {
+export function parseMetaMaxConcurrentSpecs(value: unknown): number {
+  return parsePositiveInt(value, 1, 1, 8)
+}
+
+export function sampleCapsFromRuntimeConfig(config: {
+  metaSamplePerSpec?: unknown
+  metaMaxAttemptsPerSpec?: unknown
+  metaMaxConcurrentSpecs?: unknown
+}): { samplePerSpec: number, maxAttemptsPerSpec: number, maxConcurrentSpecs: number } {
   const samplePerSpec = parseMetaSamplePerSpec(config.metaSamplePerSpec)
   const maxAttemptsPerSpec = parseMetaMaxAttemptsPerSpec(config.metaMaxAttemptsPerSpec, samplePerSpec)
-  return { samplePerSpec, maxAttemptsPerSpec: Math.max(maxAttemptsPerSpec, samplePerSpec) }
+  return {
+    samplePerSpec,
+    maxAttemptsPerSpec: Math.max(maxAttemptsPerSpec, samplePerSpec),
+    maxConcurrentSpecs: parseMetaMaxConcurrentSpecs(config.metaMaxConcurrentSpecs),
+  }
 }

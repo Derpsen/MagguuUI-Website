@@ -9,7 +9,8 @@ import type Database from 'better-sqlite3'
  */
 
 import { parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
-import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload } from '~/utils/metaTypes'
+import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload, type MetaTalentLayout } from '~/utils/metaTypes'
+import type { SerializedProfileBucket, SpecPop } from './blizzardMetaAggregate'
 
 export type MetaSqlite = Database.Database
 
@@ -412,4 +413,118 @@ export function readLastMetaRun(sqlite: MetaSqlite): MetaRunRecord | null {
 export function metaSnapshotAgeHours(snapshot: StoredMetaSnapshot | null, now = Date.now()): number | null {
   if (!snapshot) return null
   return Math.max(0, (now / 1000 - snapshot.fetchedAt) / 3600)
+}
+
+export type MetaSyncRunContext = {
+  season: MetaSnapshotPayload['season']
+  periods: MetaSnapshotPayload['periods']
+  realmCount: number
+  leaderboards: { planned: number, ok: number, failed: number }
+  specPop: SpecPop[]
+  totalCharacters: number
+  allKeyLevels: number[]
+}
+
+export type MetaSyncSpecStage = {
+  specId: number
+  className: string
+  specName: string
+  bucketsByHash: Record<string, SerializedProfileBucket>
+  versions: number[]
+  layout: MetaTalentLayout | null
+}
+
+const STAGING_TABLES_SQL = `
+  CREATE TABLE IF NOT EXISTS meta_sync_run_staging (
+    run_token TEXT PRIMARY KEY,
+    payload TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS meta_sync_spec_staging (
+    run_token TEXT NOT NULL,
+    spec_id INTEGER NOT NULL,
+    class_name TEXT NOT NULL,
+    spec_name TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    PRIMARY KEY (run_token, spec_id)
+  );
+  CREATE INDEX IF NOT EXISTS idx_meta_sync_spec_staging_run ON meta_sync_spec_staging(run_token);
+`
+
+export function ensureMetaSyncStagingTables(sqlite: MetaSqlite) {
+  sqlite.exec(STAGING_TABLES_SQL)
+}
+
+export function clearMetaSyncStaging(sqlite: MetaSqlite, runToken?: string) {
+  ensureMetaSyncStagingTables(sqlite)
+  if (runToken) {
+    sqlite.prepare('DELETE FROM meta_sync_spec_staging WHERE run_token = ?').run(runToken)
+    sqlite.prepare('DELETE FROM meta_sync_run_staging WHERE run_token = ?').run(runToken)
+    return
+  }
+  sqlite.exec('DELETE FROM meta_sync_spec_staging')
+  sqlite.exec('DELETE FROM meta_sync_run_staging')
+}
+
+export function writeMetaSyncRunContext(sqlite: MetaSqlite, runToken: string, context: MetaSyncRunContext, now = Date.now()) {
+  ensureMetaSyncStagingTables(sqlite)
+  sqlite.prepare(`
+    INSERT INTO meta_sync_run_staging (run_token, payload, created_at)
+    VALUES (?, ?, ?)
+    ON CONFLICT(run_token) DO UPDATE SET payload = excluded.payload, created_at = excluded.created_at
+  `).run(runToken, JSON.stringify(context), Math.floor(now / 1000))
+}
+
+export function writeMetaSyncSpecAggregate(sqlite: MetaSqlite, runToken: string, stage: MetaSyncSpecStage) {
+  ensureMetaSyncStagingTables(sqlite)
+  sqlite.prepare(`
+    INSERT INTO meta_sync_spec_staging (run_token, spec_id, class_name, spec_name, payload)
+    VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT(run_token, spec_id) DO UPDATE SET
+      class_name = excluded.class_name,
+      spec_name = excluded.spec_name,
+      payload = excluded.payload
+  `).run(runToken, stage.specId, stage.className, stage.specName, JSON.stringify({
+    bucketsByHash: stage.bucketsByHash,
+    versions: stage.versions,
+    layout: stage.layout,
+  }))
+}
+
+export function readMetaSyncRunContext(sqlite: MetaSqlite, runToken: string): MetaSyncRunContext | null {
+  ensureMetaSyncStagingTables(sqlite)
+  const row = sqlite.prepare('SELECT payload FROM meta_sync_run_staging WHERE run_token = ?').get(runToken) as { payload: string } | undefined
+  if (!row?.payload) return null
+  try {
+    return JSON.parse(row.payload) as MetaSyncRunContext
+  } catch {
+    return null
+  }
+}
+
+export function readMetaSyncSpecAggregates(sqlite: MetaSqlite, runToken: string): MetaSyncSpecStage[] {
+  ensureMetaSyncStagingTables(sqlite)
+  const rows = sqlite.prepare('SELECT spec_id, class_name, spec_name, payload FROM meta_sync_spec_staging WHERE run_token = ? ORDER BY spec_id').all(runToken) as Array<{
+    spec_id: number
+    class_name: string
+    spec_name: string
+    payload: string
+  }>
+  const out: MetaSyncSpecStage[] = []
+  for (const row of rows) {
+    try {
+      const parsed = JSON.parse(row.payload) as { bucketsByHash?: Record<string, SerializedProfileBucket>, versions?: number[], layout?: MetaTalentLayout | null }
+      out.push({
+        specId: row.spec_id,
+        className: row.class_name,
+        specName: row.spec_name,
+        bucketsByHash: parsed.bucketsByHash ?? {},
+        versions: Array.isArray(parsed.versions) ? parsed.versions : [],
+        layout: parsed.layout ?? null,
+      })
+    } catch {
+      /* skip a corrupt staging row */
+    }
+  }
+  return out
 }

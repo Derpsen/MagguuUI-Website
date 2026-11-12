@@ -19,6 +19,15 @@
 - `error.vue` Home → `/` only (never `/home`).
 - CodeQL `init` and `analyze` must share one commit pin.
 
+## 2026-11-12 Meta nightly heap
+
+- Live `blizzard:nightly` at **04:15 Europe/Berlin** on 12 Nov 2026 ran the process out of heap (~377 MB of a 384 MB limit). The container auto-restarted. No new snapshot was written (0× HTTP 429). Last-good (or empty) data stayed as it was only because the process died before promote.
+- Code fix: sample spec by spec, drop raw profile/talent/gear bodies after absorb, stage per-spec count maps in SQLite, assemble then gates + promote. Heap guard aborts at 85% of V8 `heap_size_limit` (optional `NUXT_META_HEAP_LIMIT_MB`), releases the lock, keeps last-good. `NUXT_META_MAX_CONCURRENT_SPECS` default 1.
+- Host buffer (Unraid / Server): `NODE_OPTIONS=--max-old-space-size=640` with a 768 MB cgroup-style limit. That is additional headroom, not a substitute for the lean path.
+- There is **no** protected admin/manual trigger for the Meta sync. Only the scheduled `blizzard:nightly` task. Nitro `/_nitro/tasks` is a dev-server route, not in the production image. Do not fire it against live until this ships.
+- Tests: `tests/unit/blizzardMetaSync.heap.test.ts` (40 specs × 200 padded samples, growth budget 96 MB; simulated breach keeps last-good; legacy retain-all path is expected to exceed the budget). Isolated measurement with `--expose-gc`: lean growth 62.0 MB (peak 77.4 MB) vs legacy retain-all growth 154.0 MB (peak 170.8 MB). A later full-suite run was still under budget (lean growth 80.8 MB).
+- The no-JS H1 white-on-white contrast in light theme (`/guide`, `/faq`, `/news`) stays a separate follow-up, not this PR.
+
 ## 2026-09-10 payload / bundle
 
 - `pages/index.vue` uses `GET /api/v1/catalog-summary` (addon names + counts, no import-string blobs). `/strings` still uses fat `/api/v1/profiles`, `/layouts`, `/wowup`.

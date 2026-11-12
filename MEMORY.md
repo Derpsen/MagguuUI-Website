@@ -761,3 +761,11 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 
 - #197 squash-merged as `5f0cd1681c93ce123d3f4aaad16a64a49c08e112` (Code-Review Ship at `a42e419`). Image `ghcr.io/derpsen/magguuui-website@sha256:447a617772d37eb8a24032192b338f70fb0269f9314035bf300fa343d398f144` (cosign PASS, autoupdate). Do not fire the manual CLI until Unraid & Server runs it on this image.
 - Code-Review LOWs left as follow-ups (not in #197): (1) `evictTo` iteration bound is untested — mutants that halve the bound or never throw would survive. (2) `META_SYNC_DEFAULT_MAX_CANDIDATES` is a dead alias (40 × 800) used only in `tests/fixtures/blizzard-meta/runPreSpecHeap.ts:100` and `tests/unit/blizzardMetaSync.prespec-heap.test.ts:34` (the measure type / probe JSON), not by ingest.
+
+## 2026-11-12 Redesign PR 3a: per-route font preload (split from PR 3)
+
+- Marco's steering: ship the font follow-ups first as a small PR; Guide/Strings/Addons stay on `wip/redesign-pr3-guide-strings-addons` (PR #198 is that bigger version, same work, not for merging before 3a).
+- Done: per-route preload (`utils/fontPreload.ts`; measured: every public page draws all five faces above the fold, only `/admin*` gets fewer, -24 KB; the first draft forgot sans 600), `ui.fonts: false` instead of `provider: 'none'` for the transitive `@nuxt/fonts`, stale ogImageConfig comment fixed (OG text uses the bundled Inter; checked).
+- Lighthouse /meta TBT (steering: CI 203-222 on main-based branches): preloads are not the cost. Local A/B on one build with the fixture DB, mobile, 5 runs: five preloads `/meta` TBT 98 / perf 84, fire 88 / 83; none on `/meta*` 96 / 81 and 81 / 81. Lighthouse's 4x CPU slowdown multiplies any extra main-thread work inside the hydration task (long task ~4.3 s on `/meta`, 'Unattributable'): +3-5 ms real was +20-30 ms TBT in CI. Things that did add such work and were kept out: an extra `local('Roboto')` fallback face, a reactive `useHead` getter, ~17 KB of page CSS in the global entry CSS (the Guide/Strings/Addons work imports its CSS per page instead).
+- CI runner noise is large: the same commit gave `/meta/mage/fire` TBT 399 then 203 then 226; a `workflow_dispatch` run on main passed the same hour. Rerun once before acting on a lone TBT miss.
+

@@ -16,7 +16,8 @@ const ogImageDefaults = {
 }
 const ogImageConfig = {
   defaults: ogImageDefaults,
-  // v7: fonts come from @nuxt/fonts (fonts.families below); signing key from NUXT_APP_SECRET.
+  // v7: signing key from NUXT_APP_SECRET. Fonts: @nuxt/fonts is not installed (ui.fonts: false below), so OG text uses the
+  // bundled Inter; the site fonts are self-managed in assets/css/fonts.css.
 }
 
 const publicSecurityHeaders = {
@@ -182,17 +183,13 @@ export default defineNuxtConfig({
   },
 
   ui: {
+    // @nuxt/ui would install @nuxt/fonts (a transitive dependency) and let it emit its own swapping faces for the
+    // families we use. The fonts are self-managed in assets/css/fonts.css (real weights, `font-display: optional`,
+    // per-route preloads, metric-matched fallbacks), so the module stays out.
+    fonts: false,
     theme: {
       colors: ['primary', 'secondary', 'success', 'info', 'warning', 'error'],
     },
-  },
-
-  fonts: {
-    families: [
-      // Self-managed in assets/css/fonts.css (real weights, optional display, preloads, metric-matched fallbacks).
-      { name: 'Plus Jakarta Sans', provider: 'none' },
-      { name: 'JetBrains Mono', provider: 'none' },
-    ],
   },
 
   css: ['~/assets/css/main.css'],

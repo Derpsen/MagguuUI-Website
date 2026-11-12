@@ -892,5 +892,47 @@
     "file": "utils/metaTypes.ts",
     "find": "export const META_SANITY_SPEC_FLIP_N = META_MIN_BUILD_SAMPLE\n",
     "repl": "export const META_SANITY_SPEC_FLIP_N = 500\n"
+  },
+  {
+    "name": "fontPreload: default drops the nav weight (sans 600)",
+    "file": "utils/fontPreload.ts",
+    "find": "['sans-400', 'sans-600', 'sans-700', 'sans-800', 'mono-400']\n\n/** The admin",
+    "repl": "['sans-400', 'sans-700', 'sans-800', 'mono-400']\n\n/** The admin"
+  },
+  {
+    "name": "fontPreload: admin preloads the display weight",
+    "file": "utils/fontPreload.ts",
+    "find": "ADMIN_FACES: readonly FontFaceId[] = ['sans-400', 'sans-600', 'mono-400']",
+    "repl": "ADMIN_FACES: readonly FontFaceId[] = ['sans-400', 'sans-600', 'sans-800', 'mono-400']"
+  },
+  {
+    "name": "fontPreload: admin prefix matches lookalike routes",
+    "file": "utils/fontPreload.ts",
+    "find": "path.startsWith('/admin/')",
+    "repl": "path.startsWith('/admin')"
+  },
+  {
+    "name": "fontPreload: query and hash are not stripped",
+    "file": "utils/fontPreload.ts",
+    "find": "path.split(/[?#]/)[0] || '/'",
+    "repl": "path || '/'"
+  },
+  {
+    "name": "fontPreload: admin has no mono (login draws it)",
+    "file": "utils/fontPreload.ts",
+    "find": "['sans-400', 'sans-600', 'mono-400']\n\nconst",
+    "repl": "['sans-400', 'sans-600']\n\nconst"
+  },
+  {
+    "name": "font-preload plugin: always preloads the home route's faces",
+    "file": "plugins/font-preload.ts",
+    "find": "fontFacesForPath(route.path)",
+    "repl": "fontFacesForPath('/')"
+  },
+  {
+    "name": "nuxt.config: @nuxt/fonts allowed again",
+    "file": "nuxt.config.ts",
+    "find": "    fonts: false,",
+    "repl": "    fonts: true,"
   }
 ]

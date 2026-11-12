@@ -4,10 +4,10 @@
     <a id="meta-hero-cta" :href="ctaHref" class="btn-primary mt-4 inline-flex items-center gap-2">
       {{ kl.heroCta }} <span aria-hidden="true">→</span>
     </a>
-    <dl class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <dl class="mt-6 grid grid-cols-2 gap-4">
       <div v-for="stat in stats" :key="stat.label">
         <dt class="text-xs uppercase tracking-[0.12em]" :class="tone.muted.value">{{ stat.label }}</dt>
-        <dd class="mt-1 text-2xl font-semibold tabular-nums" :class="tone.strong.value">
+        <dd class="mt-1 truncate text-2xl font-semibold tabular-nums whitespace-nowrap" :class="tone.strong.value">
           <time v-if="stat.datetime" :datetime="stat.datetime">{{ stat.value }}</time>
           <template v-else>{{ stat.value }}</template>
         </dd>

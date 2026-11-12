@@ -1,9 +1,9 @@
 name: Lighthouse
 
-# Advisory performance budgets for the home page, /changelog and /guide
+# Performance budgets for the home page, /changelog, /guide and /meta
 # (mobile + desktop). Budgets live in .github/lighthouse-budgets.json.
-# This workflow is deliberately NOT a required check and never fails: a missed
-# budget only raises a ::warning:: annotation and a row in the job summary.
+# /meta and /meta/* are a hard gate (the compare step fails the job on a miss).
+# Other pages stay advisory: a miss raises a ::warning:: and a summary row.
 # It does not run on every push (noise / runner minutes).
 # Feature branches: pull_request to main only — never on a branch push.
 # cancel-in-progress is safe here (advisory budget, not the image publish).
@@ -41,11 +41,10 @@ concurrency:
 
 jobs:
   audit:
-    name: Lighthouse budgets (advisory)
+    name: Lighthouse budgets
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # Advisory: even a crashed step must not turn the workflow red.
-    continue-on-error: true
+    # /meta is a hard gate (compare step exits non-zero). Other pages stay advisory.
     env:
       NUXT_OG_IMAGE_SECRET: ci-dummy-og-image-secret
       NUXT_JWT_SECRET: ci-dummy-secret-must-be-32-chars-long-XXXXXXXXXX

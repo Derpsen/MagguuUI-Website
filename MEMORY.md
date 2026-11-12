@@ -655,3 +655,10 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 ## 2026-11-12 Meta C2 nav after green budget
 
 - After the TBT cut, CI Lighthouse on #190 (`27e1408`) had no budget warnings on `/meta` or `/meta/mage/fire` (fire mobile TBT ~126 ms vs 320). Pre-existing advisory misses remain on `/` mobile LCP and `/changelog` desktop CLS. `/meta` is now in the Retail header, footer and sitemap (index only). Budget file unchanged. Do not merge until asked.
+
+## 2026-11-12 Meta C2 Code-Review follow-ups (#190)
+
+- Gear tooltips: `truncate` moved off the `MetaTooltip` root onto an inner label span so the panel and focus ring are not clipped. e2e covers a secondary gear trigger at 390 and 1280 px, plus Escape on a hover-opened panel (WCAG 1.4.13).
+- `/meta` Lighthouse budgets now match DoD 6.01 and are a hard gate (`tools/lighthouse-budget.mjs` exits 1 on a /meta miss). `/meta` desktop CLS 0.033 was a wrap in the index hero/class picker, not a looser budget. Baseline: `docs/meta-lighthouse-baseline.md`.
+- Cheap LOWs: seed script refuses to run in production outside CI; `e2e-ads` is in the required `build (26, false)` aggregator.
+- Pre-existing, not this PR: with JavaScript off, the H1 can be white-on-white on a light page (and under `prefers-color-scheme` / system) on `/guide`, `/faq` and `/news` — `MetaShell` / `useIsDark` still SSR the dark text classes until mount. Follow up separately; do not fold it into C2.

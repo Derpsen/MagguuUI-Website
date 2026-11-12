@@ -1,9 +1,10 @@
-// Advisory Lighthouse budget check (never fails the build).
+// Lighthouse budget check.
 //
 // Usage: node tools/lighthouse-budget.mjs <budgets.json> mobile=<lhci-dir> desktop=<lhci-dir>
 // Each <lhci-dir> is a Lighthouse CI results folder (manifest.json + lhr-*.json).
 // Writes a markdown table to $GITHUB_STEP_SUMMARY (or stdout) and prints one
-// `::warning::` annotation per exceeded budget. Always exits 0.
+// annotation per exceeded budget. /meta and /meta/* are a hard gate (::error,
+// exit 1). Other pages stay advisory (::warning, do not fail the process).
 import { appendFileSync, existsSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -52,15 +53,44 @@ export function compare(measured, budget) {
 
 const escapeData = (s) => s.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')
 
+/** /meta and every spec page under it are a hard CI gate (DoD 6.01). */
+export function isHardBudgetPage(page) {
+  return page === '/meta' || page.startsWith('/meta/')
+}
+
 /** @param {string} page @param {string} mode @param {ReturnType<typeof compare>} rows */
 export function annotations(page, mode, rows) {
+  const hard = isHardBudgetPage(page)
   return rows
     .filter((r) => r.ok === false)
     .map((r) => {
       const op = r.kind === 'min' ? 'below the minimum of' : 'above the budget of'
-      const msg = `${page} (${mode}): ${r.label} ${r.value}${r.unit} is ${op} ${r.limit}${r.unit}. Advisory only, the job stays green.`
-      return `::warning title=Lighthouse budget::${escapeData(msg)}`
+      const tail = hard ? 'This fails the Lighthouse job.' : 'Advisory only, the job stays green unless a /meta budget also missed.'
+      const msg = `${page} (${mode}): ${r.label} ${r.value}${r.unit} is ${op} ${r.limit}${r.unit}. ${tail}`
+      const kind = hard ? 'error' : 'warning'
+      return `::${kind} title=Lighthouse budget::${escapeData(msg)}`
     })
+}
+
+/** @param {{ page: string, mode: string, rows: ReturnType<typeof compare> }[]} results */
+export function hardBudgetFailed(results) {
+  return results.some((r) => isHardBudgetPage(r.page) && r.rows.some((x) => x.ok === false))
+}
+
+/**
+ * @param {{ page: string, mode: string }[]} results
+ * @param {Record<string, { mobile?: unknown, desktop?: unknown }>} budgets
+ */
+export function missingHardCoverage(results, budgets) {
+  const seen = new Set(results.map((r) => `${r.page} ${r.mode}`))
+  const missing = []
+  for (const [page, modes] of Object.entries(budgets)) {
+    if (!isHardBudgetPage(page)) continue
+    for (const mode of ['mobile', 'desktop']) {
+      if (modes?.[mode] && !seen.has(`${page} ${mode}`)) missing.push(`${page} (${mode})`)
+    }
+  }
+  return missing
 }
 
 const cell = (r) => {
@@ -76,7 +106,7 @@ export function summaryMarkdown(results) {
     '## Lighthouse budgets (advisory)',
     '',
     'Production build served locally on a shared runner, median of 3 runs per URL. ' +
-      'Budgets live in `.github/lighthouse-budgets.json`; exceeding one only raises a warning.',
+      'Budgets live in `.github/lighthouse-budgets.json`. `/meta` pages are a hard gate; other pages are advisory.',
     '',
     `| Page | Mode | ${METRICS.map((m) => m.label).join(' | ')} |`,
     `|---|---|${METRICS.map(() => '---').join('|')}|`,
@@ -120,15 +150,21 @@ export function main(argv) {
   const md = summaryMarkdown(results)
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, md)
   else process.stdout.write(md)
+  const missing = missingHardCoverage(results, budgets)
+  for (const pageMode of missing) {
+    warnings.push(`::error title=Lighthouse budget::No Lighthouse results for ${pageMode}. /meta budgets are a hard gate.`)
+  }
   for (const w of warnings) console.log(w)
-  return { results, warnings }
+  const failed = hardBudgetFailed(results) || missing.length > 0
+  return { results, warnings, failed, missing }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
-    main(process.argv.slice(2))
+    const { failed } = main(process.argv.slice(2))
+    process.exit(failed ? 1 : 0)
   } catch (error) {
-    console.log(`::warning title=Lighthouse budget::Budget check could not run: ${escapeData(String(error?.message ?? error))}`)
+    console.log(`::error title=Lighthouse budget::Budget check could not run: ${escapeData(String(error?.message ?? error))}`)
+    process.exit(1)
   }
-  process.exit(0)
 }

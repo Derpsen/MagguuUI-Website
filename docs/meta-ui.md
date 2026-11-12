@@ -78,13 +78,15 @@ vue-tsc error set is a separate audit PR.
 - Own accessible tooltips on talent and gear names (DoD 3.08): hover, focus,
   Escape to dismiss. Plain site style, no third-party scripts, no Wowhead
   links or tooltip widgets.
-- Lighthouse budgets for `/meta` and `/meta/mage/fire` use the checked-in
-  snapshot fixture as the baseline (DoD 6.01 / 14.07). CI seeds it with
-  `scripts/seed-meta-fixture.ts` before the production Lighthouse server starts.
-  Never set a fixture-seed flag on Unraid. The spec page SSR-renders the
-  heatmap, gear and tooltips, then hydrates that below-fold block only when
-  it is visible (`LazyMetaSpecBelowFold` + `hydrate-on-visible`) so it stays
-  off the mobile TBT path.
+- Lighthouse budgets for `/meta` and `/meta/mage/fire` follow DoD 6.01 and are
+  a hard CI gate (other pages in the same workflow stay advisory). The numbers
+  and the CLS fix are recorded in `docs/meta-lighthouse-baseline.md`. CI seeds
+  the fixture with `scripts/seed-meta-fixture.ts` before the production
+  Lighthouse server starts; the script refuses to run in production outside
+  CI and must never be used on Unraid. The spec page SSR-renders the heatmap,
+  gear and tooltips, then hydrates that below-fold block only when it is
+  visible (`LazyMetaSpecBelowFold` + `hydrate-on-visible`) so it stays off the
+  mobile TBT path.
 - `/meta` is in the Retail header, footer and sitemap (the index only, not
   every class or spec page) after that budget went green in CI.
 

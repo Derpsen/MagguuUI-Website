@@ -99,8 +99,7 @@ jobs:
 
 
   # Ads layout e2e, separate from the sharded suite so NUXT_ADS=on does not
-  # change the default-off main run. Not part of the required aggregator:
-  # a failure is visible on the PR but does not block `build (26, false)`.
+  # change the default-off main run. Part of the required aggregator.
   e2e-ads:
     name: e2e-ads (NUXT_ADS=on)
     runs-on: ubuntu-latest
@@ -137,7 +136,7 @@ jobs:
   build:
     # Aggregator with the exact name of the required check (`build (26, false)`).
     # !cancelled() instead of success(): a failed need must FAIL this job, never skip it (a skipped required check passes).
-    needs: [checks, e2e]
+    needs: [checks, e2e, e2e-ads]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5

@@ -51,10 +51,10 @@
             <ol v-if="row.items.length > 1" class="mt-2 space-y-1 border-t pt-2" :class="tone.rule.value">
               <li v-for="item in row.items.slice(1)" :key="item.itemId" class="flex items-baseline justify-between gap-3 text-xs">
                 <MetaTooltip
-                  class="min-w-0 truncate text-[var(--meta-q-light)] dark:text-[var(--meta-q-dark)]"
+                  class="min-w-0 max-w-full text-[var(--meta-q-light)] dark:text-[var(--meta-q-dark)]"
                   :style="qualityStyle(item.quality)"
                 >
-                  {{ item.label }}
+                  <span class="block truncate">{{ item.label }}</span>
                   <template #content>
                     <span class="font-mono text-[0.65rem] uppercase tracking-[0.12em]" :class="tone.label.value">{{ row.label }}</span>
                     <span class="mt-1 block">{{ item.label }}</span>

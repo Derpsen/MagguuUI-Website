@@ -40,6 +40,56 @@ async function waitForImages(page: import('@playwright/test').Page) {
   })
 }
 
+
+async function assertUnclippedOpenTooltip(page: import('@playwright/test').Page, trigger: import('@playwright/test').Locator) {
+  await trigger.scrollIntoViewIfNeeded()
+  await expect(trigger).toBeVisible()
+  // Re-focus must blur first: a leftover focus (e.g. previous viewport) makes
+  // locator.focus() a no-op, so @focus never fires and the panel stays closed.
+  await trigger.evaluate((el) => (el as HTMLElement).blur())
+  await trigger.focus()
+  const tipId = await trigger.getAttribute('aria-describedby')
+  expect(tipId).toBeTruthy()
+  const tip = page.locator(`[id="${tipId}"]`)
+  await expect(tip).toBeVisible()
+  const clip = await tip.evaluate((el) => {
+    const r = el.getBoundingClientRect()
+    if (r.width < 8 || r.height < 8) return 'empty-box'
+    let parent = el.parentElement
+    while (parent && parent !== document.body) {
+      const style = getComputedStyle(parent)
+      const hidden = [style.overflow, style.overflowX, style.overflowY].some((value) => value === 'hidden' || value === 'clip')
+      if (hidden) {
+        const box = parent.getBoundingClientRect()
+        if (r.left < box.left - 1 || r.right > box.right + 1 || r.top < box.top - 1 || r.bottom > box.bottom + 1) {
+          return parent.className || parent.tagName
+        }
+      }
+      parent = parent.parentElement
+    }
+    return ''
+  })
+  expect(clip, `tooltip panel clipped by overflow: ${clip}`).toBe('')
+  const ring = await trigger.evaluate((el) => {
+    const style = getComputedStyle(el)
+    const r = el.getBoundingClientRect()
+    let clipped = false
+    let parent = el.parentElement
+    while (parent && parent !== document.body) {
+      const overflow = getComputedStyle(parent)
+      if (/(hidden|clip)/.test(`${overflow.overflow}${overflow.overflowX}${overflow.overflowY}`)) {
+        const box = parent.getBoundingClientRect()
+        if (r.top - 4 < box.top || r.bottom + 4 > box.bottom || r.left - 4 < box.left || r.right + 4 > box.right) clipped = true
+      }
+      parent = parent.parentElement
+    }
+    return { shadow: style.boxShadow, outline: style.outline, clipped }
+  })
+  expect(ring.shadow === 'none' && (ring.outline === 'none' || ring.outline === 'rgb(0, 0, 0) none 0px'), 'expected a visible focus ring').toBe(false)
+  expect(ring.clipped, 'focus ring clipped by overflow').toBe(false)
+  return tip
+}
+
 async function readCls(page: import('@playwright/test').Page) {
   await waitForImages(page)
   return page.evaluate(() => window.__metaCls ?? 0)
@@ -116,6 +166,31 @@ test('/meta/mage/fire is a filled fixture spec page with CLS under 0.1, and empt
 
   const missing = await page.goto('/meta/not-a-class')
   expect(missing?.status()).toBe(404)
+})
+
+
+test('gear tooltips stay visible and unclipped at 390 and 1280 px, and Escape closes a hover-opened panel', async ({ page }) => {
+  const { response } = await visit('/meta/mage/fire', 'light', page)
+  expect(response?.status()).toBe(200)
+  for (const width of [390, 1280]) {
+    await page.setViewportSize({ width, height: 800 })
+    await page.locator('#gear').scrollIntoViewIfNeeded()
+    await expect(page.locator('[data-meta-below-fold][data-hydrated="true"]')).toBeVisible()
+    const trigger = page.locator('#gear ol [data-meta-tooltip-trigger]').first()
+    const tip = await assertUnclippedOpenTooltip(page, trigger)
+    await page.keyboard.press('Escape')
+    await expect(tip).toBeHidden()
+  }
+
+  await page.setViewportSize({ width: 1280, height: 800 })
+  const hoverTrigger = page.locator('#gear ol [data-meta-tooltip-trigger]').first()
+  await hoverTrigger.scrollIntoViewIfNeeded()
+  await hoverTrigger.hover()
+  const hoverTipId = await hoverTrigger.getAttribute('aria-describedby')
+  const hoverTip = page.locator(`[id="${hoverTipId}"]`)
+  await expect(hoverTip).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(hoverTip).toBeHidden()
 })
 
 test('role filters are plain links and no ad markup ships while NUXT_ADS is off', async ({ page }) => {

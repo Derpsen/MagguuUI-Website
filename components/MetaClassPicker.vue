@@ -1,18 +1,18 @@
 <template>
   <nav :aria-labelledby="headingId">
     <h2 :id="headingId" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ kl.pickClass }}</h2>
-    <ul class="mt-3 flex flex-wrap gap-2">
+    <ul class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
       <li v-for="cls in pills" :key="cls.slug">
         <NuxtLink
           :to="cls.to"
           :aria-current="cls.slug === current ? 'page' : undefined"
-          class="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm focus-visible:outline-2"
+          class="inline-flex w-full min-w-0 items-center gap-2 rounded-full border px-3 py-1.5 text-sm focus-visible:outline-2"
           :class="cls.slug === current ? activePill : idlePill"
           :style="{ borderColor: cls.slug === current ? cls.hex : undefined, '--meta-cls-light': cls.textLight, '--meta-cls-dark': cls.textDark }"
         >
           <img v-if="cls.icon" :src="cls.icon" alt="" width="20" height="20" class="h-5 w-5 rounded-full" loading="lazy" decoding="async">
           <span v-else class="h-2.5 w-2.5 rounded-full" :style="{ backgroundColor: cls.hex }" aria-hidden="true" />
-          <span class="text-[var(--meta-cls-light)] dark:text-[var(--meta-cls-dark)]">{{ cls.label }}</span>
+          <span class="min-w-0 truncate text-[var(--meta-cls-light)] dark:text-[var(--meta-cls-dark)]">{{ cls.label }}</span>
         </NuxtLink>
       </li>
     </ul>

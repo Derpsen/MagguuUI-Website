@@ -1,5 +1,5 @@
 {
-  "_comment": "Advisory Lighthouse budgets (see .github/workflows/lighthouse.yml). performance = minimum score, lcp/tbt in ms (max), cls (max), scriptKb = max transferred JavaScript in KB. Calibrated on the first GitHub-runner run (2026-10-24), /changelog mobile tightened after the manifest-icon fix and set slightly below it so regressions are flagged; shared runners are noisy, so re-run before acting and re-calibrate after intentional app changes. /meta and /meta/mage/fire are calibrated against the checked-in snapshot fixture (C2); re-calibrate after the first green CI run if the slack is large. Shared runners are noisy.",
+  "_comment": "Lighthouse budgets (see .github/workflows/lighthouse.yml). performance = minimum score, lcp/tbt in ms (max), cls (max), scriptKb = max transferred JavaScript in KB. /, /changelog and /guide stay advisory (a miss is a warning; the job stays green). /meta and /meta/mage/fire are a hard gate (DoD 6.01): tools/lighthouse-budget.mjs exits non-zero on an overrun. Calibrated from CI on #190 against the checked-in snapshot fixture; see docs/meta-lighthouse-baseline.md. Shared runners are noisy; re-run before acting on a lone miss of a non-meta page.",
   "pages": {
     "/": {
       "mobile": {
@@ -51,34 +51,34 @@
     },
     "/meta": {
       "mobile": {
-        "performance": 68,
-        "lcp": 5400,
-        "cls": 0.1,
-        "tbt": 280,
-        "scriptKb": 280
+        "performance": 80,
+        "lcp": 4800,
+        "cls": 0.03,
+        "tbt": 200,
+        "scriptKb": 250
       },
       "desktop": {
-        "performance": 88,
-        "lcp": 2000,
-        "cls": 0.1,
-        "tbt": 90,
-        "scriptKb": 280
+        "performance": 95,
+        "lcp": 1300,
+        "cls": 0.03,
+        "tbt": 60,
+        "scriptKb": 250
       }
     },
     "/meta/mage/fire": {
       "mobile": {
-        "performance": 64,
-        "lcp": 5800,
-        "cls": 0.1,
-        "tbt": 320,
-        "scriptKb": 290
+        "performance": 80,
+        "lcp": 5000,
+        "cls": 0.03,
+        "tbt": 200,
+        "scriptKb": 250
       },
       "desktop": {
-        "performance": 85,
-        "lcp": 2400,
-        "cls": 0.1,
-        "tbt": 120,
-        "scriptKb": 290
+        "performance": 95,
+        "lcp": 1300,
+        "cls": 0.03,
+        "tbt": 60,
+        "scriptKb": 250
       }
     }
   }

@@ -8,6 +8,11 @@ import { sqlite } from '../server/database'
 import { readCurrentMetaSnapshot, writeMetaSnapshot } from '../server/utils/blizzardMetaStore'
 import { parseMetaSnapshotPayload } from '../utils/metaSnapshot'
 
+if (process.env.NODE_ENV === 'production' && process.env.CI !== 'true' && process.env.GITHUB_ACTIONS !== 'true') {
+  console.error('[meta-fixture] refusing to seed in production outside CI. Never run this on Unraid.')
+  process.exit(1)
+}
+
 const path = join(process.cwd(), 'tests/fixtures/blizzard-meta/snapshot.json')
 const payload = parseMetaSnapshotPayload(readFileSync(path, 'utf8'))
 if (!payload) {

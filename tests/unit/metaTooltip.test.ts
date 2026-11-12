@@ -25,4 +25,10 @@ describe('meta own tooltips', () => {
     assert.doesNotMatch(page, /<MetaTalentHeatmap\b/)
     assert.doesNotMatch(page, /<MetaGearSlots\b/)
   })
+
+  it('does not put truncate on the MetaTooltip root in gear lists', () => {
+    const gear = readFileSync(new URL('../../components/MetaGearSlots.vue', import.meta.url), 'utf8')
+    assert.doesNotMatch(gear, /<MetaTooltip[^>]*class="[^"]*\btruncate\b/)
+    assert.match(gear, /<span class="block truncate">/)
+  })
 })

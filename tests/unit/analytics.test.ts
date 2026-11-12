@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readdirSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { describe, it } from 'node:test'
 import Database from 'better-sqlite3'
 import { initializeDatabase } from '../../server/database/bootstrap'
@@ -84,6 +84,8 @@ describe('request rules', () => {
   it('only counts known public routes, without query, hash or trailing slash', () => {
     assert.equal(normalizeTrackedPath('/strings?x=1#a'), '/strings')
     assert.equal(normalizeTrackedPath('/faq/'), '/faq')
+    assert.equal(normalizeTrackedPath('/news/wow-forever-now-live'), '/news')
+    assert.equal(normalizeTrackedPath('/news/feed.xml'), null)
     assert.equal(normalizeTrackedPath('/'), '/')
     assert.equal(normalizeTrackedPath('/meta'), '/meta')
     assert.equal(normalizeTrackedPath('/meta/mage'), '/meta')
@@ -97,7 +99,8 @@ describe('request rules', () => {
   })
 
   it('keeps the allowlist in step with the public pages', () => {
-    const pages = readdirSync(new URL('../../pages', import.meta.url), { withFileTypes: true })
+    const pagesDir = new URL('../../pages', import.meta.url)
+    const pages = readdirSync(pagesDir, { withFileTypes: true })
       .filter(e => e.isFile() && e.name.endsWith('.vue'))
       .map(e => e.name === 'index.vue' ? '/' : `/${e.name.replace(/\.vue$/, '')}`)
     const forever = readdirSync(new URL('../../pages/forever', import.meta.url), { withFileTypes: true })
@@ -105,8 +108,10 @@ describe('request rules', () => {
       .map(e => e.name === 'index.vue' ? '/forever' : `/forever/${e.name.replace(/\.vue$/, '')}`)
     pages.push(...forever)
     const skipDirs = new Set(['admin', 'forever', 'api'])
-    for (const entry of readdirSync(new URL('../../pages', import.meta.url), { withFileTypes: true })) {
-      if (entry.isDirectory() && !entry.name.startsWith('_') && !skipDirs.has(entry.name)) pages.push(`/${entry.name}`)
+    for (const entry of readdirSync(pagesDir, { withFileTypes: true })) {
+      if (!entry.isDirectory() || entry.name.startsWith('_') || skipDirs.has(entry.name)) continue
+      const index = new URL(`../../pages/${entry.name}/index.vue`, import.meta.url)
+      if (existsSync(index)) pages.push(`/${entry.name}`)
     }
     pages.sort()
     assert.deepEqual([...TRACKED_ROUTES].sort(), pages)

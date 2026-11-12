@@ -95,6 +95,29 @@ export const DATABASE_BOOTSTRAP_SQL = `
   );
   CREATE INDEX IF NOT EXISTS idx_faqs_visible_sort ON faqs(is_visible, sort_order);
 
+  CREATE TABLE IF NOT EXISTS news_articles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    body TEXT NOT NULL,
+    source_url TEXT,
+    source_name TEXT,
+    published_at INTEGER NOT NULL,
+    author TEXT NOT NULL DEFAULT 'Magguu',
+    tags TEXT NOT NULL DEFAULT '[]',
+    is_published INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_news_articles_slug ON news_articles(slug);
+  CREATE INDEX IF NOT EXISTS idx_news_articles_published ON news_articles(is_published, published_at);
+
+  CREATE TABLE IF NOT EXISTS news_seed_markers (
+    slug TEXT PRIMARY KEY NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+
   CREATE TABLE IF NOT EXISTS activity_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     action TEXT NOT NULL,

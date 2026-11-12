@@ -3,7 +3,7 @@
  * route-cache clear, and addon-catalogue seed — those stay in init.ts).
  *
  * Call order is the historical init.ts order after the admin block:
- * site content / settings seed, then markers, then FAQs, changelogs,
+ * site content / settings seed, then markers, then FAQs, changelogs, news,
  * imprint cleanup, contact-email repair.
  */
 import { settings } from '~/server/database/schema'
@@ -16,6 +16,7 @@ import {
   seedSiteContentIfEmpty,
   syncSeededPageContent,
 } from './bootSeed'
+import { seedNewsArticlesIfMissing } from './bootNews'
 import {
   applyLegacyContentMarkers,
   clearPrivateGithubSetting,
@@ -71,6 +72,7 @@ export function runWebsiteBootContent(db: WebsiteBootDb, sqlite: WebsiteBootSqli
 
   seedAndRepairFaqs(db, shouldSyncSeededContent)
   seedAndRepairChangelogs(db)
+  seedNewsArticlesIfMissing(db)
   removeRetiredImprintSettings(sqlite)
   repairRetiredContactEmail(db)
 }

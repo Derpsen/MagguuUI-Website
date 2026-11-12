@@ -14,6 +14,7 @@ This repository contains the public website for MagguuUI, the internal admin are
   - WowUp strings
   - character layouts
   - changelogs
+   - news articles
   - FAQ
   - installation guide
   - site settings
@@ -37,7 +38,7 @@ This repository contains the public website for MagguuUI, the internal admin are
 ## Main Areas
 
 - `pages/`
-  - public pages such as `index`, `strings`, `guide`, `faq`, `changelog`, and `/meta` (EU Mythic+ meta; empty until a snapshot exists)
+  - public pages such as `index`, `strings`, `guide`, `faq`, `news`, `changelog`, and `/meta` (EU Mythic+ meta; empty until a snapshot exists)
   - admin pages under `pages/admin/`
 - `components/admin/` and `composables/useAdminNavigation.ts`
   - shared admin primitives for headers, panels, metrics, empty states, sticky save bars, and navigation context
@@ -222,7 +223,7 @@ Implemented already:
 - CSP and extra security headers
 - no-store/no-index headers for private admin/auth routes
 - removal of `X-Powered-By`
-- shared rich-text sanitizing across public FAQ/home/guide/changelog flows
+- shared rich-text sanitizing across public FAQ/home/guide/changelog/news flows
 - upload hardening via file-signature and size validation
 - SWR caching for public read APIs
 - committed lockfile plus Docker-aware `npm ci` fallback

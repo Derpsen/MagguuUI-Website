@@ -53,6 +53,12 @@ const cards = [
     icon: 'i-heroicons-question-mark-circle',
   },
   {
+    to: '/admin/content/news',
+    label: 'News',
+    hint: 'Public news articles, drafts and sources',
+    icon: 'i-heroicons-newspaper',
+  },
+  {
     to: '/admin/content/changelog',
     label: 'Updates',
     hint: 'Public release notes',

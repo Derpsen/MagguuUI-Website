@@ -797,8 +797,9 @@ html.light .heading-glow::before {
 .prose-custom > *:first-child { margin-top: 0; }
 .prose-custom > *:last-child { margin-bottom: 0; }
 
-html.light .prose-custom a { color: #0AA882; }
-html.light .prose-custom a:hover { color: #088F6F; }
+/* #0AA882 on white is ~2.7:1 and failed axe on /news source links; #06694F is >= 4.5:1. */
+html.light .prose-custom a { color: #06694F; }
+html.light .prose-custom a:hover { color: #055A42; }
 html.light .prose-custom code { background: rgba(8, 143, 111, 0.08); color: #06694F; }
 html.light .prose-custom li::marker { color: rgba(8, 143, 111, 0.55); }
 html.light .prose-custom blockquote { border-left-color: rgba(8, 143, 111, 0.35); color: #566579; }

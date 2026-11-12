@@ -131,6 +131,23 @@ export const faqCreateSchema = z.object({
 
 export const faqUpdateSchema = faqCreateSchema.partial()
 
+// ─── News articles ────────────────────────────────
+
+export const newsCreateSchema = z.object({
+  slug: z.string().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  title: z.string().min(1).max(200),
+  summary: z.string().min(1).max(160),
+  body: z.string().min(1).max(200_000),
+  sourceUrl: z.string().url().max(2000).optional().nullable(),
+  sourceName: z.string().max(120).optional().nullable(),
+  publishedAt: z.number().int().positive(),
+  tags: z.array(z.string().min(1).max(40)).max(20).optional(),
+  isPublished: z.boolean().optional(),
+})
+
+export const newsUpdateSchema = newsCreateSchema.partial()
+
+
 // ─── Site Content (bulk) ──────────────────────────
 
 export const contentItemSchema = z.object({

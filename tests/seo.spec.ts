@@ -12,12 +12,26 @@ test('sitemap.xml lists the public pages, never admin, api, feeds or query varia
   expect(res.headers()['content-type']).toContain('xml')
   const xml = await res.text()
   // Dev answers with the request origin; production uses site.url (checked live).
-  for (const path of ['/', '/strings', '/guide', '/addons', '/configurator', '/changelog', '/faq', '/about', '/imprint', '/privacy', '/forever', '/forever/guide', '/forever/download', '/forever/strings']) {
+  for (const path of ['/', '/strings', '/guide', '/addons', '/configurator', '/changelog', '/faq', '/news', '/about', '/imprint', '/privacy', '/forever', '/forever/guide', '/forever/download', '/forever/strings']) {
     expect(xml).toMatch(new RegExp(`<loc>https?://[^/<]+${path}</loc>`))
   }
   const locs = [...xml.matchAll(/<loc>([^<]*)<\/loc>/g)].map(m => m[1]!)
-  expect(locs).toHaveLength(14)
+  const publishedNewsPaths = [
+    '/news/midnight-season-2-mythic-plus-pool',
+    '/news/midnight-november-hotfixes-class-tuning',
+    '/news/echoes-of-the-worldcore-announced',
+    '/news/november-trading-post-sweet-tooth',
+    '/news/wow-forever-now-live',
+    '/news/midnight-12-1-5-mid-season',
+    '/news/wow-forever-november-hotfixes',
+    '/news/discord-guild-chat-linking',
+  ]
+  for (const path of publishedNewsPaths) {
+    expect(locs.some(loc => loc.endsWith(path)), path).toBe(true)
+  }
+  expect(locs.filter(loc => /\/news\//.test(loc))).toHaveLength(publishedNewsPaths.length)
   expect(locs.join('\n')).not.toMatch(/\/admin|\/api\/|feed\.xml|atom\.xml|\?/)
+  expect(locs.join('\n')).not.toMatch(/pouch-of-violet-dust-launch-celebration/)
   expect(xml.toLowerCase()).not.toContain('nuxtjs/sitemap')
   expect(xml).not.toContain('<xhtml:link')
 })
@@ -65,7 +79,7 @@ test('API responses are noindex, 404 pages never say index', async ({ request })
   expect(tag).not.toMatch(/(^|,\s*)index/)
 })
 
-for (const path of ['/guide', '/changelog']) {
+for (const path of ['/guide', '/changelog', '/news']) {
   test(`${path} has its own OG image that renders as PNG`, async ({ page, request }) => {
     await page.goto(path)
     const og = await page.locator('meta[property="og:image"]').getAttribute('content')

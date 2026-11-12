@@ -273,7 +273,7 @@ export default defineNuxtConfig({
       ? {
           prerender: {
             failOnError: false,
-            routes: ['/', '/guide', '/faq', '/changelog', '/about', '/addons', '/configurator', '/imprint', '/privacy', '/strings', '/forever', '/forever/guide', '/forever/download', '/forever/strings', '/meta'],
+            routes: ['/', '/guide', '/faq', '/news', '/changelog', '/about', '/addons', '/configurator', '/imprint', '/privacy', '/strings', '/forever', '/forever/guide', '/forever/download', '/forever/strings', '/meta'],
           },
         }
       : {}),
@@ -399,6 +399,7 @@ export default defineNuxtConfig({
     '/': { swr: 120 },
     '/guide': { swr: 120 },
     '/faq': { swr: 120 },
+    '/news': { swr: 120 },
     // Deliberately NO page-level swr for /changelog: it takes ?since/from/to/q, and
     // Nitro's route cache keys on the full URL, so every query variant would get its
     // own entry (unbounded growth, and route rules cannot express a getKey or bypass).
@@ -443,6 +444,8 @@ export default defineNuxtConfig({
     '/api/v1/layouts/**': { swr: 120 },
     '/api/v1/content/**': { swr: 120 },
     '/api/v1/faqs': { swr: 120 },
+    '/api/v1/news': { swr: 120 },
+    '/api/v1/news/**': { swr: 120 },
     '/api/v1/search-index': { swr: 120 },
     '/api/v1/changelogs': { swr: 120 },
     '/api/v1/release-stamps': { swr: 120 },

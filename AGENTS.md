@@ -341,6 +341,15 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
   - The container on br0 (`192.168.178.21:3000`) **is reachable directly from the LAN**. With `private`, any LAN host can spoof the header; with the loopback default none can, but then the proxy must be named (an unset variable in production logs `[trusted-proxy] ... ignored` once when a cf-connecting-ip header arrives from an untrusted peer).
   - Live is pinned: `NUXT_TRUSTED_PROXIES=192.168.178.19` (cloudflared). `docker logs MagguuUI | grep trusted-proxy` shows `accepted from socket` once after a deploy.
 
+
+## News (2026-11-11)
+
+- Public SSR `/news` + `/news/[slug]`, RSS at `/news/feed.xml`, sitemap entries for `/news` and published slugs, Takumi OG via `usePublicPageSeo`, `NewsArticle` JSON-LD. Copy is English; Markdown is rendered only through `SafeHtml` / `displayRichText`.
+- SQLite `news_articles` (see `docs/news.md`): slug, title, summary (<=160), body, sourceUrl/sourceName, publishedAt (unix seconds), author always `Magguu`, tags, isPublished. Admin at `/admin/content/news`.
+- Seed from `server/database/news-seed/*.md` is insert-if-slug-missing. `pouch-of-violet-dust-launch-celebration` is always unpublished (drop ends 2026-11-13 01:30 Europe/Berlin).
+- No ad slots here. Blizzard news RSS admin notice (title+link only, no auto-publish) is a TODO in `docs/news.md`.
+- Internal "Also on this site" links to `/guide` and `/meta`. `/meta` may 404 until the Meta PRs land; link-check is advisory.
+
 ## Changelog feeds, filter and ?since= (2026-10-24)
 
 - **Feeds:** `/changelog/feed.xml` (RSS 2.0) and `/changelog/atom.xml` (Atom 1.0), Nitro routes in `server/routes/changelog/`, built by `server/utils/changelogFeed.ts` (pure, no DB) and served by `changelogFeedResponse.ts`. Rows: `isPublished`, version `v%`, never `Unreleased`/`auto`, newest 20 by `publishedAt`, `contentEn || content` rendered with `renderMarkdownToSafeHtml`. XML is escaped (`escapeXml` drops illegal control chars and lone surrogates; HTML body is escaped once more as text). Item/entry URL is `https://ui.magguu.xyz/changelog#release-<slug>`.

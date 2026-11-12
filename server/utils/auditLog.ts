@@ -17,7 +17,7 @@ import { isHtmlCopyKey } from '../../utils/pageCopyDefaults'
 type Sqlite = Pick<Database.Database, 'prepare' | 'transaction'>
 
 export type AuditAction = 'created' | 'updated' | 'deleted' | 'exported'
-export const AUDIT_TYPES = ['content', 'changelog', 'faq', 'setting', 'profile', 'wowup', 'layout', 'addon', 'status_notice', 'community_preset', 'visitor_export'] as const
+export const AUDIT_TYPES = ['content', 'changelog', 'faq', 'news', 'setting', 'profile', 'wowup', 'layout', 'addon', 'status_notice', 'community_preset', 'visitor_export'] as const
 export type AuditType = typeof AUDIT_TYPES[number]
 export const UNDOABLE_TYPES: readonly string[] = ['content', 'changelog', 'faq']
 
@@ -86,6 +86,22 @@ export function changelogSnapshot(row: Record<string, unknown>) {
     isPublished: Boolean(row.isPublished),
     publishedAt: seconds(row.publishedAt),
     createdAt: seconds(row.createdAt),
+  }
+}
+
+
+export function newsSnapshot(row: Record<string, unknown>) {
+  return {
+    slug: String(row.slug ?? ''),
+    title: String(row.title ?? ''),
+    summary: String(row.summary ?? ''),
+    body: String(row.body ?? ''),
+    sourceUrl: row.sourceUrl === null || row.sourceUrl === undefined ? null : String(row.sourceUrl),
+    sourceName: row.sourceName === null || row.sourceName === undefined ? null : String(row.sourceName),
+    publishedAt: seconds(row.publishedAt),
+    author: String(row.author ?? 'Magguu'),
+    tags: row.tags,
+    isPublished: Boolean(row.isPublished),
   }
 }
 

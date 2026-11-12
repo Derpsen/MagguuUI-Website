@@ -1,10 +1,10 @@
-/** Public search index (Guide, Changelog, FAQ, Strings). Pure builder, unit-tested. */
+/** Public search index (Guide, Changelog, FAQ, News, Strings). Pure builder, unit-tested. */
 import { publicAnchorId } from '~/utils/publicAnchor'
 import { plainTextPreview } from '~/utils/richText'
 
 export interface SearchEntry {
   id: string
-  group: 'Guide' | 'Changelog' | 'FAQ' | 'Strings'
+  group: 'Guide' | 'Changelog' | 'FAQ' | 'News' | 'Strings'
   label: string
   /** Short preview shown under the label. */
   text: string
@@ -39,6 +39,7 @@ export interface SearchSources {
   faqs: Array<{ id: number, question: string, answer: string }>
   /** Published `vX.Y.Z` releases, newest first. */
   changelog?: Array<{ version: string, content: string }>
+  news?: Array<{ slug: string, title: string, summary: string, body: string }>
   profiles: Array<{ id: number, addon: string, profile: string }>
   layouts: Array<{ id: number, className: string | null, spec: string | null, name?: string | null }>
   wowupPacks: string[]
@@ -77,6 +78,16 @@ export function buildSearchIndex(src: SearchSources): SearchEntry[] {
       text: plainTextPreview(release.content, 140, CHANGELOG_PLAIN),
       body: plainBody(release.content, CHANGELOG_PLAIN),
       to: `/changelog#${publicAnchorId('release', release.version)}`,
+    })
+  }
+  for (const article of src.news ?? []) {
+    out.push({
+      id: `news-${article.slug}`,
+      group: 'News',
+      label: article.title,
+      text: article.summary,
+      body: plainBody(article.body),
+      to: `/news/${article.slug}`,
     })
   }
   for (const f of src.faqs) {

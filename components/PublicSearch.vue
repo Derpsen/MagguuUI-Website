@@ -1,5 +1,5 @@
 <!--
-  PublicSearch — Ctrl/Cmd+K full-text search over Guide, Changelog, FAQ and Strings.
+  PublicSearch — Ctrl/Cmd+K full-text search over Guide, Changelog, FAQ, News and Strings.
   Loaded lazily (LazyPublicSearch) the first time search opens; the index is
   fetched once from /api/v1/search-index.
 -->
@@ -60,7 +60,7 @@ onMounted(() => requestAnimationFrame(nameListbox))
 // switched off per group; hits carry a body snippet when only the full text matched.
 const groups = computed(() => {
   const hits = searchEntries(entries.value, term.value)
-  return (['Guide', 'Changelog', 'FAQ', 'Strings'] as const).map(id => ({
+  return (['Guide', 'Changelog', 'FAQ', 'News', 'Strings'] as const).map(id => ({
     id,
     label: id,
     ignoreFilter: true,

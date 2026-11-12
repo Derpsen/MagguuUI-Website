@@ -70,6 +70,14 @@ const adminSections: AdminNavSection[] = [
         hint: 'Keep support answers short, grouped and easy to scan.',
       },
       {
+        to: '/admin/content/news',
+        label: 'News',
+        heading: 'News',
+        icon: 'i-heroicons-newspaper',
+        description: 'Public news articles, drafts and sources.',
+        hint: 'Keep titles short, summaries under 160 characters, and only publish when the article should go live.',
+      },
+      {
         to: '/admin/content/changelog',
         label: 'Updates',
         heading: 'Changelog',

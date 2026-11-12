@@ -6,7 +6,7 @@ import { cloudflarePurgeConfigured, purgeCloudflareCache } from '../../server/ut
 describe('edge cache headers', () => {
   it('lets Cloudflare cache public pages and catalog-summary for 120s + SWR', () => {
     assert.equal(CDN_CACHE_CONTROL, 'public, max-age=120, stale-while-revalidate=600')
-    for (const path of ['/', '/guide', '/faq/', '/strings', '/meta', '/meta/mage', '/meta/mage/fire/', '/api/v1/catalog-summary']) {
+    for (const path of ['/', '/guide', '/faq/', '/strings', '/news', '/news/wow-forever-now-live', '/meta', '/meta/mage', '/meta/mage/fire/', '/api/v1/catalog-summary']) {
       assert.equal(isCdnCacheable('GET', path, 200), true, path)
     }
   })
@@ -21,6 +21,7 @@ describe('edge cache headers', () => {
     assert.equal(isCdnCacheable('GET', '/?utm=x', 200), false)
     assert.equal(isCdnCacheable('GET', '/strings?class=mage', 200), false)
     assert.equal(isCdnCacheable('GET', '/strings?pack=x', 200), false)
+    assert.equal(isCdnCacheable('GET', '/news/feed.xml', 200), false)
   })
 
   it('browsers keep revalidating every visit', () => {

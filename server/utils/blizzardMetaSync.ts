@@ -103,6 +103,8 @@ export type MetaSyncCaps = {
   maxConcurrentSpecs: number
   /** Per-spec bound on players kept during ingest, ranked by best then runs. */
   maxCandidatesPerSpec: number
+  /** When > 0, profile at most this many specs (tests and bounded repros). 0 = all. */
+  maxSpecs: number
 }
 
 /** Keep at least 2× the final per-spec sample so multi-spec assignment does not starve a list. */
@@ -119,6 +121,7 @@ export const META_SYNC_DEFAULT_CAPS: MetaSyncCaps = {
   periods: META_PREVIOUS_PERIODS + 1,
   maxConcurrentSpecs: 1,
   maxCandidatesPerSpec: META_SYNC_DEFAULT_MAX_PER_SPEC,
+  maxSpecs: 0,
 }
 
 const API_ROOT = 'https://eu.api.blizzard.com'
@@ -144,6 +147,8 @@ type SyncOptions = {
   stopAfter?: 'pre-spec'
   /** Tests only: called after pre-spec stats are ready, before the candidate table is dropped. */
   onAfterPreSpec?: (info: MetaPreSpecStats) => void
+  /** After each finished spec, publish a growing snapshot when last-good is empty. */
+  onPartialSnapshot?: (payload: MetaSnapshotPayload) => void
   warn?: (message: string) => void
 }
 
@@ -683,6 +688,7 @@ export function mergeMetaSyncCaps(partial?: Partial<MetaSyncCaps>): MetaSyncCaps
       ? Math.floor(requestedPerSpec)
       : META_SYNC_DEFAULT_MAX_PER_SPEC,
   )
+  caps.maxSpecs = Math.max(0, Math.floor(Number(caps.maxSpecs) || 0))
   return caps
 }
 
@@ -702,6 +708,50 @@ function asClock(now?: number | (() => number)): () => number {
 function assertDeadline(deadline: number | undefined, now: () => number) {
   if (deadline != null && now() >= deadline) throw new Error('Meta nightly hit the job deadline')
 }
+
+export function isMetaDeadlineError(error: unknown): boolean {
+  return error instanceof Error && error.message.includes('job deadline')
+}
+
+export function metaSnapshotCoverage(payload: MetaSnapshotPayload | null | undefined): { specsWithData: number, profiles: number } {
+  if (!payload) return { specsWithData: 0, profiles: 0 }
+  let specsWithData = 0
+  let profiles = 0
+  for (const cls of payload.classes) {
+    for (const spec of cls.specs) {
+      const n = spec.profileCount ?? 0
+      if (n > 0) {
+        specsWithData += 1
+        profiles += n
+      }
+    }
+  }
+  return { specsWithData, profiles }
+}
+
+/** Keep last-good when it covers more specs, or the same specs with more profiles. */
+export function shouldKeepLastGoodMetaSnapshot(
+  previous: MetaSnapshotPayload | null | undefined,
+  incoming: MetaSnapshotPayload,
+): boolean {
+  const prev = metaSnapshotCoverage(previous)
+  if (prev.specsWithData === 0 && prev.profiles === 0) return false
+  const next = metaSnapshotCoverage(incoming)
+  if (next.specsWithData > prev.specsWithData) return false
+  if (next.specsWithData === prev.specsWithData && next.profiles >= prev.profiles) return false
+  return true
+}
+
+function throwIfDeadlineAborted(abort?: AbortController) {
+  if (!abort?.signal.aborted) return
+  if (isMetaDeadlineError(abort.signal.reason)) {
+    throw abort.signal.reason instanceof Error
+      ? abort.signal.reason
+      : new Error('Meta nightly hit the job deadline')
+  }
+}
+
+const META_SYNC_PROGRESS_EVERY_CALLS = 50
 
 async function requestToken(
   fetcher: BlizzardFetcher,
@@ -731,6 +781,22 @@ function createGetter(
 ) {
   let token = ''
   const now = asClock(options.now)
+  const startedAt = now()
+  let lastProgressCalls = 0
+  let lastProgressAt = startedAt
+  const maybeLogProgress = () => {
+    const calls = stats.calls
+    if (calls === 0 || calls - lastProgressCalls < META_SYNC_PROGRESS_EVERY_CALLS) return
+    const t = now()
+    const elapsed = Math.max(1, t - startedAt)
+    const window = Math.max(1, t - lastProgressAt)
+    const delta = calls - lastProgressCalls
+    const windowRps = (delta * 1000) / window
+    const overallRps = (calls * 1000) / elapsed
+    options.warn?.(`[blizzard:nightly] progress calls=${calls} elapsed=${(elapsed / 1000).toFixed(1)}s rate=${windowRps.toFixed(1)} rps (overall ${overallRps.toFixed(1)})`)
+    lastProgressCalls = calls
+    lastProgressAt = t
+  }
   const refresh = async (force = false) => {
     if (force) resetBlizzardAccessTokenCache()
     token = await getBlizzardAccessToken(
@@ -742,8 +808,15 @@ function createGetter(
   }
 
   const get = async (path: string, namespace: string, soft = true): Promise<unknown> => {
-    if (syncAborted(abort)) return null
-    assertDeadline(options.deadline, now)
+    if (syncAborted(abort)) {
+      throwIfDeadlineAborted(abort)
+      return null
+    }
+    try {
+      assertDeadline(options.deadline, now)
+    } catch (error) {
+      tripAbort(abort, error)
+    }
     if (!token) await refresh()
     const sep = path.includes('?') ? '&' : '?'
     const url = `${API_ROOT}${path}${sep}namespace=${namespace}&locale=${LOCALE}`
@@ -764,6 +837,7 @@ function createGetter(
         headers.Authorization = `Bearer ${next}`
       },
     })
+    maybeLogProgress()
     if (res.status >= 400 || res.status === 0) return null
     return res.body
   }
@@ -791,7 +865,7 @@ async function mapPool<T>(
       try {
         await worker(items[index]!, index)
       } catch (error) {
-        if (abort && !abort.signal.aborted) abort.abort()
+        if (abort && !abort.signal.aborted) abort.abort(error)
         throw error
       }
     }
@@ -835,12 +909,118 @@ export type MetaPreSpecStats = {
   keyLevelStats: MetaKeyLevelStats
 }
 
+function assemblePayloadFromStaging(input: {
+  sqlite: MetaSqlite
+  runToken: string
+  nowMs: number
+  failures: Pick<ProfileFailures, 'notFound' | 'specMismatch'>
+}): { payload: MetaSnapshotPayload, outdatedDropped: number, unknownTalentNodes: number } | null {
+  const context = readMetaSyncRunContext(input.sqlite, input.runToken)
+  if (!context) return null
+  const stagedSpecs = readMetaSyncSpecAggregates(input.sqlite, input.runToken)
+  const specPopFromStage = new Map(context.specPop.map(pop => [`${pop.className}|${pop.specName}`, pop] as const))
+  const hashCount = new Map<string, number>()
+  for (const stage of stagedSpecs) {
+    for (const [hash, serialized] of Object.entries(stage.bucketsByHash)) {
+      const key = `${stage.className}:${hash}`
+      hashCount.set(key, (hashCount.get(key) ?? 0) + (serialized.profiles ?? 0))
+    }
+  }
+  const currentHashByClass = new Map<string, string>()
+  for (const [key, count] of hashCount) {
+    const split = key.indexOf(':')
+    const className = key.slice(0, split)
+    const hash = key.slice(split + 1)
+    const current = currentHashByClass.get(className)
+    if (!current || count > (hashCount.get(`${className}:${current}`) ?? 0)) currentHashByClass.set(className, hash)
+  }
+
+  const layouts = new Map<string, MetaTalentLayout>()
+  const profileBySpec = new Map<string, ProfileBucket>()
+  let unknownTalentNodes = 0
+  const versions: number[] = []
+  let outdatedDropped = 0
+  for (const stage of stagedSpecs) {
+    const key = `${stage.className}|${stage.specName}`
+    const layoutKey = `${toMetaSlug(stage.className)}|${toMetaSlug(stage.specName)}`
+    if (stage.layout) layouts.set(layoutKey, stage.layout)
+    const current = currentHashByClass.get(stage.className)
+    let dropped = 0
+    for (const [hash, serialized] of Object.entries(stage.bucketsByHash)) {
+      const profiles = serialized.profiles ?? 0
+      if (current && hash === current) {
+        profileBySpec.set(key, deserializeProfileBucket(serialized))
+      } else {
+        dropped += profiles
+      }
+    }
+    if (!profileBySpec.has(key)) profileBySpec.set(key, emptyProfileBucket())
+    outdatedDropped += dropped
+    if (current) {
+      for (const version of stage.versionsByHash[current] ?? []) versions.push(version)
+    }
+    unknownTalentNodes += profileBySpec.get(key)!.unknownTalentNodes
+  }
+
+  const classes = buildClassSummaries(specPopFromStage, profileBySpec, context.totalCharacters)
+  attachSpecLayouts(classes, layouts)
+
+  const hashes = [...new Set(currentHashByClass.values())]
+  const version = versions.sort((a, b) => versions.filter(v => v === b).length - versions.filter(v => v === a).length)[0]
+  const talentTree: MetaTalentTreeState | null = hashes.length === 1
+    ? { hash: hashes[0]!, build: version != null ? String(version) : null }
+    : { hash: null, build: version != null ? String(version) : null }
+
+  const successfulProfiles = [...profileBySpec.values()].reduce((sum, bucket) => sum + bucket.profiles, 0)
+  const keyLevels = metaKeyLevelsFromStats(context.keyLevelStats) ?? minMax(context.allKeyLevels)
+  const fetchedAt = Math.floor(input.nowMs / 1000)
+  const season = context.season
+  const periods = context.periods
+  const payload: MetaSnapshotPayload = {
+    region: META_REGION,
+    focus: META_FOCUS,
+    season,
+    periods,
+    talentTree,
+    freshness: {
+      fetchedAt,
+      players: context.totalCharacters,
+      keyLevels,
+      region: META_REGION,
+      source: 'blizzard',
+    },
+    basis: {
+      region: META_REGION,
+      focus: META_FOCUS,
+      season,
+      periods,
+      talentTree,
+      keyLevels,
+      players: context.totalCharacters,
+      profiles: successfulProfiles,
+      source: 'blizzard',
+    },
+    sampled: {
+      realms: context.realmCount,
+      leaderboards: context.leaderboards.ok,
+      players: context.totalCharacters,
+      profiles: successfulProfiles,
+      skipped404: input.failures.notFound,
+      specMismatch: input.failures.specMismatch,
+      unknownTalentNodes,
+    },
+    classes,
+  }
+  return { payload, outdatedDropped, unknownTalentNodes }
+}
+
 export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   payload: MetaSnapshotPayload
   stats: BlizzardHttpStats
   failures: ProfileFailures
   leaderboards: { planned: number, ok: number, failed: number }
   preSpec?: MetaPreSpecStats
+  hitDeadline?: boolean
 }> {
   const caps = mergeCaps(options.caps)
   const clock = asClock(options.now)
@@ -1080,8 +1260,11 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     }
   }
 
-  const specIds = [...perSpec.keys()]
+  const specIds = caps.maxSpecs > 0 ? [...perSpec.keys()].slice(0, caps.maxSpecs) : [...perSpec.keys()]
+  let hitDeadline = false
+  try {
   await mapPool(specIds, caps.maxConcurrentSpecs, async (specId) => {
+    throwIfDeadlineAborted(abort)
     if (syncAborted(abort)) return
     runGuards(abort, options.deadline, asClock(options.now), heap)
     const list = perSpec.get(specId) ?? []
@@ -1091,10 +1274,15 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
       return
     }
 
+    const specStartedAt = asClock(options.now)()
+    const callsBefore = stats.calls
+    options.warn?.(`[blizzard:nightly] spec ${meta.className}/${meta.specName} start candidates=${list.length}`)
+
     let layout = null
     const href = specMeta.get(specId)?.treeHref
     const match = href?.match(/talent-tree\/(\d+)\/playable-specialization\/(\d+)/)
     if (match) {
+      throwIfDeadlineAborted(abort)
       if (syncAborted(abort)) return
       const body = await get(`/data/wow/talent-tree/${match[1]}/playable-specialization/${match[2]}`, STATIC)
       layout = parseTalentTreeLayout(body, specId)
@@ -1103,70 +1291,103 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
 
     const bucketsByHash = new Map<string, ProfileBucket>()
     const versionsByHash: Record<string, number[]> = {}
-    for (let i = 0; i < list.length && (bucketsByHash.size ? [...bucketsByHash.values()].reduce((sum, bucket) => sum + bucket.profiles, 0) : 0) < caps.samplePerSpec && i < caps.maxAttemptsPerSpec; i++) {
-      if (syncAborted(abort)) return
-      runGuards(abort, options.deadline, asClock(options.now), heap)
-      const target = list[i]!
-      failures.attempted += 1
-      try {
-        const base = `/profile/wow/character/${encodeURIComponent(target.realm)}/${encodeURIComponent(target.name)}`
+    let cursor = 0
+    let profiles = 0
+    let attempts = 0
+    let stopSampling = false
+    const takeNext = (): CharacterCandidate | null => {
+      throwIfDeadlineAborted(abort)
+      if (syncAborted(abort) || stopSampling) return null
+      if (profiles >= caps.samplePerSpec) return null
+      if (cursor >= list.length || cursor >= caps.maxAttemptsPerSpec) return null
+      const row = list[cursor]!
+      cursor += 1
+      return row
+    }
+    // Leave traffic-gate slots for other in-flight specs (default maxConcurrentSpecs is 1).
+    const profileConcurrency = Math.max(1, Math.min(
+      caps.concurrency,
+      caps.maxAttemptsPerSpec,
+      list.length || 1,
+      Math.floor(caps.concurrency / Math.max(1, caps.maxConcurrentSpecs)) || 1,
+    ))
+    const sampleWorker = async () => {
+      for (;;) {
+        throwIfDeadlineAborted(abort)
         if (syncAborted(abort)) return
-        const summary = asRecord(await get(base, PROFILE))
-        if (!summary) {
-          failures.notFound += 1
-          continue
+        runGuards(abort, options.deadline, asClock(options.now), heap)
+        const target = takeNext()
+        if (!target) return
+        attempts += 1
+        failures.attempted += 1
+        try {
+          const base = `/profile/wow/character/${encodeURIComponent(target.realm)}/${encodeURIComponent(target.name)}`
+          throwIfDeadlineAborted(abort)
+          if (syncAborted(abort)) return
+          const summary = asRecord(await get(base, PROFILE))
+          if (!summary) {
+            failures.notFound += 1
+            continue
+          }
+          const activeId = asNumber(asRecord(summary.active_spec)?.id) ?? asNumber(asRecord(summary.active_specialization)?.id)
+          if (activeId != null && activeId !== specId) {
+            failures.specMismatch += 1
+            continue
+          }
+          throwIfDeadlineAborted(abort)
+          if (syncAborted(abort)) return
+          const specsBody = await get(`${base}/specializations`, PROFILE)
+          throwIfDeadlineAborted(abort)
+          if (syncAborted(abort)) return
+          const equipmentBody = await get(`${base}/equipment`, PROFILE)
+          if (!specsBody || !equipmentBody) {
+            failures.other += 1
+            continue
+          }
+          const looked = lookupBlizzardSpec(
+            activeId ?? specId,
+            asString(asRecord(asRecord(specsBody)?.active_specialization)?.name) || target.specName,
+            playableClassName(specsBody, target.className),
+          ) || { className: target.className, specName: target.specName }
+          if (toMetaSlug(looked.specName) !== toMetaSlug(target.specName)) {
+            failures.specMismatch += 1
+            continue
+          }
+          const loadouts = extractActiveLoadouts(specsBody)
+          const loadout = loadouts[0]
+          if (!loadout?.code) {
+            failures.noLoadout += 1
+            continue
+          }
+          const header = loadout.header || decodeLoadoutHeader(loadout.code)
+          if (!header || header.specId !== specId) {
+            failures.badLoadoutCode += 1
+            continue
+          }
+          const bucket = bucketsByHash.get(header.treeHash) ?? emptyProfileBucket()
+          const tree = { hash: header.treeHash, build: null, nodeIds: known?.nodes ?? new Set() }
+          absorbProfile(bucket, {
+            specsBody,
+            equipmentBody,
+            characterBody: summary,
+            tree,
+            knownNodes: known?.nodes,
+            knownTalentIds: known?.talentIds,
+          })
+          bucketsByHash.set(header.treeHash, bucket)
+          const versionList = versionsByHash[header.treeHash] ?? (versionsByHash[header.treeHash] = [])
+          versionList.push(header.version)
+          profiles += 1
+          if (profiles >= caps.samplePerSpec) stopSampling = true
+        } catch (error) {
+          if (isMetaDeadlineError(error) || (error instanceof Error && /aborted/i.test(error.message))) throw error
+          failures.exceptions += 1
         }
-        const activeId = asNumber(asRecord(summary.active_spec)?.id) ?? asNumber(asRecord(summary.active_specialization)?.id)
-        if (activeId != null && activeId !== specId) {
-          failures.specMismatch += 1
-          continue
-        }
-        if (syncAborted(abort)) return
-        const specsBody = await get(`${base}/specializations`, PROFILE)
-        if (syncAborted(abort)) return
-        const equipmentBody = await get(`${base}/equipment`, PROFILE)
-        if (!specsBody || !equipmentBody) {
-          failures.other += 1
-          continue
-        }
-        const looked = lookupBlizzardSpec(
-          activeId ?? specId,
-          asString(asRecord(asRecord(specsBody)?.active_specialization)?.name) || target.specName,
-          playableClassName(specsBody, target.className),
-        ) || { className: target.className, specName: target.specName }
-        if (toMetaSlug(looked.specName) !== toMetaSlug(target.specName)) {
-          failures.specMismatch += 1
-          continue
-        }
-        const loadouts = extractActiveLoadouts(specsBody)
-        const loadout = loadouts[0]
-        if (!loadout?.code) {
-          failures.noLoadout += 1
-          continue
-        }
-        const header = loadout.header || decodeLoadoutHeader(loadout.code)
-        if (!header || header.specId !== specId) {
-          failures.badLoadoutCode += 1
-          continue
-        }
-        const bucket = bucketsByHash.get(header.treeHash) ?? emptyProfileBucket()
-        const tree = { hash: header.treeHash, build: null, nodeIds: known?.nodes ?? new Set() }
-        absorbProfile(bucket, {
-          specsBody,
-          equipmentBody,
-          characterBody: summary,
-          tree,
-          knownNodes: known?.nodes,
-          knownTalentIds: known?.talentIds,
-        })
-        bucketsByHash.set(header.treeHash, bucket)
-        const versionList = versionsByHash[header.treeHash] ?? (versionsByHash[header.treeHash] = [])
-        versionList.push(header.version)
-      } catch {
-        failures.exceptions += 1
       }
     }
+    await Promise.all(Array.from({ length: profileConcurrency }, () => sampleWorker()))
 
+    throwIfDeadlineAborted(abort)
     if (syncAborted(abort)) return
     writeMetaSyncSpecAggregate(staging.sqlite, runToken, {
       specId,
@@ -1176,133 +1397,98 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
       versionsByHash,
       layout,
     })
+    runGuards(abort, options.deadline, asClock(options.now), heap)
     bucketsByHash.clear()
     perSpec.delete(specId)
-  }, abort)
-
-  if (syncAborted(abort)) throw new Error('Meta nightly aborted')
-  runGuards(abort, options.deadline, asClock(options.now), heap)
-  const context = readMetaSyncRunContext(staging.sqlite, runToken)
-  if (!context) throw new Error('Meta nightly staging context was missing')
-  const stagedSpecs = readMetaSyncSpecAggregates(staging.sqlite, runToken)
-  const specPopFromStage = new Map(context.specPop.map(pop => [`${pop.className}|${pop.specName}`, pop] as const))
-  const hashCount = new Map<string, number>()
-  for (const stage of stagedSpecs) {
-    for (const [hash, serialized] of Object.entries(stage.bucketsByHash)) {
-      const key = `${stage.className}:${hash}`
-      hashCount.set(key, (hashCount.get(key) ?? 0) + (serialized.profiles ?? 0))
-    }
-  }
-  const currentHashByClass = new Map<string, string>()
-  for (const [key, count] of hashCount) {
-    const split = key.indexOf(':')
-    const className = key.slice(0, split)
-    const hash = key.slice(split + 1)
-    const current = currentHashByClass.get(className)
-    if (!current || count > (hashCount.get(`${className}:${current}`) ?? 0)) currentHashByClass.set(className, hash)
-  }
-
-  const layouts = new Map<string, MetaTalentLayout>()
-  const profileBySpec = new Map<string, ProfileBucket>()
-  let unknownTalentNodes = 0
-  const versions: number[] = []
-  for (const stage of stagedSpecs) {
-    const key = `${stage.className}|${stage.specName}`
-    const layoutKey = `${toMetaSlug(stage.className)}|${toMetaSlug(stage.specName)}`
-    if (stage.layout) layouts.set(layoutKey, stage.layout)
-    const current = currentHashByClass.get(stage.className)
-    let dropped = 0
-    for (const [hash, serialized] of Object.entries(stage.bucketsByHash)) {
-      const profiles = serialized.profiles ?? 0
-      if (current && hash === current) {
-        profileBySpec.set(key, deserializeProfileBucket(serialized))
-      } else {
-        dropped += profiles
+    const elapsed = Math.max(1, asClock(options.now)() - specStartedAt)
+    const specCalls = stats.calls - callsBefore
+    const rps = (specCalls * 1000) / elapsed
+    options.warn?.(`[blizzard:nightly] spec ${meta.className}/${meta.specName} done profiles=${profiles} attempts=${attempts} duration=${(elapsed / 1000).toFixed(1)}s rate=${rps.toFixed(1)} rps`)
+    if (options.onPartialSnapshot) {
+      const partial = assemblePayloadFromStaging({
+        sqlite: staging.sqlite,
+        runToken,
+        nowMs: asClock(options.now)(),
+        failures,
+      })
+      if (partial && metaSnapshotCoverage(partial.payload).specsWithData > 0) {
+        options.onPartialSnapshot(partial.payload)
       }
     }
-    if (!profileBySpec.has(key)) profileBySpec.set(key, emptyProfileBucket())
-    failures.outdatedTree += dropped
-    if (current) {
-      for (const version of stage.versionsByHash[current] ?? []) versions.push(version)
+  }, abort)
+  } catch (error) {
+    if (!isMetaDeadlineError(error)) throw error
+    hitDeadline = true
+  }
+
+  if (syncAborted(abort) && !hitDeadline) throw new Error('Meta nightly aborted')
+  if (!hitDeadline) {
+    try {
+      runGuards(abort, options.deadline, asClock(options.now), heap)
+    } catch (error) {
+      if (!isMetaDeadlineError(error)) throw error
+      hitDeadline = true
     }
-    unknownTalentNodes += profileBySpec.get(key)!.unknownTalentNodes
+  }
+  const assembled = assemblePayloadFromStaging({
+    sqlite: staging.sqlite,
+    runToken,
+    nowMs: asClock(options.now)(),
+    failures,
+  })
+  if (!assembled) {
+    if (hitDeadline) throw new Error('Meta nightly hit the job deadline')
+    throw new Error('Meta nightly staging context was missing')
+  }
+  if (hitDeadline && metaSnapshotCoverage(assembled.payload).specsWithData === 0) {
+    throw new Error('Meta nightly hit the job deadline')
+  }
+  failures.outdatedTree += assembled.outdatedDropped
+  const classes = assembled.payload.classes
+
+  if (!hitDeadline) {
+    try {
+      const itemIds = collectItemIds(classes)
+      const itemIcons = new Map<number, string>()
+      await mapPool(itemIds, caps.concurrency, async (id) => {
+        throwIfDeadlineAborted(abort)
+        if (syncAborted(abort)) return
+        const icon = extractMediaIcon(await get(`/data/wow/media/item/${id}`, STATIC))
+        if (icon) itemIcons.set(id, icon)
+      }, abort)
+      applyItemIcons(classes, itemIcons)
+
+      const spellIds = collectSpellIds(classes)
+      const spellIcons = new Map<number, string>()
+      await mapPool(spellIds, caps.concurrency, async (id) => {
+        throwIfDeadlineAborted(abort)
+        if (syncAborted(abort)) return
+        const icon = extractMediaIcon(await get(`/data/wow/media/spell/${id}`, STATIC))
+        if (icon) spellIcons.set(id, icon)
+      }, abort)
+      applySpellIcons(classes, spellIcons)
+      if (syncAborted(abort)) throw new Error('Meta nightly aborted')
+    } catch (error) {
+      if (isMetaDeadlineError(error)) {
+        hitDeadline = true
+      } else {
+        throw error
+      }
+    }
   }
 
-  const classes = buildClassSummaries(specPopFromStage, profileBySpec, context.totalCharacters)
-  attachSpecLayouts(classes, layouts)
-
-  const itemIds = collectItemIds(classes)
-  const itemIcons = new Map<number, string>()
-  await mapPool(itemIds, caps.concurrency, async (id) => {
-    if (syncAborted(abort)) return
-    const icon = extractMediaIcon(await get(`/data/wow/media/item/${id}`, STATIC))
-    if (icon) itemIcons.set(id, icon)
-  }, abort)
-  applyItemIcons(classes, itemIcons)
-
-  const spellIds = collectSpellIds(classes)
-  const spellIcons = new Map<number, string>()
-  await mapPool(spellIds, caps.concurrency, async (id) => {
-    if (syncAborted(abort)) return
-    const icon = extractMediaIcon(await get(`/data/wow/media/spell/${id}`, STATIC))
-    if (icon) spellIcons.set(id, icon)
-  }, abort)
-  applySpellIcons(classes, spellIcons)
-  if (syncAborted(abort)) throw new Error('Meta nightly aborted')
-
-  const hashes = [...new Set(currentHashByClass.values())]
-  const version = versions.sort((a, b) => versions.filter(v => v === b).length - versions.filter(v => v === a).length)[0]
-  const talentTree: MetaTalentTreeState | null = hashes.length === 1
-    ? { hash: hashes[0]!, build: version != null ? String(version) : null }
-    : { hash: null, build: version != null ? String(version) : null }
-
-  const successfulProfiles = [...profileBySpec.values()].reduce((sum, bucket) => sum + bucket.profiles, 0)
-  const keyLevels = metaKeyLevelsFromStats(context.keyLevelStats) ?? minMax(context.allKeyLevels)
-  const fetchedAt = Math.floor(now / 1000)
-  const season = context.season
-  const payload: MetaSnapshotPayload = {
-    region: META_REGION,
-    focus: META_FOCUS,
-    season,
-    periods,
-    talentTree,
-    freshness: {
-      fetchedAt,
-      players: context.totalCharacters,
-      keyLevels,
-      region: META_REGION,
-      source: 'blizzard',
-    },
-    basis: {
-      region: META_REGION,
-      focus: META_FOCUS,
-      season,
-      periods,
-      talentTree,
-      keyLevels,
-      players: context.totalCharacters,
-      profiles: successfulProfiles,
-      source: 'blizzard',
-    },
-    sampled: {
-      realms: realmIds.length,
-      leaderboards: leaderboardsOk,
-      players: context.totalCharacters,
-      profiles: successfulProfiles,
-      skipped404: failures.notFound,
-      specMismatch: failures.specMismatch,
-      unknownTalentNodes,
-    },
-    classes,
-  }
-
+  const context = readMetaSyncRunContext(staging.sqlite, runToken)
+  const leaderboards = context?.leaderboards ?? { planned: 0, ok: assembled.payload.sampled.leaderboards, failed: 0 }
   clearMetaSyncStaging(staging.sqlite, runToken)
   return {
-    payload,
+    payload: assembled.payload,
     stats,
     failures,
-    leaderboards: context.leaderboards,
+    leaderboards,
+    preSpec,
+    hitDeadline: hitDeadline || undefined,
   }
+
   } finally {
     try { clearMetaSyncStaging(staging.sqlite, runToken) } catch { /* keep the original error */ }
     staging.close()
@@ -1402,7 +1588,54 @@ export async function runScheduledBlizzardMetaSync(input: {
       heap: input.heap,
       runToken: `meta-sync-${startedAt}`,
       abortController: input.abortController,
+      onPartialSnapshot: previous ? undefined : (payload) => {
+        if (metaSnapshotCoverage(payload).specsWithData === 0) return
+        const mid = writeStagedMetaSnapshot(input.sqlite, payload, clock())
+        promoteMetaSnapshot(input.sqlite, mid.snapshotId, payload.region, clock())
+      },
     })
+    const nPerSpec: Record<string, number> = {}
+    for (const cls of built.payload.classes) {
+      for (const spec of cls.specs) nPerSpec[`${cls.slug}/${spec.slug}`] = spec.n
+    }
+    if (built.hitDeadline) {
+      const coverage = metaSnapshotCoverage(built.payload)
+      if (coverage.specsWithData === 0) {
+        return {
+          status: 'error' as const,
+          reason: 'Meta nightly hit the job deadline',
+          snapshotId: null as number | null,
+          stats: built.stats,
+          failures: built.failures,
+          nPerSpec,
+          dropped: built.preSpec?.dropped,
+        }
+      }
+      if (shouldKeepLastGoodMetaSnapshot(previous?.payload, built.payload)) {
+        return {
+          status: 'partial' as const,
+          reason: 'Meta nightly hit the job deadline; kept last-good snapshot',
+          snapshotId: previous!.snapshotId,
+          stats: built.stats,
+          failures: built.failures,
+          nPerSpec,
+          dropped: built.preSpec?.dropped,
+        }
+      }
+      const stagedPartial = writeStagedMetaSnapshot(input.sqlite, built.payload, clock())
+      const promotedPartial = promoteMetaSnapshot(input.sqlite, stagedPartial.snapshotId, built.payload.region, clock())
+      const purgePartial = input.purgeMeta ?? purgeCloudflareMeta
+      await purgePartial()
+      return {
+        status: 'partial' as const,
+        reason: 'Meta nightly hit the job deadline; published partial snapshot',
+        snapshotId: promotedPartial.snapshotId,
+        stats: built.stats,
+        failures: built.failures,
+        nPerSpec,
+        dropped: built.preSpec?.dropped,
+      }
+    }
     const staged = writeStagedMetaSnapshot(input.sqlite, built.payload, clock())
     const plannedProfiles = Math.max(built.failures.attempted, built.payload.sampled.profiles)
     const policy = evaluateMetaRunPolicy({
@@ -1417,10 +1650,6 @@ export async function runScheduledBlizzardMetaSync(input: {
       : 1
     const reasons = [...policy.reasons]
     if (leaderboardRatio < 0.9) reasons.push(`leaderboards ${built.leaderboards.ok}/${built.leaderboards.planned} below 0.9`)
-    const nPerSpec: Record<string, number> = {}
-    for (const cls of built.payload.classes) {
-      for (const spec of cls.specs) nPerSpec[`${cls.slug}/${spec.slug}`] = spec.n
-    }
     if (reasons.length) {
       return {
         status: 'partial' as const,
@@ -1445,10 +1674,10 @@ export async function runScheduledBlizzardMetaSync(input: {
       dropped: built.preSpec?.dropped,
     }
     } catch (error) {
-      if (!isMetaHeapGuardError(error)) throw error
+      if (!isMetaHeapGuardError(error) && !isMetaDeadlineError(error)) throw error
       return {
         status: 'error' as const,
-        reason: error.message,
+        reason: error instanceof Error ? error.message : 'Meta update failed',
         snapshotId: null as number | null,
         stats: undefined,
         failures: undefined,

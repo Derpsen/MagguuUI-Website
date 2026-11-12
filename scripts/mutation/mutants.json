@@ -754,5 +754,23 @@
     "file": "server/utils/blizzardMetaSync.ts",
     "find": "      if (live.best !== top.best || live.runs !== top.runs) {\n        heap.pop()\n        heap.push({ key: top.key, best: live.best, runs: live.runs })\n        continue\n      }\n",
     "repl": "      if (false) {\n        heap.pop()\n        heap.push({ key: top.key, best: live.best, runs: live.runs })\n        continue\n      }\n"
+  },
+  {
+    "name": "meta: deadline partial treated as error when data exists",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "    if (built.hitDeadline) {\n",
+    "repl": "    if (false && built.hitDeadline) {\n"
+  },
+  {
+    "name": "meta: deadline partial overwrites last-good",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "      if (shouldKeepLastGoodMetaSnapshot(previous?.payload, built.payload)) {\n",
+    "repl": "      if (false && shouldKeepLastGoodMetaSnapshot(previous?.payload, built.payload)) {\n"
+  },
+  {
+    "name": "meta: empty last-good treated as coverage to keep",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "  if (prev.specsWithData === 0 && prev.profiles === 0) return false\n",
+    "repl": "  if (prev.specsWithData === 0 && prev.profiles === 0) return true\n"
   }
 ]

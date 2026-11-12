@@ -19,6 +19,13 @@
 - `error.vue` Home → `/` only (never `/home`).
 - CodeQL `init` and `analyze` must share one commit pin.
 
+## 2026-11-12 Meta deadline partial (follow-up to live fire 2)
+
+- Live fire 2 after #197 (digest `447a6177`, health SHA `5f0cd16`) hit the 45 min job deadline with heap fine (~77 MB / 256) and `specsWithData=0`. After the ingest warning (~1.5 min, kept 30 313), ~43 min of 2–8 % CPU (serial profile GETs, not a hang) and no logs. Assemble/promote ran only after every spec, so a deadline left `/meta` empty and the CLI exited 1.
+- Fix (branch `fix/meta-deadline-partial`): intra-spec concurrency under the ≤ 40 rps gate, stop at `samplePerSpec` / `maxAttemptsPerSpec`, progress logs per spec and every 50 calls, incremental promote of a growing snapshot only when last-good is empty, and a deadline with at least one finished spec returns `partial` (exit 3) unless last-good covers more. A deadline with 0 specs stays `error`. External abort mid spec/icon still does not promote.
+- Mutation count is 129 (three new: deadline partial treated as error, overwrite last-good, empty last-good treated as coverage to keep).
+- Bounded real-EU-API repro (`tools/meta-profile-repro.ts`, source `buddy-secrets/blizzard.env` into the env, never print/log/commit; default 2 specs / 15 samples / 2 realms / 1 period) confirmed **too slow, not hung**: 2 specs finished in 12.6 s, 360 calls, 0× 429, ~28 rps overall and ~33–34 rps in the profile phase (rate-gated ≤ 40). Live fire 2's ~43 min of 2–8 % CPU after ingest matches serial 3 GETs/attempt at roughly one request at a time, not a freeze. At the measured concurrent rate, 40 specs × 200 samples (~24k requests) would be around 12–15 min of profiling, inside the 45 min deadline. Tests: `tests/unit/blizzardMetaSync.deadline-partial.test.ts`.
+
 ## 2026-11-12 Meta nightly heap
 
 - Live `blizzard:nightly` at **04:15 Europe/Berlin** on 12 Nov 2026 ran the process out of heap (~377 MB of a 384 MB limit). The container auto-restarted. No new snapshot was written (0× HTTP 429). Last-good (or empty) data stayed as it was only because the process died before promote.

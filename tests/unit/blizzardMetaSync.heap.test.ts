@@ -223,8 +223,10 @@ describe('blizzard meta sync heap budget', () => {
 
     const firstSpecId = HEAP_SPECS[0]!.specId
     const firstNamePrefix = `/s${firstSpecId}p`
+    let fetchesAfterAbort = 0
     const baseFetcher = createHeapFixtureFetcher()
     const fetcher = async (request: Parameters<typeof baseFetcher>[0]) => {
+      if (abortController.signal.aborted) fetchesAfterAbort += 1
       const url = request.url
       if (url.includes('/profile/wow/character/') && !url.includes(firstNamePrefix)) {
         if (!abortController.signal.aborted) await parked
@@ -251,10 +253,15 @@ describe('blizzard meta sync heap budget', () => {
       return stmt
     }) as typeof sqlite.prepare
 
+    let heapTripped = false
     const heap: MetaHeapMonitor = {
       used: () => {
         const n = (originalPrepare('SELECT COUNT(*) AS n FROM meta_sync_spec_staging').get() as { n: number }).n
-        return n >= 1 ? 900 : 1
+        if (!heapTripped && n >= 1) {
+          heapTripped = true
+          return 900
+        }
+        return 1
       },
       limit: () => 1000,
       fraction: 0.85,
@@ -289,10 +296,78 @@ describe('blizzard meta sync heap budget', () => {
     assert.ok(result.reason?.includes('heap'))
     assert.ok(writesBeforeAbort >= 1, `expected at least one staging write before abort, got ${writesBeforeAbort}`)
     assert.equal(writesAfterAbort, 0, `staging write happened after abort (${writesAfterAbort})`)
+    assert.equal(fetchesAfterAbort, 0, `fetcher ran after abort (${fetchesAfterAbort})`)
     const leftoverSpec = sqlite.prepare('SELECT COUNT(*) AS n FROM meta_sync_spec_staging').get() as { n: number }
     const leftoverRun = sqlite.prepare('SELECT COUNT(*) AS n FROM meta_sync_run_staging').get() as { n: number }
     assert.equal(leftoverSpec.n, 0)
     assert.equal(leftoverRun.n, 0)
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    const laterSpec = sqlite.prepare('SELECT COUNT(*) AS n FROM meta_sync_spec_staging').get() as { n: number }
+    const laterRun = sqlite.prepare('SELECT COUNT(*) AS n FROM meta_sync_run_staging').get() as { n: number }
+    assert.equal(laterSpec.n, leftoverSpec.n)
+    assert.equal(laterRun.n, leftoverRun.n)
+    assert.equal(laterSpec.n, 0)
+    assert.equal(laterRun.n, 0)
+  })
+
+  it('does not promote a partial snapshot when abortController is aborted mid spec-phase', { timeout: 30_000 }, async () => {
+    const sqlite = openStore()
+    const now = Date.now()
+    const previous = writeMetaSnapshot(sqlite, snapshotPayload(), now, META_SNAPSHOT_TTL_MS)
+    const abortController = new AbortController()
+    const originalPrepare = sqlite.prepare.bind(sqlite)
+    const baseFetcher = createHeapFixtureFetcher()
+    const fetcher = async (request: Parameters<typeof baseFetcher>[0]) => {
+      const response = await baseFetcher(request)
+      if (
+        request.url.includes('/profile/wow/character/')
+        && !abortController.signal.aborted
+        && (originalPrepare('SELECT COUNT(*) AS n FROM meta_sync_spec_staging').get() as { n: number }).n >= 1
+      ) {
+        abortController.abort()
+      }
+      return response
+    }
+
+    let thrown: unknown
+    let result: Awaited<ReturnType<typeof runScheduledBlizzardMetaSync>> | undefined
+    try {
+      result = await runScheduledBlizzardMetaSync({
+        sqlite,
+        config: {
+          metaNightly: 'on',
+          blizzardClientId: 'id',
+          blizzardClientSecret: 'secret',
+        },
+        fetcher,
+        now,
+        caps: {
+          maxRealms: 1,
+          periods: 1,
+          concurrency: 4,
+          maxConcurrentSpecs: 4,
+          samplePerSpec: 2,
+          maxAttemptsPerSpec: 2,
+        },
+        abortController,
+        kumaPush: async () => 'pushed',
+        purgeMeta: async () => 'purged',
+        sleep: async () => {},
+      })
+    } catch (error) {
+      thrown = error
+    }
+
+    if (thrown) {
+      assert.match(String(thrown), /aborted/)
+    } else {
+      assert.equal(result?.status, 'error')
+      assert.equal(result?.snapshotId, null)
+      assert.notEqual(result?.status, 'ok')
+    }
+    const current = readCurrentMetaSnapshot(sqlite, META_REGION, now)
+    assert.ok(current)
+    assert.equal(current.snapshotId, previous.snapshotId)
   })
 })
 

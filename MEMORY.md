@@ -687,3 +687,8 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 - Real no-JS state is still whole-page white-on-white (axe `/faq` 20 nodes to `/` 113 nodes). #192 only keeps public H1s readable under `html.light`; the rest of the unhydrated light page remains a later follow-up.
 - #190 LOWs still open: document a minimum run count for the Lighthouse median, refresh baseline doc numbers, and extend the unclipped timestamp e2e beyond only 390 px.
 - #192: dark markdown H1 is slightly brighter than before (`html.dark .public-shell h1 { color: #fff }`). Follow up if markdown heading contrast looks off.
+
+## 2026-11-12 #191 Code-Review pass (heap abort tests)
+
+- Concurrent abort test now trips the heap guard only once, then returns to a normal (safe) reading, so later workers have to honour abort checks and `Promise.allSettled`. It also counts fetcher calls after abort (must be 0) and re-reads both staging tables after 1.5 s (must stay empty). An external `abortController.abort()` mid spec-phase throws before assemble so a partial snapshot cannot be promoted as `ok`.
+- Left for later (reviewer LOWs, not this pass): a cross-process clear-all of leftover staging; convert the playable-specialization `Promise.all` to the same abort-aware pool; add a mutation that is equivalent to dropping the lock-start clear-all.

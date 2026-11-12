@@ -247,7 +247,7 @@ function createGetter(
   }
 
   const get = async (path: string, namespace: string, soft = true): Promise<unknown> => {
-    if (abort.signal.aborted) return null
+    if (syncAborted(abort)) return null
     assertDeadline(options.deadline, now)
     if (!token) await refresh()
     const sep = path.includes('?') ? '&' : '?'
@@ -276,6 +276,10 @@ function createGetter(
   return { get, refresh }
 }
 
+function syncAborted(abort?: AbortController) {
+  return Boolean(abort?.signal.aborted)
+}
+
 async function mapPool<T>(
   items: readonly T[],
   concurrency: number,
@@ -286,7 +290,7 @@ async function mapPool<T>(
   const limit = Math.max(1, Math.min(concurrency, items.length || 1))
   const run = async () => {
     while (next < items.length) {
-      if (abort?.signal.aborted) return
+      if (syncAborted(abort)) return
       const index = next
       next += 1
       try {
@@ -398,9 +402,9 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   let leaderboardsFailed = 0
 
   await mapPool(jobs, caps.concurrency, async ([realmId, dungeonId, periodId]) => {
-    if (abort.signal.aborted) return
+    if (syncAborted(abort)) return
     runGuards(abort, options.deadline, asClock(options.now), heap)
-    if (abort.signal.aborted) return
+    if (syncAborted(abort)) return
     const board = asRecord(await get(`/data/wow/connected-realm/${realmId}/mythic-leaderboard/${dungeonId}/period/${periodId}`, DYNAMIC))
     if (!board) {
       leaderboardsFailed += 1
@@ -448,10 +452,10 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   const specIndex = asRecord(await get('/data/wow/playable-specialization/index', STATIC))
   const specMeta = new Map<number, { className: string, specName: string, treeHref: string | null }>()
   await Promise.all(asArray(specIndex?.character_specializations).map(async (item) => {
-    if (abort.signal.aborted) return
+    if (syncAborted(abort)) return
     const id = asNumber(asRecord(item)?.id)
     if (id == null) return
-    if (abort.signal.aborted) return
+    if (syncAborted(abort)) return
     const body = asRecord(await get(`/data/wow/playable-specialization/${id}`, STATIC))
     if (!body) return
     const className = asString(asRecord(body.playable_class)?.name)
@@ -502,7 +506,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   const totalCharacters = [...specPop.values()].reduce((sum, pop) => sum + pop.count, 0)
 
   runGuards(abort, options.deadline, asClock(options.now), heap)
-  if (abort.signal.aborted) throw new Error('Meta nightly aborted')
+  if (syncAborted(abort)) throw new Error('Meta nightly aborted')
   writeMetaSyncRunContext(staging.sqlite, runToken, {
     season: { id: seasonId, label: seasonLabel },
     periods,
@@ -516,7 +520,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
 
   const specIds = [...perSpec.keys()]
   await mapPool(specIds, caps.maxConcurrentSpecs, async (specId) => {
-    if (abort.signal.aborted) return
+    if (syncAborted(abort)) return
     runGuards(abort, options.deadline, asClock(options.now), heap)
     const list = perSpec.get(specId) ?? []
     const meta = specMeta.get(specId) || (list[0] ? { className: list[0].className, specName: list[0].specName, treeHref: null as string | null } : null)
@@ -529,7 +533,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     const href = specMeta.get(specId)?.treeHref
     const match = href?.match(/talent-tree\/(\d+)\/playable-specialization\/(\d+)/)
     if (match) {
-      if (abort.signal.aborted) return
+      if (syncAborted(abort)) return
       const body = await get(`/data/wow/talent-tree/${match[1]}/playable-specialization/${match[2]}`, STATIC)
       layout = parseTalentTreeLayout(body, specId)
     }
@@ -538,13 +542,13 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     const bucketsByHash = new Map<string, ProfileBucket>()
     const versionsByHash: Record<string, number[]> = {}
     for (let i = 0; i < list.length && (bucketsByHash.size ? [...bucketsByHash.values()].reduce((sum, bucket) => sum + bucket.profiles, 0) : 0) < caps.samplePerSpec && i < caps.maxAttemptsPerSpec; i++) {
-      if (abort.signal.aborted) return
+      if (syncAborted(abort)) return
       runGuards(abort, options.deadline, asClock(options.now), heap)
       const target = list[i]!
       failures.attempted += 1
       try {
         const base = `/profile/wow/character/${encodeURIComponent(target.realm)}/${encodeURIComponent(target.name)}`
-        if (abort.signal.aborted) return
+        if (syncAborted(abort)) return
         const summary = asRecord(await get(base, PROFILE))
         if (!summary) {
           failures.notFound += 1
@@ -555,9 +559,9 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
           failures.specMismatch += 1
           continue
         }
-        if (abort.signal.aborted) return
+        if (syncAborted(abort)) return
         const specsBody = await get(`${base}/specializations`, PROFILE)
-        if (abort.signal.aborted) return
+        if (syncAborted(abort)) return
         const equipmentBody = await get(`${base}/equipment`, PROFILE)
         if (!specsBody || !equipmentBody) {
           failures.other += 1
@@ -601,7 +605,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
       }
     }
 
-    if (abort.signal.aborted) return
+    if (syncAborted(abort)) return
     writeMetaSyncSpecAggregate(staging.sqlite, runToken, {
       specId,
       className: meta.className,
@@ -614,6 +618,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     perSpec.delete(specId)
   }, abort)
 
+  if (syncAborted(abort)) throw new Error('Meta nightly aborted')
   runGuards(abort, options.deadline, asClock(options.now), heap)
   const context = readMetaSyncRunContext(staging.sqlite, runToken)
   if (!context) throw new Error('Meta nightly staging context was missing')
@@ -667,7 +672,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   const itemIds = collectItemIds(classes)
   const itemIcons = new Map<number, string>()
   await mapPool(itemIds, caps.concurrency, async (id) => {
-    if (abort.signal.aborted) return
+    if (syncAborted(abort)) return
     const icon = extractMediaIcon(await get(`/data/wow/media/item/${id}`, STATIC))
     if (icon) itemIcons.set(id, icon)
   }, abort)
@@ -676,7 +681,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   const spellIds = collectSpellIds(classes)
   const spellIcons = new Map<number, string>()
   await mapPool(spellIds, caps.concurrency, async (id) => {
-    if (abort.signal.aborted) return
+    if (syncAborted(abort)) return
     const icon = extractMediaIcon(await get(`/data/wow/media/spell/${id}`, STATIC))
     if (icon) spellIcons.set(id, icon)
   }, abort)

@@ -91,7 +91,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     with status `error`, releases the lock, and keeps the last-good snapshot.
     In-process lock (45 min), rate gate ≤ 40 rps, 429/5xx Retry-After backoff,
     Kuma push, optional Cloudflare `/meta` prefix purge. Tests stay fixture-only
-    (no network), including a 40×200 heap-growth test and a simulated heap-breach test. The full spec layout follows in a
+    (no network), including a 40×200 heap-growth test and a simulated heap-breach test. The concurrent abort test trips the heap guard only once so later workers must honour the abort flag (`Promise.allSettled`, no fetches or staging writes after abort; staging stays empty after 1.5 s). An external `abortController` mid spec-phase must not promote a partial snapshot. The full spec layout follows in a
     later PR. Tests: `tests/unit/metaSchedule.test.ts`,
     `tests/unit/blizzardMetaSync.test.ts`, `tests/unit/blizzardMetaStore.test.ts`,
     `tests/unit/metaSnapshot.test.ts`, `tests/unit/metaCopy.test.ts`,

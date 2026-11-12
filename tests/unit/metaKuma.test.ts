@@ -9,6 +9,7 @@ describe('Kuma push and Cloudflare /meta purge', () => {
     assert.equal(kumaStatusForMetaRun('skipped'), 'up')
     assert.equal(kumaStatusForMetaRun('partial'), 'down')
     assert.equal(kumaStatusForMetaRun('error'), 'down')
+    assert.equal(kumaStatusForMetaRun('locked'), 'down')
     const url = buildMetaKumaPushUrl('https://kuma.example/api/push/secret-token', 'up', 'ok')
     assert.match(url, /status=up/)
     assert.equal(await pushMetaKuma('', 'up', 'ok'), 'skipped')

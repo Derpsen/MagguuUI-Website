@@ -6,7 +6,7 @@ import { fixtureFetcher, headers, ok } from '../fixtures/blizzard-meta/fetcher'
 import { initializeDatabase } from '../../server/database/bootstrap'
 import { resetBlizzardAccessTokenCache } from '../../server/utils/blizzardAuth'
 import type { BlizzardFetcher } from '../../server/utils/blizzardHttp'
-import { resetBlizzardMetaLock, tryAcquireBlizzardMetaLock } from '../../server/utils/blizzardMetaLock'
+import { tryAcquireBlizzardMetaLock } from '../../server/utils/blizzardMetaLock'
 import { buildMetaSnapshot, runScheduledBlizzardMetaSync, runScheduledBlizzardMetaSyncGuarded } from '../../server/utils/blizzardMetaSync'
 import { readCurrentMetaSnapshot, readLastMetaRun } from '../../server/utils/blizzardMetaStore'
 import { parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
@@ -28,7 +28,6 @@ const armedConfig = {
 describe('blizzard meta sync from fixtures', () => {
   beforeEach(() => {
     resetBlizzardAccessTokenCache()
-    resetBlizzardMetaLock()
   })
 
   it('aggregates popular specs, majority best build, talents, gear and freshness without network or player names', async () => {
@@ -98,7 +97,7 @@ describe('blizzard meta sync from fixtures', () => {
     assert.equal(noCreds.status, 'skipped')
     assert.match(noCreds.reason || '', /NUXT_BLIZZARD_CLIENT_ID/)
 
-    tryAcquireBlizzardMetaLock(1_700_000_000_000)
+    assert.equal(tryAcquireBlizzardMetaLock(sqlite, 1_700_000_000_000).ok, true)
     const locked = await runScheduledBlizzardMetaSync({
       sqlite,
       config: armedConfig,
@@ -213,7 +212,7 @@ describe('blizzard meta sync from fixtures', () => {
 
     const sqlite = openStore()
     let tLock = 1_700_000_000_000
-    tryAcquireBlizzardMetaLock(() => tLock, tLock + 45 * 60 * 1000)
+    assert.equal(tryAcquireBlizzardMetaLock(sqlite, () => tLock, tLock + 45 * 60 * 1000).ok, true)
     const blocked = await runScheduledBlizzardMetaSync({
       sqlite,
       config: armedConfig,

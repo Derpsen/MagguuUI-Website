@@ -43,5 +43,8 @@ export async function pushMetaKuma(
 }
 
 export function kumaStatusForMetaRun(status: 'ok' | 'partial' | 'error' | 'skipped' | 'locked'): MetaKumaStatus {
-  return status === 'ok' || status === 'skipped' ? 'up' : 'down'
+  if (status === 'ok' || status === 'skipped') return 'up'
+  // locked is down: a second run could not start, so the monitor must not stay green.
+  if (status === 'partial' || status === 'error' || status === 'locked') return 'down'
+  return 'down'
 }

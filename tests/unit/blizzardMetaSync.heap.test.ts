@@ -5,7 +5,6 @@ import Database from 'better-sqlite3'
 import { initializeDatabase } from '../../server/database/bootstrap'
 import { resetBlizzardAccessTokenCache } from '../../server/utils/blizzardAuth'
 import { assertMetaHeapSafe, MetaHeapGuardError, type MetaHeapMonitor } from '../../server/utils/blizzardMetaHeap'
-import { resetBlizzardMetaLock } from '../../server/utils/blizzardMetaLock'
 import { buildMetaSnapshot, runScheduledBlizzardMetaSync } from '../../server/utils/blizzardMetaSync'
 import { readCurrentMetaSnapshot, writeMetaSnapshot } from '../../server/utils/blizzardMetaStore'
 import { parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
@@ -87,7 +86,6 @@ async function collectRawProfilesLikeLegacy(fetcher: ReturnType<typeof createHea
 describe('blizzard meta sync heap budget', () => {
   afterEach(() => {
     resetBlizzardAccessTokenCache()
-    resetBlizzardMetaLock()
   })
 
   it('keeps 40 specs × 200 padded samples under the 96 MB heap-growth budget', { timeout: 120_000 }, async () => {
@@ -346,6 +344,64 @@ describe('blizzard meta sync heap budget', () => {
           periods: 1,
           concurrency: 4,
           maxConcurrentSpecs: 4,
+          samplePerSpec: 2,
+          maxAttemptsPerSpec: 2,
+        },
+        abortController,
+        kumaPush: async () => 'pushed',
+        purgeMeta: async () => 'purged',
+        sleep: async () => {},
+      })
+    } catch (error) {
+      thrown = error
+    }
+
+    if (thrown) {
+      assert.match(String(thrown), /aborted/)
+    } else {
+      assert.equal(result?.status, 'error')
+      assert.equal(result?.snapshotId, null)
+      assert.notEqual(result?.status, 'ok')
+    }
+    const current = readCurrentMetaSnapshot(sqlite, META_REGION, now)
+    assert.ok(current)
+    assert.equal(current.snapshotId, previous.snapshotId)
+  })
+
+  it('does not promote a partial snapshot when abortController is aborted mid icon-phase', { timeout: 30_000 }, async () => {
+    const sqlite = openStore()
+    const now = Date.now()
+    const previous = writeMetaSnapshot(sqlite, snapshotPayload(), now, META_SNAPSHOT_TTL_MS)
+    const abortController = new AbortController()
+    const baseFetcher = createHeapFixtureFetcher()
+    const fetcher = async (request: Parameters<typeof baseFetcher>[0]) => {
+      const response = await baseFetcher(request)
+      if (
+        (request.url.includes('/media/item/') || request.url.includes('/media/spell/'))
+        && !abortController.signal.aborted
+      ) {
+        abortController.abort()
+      }
+      return response
+    }
+
+    let thrown: unknown
+    let result: Awaited<ReturnType<typeof runScheduledBlizzardMetaSync>> | undefined
+    try {
+      result = await runScheduledBlizzardMetaSync({
+        sqlite,
+        config: {
+          metaNightly: 'on',
+          blizzardClientId: 'id',
+          blizzardClientSecret: 'secret',
+        },
+        fetcher,
+        now,
+        caps: {
+          maxRealms: 1,
+          periods: 1,
+          concurrency: 2,
+          maxConcurrentSpecs: 1,
           samplePerSpec: 2,
           maxAttemptsPerSpec: 2,
         },

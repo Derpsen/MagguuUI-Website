@@ -59,3 +59,32 @@ describe('low-sample rows stay contrast-safe', () => {
     assert.equal(/lowRow:[\s\S]*?bg-/.test(tone), false)
   })
 })
+
+function mixHex(fg: string, bg: string, amount: number): string {
+  const parse = (hex: string) => [1, 3, 5].map(i => Number.parseInt(hex.slice(i, i + 2), 16))
+  const f = parse(fg)
+  const b = parse(bg)
+  const mixed = f.map((v, i) => Math.round(v * amount + b[i]! * (1 - amount)))
+  return `#${mixed.map(v => v.toString(16).padStart(2, '0')).join('')}`
+}
+
+describe('meta ad slot placement and heatmap contrast', () => {
+  it('shows the sidebar slot only from the xl breakpoint with a 150px gap from the main column', () => {
+    const page = readFileSync(join(process.cwd(), 'pages/meta/[classSlug]/[specSlug].vue'), 'utf8')
+    assert.match(page, /xl:grid xl:grid-cols-\[minmax\(0,1fr\)_16rem\] xl:gap-x-\[150px\]/)
+    assert.match(page, /<aside class="hidden xl:block">/)
+    assert.match(page, /placement="sidebar"/)
+    assert.doesNotMatch(page, /hidden lg:block/)
+  })
+
+  it('keeps heatmap cell muted text at least 4.5:1 on the darkest wash in dark and light', () => {
+    const heatmap = readFileSync(join(process.cwd(), 'components/MetaTalentHeatmap.vue'), 'utf8')
+    const tone = readFileSync(join(process.cwd(), 'composables/useMetaTone.ts'), 'utf8')
+    assert.match(tone, /heatMuted:[\s\S]*text-silver-300/)
+    assert.match(heatmap, /tone\.heatMuted/)
+    const darkHeat = mixHex('#0AA882', META_TEXT_BG_DARK, 0.28)
+    const lightHeat = mixHex('#0AA882', META_TEXT_BG_LIGHT, 0.22)
+    assert.ok(contrastRatio('#C0C8D4', darkHeat) >= META_MIN_CONTRAST_RATIO, `dark heat ${darkHeat}`)
+    assert.ok(contrastRatio('#4b5563', lightHeat) >= META_MIN_CONTRAST_RATIO, `light heat ${lightHeat}`)
+  })
+})

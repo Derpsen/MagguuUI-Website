@@ -51,12 +51,15 @@ lightened toward white, not greyed out.
 (`after-build`, `sidebar`, `between-sections`, `index-inline`) and a
 fixed height (100px inline, 250px sidebar) so consent cannot cause CLS.
 
-Master switch: `NUXT_ADS` / `runtimeConfig.public.ads`. Default **off** =
-**no markup**. Recognised on-values: `on`, `true`, `1`, `yes`. The value is
-mapped at runtime from `NUXT_ADS` (see `server/plugins/runtime-ads.ts`), so
-a container env change is picked up without a rebuild. The slot does not
+Master switch: `NUXT_ADS`. Default **off** = **no markup**. Recognised
+on-values: `on`, `true`, `1`, `yes`. Empty or missing `NUXT_ADS` is off.
+The flag is resolved at process start (`plugins/nuxt-ads.ts` via `useState`)
+and never written onto `runtimeConfig` (that object is frozen in production).
+A container env change is picked up without a rebuild. `NUXT_PUBLIC_ADS` is
+used only when `NUXT_ADS` is unset. The slot does not
 receive spec or class data, is not placed inside the best-build block, and
-is not immediately under it (no 32px gap under the card). Inline
+is not immediately under it (no 32px gap under the card). The sidebar slot is visible from the `xl` breakpoint (1280px) and sits at least 150px from the talent-copy control.
+Inline
 `after-build` sits after Stats, before Gear; `between-sections` sits after
 the heatmap; `sidebar` stays in the aside. This PR does not load AdSense;
 the existing `AdBanner` stays for the later ads PR D.

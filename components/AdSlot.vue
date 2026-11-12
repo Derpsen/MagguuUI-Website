@@ -17,8 +17,6 @@
 </template>
 
 <script setup lang="ts">
-import { isNuxtAdsEnabled } from '~/utils/metaUiCopy'
-
 export type AdSlotPlacement = 'after-build' | 'sidebar' | 'between-sections' | 'index-inline'
 
 const props = withDefaults(defineProps<{
@@ -27,8 +25,7 @@ const props = withDefaults(defineProps<{
 }>(), { reserve: 0 })
 
 const tone = useMetaTone()
-const config = useRuntimeConfig()
-const flagOn = computed(() => isNuxtAdsEnabled(config.public.ads))
+const flagOn = useNuxtAdsEnabled()
 const variant = computed(() => (props.placement === 'sidebar' ? 'sidebar' : 'inline'))
 const height = computed(() => props.reserve || (props.placement === 'sidebar' ? 250 : 100))
 </script>

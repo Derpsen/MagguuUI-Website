@@ -251,7 +251,7 @@ export default defineNuxtConfig({
       appName: defaultSiteName,
       appVersion: '3.0.0',
       // Master ads switch for reserved AdSlot markup. Default off (no markup).
-      // NUXT_ADS is applied at runtime in server/plugins/runtime-ads.ts
+      // NUXT_ADS is resolved at runtime in plugins/nuxt-ads.ts (no runtimeConfig mutation)
       // (Nuxt would only auto-map NUXT_PUBLIC_ADS). AdSense itself still
       // needs adsense_enabled + a slot id + consent (later ads PR).
       ads: '',

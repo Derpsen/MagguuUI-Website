@@ -22,10 +22,10 @@
       />
     </template>
 
-    <div v-if="spec && showFigures" class="lg:grid lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-10">
+    <div v-if="spec && showFigures" class="xl:grid xl:grid-cols-[minmax(0,1fr)_16rem] xl:gap-x-[150px] xl:gap-y-10">
       <div class="min-w-0">
         <div
-          class="sticky top-14 z-30 -mx-4 mb-8 border-y px-4 py-2 backdrop-blur-md sm:-mx-6 sm:px-6 lg:hidden"
+          class="sticky top-14 z-30 -mx-4 mb-8 border-y px-4 py-2 backdrop-blur-md sm:-mx-6 sm:px-6 xl:hidden"
           :class="tone.isDark.value ? 'border-white/10 bg-[#0b1118]/95' : 'border-gray-200 bg-[#eef4fb]/95'"
         >
           <MetaToc :items="toc" />
@@ -117,7 +117,7 @@
         </section>
       </div>
 
-      <aside class="hidden lg:block">
+      <aside class="hidden xl:block">
         <div class="sticky top-20 space-y-8">
           <MetaToc :items="toc" />
           <AdSlot placement="sidebar" />

@@ -2,12 +2,12 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
   blizzardIconUrl,
-  applyNuxtAdsRuntimeConfig,
   isNuxtAdsEnabled,
+  resolveNuxtAdsFlag,
   parseHeroQuery,
   parseMetaIndexQuery,
 } from '../../utils/metaUiCopy'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
 describe('meta UI helpers', () => {
   it('parses index filters and drops unknown values to defaults', () => {
@@ -44,22 +44,24 @@ describe('meta UI helpers', () => {
     assert.equal(isNuxtAdsEnabled('yes'), true)
   })
 
-  it('applies NUXT_ADS at runtime over a baked-off public.ads default', () => {
-    const bakedOff = { public: { ads: '' } }
-    assert.equal(applyNuxtAdsRuntimeConfig(bakedOff, {}), '')
-    assert.equal(isNuxtAdsEnabled(bakedOff.public.ads), false)
-    const fromEnv = { public: { ads: '' } }
-    assert.equal(applyNuxtAdsRuntimeConfig(fromEnv, { NUXT_ADS: 'on' }), 'on')
-    assert.equal(isNuxtAdsEnabled(fromEnv.public.ads), true)
-    const winsOverPublic = { public: { ads: 'on' } }
-    assert.equal(applyNuxtAdsRuntimeConfig(winsOverPublic, { NUXT_ADS: 'off', NUXT_PUBLIC_ADS: 'on' }), 'off')
-    assert.equal(isNuxtAdsEnabled(winsOverPublic.public.ads), false)
-    const publicFallback = { public: { ads: '' } }
-    assert.equal(applyNuxtAdsRuntimeConfig(publicFallback, { NUXT_PUBLIC_ADS: 'yes' }), 'yes')
-    const plugin = readFileSync(new URL('../../server/plugins/runtime-ads.ts', import.meta.url), 'utf8')
-    assert.match(plugin, /applyNuxtAdsRuntimeConfig\(useRuntimeConfig\(\)\)/)
+  it('resolves NUXT_ADS at runtime without mutating a config object', () => {
+    assert.equal(resolveNuxtAdsFlag({}), '')
+    assert.equal(isNuxtAdsEnabled(resolveNuxtAdsFlag({})), false)
+    assert.equal(resolveNuxtAdsFlag({ NUXT_ADS: '' }), '')
+    assert.equal(isNuxtAdsEnabled(resolveNuxtAdsFlag({ NUXT_ADS: '' })), false)
+    assert.equal(isNuxtAdsEnabled(resolveNuxtAdsFlag({ NUXT_ADS: '   ' })), false)
+    assert.equal(resolveNuxtAdsFlag({ NUXT_ADS: 'on' }), 'on')
+    assert.equal(isNuxtAdsEnabled(resolveNuxtAdsFlag({ NUXT_ADS: 'on' })), true)
+    assert.equal(resolveNuxtAdsFlag({ NUXT_ADS: 'off', NUXT_PUBLIC_ADS: 'on' }), 'off')
+    assert.equal(isNuxtAdsEnabled(resolveNuxtAdsFlag({ NUXT_ADS: 'off', NUXT_PUBLIC_ADS: 'on' })), false)
+    assert.equal(resolveNuxtAdsFlag({ NUXT_PUBLIC_ADS: 'yes' }), 'yes')
+    const plugin = readFileSync(new URL('../../plugins/nuxt-ads.ts', import.meta.url), 'utf8')
+    assert.match(plugin, /resolveNuxtAdsFlag\(process\.env\)/)
+    assert.doesNotMatch(plugin, /useRuntimeConfig/)
     const config = readFileSync(new URL('../../nuxt.config.ts', import.meta.url), 'utf8')
     assert.match(config, /ads: '',/)
     assert.doesNotMatch(config, /ads: process\.env\.NUXT_ADS/)
+    assert.doesNotMatch(config, /runtime-ads/)
+    assert.equal(existsSync(new URL('../../server/plugins/runtime-ads.ts', import.meta.url)), false)
   })
 })

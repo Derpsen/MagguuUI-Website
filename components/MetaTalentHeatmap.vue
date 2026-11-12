@@ -28,10 +28,10 @@
                     :class="tone.strong.value"
                   >{{ talent.label }}<span class="sr-only"> — {{ band.label }}, {{ formatShare(talent.share) }}, {{ talent.count }} {{ copy.parses }}{{ talent.unmapped ? `, ${ui.unmappedNode}` : '' }} (opens in a new tab)</span></a>
                   <span v-else :class="tone.strong.value">{{ talent.label }}<span class="sr-only"> — {{ band.label }}, {{ formatShare(talent.share) }}, {{ talent.count }} {{ copy.parses }}{{ talent.unmapped ? `, ${ui.unmappedNode}` : '' }}</span></span>
-                  <span v-if="talent.unmapped" class="ml-2 font-mono text-xs uppercase tracking-[0.12em]" :class="tone.muted.value">{{ ui.unmappedNode }}</span>
+                  <span v-if="talent.unmapped" class="ml-2 font-mono text-xs uppercase tracking-[0.12em]" :class="tone.heatMuted.value">{{ ui.unmappedNode }}</span>
                 </span>
                 <span class="shrink-0 text-xs tabular-nums" :class="tone.strong.value" aria-hidden="true">
-                  {{ formatShare(talent.share) }} <span :class="tone.muted.value">· {{ talent.count }}</span>
+                  {{ formatShare(talent.share) }} <span :class="tone.heatMuted.value">· {{ talent.count }}</span>
                 </span>
               </li>
             </ul>

@@ -32,6 +32,7 @@ test('sitemap.xml lists the public pages, never admin, api, feeds or query varia
   expect(locs.filter(loc => /\/news\//.test(loc))).toHaveLength(publishedNewsPaths.length)
   expect(locs.join('\n')).not.toMatch(/\/admin|\/api\/|feed\.xml|atom\.xml|\?/)
   expect(locs.join('\n')).not.toMatch(/pouch-of-violet-dust-launch-celebration/)
+  expect(locs.join('\n')).not.toMatch(/\/meta(\/|$)/)
   expect(xml.toLowerCase()).not.toContain('nuxtjs/sitemap')
   expect(xml).not.toContain('<xhtml:link')
 })

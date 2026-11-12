@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
+import { verifyAdsProdStarts } from './verify-ads-runtime.mjs'
 import { createServer } from 'node:net'
 import { setTimeout as delay } from 'node:timers/promises'
 
@@ -976,3 +977,6 @@ try {
     }),
   ])
 }
+
+// Sequential: never overlap the smoke server (OOM). Empty/missing NUXT_ADS must not crash prod start.
+await verifyAdsProdStarts()

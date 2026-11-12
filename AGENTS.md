@@ -354,7 +354,7 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 
 - `/meta` pages are English, SSR, plain site style (no boxed cards). Copy and figures come from the snapshot APIs. See `docs/meta-ui.md`.
 - Best build: one copy control with visible “Copied!” and `aria-live`. Hero toggle is `?hero=<id>` and also switches `talentsByHero` when present. Unmapped choice nodes are labelled in the heatmap.
-- Ads: `AdSlot` behind `NUXT_ADS` (default off = no markup), applied at runtime from the container env (`server/plugins/runtime-ads.ts`). No spec/class data on the slot. Not inside the best-build area and not immediately under it. AdSense / `AdBanner` is PR D (DoD 11.02). Own tooltips, the `/meta` Lighthouse budget, and putting `/meta` in nav/sitemap are stacked PR C2 (DoD 6.01 / 14.07 / 3.08).
+- Ads: `AdSlot` behind `NUXT_ADS` (default off = no markup), resolved at runtime from the container env (`plugins/nuxt-ads.ts`, no runtimeConfig mutation; empty `NUXT_ADS` is off). No spec/class data on the slot. Not inside the best-build area and not immediately under it. AdSense / `AdBanner` is PR D (DoD 11.02). Own tooltips, the `/meta` Lighthouse budget, and putting `/meta` in nav/sitemap are stacked PR C2 (DoD 6.01 / 14.07 / 3.08).
 - `npm run typecheck` is still `tsc`. New `/meta` Vue files must stay clean under `vue-tsc`. Repo-wide vue-tsc debt is a separate audit.
 
 ## Changelog feeds, filter and ?since= (2026-10-24)

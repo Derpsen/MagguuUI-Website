@@ -62,7 +62,7 @@ test('/meta shows the fixture snapshot, methodology and attribution in light and
     expect(title).not.toMatch(TRADEMARK)
     expect(page.url()).not.toMatch(TRADEMARK)
     expect(await page.locator('script[src*="wowhead"], script[src*="icy-veins"], script[src*="murlok"], script[src*="archon"], script[src*="adsbygoogle"], script[src*="googlesyndication"]').count()).toBe(0)
-    const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
+    const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
     expect(axe.violations.map(v => `${v.id}: ${v.nodes.map(n => n.target.join(' ')).slice(0, 3).join(' | ')}`), theme).toEqual([])
     expect(problems, theme).toEqual([])
   }
@@ -82,8 +82,15 @@ test('/meta/mage/fire is a filled fixture spec page with CLS under 0.1, and empt
   const cls = await readCls(page)
   console.log(`CLS /meta/mage/fire=${cls}`)
   expect(cls, `CLS on /meta/mage/fire was ${cls}`).toBeLessThan(0.1)
-  const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
+  const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
   expect(axe.violations.map(v => v.id)).toEqual([])
+
+  const fireDark = await visit('/meta/mage/fire', 'dark', page)
+  expect(fireDark.response?.status()).toBe(200)
+  await expect(page.locator('html')).toHaveClass(/dark/)
+  await expect(page.locator('#talents')).toBeVisible()
+  const axeDark = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
+  expect(axeDark.violations.map(v => `${v.id}: ${v.nodes.map(n => n.target.join(' ')).slice(0, 3).join(' | ')}`), 'dark heatmap').toEqual([])
 
   const mage = await visit('/meta/mage', 'dark', page)
   expect(mage.response?.status()).toBe(200)

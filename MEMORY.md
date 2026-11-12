@@ -651,3 +651,7 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 - `/meta/mage/fire` mobile TBT was 381 ms vs the 320 budget. Real work, not a looser budget: the spec page SSR-renders heatmap, gear and tooltips, then hydrates that below-fold island only when visible (`LazyMetaSpecBelowFold` + `hydrate-on-visible`).
 - `useMetaTone` class tokens (and below-fold inline colours) now include light + `dark:` / CSS-variable pairs so an unhydrated island stays contrast-safe once `<html>` is light. Tooltip e2e scrolls `#talents` and waits for `[data-meta-below-fold][data-hydrated=true]`.
 - `/meta` still stays out of nav/sitemap/footer until this budget is green in CI on #190. Budget numbers unchanged.
+
+## 2026-11-12 Meta C2 nav after green budget
+
+- After the TBT cut, CI Lighthouse on #190 (`27e1408`) had no budget warnings on `/meta` or `/meta/mage/fire` (fire mobile TBT ~126 ms vs 320). Pre-existing advisory misses remain on `/` mobile LCP and `/changelog` desktop CLS. `/meta` is now in the Retail header, footer and sitemap (index only). Budget file unchanged. Do not merge until asked.

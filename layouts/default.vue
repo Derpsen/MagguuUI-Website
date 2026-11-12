@@ -369,6 +369,7 @@ const socialLinks = computed(() => ({
 const footerLinks = computed(() => [
   { label: 'Strings', to: '/strings' },
   { label: 'Guide', to: '/guide' },
+  { label: 'Meta', to: '/meta' },
   { label: 'Addons', to: '/addons' },
   { label: 'Configurator', to: '/configurator' },
   { label: 'WoW Forever', to: '/forever' },

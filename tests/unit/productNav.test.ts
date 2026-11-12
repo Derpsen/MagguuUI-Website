@@ -11,7 +11,7 @@ describe('product nav', () => {
     assert.equal(productForPath('/foreverx'), 'retail')
   })
   it('keeps the Retail nav unchanged and gives Forever its own', () => {
-    assert.deepEqual(navLinksFor('retail').map(l => l.to), ['/', '/strings', '/addons', '/guide', '/news', '/changelog', '/faq'])
+    assert.deepEqual(navLinksFor('retail').map(l => l.to), ['/', '/strings', '/addons', '/guide', '/meta', '/news', '/changelog', '/faq'])
     assert.equal(navLinksFor('forever'), FOREVER_NAV)
     assert.equal(navLinksFor('retail'), RETAIL_NAV)
     assert.ok(FOREVER_NAV.every(l => productForPath(l.to) === 'forever'))
@@ -25,6 +25,9 @@ describe('product nav', () => {
     assert.equal(isNavActive('/forever/guide', '/forever'), false)
     assert.equal(isNavActive('/forever/guide', '/forever/guide'), true)
     assert.equal(isNavActive('/changelog/x', '/changelog'), true)
+    assert.equal(isNavActive('/meta', '/meta'), true)
+    assert.equal(isNavActive('/meta/mage/fire', '/meta'), true)
+    assert.equal(isNavActive('/guide', '/meta'), false)
     assert.equal(isNavActive('/forever/guide', '/guide'), false)
   })
 })

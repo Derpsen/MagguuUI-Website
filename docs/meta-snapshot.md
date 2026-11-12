@@ -9,9 +9,9 @@ This is the **aggregated** snapshot shape stored as `meta_snapshots.payload` and
 
 ## Rollout (nav, sitemap, budget)
 
-`/meta` is **not** linked in the header, footer, or sitemap until the C2
-Lighthouse budget for `/meta` (and `/meta/mage/fire`), measured against this
-fixture, is green in CI. C2 adds that budget and own tooltips. Seed the
+`/meta` is in the Retail header, footer, and sitemap (the index only, not every
+class or spec page) after the C2 Lighthouse budget for `/meta` and
+`/meta/mage/fire`, measured against this fixture, went green in CI. Seed the
 fixture for Lighthouse with `npx tsx scripts/seed-meta-fixture.ts` — never on
 Unraid. AdBanner / AdSense migration is a later ads PR (D), not C2.
 

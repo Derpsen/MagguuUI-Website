@@ -91,7 +91,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     `tests/unit/blizzardMetaSync.test.ts`, `tests/unit/blizzardMetaStore.test.ts`,
     `tests/unit/metaSnapshot.test.ts`, `tests/unit/metaCopy.test.ts`,
     `tests/meta.spec.ts`.
-    **DoD / rollout:** Own tooltips (DoD 3.08) and the `/meta` Lighthouse budget measured against the fixture snapshot (DoD 6.01 / 14.07) land in C2. Below-fold heatmap, gear and tooltips on a spec page are SSR'd and hydrate only when visible (`LazyMetaSpecBelowFold`, `hydrate-on-visible`) to keep mobile TBT in budget. `/meta` stays off the header, footer and sitemap until that budget is green in CI; then the links go in. AdBanner / AdSense migration is PR D. Routes and APIs stay reachable by direct URL so the pages can be reviewed and budgeted.
+    **DoD / rollout:** Own tooltips (DoD 3.08) and the `/meta` Lighthouse budget measured against the fixture snapshot (DoD 6.01 / 14.07) land in C2. Below-fold heatmap, gear and tooltips on a spec page are SSR'd and hydrate only when visible (`LazyMetaSpecBelowFold`, `hydrate-on-visible`) to keep mobile TBT in budget. `/meta` is in the Retail header, footer and sitemap (index only, not every class/spec) after the C2 Lighthouse budget went green in CI. AdBanner / AdSense migration is PR D. Routes and APIs stay reachable by direct URL so the pages can be reviewed and budgeted.
   - Settings header/metric also shows `App {version} · sha-{short}` (or `dev`)
     from the same `GIT_SHA` via `/api/v1/admin/system/info`. docker.yml already
     passes `GIT_SHA=${{ github.sha }}`.
@@ -348,13 +348,13 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 - SQLite `news_articles` (see `docs/news.md`): slug, title, summary (<=160), body, sourceUrl/sourceName, publishedAt (unix seconds), author always `Magguu`, tags, isPublished. Admin at `/admin/content/news`.
 - Seed from `server/database/news-seed/*.md` is insert-if-slug-missing. `pouch-of-violet-dust-launch-celebration` is always unpublished (drop ends 2026-11-13 01:30 Europe/Berlin).
 - No ad slots here. Blizzard news RSS admin notice (title+link only, no auto-publish) is a TODO in `docs/news.md`.
-- Internal "Also on this site" links to `/guide` and `/meta`. `/meta` stays out of the nav, sitemap and footer until the C2 Lighthouse budget is green in CI; link-check is advisory.
+- Internal "Also on this site" links to `/guide` and `/meta`. `/meta` is in the Retail header, footer and sitemap (index only); link-check is advisory.
 
 ## Meta UI (2026-11-11, PR C)
 
 - `/meta` pages are English, SSR, plain site style (no boxed cards). Copy and figures come from the snapshot APIs. See `docs/meta-ui.md`.
 - Best build: one copy control with visible “Copied!” and `aria-live`. Hero toggle is `?hero=<id>` and also switches `talentsByHero` when present. Unmapped choice nodes are labelled in the heatmap.
-- Ads: `AdSlot` behind `NUXT_ADS` (default off = no markup), resolved at runtime from the container env (`plugins/nuxt-ads.ts`, no runtimeConfig mutation; empty `NUXT_ADS` is off). The client payload carries only a boolean (`nuxt-ads-enabled`), never the raw env string. No spec/class data on the slot. Not inside the best-build area and not immediately under it. AdSense / `AdBanner` is PR D (DoD 11.02). Own tooltips and the `/meta` Lighthouse budget are C2 (DoD 6.01 / 14.07 / 3.08); `/meta` enters nav/sitemap/footer only after that budget is green in CI.
+- Ads: `AdSlot` behind `NUXT_ADS` (default off = no markup), resolved at runtime from the container env (`plugins/nuxt-ads.ts`, no runtimeConfig mutation; empty `NUXT_ADS` is off). The client payload carries only a boolean (`nuxt-ads-enabled`), never the raw env string. No spec/class data on the slot. Not inside the best-build area and not immediately under it. AdSense / `AdBanner` is PR D (DoD 11.02). Own tooltips and the `/meta` Lighthouse budget are C2 (DoD 6.01 / 14.07 / 3.08); `/meta` is in the Retail header, footer and sitemap (index only) after that budget went green in CI.
 - `npm run typecheck` is still `tsc`. New `/meta` Vue files must stay clean under `vue-tsc`. Repo-wide vue-tsc debt is a separate audit.
 
 ## Changelog feeds, filter and ?since= (2026-10-24)

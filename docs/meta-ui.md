@@ -85,8 +85,8 @@ vue-tsc error set is a separate audit PR.
   heatmap, gear and tooltips, then hydrates that below-fold block only when
   it is visible (`LazyMetaSpecBelowFold` + `hydrate-on-visible`) so it stays
   off the mobile TBT path.
-- `/meta` stays off the header, footer and sitemap until that budget is green
-  in CI; then the links go in.
+- `/meta` is in the Retail header, footer and sitemap (the index only, not
+  every class or spec page) after that budget went green in CI.
 
 ## Not in this PR
 

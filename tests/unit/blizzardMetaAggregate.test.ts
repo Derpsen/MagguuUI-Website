@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { absorbProfile, buildClassSummaries, emptyProfileBucket, isTalentMapped, majorityBestBuild, parseTalentTreeLayout } from '../../server/utils/blizzardMetaAggregate'
+import { absorbProfile, buildClassSummaries, emptyProfileBucket, isTalentMapped, majorityBestBuild, parseTalentTreeLayout, shareOf } from '../../server/utils/blizzardMetaAggregate'
 import { FIXTURE_TALENT_TREE_FIRE } from '../fixtures/blizzard-meta/responses'
 import { encodeLoadoutHeader } from '../../utils/metaLoadout'
 
@@ -101,3 +101,39 @@ describe('buildClassSummaries catalog guard', () => {
     assert.ok(mage.specs.some(spec => spec.slug === 'fire'))
   })
 })
+
+describe('shareOf clamp', () => {
+  it('clamps a share above 1 down to 1', () => {
+    assert.equal(shareOf(1414, 1000), 1)
+    assert.equal(shareOf(0, 1000), 0)
+    assert.equal(shareOf(500, 1000), 0.5)
+  })
+})
+
+describe('hero split per profile', () => {
+  it('counts a hero tree once when two active loadouts use the same tree', () => {
+    const bucket = emptyProfileBucket()
+    absorbProfile(bucket, {
+      specsBody: {
+        specializations: [{
+          loadouts: [
+            { is_active: true, talent_loadout_code: 'AAA', hero_talent_tree: { id: 31, name: 'Templar' } },
+            { is_active: true, talent_loadout_code: 'BBB', hero_talent_tree: { id: 31, name: 'Templar' } },
+          ],
+        }],
+      },
+      equipmentBody: { equipped_items: [] },
+    })
+    assert.equal(bucket.profiles, 1)
+    assert.equal(bucket.heroes.get('31')?.count, 1)
+    const specPop = new Map([
+      ['Paladin|Retribution', { className: 'Paladin', specName: 'Retribution', count: 1, keyLevels: [] }],
+    ])
+    const ret = buildClassSummaries(specPop, new Map([['Paladin|Retribution', bucket]]), 1)
+      .find(cls => cls.slug === 'paladin')?.specs.find(spec => spec.slug === 'retribution')
+    assert.ok(ret)
+    assert.equal(ret.heroSplit[0]?.share, 1)
+    assert.equal(ret.heroSplit[0]?.count, 1)
+  })
+})
+

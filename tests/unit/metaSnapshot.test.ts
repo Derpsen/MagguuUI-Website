@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { readFileSync } from 'node:fs'
-import { explainMetaSnapshotRejection, parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
+import { clampMetaSnapshotShares, explainMetaSnapshotRejection, parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
 import { META_MIN_BUILD_SAMPLE, META_MIN_SHOW_SAMPLE, specDataState } from '../../utils/metaTypes'
 
 const fixturePath = new URL('../fixtures/blizzard-meta/snapshot.json', import.meta.url)
@@ -118,3 +118,21 @@ describe('meta snapshot fixture', () => {
       assert.match(explainMetaSnapshotRejection(overShare), /rings\[0\]\.share is 1\.6/)
     }
   })
+
+it('clamps an over-1 heroSplit share so a finished live snapshot can parse', () => {
+  const ok = parseMetaSnapshotPayload(readFileSync(fixturePath, 'utf8'))
+  assert.ok(ok)
+  const over = structuredClone(ok)
+  const target = over.classes.find(cls => cls.slug === 'mage')?.specs.find(spec => spec.slug === 'fire')
+  assert.ok(target)
+  assert.ok(target.heroSplit[0])
+  target.heroSplit[0].share = 1.414
+  assert.equal(parseMetaSnapshotPayload(over), null)
+  const clamped = clampMetaSnapshotShares(structuredClone(over))
+  const parsed = parseMetaSnapshotPayload(clamped)
+  assert.ok(parsed)
+  const fire = parsed.classes.find(cls => cls.slug === 'mage')?.specs.find(spec => spec.slug === 'fire')
+  assert.ok(fire)
+  assert.equal(fire.heroSplit[0]?.share, 1)
+})
+

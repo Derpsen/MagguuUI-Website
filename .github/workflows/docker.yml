@@ -182,7 +182,7 @@ jobs:
           docker pull -q "$IMAGE_REF"
           docker run --rm --user 99:100 -w /app/.output/server --entrypoint node "$IMAGE_REF" \
             -e "require('bcrypt');require('better-sqlite3')(':memory:');console.log('native modules OK as uid', process.getuid())"
-          docker run -d --name smoke --memory=768m \
+          docker run -d --name smoke --memory=1g \
             -e NODE_OPTIONS='--enable-source-maps --max-old-space-size=640' \
             -e NUXT_JWT_SECRET=ci-dummy-secret-must-be-32-chars-long-XXXXXXXXXX \
             -e NUXT_APP_SECRET=ci-dummy-app-secret-must-be-32-chars-XXXXXXXXX \

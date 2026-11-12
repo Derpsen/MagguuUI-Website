@@ -1,15 +1,16 @@
 /**
  * CLI-specific Node heap. The website process uses NODE_OPTIONS
- * --max-old-space-size=640 inside a 768 MB container; the manual CLI is a
- * second process and must not inherit that cap (live abort on 12.11.2026:
- * guard tripped at 565 MB heapUsed / 653 MB RSS before any spec loaded,
- * while the container cgroup had already hit 768 MB).
+ * --max-old-space-size=640 inside a 1 GB container; the manual CLI is a
+ * second process and must not inherit that cap (live abort on 12.11.2026
+ * in the previous 768 MB cgroup: guard tripped at 565 MB heapUsed / 653 MB
+ * RSS mid leaderboard ingest).
  *
- * Default 256 MB: a EU-scale pre-spec run peaks around 130 MB heap, and 70%
- * of a 192 MB cap (134 MB) is too tight once in-flight boards are counted.
- * 70% of 256 MB is 179 MB. A website process near its 640 MB heap plus this
- * CLI RSS (~200–240 MB) will not fit 768 MB; Unraid Memory should be raised
- * to 1280 MB. See docs/meta-nightly.md.
+ * Default 256 MB: an EU-scale pre-spec run peaks around 130 MB heap, and
+ * 70% of a 192 MB cap (134 MB) is too tight once in-flight boards are
+ * counted. 70% of 256 MB is 179 MB. Sized for the 1 GB container next to
+ * a website process of up to 640 MB heap (640 + 256 = 896 MB, about
+ * 128 MB slack for RSS overhead). Measured CLI RSS is ~200–240 MB.
+ * See docs/meta-nightly.md.
  */
 import type { ChildProcess } from 'node:child_process'
 import { constants } from 'node:os'

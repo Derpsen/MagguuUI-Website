@@ -110,9 +110,9 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     under 180 MB heap / 300 MB RSS. Pre-spec ingest keeps a compact
     per-player table capped at 32 000 candidates, trims each spec to
     `maxAttemptsPerSpec`, and loads playable specializations sequentially.
-    The 768 MB Unraid container cannot hold a website process near its 640 MB
-    heap plus this CLI; raise Memory to 1280 MB so 640 + CLI RSS + headroom
-    fits.
+    The Unraid container Memory is 1 GB. The 256 MB CLI cap is sized to sit
+    next to a website process of up to 640 MB heap (640 + 256 = 896 MB, about
+    128 MB slack for RSS overhead; measured CLI RSS is ~200–240 MB).
     CI smokes it against the built image (docker-scan on the PR, docker.yml on main) with no credentials and expects exit 4 / `skipped`.
     It reuses `runScheduledBlizzardMetaSync` (lean path, heap guard, deadline,
     fail-closed, last-good kept), even when `NUXT_META_NIGHTLY` is off, still

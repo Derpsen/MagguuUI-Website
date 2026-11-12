@@ -80,6 +80,8 @@ describe('combined-slot gear share', () => {
     assert.ok(trinket)
     assert.equal(ring.count, 160)
     assert.equal(trinket.count, 160)
+    assert.equal(ring.count / fire.profileCount, 1.6)
+    assert.equal(trinket.count / fire.profileCount, 1.6)
     assert.equal(ring.share, 1)
     assert.equal(trinket.share, 1)
     assert.ok(fire.embellishments.length >= 1)

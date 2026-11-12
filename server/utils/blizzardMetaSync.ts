@@ -1623,21 +1623,27 @@ export async function runScheduledBlizzardMetaSync(input: {
         }
       }
       const stagedPartial = writeStagedMetaSnapshot(input.sqlite, decision.payload, clock())
-      const promotedPartial = promoteMetaSnapshot(input.sqlite, stagedPartial.snapshotId, decision.payload.region, clock())
-      const purgePartial = input.purgeMeta ?? purgeCloudflareMeta
-      await purgePartial()
-      return {
-        status: 'partial' as const,
-        reason: 'Meta nightly hit the job deadline; published partial snapshot',
-        snapshotId: promotedPartial.snapshotId,
-        stats: built.stats,
-        failures: built.failures,
-        nPerSpec,
-        dropped: built.preSpec?.dropped,
-        partialOutcome: 'published' as const,
+      try {
+        const promotedPartial = promoteMetaSnapshot(input.sqlite, stagedPartial.snapshotId, decision.payload.region, clock())
+        const purgePartial = input.purgeMeta ?? purgeCloudflareMeta
+        await purgePartial()
+        return {
+          status: 'partial' as const,
+          reason: 'Meta nightly hit the job deadline; published partial snapshot',
+          snapshotId: promotedPartial.snapshotId,
+          stats: built.stats,
+          failures: built.failures,
+          nPerSpec,
+          dropped: built.preSpec?.dropped,
+          partialOutcome: 'published' as const,
+        }
+      } finally {
+        deleteStagedMetaSnapshot(input.sqlite, stagedPartial.snapshotId)
       }
     }
     const staged = writeStagedMetaSnapshot(input.sqlite, built.payload, clock())
+    let stagedId = staged.snapshotId
+    try {
     const plannedProfiles = Math.max(built.failures.attempted, built.payload.sampled.profiles)
     const policy = evaluateMetaRunPolicy({
       plannedProfiles,
@@ -1661,8 +1667,9 @@ export async function runScheduledBlizzardMetaSync(input: {
           stats: built.stats,
         })
         if (firstPartial.outcome === 'published') {
-          deleteStagedMetaSnapshot(input.sqlite, staged.snapshotId)
+          deleteStagedMetaSnapshot(input.sqlite, stagedId)
           const stagedFirst = writeStagedMetaSnapshot(input.sqlite, firstPartial.payload, clock())
+          stagedId = stagedFirst.snapshotId
           const promotedFirst = promoteMetaSnapshot(input.sqlite, stagedFirst.snapshotId, firstPartial.payload.region, clock())
           const purgeFirst = input.purgeMeta ?? purgeCloudflareMeta
           await purgeFirst()
@@ -1678,7 +1685,6 @@ export async function runScheduledBlizzardMetaSync(input: {
           }
         }
       }
-      deleteStagedMetaSnapshot(input.sqlite, staged.snapshotId)
       return {
         status: 'partial' as const,
         reason: reasons.join('; '),
@@ -1690,7 +1696,7 @@ export async function runScheduledBlizzardMetaSync(input: {
         partialOutcome: (previous ? 'kept-last-good' : 'not-published') as MetaPartialOutcome,
       }
     }
-    const promoted = promoteMetaSnapshot(input.sqlite, staged.snapshotId, built.payload.region, clock())
+    const promoted = promoteMetaSnapshot(input.sqlite, stagedId, built.payload.region, clock())
     const purge = input.purgeMeta ?? purgeCloudflareMeta
     await purge()
     return {
@@ -1701,6 +1707,9 @@ export async function runScheduledBlizzardMetaSync(input: {
       failures: built.failures,
       nPerSpec,
       dropped: built.preSpec?.dropped,
+    }
+    } finally {
+      deleteStagedMetaSnapshot(input.sqlite, stagedId)
     }
     } catch (error) {
       if (!isMetaHeapGuardError(error) && !isMetaDeadlineError(error)) throw error

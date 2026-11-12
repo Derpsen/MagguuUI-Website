@@ -733,7 +733,9 @@ function mergeSlotItems(map: CountMap, slots: Set<string>, total: number, bucket
   return [...merged.values()]
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
     .slice(0, META_TOP_SLOT_ITEMS)
-    .map(entry => toGear(entry, shareOf(entry.count, total), bucket, icons))
+    // Pass the raw rounded ratio so toGear's clamp is what keeps combined-slot
+    // share at 1 when stacked counts exceed the profile total (e.g. 160/100).
+    .map(entry => toGear(entry, total > 0 ? Math.round((entry.count / total) * 1000) / 1000 : 0, bucket, icons))
 }
 
 function gearSlots(map: CountMap, total: number, bucket?: ProfileBucket, icons?: Map<number, string>): MetaSpecSummary['gearSlots'] {

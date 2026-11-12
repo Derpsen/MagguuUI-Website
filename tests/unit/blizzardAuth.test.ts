@@ -171,6 +171,33 @@ describe('traffic throttle waves', () => {
     assert.ok(once >= 40 && once <= 60, `one wave should halve once to ~50ms, got ${once}`)
   })
 
+  it('treats a request that starts at the exact throttle instant as the same wave', async () => {
+    let t = 0
+    const waits: number[] = []
+    const traffic = createBlizzardTraffic({
+      maxRps: 40,
+      concurrency: 2,
+      sleep: async (ms) => { waits.push(ms) },
+      now: () => t,
+    })
+    let releaseA!: () => void
+    let releaseB!: () => void
+    const first = traffic.run(() => new Promise<void>(resolve => { releaseA = resolve }))
+    const second = traffic.run(() => new Promise<void>(resolve => { releaseB = resolve }))
+    for (let i = 0; i < 20 && !waits.includes(25); i++) await Promise.resolve()
+    assert.ok(waits.includes(25), 'second request should wait for the 25ms slot before starting')
+    t = 25
+    releaseA()
+    await first
+    traffic.noteThrottle()
+    waits.length = 0
+    releaseB()
+    await second
+    traffic.noteThrottle()
+    await traffic.run(async () => {})
+    assert.deepEqual(waits, [50], `a start at the throttle instant must debounce, got ${waits.join(',')}`)
+  })
+
   it('ignores a 429 from a request started before the last throttle but still extends the pause', async () => {
     let t = 0
     const waits: number[] = []

@@ -124,11 +124,11 @@ export function createBlizzardTraffic(options: {
     noteThrottle() {
       const t = now()
       const startedAt = lastFinishedStartedAt
-      // Ignore 429s from requests that started before the last throttle
+      // Ignore 429s from requests that started at or before the last throttle
       // (already in flight in the same wave), and repeated signals for the
       // same start. Still extend the pause so late 429s in the wave hold
       // subsequent waiters.
-      if (Number.isFinite(lastThrottleAt) && (startedAt < lastThrottleAt || startedAt === lastThrottleStartedAt)) {
+      if (Number.isFinite(lastThrottleAt) && (startedAt <= lastThrottleAt || startedAt === lastThrottleStartedAt)) {
         nextSlot = Math.max(nextSlot, t + gap)
         return
       }

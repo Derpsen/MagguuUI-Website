@@ -159,7 +159,25 @@ export function omitThinMetaSpecs(
       return { ...cls, specs, n: specs.reduce((sum, spec) => sum + spec.n, 0) }
     })
     .filter(cls => cls.specs.length > 0)
-  return { ...payload, classes }
+  const players = classes.reduce((sum, cls) => sum + cls.n, 0)
+  const profiles = classes.reduce(
+    (sum, cls) => sum + cls.specs.reduce((specSum, spec) => specSum + (spec.profileCount ?? 0), 0),
+    0,
+  )
+  const withShare = classes.map(cls => ({
+    ...cls,
+    specs: cls.specs.map(spec => ({
+      ...spec,
+      share: players > 0 ? Math.min(1, Math.round((spec.n / players) * 1000) / 1000) : 0,
+    })),
+  }))
+  return {
+    ...payload,
+    classes: withShare,
+    sampled: { ...payload.sampled, profiles, players },
+    freshness: { ...payload.freshness, players },
+    basis: { ...payload.basis, profiles, players },
+  }
 }
 
 export function markMetaSnapshotPartial(payload: MetaSnapshotPayload): MetaSnapshotPayload {

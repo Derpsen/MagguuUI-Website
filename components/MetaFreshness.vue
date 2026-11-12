@@ -36,7 +36,6 @@ const props = withDefaults(defineProps<{
 const copy = META_COPY
 const tone = useMetaTone()
 const headingId = `meta-fresh-${useId()}`
-const freshness = computed(() => props.freshness)
 
 const rows = computed(() => {
   const freshness = props.freshness

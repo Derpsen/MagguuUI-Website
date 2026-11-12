@@ -629,3 +629,13 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 ## 2026-11-11 Meta UI (PR C)
 
 - Public /meta UI on top of the A/B snapshot APIs. Docs: `docs/meta-ui.md`. NUXT_ADS default off (no AdSlot markup). Author of news stays Magguu; this PR does not touch /news.
+
+## 2026-11-12 Meta UI #185 shipped — Code-Review LOWs for later
+
+- Squash-merged #185 as `f82b659` (`feat(meta): add public /meta UI (#185)`). Live after autoupdate: shortSha `f82b659`, digest `sha256:a2665088cecbe233c3cb13ec96fdd4c97a3ff22dc34ee67e5da81532dbc3cba6`, cosign PASS. Empty snapshot: `/meta` and `/meta/mage/fire` show “Collecting data.” No AdSlot markup live (`NUXT_ADS` off). `/meta` stays out of the sitemap. Do not start C2 yet.
+- Code-Review LOWs to pick up later (not in this commit):
+  - Add a CI job that runs `tests/meta-ads.spec.ts` with `NUXT_ADS=on` (sidebar slot at xl, ≥150 px from the copy control). Default CI still leaves ads off.
+  - `scripts/verify-ads-runtime.mjs` must be able to start production standalone, so it needs `NUXT_ADMIN_PASSWORD` (and the other required prod secrets) when it is not invoked after `verify-build.mjs`.
+  - The raw `NUXT_ADS` string must not ship in the client payload; expose only a boolean (`nuxtAdsEnabled` / `useNuxtAdsEnabled`).
+  - The ads runtime/verify script should also check that slot markup is present when the flag is on and absent when it is off or empty.
+  - Google CSP entries in `server/utils/htmlCsp.ts:37-38` belong to PR D (AdSense), not C.

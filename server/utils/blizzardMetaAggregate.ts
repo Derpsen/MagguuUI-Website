@@ -151,7 +151,9 @@ function asBool(value: unknown): boolean {
 
 export function shareOf(count: number, total: number): number {
   const denom = total > 0 ? total : 1
-  return Math.round((count / denom) * 1000) / 1000
+  const share = Math.round((count / denom) * 1000) / 1000
+  if (!Number.isFinite(share) || share < 0) return 0
+  return Math.min(1, share)
 }
 
 export function keyLevelsOf(levels: number[]): MetaKeyLevels | null {
@@ -512,6 +514,7 @@ export function absorbProfile(
   bucket.profiles += 1
   const loadouts = extractActiveLoadouts(input.specsBody)
   const seenTalent = new Set<string>()
+  const seenHeroes = new Set<number>()
   let countedHero: { id: number, label: string } | null = null
   let recordedBuild = false
   for (const loadout of loadouts) {
@@ -524,7 +527,12 @@ export function absorbProfile(
       })
     }
     if (loadout.hero) {
-      increment(bucket.heroes, String(loadout.hero.id), loadout.hero.label, { id: loadout.hero.id })
+      // Players can have more than one active loadout on the same hero tree;
+      // count each tree once per profile so heroSplit.share stays ≤ 1.
+      if (!seenHeroes.has(loadout.hero.id)) {
+        seenHeroes.add(loadout.hero.id)
+        increment(bucket.heroes, String(loadout.hero.id), loadout.hero.label, { id: loadout.hero.id })
+      }
       if (!countedHero) countedHero = loadout.hero
     }
     const talentIds: number[] = []

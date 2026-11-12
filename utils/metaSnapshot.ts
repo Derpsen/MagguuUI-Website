@@ -515,6 +515,29 @@ function explainSpec(classSlug: string, value: unknown): string {
 }
 
 /** Human-readable reason when parseMetaSnapshotPayload returns null. No player names. */
+/**
+ * Live aggregates can over-count a share (two active loadouts on the same
+ * hero tree, combined ring/trinket slots). The schema requires [0, 1]; clamp
+ * just before parse so a single overflow cannot reject a finished snapshot.
+ */
+export function clampMetaSnapshotShares<T>(payload: T): T {
+  clampShareFields(payload)
+  return payload
+}
+
+function clampShareFields(value: unknown, seen = new WeakSet<object>()): void {
+  if (Array.isArray(value)) {
+    for (const item of value) clampShareFields(item, seen)
+    return
+  }
+  if (!isRecord(value) || seen.has(value)) return
+  seen.add(value)
+  if (typeof value.share === 'number' && Number.isFinite(value.share)) {
+    value.share = Math.min(1, Math.max(0, value.share))
+  }
+  for (const child of Object.values(value)) clampShareFields(child, seen)
+}
+
 export function explainMetaSnapshotRejection(input: unknown): string {
   let value = input
   if (typeof value === 'string') {

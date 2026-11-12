@@ -8,7 +8,7 @@ import type Database from 'better-sqlite3'
  * lives in meta_runs and is cleaned up on the same TTL.
  */
 
-import { explainMetaSnapshotRejection, parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
+import { clampMetaSnapshotShares, explainMetaSnapshotRejection, parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
 import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload, type MetaTalentLayout } from '~/utils/metaTypes'
 import { BLIZZARD_META_LOCK_TTL_MS } from './blizzardMetaLock'
 import type { MetaKeyLevelStats, SerializedProfileBucket, SpecPop } from './blizzardMetaAggregate'
@@ -108,6 +108,12 @@ function rowToStored(row: SnapshotRow | undefined): StoredMetaSnapshot | null {
   return asStored(row, payload)
 }
 
+function parseBuiltMetaSnapshot(payload: MetaSnapshotPayload): MetaSnapshotPayload {
+  const parsed = parseMetaSnapshotPayload(clampMetaSnapshotShares(payload))
+  if (!parsed) throw new Error(`Meta snapshot payload failed validation: ${explainMetaSnapshotRejection(payload)}`)
+  return parsed
+}
+
 function insertSnapshotRow(
   sqlite: MetaSqlite,
   payload: MetaSnapshotPayload,
@@ -119,8 +125,7 @@ function insertSnapshotRow(
   const expiresAt = Math.floor((now + ttlMs) / 1000)
   const season = payload.season ? String(payload.season.id) : null
   const period = payload.periods ? String(payload.periods.current.id) : null
-  const parsed = parseMetaSnapshotPayload(payload)
-  if (!parsed) throw new Error(`Meta snapshot payload failed validation: ${explainMetaSnapshotRejection(payload)}`)
+  const parsed = parseBuiltMetaSnapshot(payload)
   const inserted = sqlite.prepare(`
     INSERT INTO meta_snapshots (region, season, period, fetched_at, expires_at, status, payload, source)
     VALUES (?, ?, ?, ?, ?, ?, ?, 'blizzard')
@@ -281,8 +286,7 @@ export function writeMetaSnapshot(
   now = Date.now(),
   ttlMs = META_SNAPSHOT_TTL_MS,
 ): StoredMetaSnapshot {
-  const parsed = parseMetaSnapshotPayload(payload)
-  if (!parsed) throw new Error(`Meta snapshot payload failed validation: ${explainMetaSnapshotRejection(payload)}`)
+  const parsed = parseBuiltMetaSnapshot(payload)
   const run = sqlite.transaction(() => {
     const id = insertSnapshotRow(sqlite, parsed, now, ttlMs, 'ok')
     setActivePointer(sqlite, parsed.region, id)

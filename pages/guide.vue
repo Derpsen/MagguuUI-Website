@@ -81,7 +81,7 @@
     <section class="mb-10">
       <div v-if="!editMode">
         <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Procedure</p>
-        <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight leading-[0.95] max-w-3xl" :class="isDark ? 'text-white' : 'text-gray-950'">
+        <h1 class="mg-h1 max-w-3xl" :class="isDark ? 'text-white' : 'text-gray-950'">
           {{ visibleTitle || 'Installation Guide' }}
         </h1>
         <p class="mt-4 max-w-2xl text-base leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">

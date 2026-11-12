@@ -17,7 +17,7 @@
         <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-4" :class="isDark ? 'text-brand-300' : 'text-brand-700'">
           {{ heroEyebrow }}
         </p>
-        <h1 class="text-5xl sm:text-6xl font-semibold tracking-tight leading-[0.95]" :class="isDark ? 'text-white' : 'text-gray-950'">
+        <h1 class="mg-display" :class="isDark ? 'text-white' : 'text-gray-950'">
           {{ content?.hero?.title || 'MagguuUI' }}
           <span v-if="heroTitle2" class="block mt-3 text-xl sm:text-2xl font-medium tracking-normal leading-snug" :class="isDark ? 'text-silver-400' : 'text-gray-500'">{{ heroTitle2 }}</span>
         </h1>

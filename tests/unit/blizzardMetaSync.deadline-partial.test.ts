@@ -4,10 +4,15 @@ import { readFileSync } from 'node:fs'
 import Database from 'better-sqlite3'
 import { initializeDatabase } from '../../server/database/bootstrap'
 import { resetBlizzardAccessTokenCache } from '../../server/utils/blizzardAuth'
+import { META_CLASSES } from '../../utils/metaCatalog'
 import {
+  decideDeadlinePartialPublish,
   metaSnapshotCoverage,
-  runScheduledBlizzardMetaSync,
   shouldKeepLastGoodMetaSnapshot,
+} from '../../server/utils/blizzardMetaPolicy'
+import {
+  runScheduledBlizzardMetaSync,
+  sleepUntilMetaDeadline,
   type MetaSyncCaps,
 } from '../../server/utils/blizzardMetaSync'
 import { readCurrentMetaSnapshot, writeMetaSnapshot } from '../../server/utils/blizzardMetaStore'
@@ -31,6 +36,29 @@ function snapshotPayload(): MetaSnapshotPayload {
   const parsed = parseMetaSnapshotPayload(readFileSync(new URL('../fixtures/blizzard-meta/snapshot.json', import.meta.url), 'utf8'))
   assert.ok(parsed)
   return parsed
+}
+
+
+function profilesPayload(perSpec: number, specCount: number): MetaSnapshotPayload {
+  const base = snapshotPayload()
+  const template = base.classes[0]!.specs[0]!
+  let left = specCount
+  const classes = META_CLASSES.map((cls) => {
+    const specs = cls.specs.map((spec) => {
+      const include = left > 0
+      if (include) left -= 1
+      return {
+        ...template,
+        slug: spec.slug,
+        label: spec.name,
+        n: include ? 8000 : 0,
+        share: 0,
+        profileCount: include ? perSpec : 0,
+      }
+    })
+    return { slug: cls.slug, label: cls.name, n: specs.reduce((sum, spec) => sum + spec.n, 0), specs }
+  })
+  return { ...base, classes }
 }
 
 function tightCaps(overrides: Partial<MetaSyncCaps> = {}): Partial<MetaSyncCaps> {
@@ -86,6 +114,27 @@ describe('metaSnapshotCoverage / shouldKeepLastGoodMetaSnapshot', () => {
     }
     assert.equal(shouldKeepLastGoodMetaSnapshot(thin, richerSame), false)
   })
+
+  it('keeps a 39×200 last-good when the incoming snapshot is 40×1', () => {
+    const previous = profilesPayload(200, 39)
+    const incoming = profilesPayload(1, 40)
+    assert.equal(metaSnapshotCoverage(previous).wellCoveredSpecs, 39)
+    assert.equal(metaSnapshotCoverage(incoming).wellCoveredSpecs, 0)
+    assert.equal(shouldKeepLastGoodMetaSnapshot(previous, incoming), true)
+    const decision = decideDeadlinePartialPublish({
+      payload: incoming,
+      previous,
+      plannedProfiles: 40,
+      successfulProfiles: 40,
+      stats: { calls: 100, http429: 0 },
+    })
+    assert.equal(decision.outcome, 'kept-last-good')
+  })
+
+  it('replaces last-good when coverage is equal (does not keep on a >= tie)', () => {
+    const previous = profilesPayload(200, 39)
+    assert.equal(shouldKeepLastGoodMetaSnapshot(previous, profilesPayload(200, 39)), false)
+  })
 })
 
 describe('deadline partial snapshot', () => {
@@ -126,10 +175,13 @@ describe('deadline partial snapshot', () => {
     assert.equal(result.status, 'partial')
     assert.match(result.reason || '', /job deadline/)
     assert.match(result.reason || '', /published partial/)
+    assert.equal(result.partialOutcome, 'published')
     assert.ok(result.snapshotId != null)
     assert.ok((result.specsWithData ?? 0) >= 1)
-    assert.equal(sawMidPromote, true)
-    assert.ok(purges.length >= 1)
+    assert.equal(sawMidPromote, false)
+    assert.equal(purges.length, 1)
+    const okRows = sqlite.prepare("SELECT COUNT(*) AS n FROM meta_snapshots WHERE status = 'ok'").get() as { n: number }
+    assert.equal(okRows.n, 1)
     const current = readCurrentMetaSnapshot(sqlite, META_REGION, t)
     assert.ok(current)
     assert.equal(current.snapshotId, result.snapshotId)
@@ -170,6 +222,7 @@ describe('deadline partial snapshot', () => {
     assert.equal(result.status, 'partial')
     assert.match(result.reason || '', /job deadline/)
     assert.match(result.reason || '', /kept last-good/)
+    assert.equal(result.partialOutcome, 'kept-last-good')
     assert.equal(result.snapshotId, previous.snapshotId)
     assert.equal(sawMidPromote, false)
     const current = readCurrentMetaSnapshot(sqlite, META_REGION, t)
@@ -257,5 +310,15 @@ describe('deadline partial snapshot', () => {
     assert.ok(messages.some(line => /\[blizzard:nightly\] spec \S+ start candidates=\d+/.test(line)), messages.join('\n'))
     assert.ok(messages.some(line => /\[blizzard:nightly\] spec \S+ done profiles=\d+ attempts=\d+ duration=\S+s rate=\S+ rps/.test(line)), messages.join('\n'))
     assert.ok(messages.some(line => /\[blizzard:nightly\] progress calls=\d+ .* rate=\S+ rps/.test(line)), messages.join('\n'))
+  })
+})
+
+describe('sleepUntilMetaDeadline', () => {
+  it('caps a sleep to the remaining time and then trips the deadline', async () => {
+    let t = 1000
+    const waits: number[] = []
+    const sleep = sleepUntilMetaDeadline(async (ms) => { waits.push(ms); t += ms }, 1300, () => t)
+    await assert.rejects(() => sleep(5_000), /job deadline/)
+    assert.deepEqual(waits, [300])
   })
 })

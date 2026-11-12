@@ -778,5 +778,29 @@
     "file": "server/utils/blizzardMetaAggregate.ts",
     "find": "    share: Math.min(1, share),\n",
     "repl": "    share,\n"
+  },
+  {
+    "name": "meta: rate-gate rps floor cap removed",
+    "file": "server/utils/blizzardHttp.ts",
+    "find": "      gap = Math.min(maxGap, Math.max(gap * 2, targetGap * 2))\n",
+    "repl": "      gap = Math.max(gap * 2, targetGap * 2)\n"
+  },
+  {
+    "name": "meta: throttle recovery after 10 clean calls instead of 80",
+    "file": "server/utils/blizzardHttp.ts",
+    "find": "      if (healthy >= 80 && gap > targetGap) {\n",
+    "repl": "      if (healthy >= 10 && gap > targetGap) {\n"
+  },
+  {
+    "name": "meta: shouldKeepLastGood treats equal coverage as thinner",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "      if (next.wellCoveredProfiles >= prev.wellCoveredProfiles) return false\n",
+    "repl": "      if (next.wellCoveredProfiles > prev.wellCoveredProfiles) return false\n"
+  },
+  {
+    "name": "meta: store share clamp removed",
+    "file": "server/utils/blizzardMetaStore.ts",
+    "find": "  const parsed = parseMetaSnapshotPayload(clampMetaSnapshotShares(payload))\n",
+    "repl": "  const parsed = parseMetaSnapshotPayload(payload)\n"
   }
 ]

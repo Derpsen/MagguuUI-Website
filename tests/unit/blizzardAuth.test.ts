@@ -136,12 +136,88 @@ describe('traffic gate respects a mid-wait pause', () => {
     await traffic.run(async () => {})
     const throttled = waits.at(-1) ?? 0
     assert.ok(throttled >= 40 && throttled <= 60, `throttled gap should be ~50ms, got ${throttled}`)
+    for (let i = 0; i < 10; i++) traffic.noteSuccess()
+    waits.length = 0
+    await traffic.run(async () => {})
+    const stillThrottled = waits.at(-1) ?? 0
+    assert.ok(stillThrottled >= 40 && stillThrottled <= 60, `10 clean calls must not recover, got ${stillThrottled}`)
     for (let i = 0; i < 80; i++) traffic.noteSuccess()
     await traffic.run(async () => {}) // drain any leftover wide slot
     waits.length = 0
     await traffic.run(async () => {})
     const recovered = waits.at(-1) ?? 0
     assert.ok(recovered >= 20 && recovered <= 30, `rate should climb back toward 25ms, got ${recovered}`)
+  })
+})
+
+describe('traffic throttle waves', () => {
+  it('halves rps only once for a parallel 429 wave at the same instant', async () => {
+    let t = 0
+    const waits: number[] = []
+    const traffic = createBlizzardTraffic({
+      maxRps: 40,
+      concurrency: 1,
+      sleep: async (ms) => { waits.push(ms); t += ms },
+      now: () => t,
+    })
+    await traffic.run(async () => {})
+    traffic.noteThrottle()
+    traffic.noteThrottle()
+    traffic.noteThrottle()
+    traffic.noteThrottle()
+    waits.length = 0
+    await traffic.run(async () => {})
+    const once = waits.at(-1) ?? 0
+    assert.ok(once >= 40 && once <= 60, `one wave should halve once to ~50ms, got ${once}`)
+  })
+
+  it('does not open the gap past the 8 rps floor', async () => {
+    let t = 0
+    const waits: number[] = []
+    const traffic = createBlizzardTraffic({
+      maxRps: 40,
+      concurrency: 1,
+      sleep: async (ms) => { waits.push(ms); t += ms },
+      now: () => t,
+    })
+    await traffic.run(async () => {})
+    for (let i = 0; i < 6; i++) {
+      if (i > 0) t += 1_000
+      traffic.noteThrottle()
+    }
+    waits.length = 0
+    await traffic.run(async () => {})
+    const capped = waits.at(-1) ?? 0
+    assert.ok(capped <= 125, `floor is 8 rps (125ms), got ${capped}`)
+    assert.ok(capped >= 100, `expected to be at the floor, got ${capped}`)
+  })
+
+  it('caps Retry-After waits at 30 seconds', async () => {
+    const t = 1_700_000_000_000
+    const waits: number[] = []
+    const sleep = async (ms: number) => { waits.push(ms) }
+    const traffic = createBlizzardTraffic({ maxRps: 100, concurrency: 1, sleep, now: () => t })
+    let calls = 0
+    const fetcher = async () => {
+      calls += 1
+      if (calls === 1) {
+        return {
+          status: 429,
+          headers: { get: (name: string) => name.toLowerCase() === 'retry-after' ? '120' : null },
+          body: {},
+        }
+      }
+      return { status: 200, headers: { get: () => null }, body: { ok: true } }
+    }
+    const res = await blizzardRequest(fetcher, { method: 'GET', url: 'https://example.test/meta', headers: {} }, {
+      sleep,
+      now: () => t,
+      traffic,
+      jitter: () => 0,
+    })
+    assert.equal(res.status, 200)
+    assert.ok(waits.every(ms => ms <= 30_000), `Retry-After must cap at 30s, got ${waits.join(',')}`)
+    assert.ok(waits.some(ms => ms === 30_000), `expected a 30s cap wait, got ${waits.join(',')}`)
   })
 })
 

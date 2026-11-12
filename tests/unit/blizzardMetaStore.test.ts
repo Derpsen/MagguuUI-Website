@@ -10,6 +10,7 @@ import {
   promoteMetaSnapshot,
   readCurrentMetaSnapshot,
   readMetaSnapshotState,
+  rollbackMetaSnapshot,
   writeMetaSnapshot,
   writeStagedMetaSnapshot,
 } from '../../server/utils/blizzardMetaStore'
@@ -102,5 +103,43 @@ describe('meta snapshot store', () => {
     assert.equal(cols.some(c => c.name === 'id'), false)
     const written = writeMetaSnapshot(sqlite, payload())
     assert.equal(readCurrentMetaSnapshot(sqlite)?.snapshotId, written.snapshotId)
+  })
+
+  it('clamps an over-1 heroSplit share so a built snapshot can be stored', () => {
+    const sqlite = open()
+    const raw = payload()
+    const fire = raw.classes.find(cls => cls.slug === 'mage')?.specs.find(spec => spec.slug === 'fire')
+    assert.ok(fire)
+    assert.ok(fire.heroSplit[0])
+    fire.heroSplit[0].share = 1.414
+    const written = writeMetaSnapshot(sqlite, raw)
+    const stored = readCurrentMetaSnapshot(sqlite)
+    assert.ok(stored)
+    assert.equal(stored.snapshotId, written.snapshotId)
+    const storedFire = stored.payload.classes.find(cls => cls.slug === 'mage')?.specs.find(spec => spec.slug === 'fire')
+    assert.ok(storedFire)
+    assert.equal(storedFire.heroSplit[0]?.share, 1)
+  })
+
+  it('rolls back to the best last-good and skips thinner partial intermediates', () => {
+    const sqlite = open()
+    const now = Date.now()
+    const base = payload()
+    const full = writeMetaSnapshot(sqlite, base, now, META_SNAPSHOT_TTL_MS)
+    const oneSpec: typeof base = {
+      ...base,
+      classes: base.classes.slice(0, 1).map(cls => ({
+        ...cls,
+        specs: cls.specs.slice(0, 1).map(spec => ({ ...spec, profileCount: Math.max(1, spec.profileCount ?? 1) })),
+      })),
+    }
+    const thin = writeMetaSnapshot(sqlite, oneSpec, now + 1_000, META_SNAPSHOT_TTL_MS)
+    const current = writeMetaSnapshot(sqlite, base, now + 2_000, META_SNAPSHOT_TTL_MS)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + 3_000)?.snapshotId, current.snapshotId)
+    const rolled = rollbackMetaSnapshot(sqlite, META_REGION, now + 3_000)
+    assert.ok(rolled)
+    assert.equal(rolled.snapshotId, full.snapshotId)
+    assert.notEqual(rolled.snapshotId, thin.snapshotId)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + 3_000)?.snapshotId, full.snapshotId)
   })
 })

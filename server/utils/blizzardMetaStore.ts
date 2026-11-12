@@ -9,6 +9,7 @@ import type Database from 'better-sqlite3'
  */
 
 import { clampMetaSnapshotShares, explainMetaSnapshotRejection, parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
+import { coverageIsBetterThan, metaSnapshotCoverage } from './blizzardMetaPolicy'
 import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload, type MetaTalentLayout } from '~/utils/metaTypes'
 import { BLIZZARD_META_LOCK_TTL_MS } from './blizzardMetaLock'
 import type { MetaKeyLevelStats, SerializedProfileBucket, SpecPop } from './blizzardMetaAggregate'
@@ -309,15 +310,26 @@ export function rollbackMetaSnapshot(
 ): StoredMetaSnapshot | null {
   const current = readCurrentMetaSnapshot(sqlite, region, now)
   const nowSec = Math.floor(now / 1000)
-  const row = sqlite.prepare(`
+  const rows = sqlite.prepare(`
     SELECT snapshot_id, region, season, period, fetched_at, expires_at, status, payload, source
     FROM meta_snapshots
     WHERE region = ? AND status = 'ok' AND expires_at > ?
       AND snapshot_id != ?
     ORDER BY fetched_at DESC, snapshot_id DESC
-    LIMIT 1
-  `).get(region, nowSec, current?.snapshotId ?? -1) as SnapshotRow | undefined
-  const previous = rowToStored(row)
+  `).all(region, nowSec, current?.snapshotId ?? -1) as SnapshotRow[]
+  // Skip thinner mid-run intermediates: pick the best remaining last-good
+  // (well-covered specs, then profiles), ties broken by most recent.
+  let previous: StoredMetaSnapshot | null = null
+  let previousCoverage: ReturnType<typeof metaSnapshotCoverage> | null = null
+  for (const row of rows) {
+    const stored = rowToStored(row)
+    if (!stored) continue
+    const coverage = metaSnapshotCoverage(stored.payload)
+    if (!previous || !previousCoverage || coverageIsBetterThan(coverage, previousCoverage)) {
+      previous = stored
+      previousCoverage = coverage
+    }
+  }
   if (!previous) return null
   return promoteMetaSnapshot(sqlite, previous.snapshotId, region, now)
 }

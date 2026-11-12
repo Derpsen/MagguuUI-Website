@@ -67,7 +67,12 @@ import {
   type BlizzardTraffic,
 } from './blizzardHttp'
 import { withBlizzardMetaLock } from './blizzardMetaLock'
-import { evaluateMetaRunPolicy } from './blizzardMetaPolicy'
+import {
+  decideDeadlinePartialPublish,
+  evaluateMetaRunPolicy,
+  metaSnapshotCoverage,
+  type MetaPartialOutcome,
+} from './blizzardMetaPolicy'
 import {
   clearExpiredMetaSyncStaging,
   clearMetaSyncStaging,
@@ -187,6 +192,8 @@ export type ScheduledMetaResult = {
   specsWithData?: number
   durationMs?: number
   dropped?: MetaSyncDroppedCounts
+  /** Distinguishes a published deadline/policy partial from keeping last-good. Exit stays 3 for both. */
+  partialOutcome?: MetaPartialOutcome
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -723,33 +730,24 @@ export function isMetaDeadlineError(error: unknown): boolean {
   return error instanceof Error && error.message.includes('job deadline')
 }
 
-export function metaSnapshotCoverage(payload: MetaSnapshotPayload | null | undefined): { specsWithData: number, profiles: number } {
-  if (!payload) return { specsWithData: 0, profiles: 0 }
-  let specsWithData = 0
-  let profiles = 0
-  for (const cls of payload.classes) {
-    for (const spec of cls.specs) {
-      const n = spec.profileCount ?? 0
-      if (n > 0) {
-        specsWithData += 1
-        profiles += n
-      }
-    }
-  }
-  return { specsWithData, profiles }
-}
+export { decideDeadlinePartialPublish, metaSnapshotCoverage, shouldKeepLastGoodMetaSnapshot, type MetaPartialOutcome } from './blizzardMetaPolicy'
 
-/** Keep last-good when it covers more specs, or the same specs with more profiles. */
-export function shouldKeepLastGoodMetaSnapshot(
-  previous: MetaSnapshotPayload | null | undefined,
-  incoming: MetaSnapshotPayload,
-): boolean {
-  const prev = metaSnapshotCoverage(previous)
-  if (prev.specsWithData === 0 && prev.profiles === 0) return false
-  const next = metaSnapshotCoverage(incoming)
-  if (next.specsWithData > prev.specsWithData) return false
-  if (next.specsWithData === prev.specsWithData && next.profiles >= prev.profiles) return false
-  return true
+export function sleepUntilMetaDeadline(
+  sleep: ((ms: number) => Promise<void>) | undefined,
+  deadline: number | undefined,
+  now: () => number,
+): (ms: number) => Promise<void> {
+  const base = sleep ?? ((ms: number) => new Promise(resolve => setTimeout(resolve, ms)))
+  return async (ms: number) => {
+    if (deadline == null) {
+      await base(ms)
+      return
+    }
+    const remaining = deadline - now()
+    if (remaining <= 0) throw new Error('Meta nightly hit the job deadline')
+    await base(Math.min(ms, remaining))
+    if (now() >= deadline) throw new Error('Meta nightly hit the job deadline')
+  }
 }
 
 function throwIfDeadlineAborted(abort?: AbortController) {
@@ -886,7 +884,7 @@ async function mapPool<T>(
 }
 
 function tripAbort(abort: AbortController, error: unknown): never {
-  if (!abort.signal.aborted) abort.abort()
+  if (!abort.signal.aborted) abort.abort(error)
   throw error
 }
 
@@ -1034,12 +1032,14 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
 }> {
   const caps = mergeCaps(options.caps)
   const clock = asClock(options.now)
+  const sleep = sleepUntilMetaDeadline(options.sleep, options.deadline, clock)
+  options = { ...options, sleep }
   const now = clock()
   const stats = options.stats ?? createBlizzardHttpStats()
   const traffic = options.traffic ?? createBlizzardTraffic({
     maxRps: caps.maxRps,
     concurrency: caps.concurrency,
-    sleep: options.sleep,
+    sleep,
     now: clock,
   })
   const secrets = [options.credentials.id, options.credentials.secret]
@@ -1538,7 +1538,7 @@ export async function runScheduledBlizzardMetaSync(input: {
     input.warn,
   )
   blizzardRegionFromRuntimeConfig(input.config, input.warn)
-  const finish = async (status: MetaRunStatus, reason?: string, snapshotId?: number | null, stats?: BlizzardHttpStats, failures?: ProfileFailures, nPerSpec?: Record<string, number> | null, dropped?: MetaSyncDroppedCounts) => {
+  const finish = async (status: MetaRunStatus, reason?: string, snapshotId?: number | null, stats?: BlizzardHttpStats, failures?: ProfileFailures, nPerSpec?: Record<string, number> | null, dropped?: MetaSyncDroppedCounts, partialOutcome?: MetaPartialOutcome) => {
     const record = recordMetaRun(input.sqlite, {
       startedAt,
       endedAt: clock(),
@@ -1562,6 +1562,7 @@ export async function runScheduledBlizzardMetaSync(input: {
       specsWithData,
       durationMs: clock() - startedAt,
       dropped,
+      ...(partialOutcome ? { partialOutcome } : {}),
     }
   }
 
@@ -1595,19 +1596,21 @@ export async function runScheduledBlizzardMetaSync(input: {
       heap: input.heap,
       runToken: `meta-sync-${startedAt}`,
       abortController: input.abortController,
-      onPartialSnapshot: previous ? undefined : (payload) => {
-        if (metaSnapshotCoverage(payload).specsWithData === 0) return
-        const mid = writeStagedMetaSnapshot(input.sqlite, payload, clock())
-        promoteMetaSnapshot(input.sqlite, mid.snapshotId, payload.region, clock())
-      },
     })
     const nPerSpec: Record<string, number> = {}
     for (const cls of built.payload.classes) {
       for (const spec of cls.specs) nPerSpec[`${cls.slug}/${spec.slug}`] = spec.n
     }
     if (built.hitDeadline) {
-      const coverage = metaSnapshotCoverage(built.payload)
-      if (coverage.specsWithData === 0) {
+      const plannedProfiles = Math.max(built.failures.attempted, built.payload.sampled.profiles)
+      const decision = decideDeadlinePartialPublish({
+        payload: built.payload,
+        previous: previous?.payload ?? null,
+        plannedProfiles,
+        successfulProfiles: built.payload.sampled.profiles,
+        stats: built.stats,
+      })
+      if (decision.outcome === 'not-published' && metaSnapshotCoverage(built.payload).specsWithData === 0) {
         return {
           status: 'error' as const,
           reason: 'Meta nightly hit the job deadline',
@@ -1618,15 +1621,19 @@ export async function runScheduledBlizzardMetaSync(input: {
           dropped: built.preSpec?.dropped,
         }
       }
-      if (shouldKeepLastGoodMetaSnapshot(previous?.payload, built.payload)) {
+      if (decision.outcome !== 'published') {
+        const kept = decision.outcome === 'kept-last-good'
         return {
           status: 'partial' as const,
-          reason: 'Meta nightly hit the job deadline; kept last-good snapshot',
-          snapshotId: previous!.snapshotId,
+          reason: kept
+            ? `Meta nightly hit the job deadline; kept last-good snapshot${decision.reasons.length ? ` (${decision.reasons.join('; ')})` : ''}`
+            : `Meta nightly hit the job deadline; ${decision.reasons.join('; ') || 'partial not published'}`,
+          snapshotId: kept ? previous!.snapshotId : null as number | null,
           stats: built.stats,
           failures: built.failures,
           nPerSpec,
           dropped: built.preSpec?.dropped,
+          partialOutcome: decision.outcome,
         }
       }
       const stagedPartial = writeStagedMetaSnapshot(input.sqlite, built.payload, clock())
@@ -1641,6 +1648,7 @@ export async function runScheduledBlizzardMetaSync(input: {
         failures: built.failures,
         nPerSpec,
         dropped: built.preSpec?.dropped,
+        partialOutcome: 'published' as const,
       }
     }
     const staged = writeStagedMetaSnapshot(input.sqlite, built.payload, clock())
@@ -1661,11 +1669,12 @@ export async function runScheduledBlizzardMetaSync(input: {
       return {
         status: 'partial' as const,
         reason: reasons.join('; '),
-        snapshotId: null as number | null,
+        snapshotId: previous?.snapshotId ?? null as number | null,
         stats: built.stats,
         failures: built.failures,
         nPerSpec,
         dropped: built.preSpec?.dropped,
+        partialOutcome: (previous ? 'kept-last-good' : 'not-published') as MetaPartialOutcome,
       }
     }
     const promoted = promoteMetaSnapshot(input.sqlite, staged.snapshotId, built.payload.region, clock())
@@ -1696,7 +1705,7 @@ export async function runScheduledBlizzardMetaSync(input: {
 
   if (!locked.ok) return finish('locked', 'A Meta update is already running')
   const value = locked.value
-  return finish(value.status, value.reason, value.snapshotId, value.stats, value.failures, value.nPerSpec, value.dropped)
+  return finish(value.status, value.reason, value.snapshotId, value.stats, value.failures, value.nPerSpec, value.dropped, value.partialOutcome)
 }
 
 export async function runScheduledBlizzardMetaSyncGuarded(input: Parameters<typeof runScheduledBlizzardMetaSync>[0]): Promise<ScheduledMetaResult> {

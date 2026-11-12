@@ -112,6 +112,7 @@ export function createBlizzardTraffic(options: {
   let healthy = 0
   let nextSlot = 0
   let active = 0
+  let lastThrottleAt = Number.NEGATIVE_INFINITY
   const queue: Array<() => void> = []
 
   return {
@@ -119,9 +120,17 @@ export function createBlizzardTraffic(options: {
       nextSlot = Math.max(nextSlot, untilMs)
     },
     noteThrottle() {
+      const t = now()
+      // A parallel 429 wave must halve rps only once; later signals in the
+      // same gap only extend the pause.
+      if (Number.isFinite(lastThrottleAt) && t - lastThrottleAt < gap) {
+        nextSlot = Math.max(nextSlot, t + gap)
+        return
+      }
+      lastThrottleAt = t
       gap = Math.min(maxGap, Math.max(gap * 2, targetGap * 2))
       healthy = 0
-      nextSlot = Math.max(nextSlot, now() + gap)
+      nextSlot = Math.max(nextSlot, t + gap)
     },
     noteSuccess() {
       healthy += 1

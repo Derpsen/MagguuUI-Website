@@ -44,6 +44,7 @@
 
   /* Type scale (fluid, mobile first). Plus Jakarta Sans 800 for display, 700 headings, 400/500 body. */
   --mg-fs-display: clamp(2.5rem, 1.55rem + 4.6vw, 4.75rem);
+  --mg-fs-hero: clamp(3.25rem, 1.1rem + 10.4vw, 7.25rem); /* Home hero only */
   --mg-fs-h1: clamp(2.125rem, 1.6rem + 2.4vw, 3.25rem);
   --mg-fs-h2: clamp(1.5rem, 1.25rem + 1.1vw, 2.125rem);
   --mg-fs-h3: 1.25rem;
@@ -83,6 +84,7 @@ html.dark .public-shell {
   --mg-focus: #3fe0b8;
   --mg-glow: rgb(12 210 157 / 0.32);
   --mg-glow-2: rgb(56 189 248 / 0.16);
+  --mg-glow-3: rgb(139 92 246 / 0.22);
   --mg-header-bg: rgb(6 9 13 / 0.78);
   --mg-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px rgb(0 0 0 / 0.38);
   --mg-cta-shadow: 0 0 0 1px rgb(12 210 157 / 0.5), 0 8px 24px -6px rgb(12 210 157 / 0.55);
@@ -112,6 +114,7 @@ html:not(.dark) .public-shell {
   --mg-focus: #04664e;
   --mg-glow: rgb(12 210 157 / 0.26);
   --mg-glow-2: rgb(56 189 248 / 0.14);
+  --mg-glow-3: rgb(139 92 246 / 0.14);
   --mg-header-bg: rgb(245 247 250 / 0.82);
   --mg-shadow: 0 1px 2px rgb(10 17 28 / 0.05), 0 10px 28px -8px rgb(10 17 28 / 0.12);
   --mg-cta-shadow: 0 1px 2px rgb(4 102 78 / 0.3), 0 8px 20px -8px rgb(12 210 157 / 0.7);

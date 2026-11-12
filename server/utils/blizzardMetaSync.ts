@@ -97,7 +97,12 @@ export type MetaSyncCaps = {
   maxRealms: number
   periods: number
   maxConcurrentSpecs: number
+  /** Hard cap on unique players kept during leaderboard ingest. */
+  maxCandidates: number
 }
+
+/** 40 catalog specs × 400 attempts × 2, so a 400k-player region stays bounded. */
+export const META_SYNC_DEFAULT_MAX_CANDIDATES = 32_000
 
 export const META_SYNC_DEFAULT_CAPS: MetaSyncCaps = {
   samplePerSpec: 200,
@@ -107,6 +112,7 @@ export const META_SYNC_DEFAULT_CAPS: MetaSyncCaps = {
   maxRealms: 0,
   periods: META_PREVIOUS_PERIODS + 1,
   maxConcurrentSpecs: 1,
+  maxCandidates: META_SYNC_DEFAULT_MAX_CANDIDATES,
 }
 
 const API_ROOT = 'https://eu.api.blizzard.com'
@@ -201,23 +207,38 @@ function idFromHref(href: string): number | null {
 
 /** Compact per-player table for leaderboard ingest.
  *  A Map of object values retains the parsed board graph (EU-scale fixture:
- *  166k players → ~440 MB live). Parallel arrays stay around 70 MB. */
-class MetaCandidateTable {
+ *  166k players → ~440 MB live). Parallel arrays stay around 70 MB uncapped.
+ *  `maxCandidates` evicts the lowest (runs, then best key) in batches so a
+ *  400k-player region stays inside the CLI heap cap. */
+export class MetaCandidateTable {
   private readonly index = new Map<string, number>()
   private readonly realms: string[] = []
   private readonly names: string[] = []
   private readonly specIds: number[][] = []
   private readonly runs: number[][] = []
   private readonly bests: number[][] = []
+  private evicted = 0
+  readonly cap: number
+  private readonly slack: number
+
+  constructor(cap: number) {
+    this.cap = Math.max(1, cap)
+    this.slack = Math.max(256, Math.min(4096, Math.floor(this.cap * 0.125)))
+  }
 
   get size() {
     return this.names.length
+  }
+
+  get dropped() {
+    return this.evicted
   }
 
   add(realm: string, name: string, specId: number, level: number) {
     const key = `${realm}/${name}`
     let i = this.index.get(key)
     if (i == null) {
+      if (this.size >= this.cap + this.slack) this.evictTo(this.cap)
       i = this.names.length
       this.index.set(key, i)
       this.realms.push(realm)
@@ -237,6 +258,55 @@ class MetaCandidateTable {
     }
     this.runs[i]![pos]! += 1
     if (level > this.bests[i]![pos]!) this.bests[i]![pos] = level
+  }
+
+  evictTo(keep: number) {
+    if (this.size <= keep) return
+    const scored = this.names.map((_, i) => {
+      let r = 0
+      let b = 0
+      const rs = this.runs[i]!
+      const bs = this.bests[i]!
+      for (let p = 0; p < rs.length; p++) {
+        if (rs[p]! > r || (rs[p] === r && bs[p]! > b)) {
+          r = rs[p]!
+          b = bs[p]!
+        }
+      }
+      return { i, r, b }
+    })
+    scored.sort((a, b) => b.r - a.r || b.b - a.b)
+    const kept = scored.slice(0, keep)
+    const nextIndex = new Map<string, number>()
+    const realms: string[] = []
+    const names: string[] = []
+    const specIds: number[][] = []
+    const runs: number[][] = []
+    const bests: number[][] = []
+    for (const row of kept) {
+      const j = realms.length
+      const realm = this.realms[row.i]!
+      const name = this.names[row.i]!
+      nextIndex.set(`${realm}/${name}`, j)
+      realms.push(realm)
+      names.push(name)
+      specIds.push(this.specIds[row.i]!)
+      runs.push(this.runs[row.i]!)
+      bests.push(this.bests[row.i]!)
+    }
+    this.evicted += this.size - kept.length
+    this.index.clear()
+    for (const [key, j] of nextIndex) this.index.set(key, j)
+    this.realms.length = 0
+    this.names.length = 0
+    this.specIds.length = 0
+    this.runs.length = 0
+    this.bests.length = 0
+    this.realms.push(...realms)
+    this.names.push(...names)
+    this.specIds.push(...specIds)
+    this.runs.push(...runs)
+    this.bests.push(...bests)
   }
 
   *players(): Iterable<{ realm: string, name: string, specs: Array<{ specId: number, runs: number, best: number }> }> {
@@ -261,6 +331,7 @@ class MetaCandidateTable {
   }
 }
 
+export const META_HEAP_CHECK_EVERY_GROUPS = 32
 
 function dungeonIdOf(board: unknown): number | null {
   const rec = asRecord(board)
@@ -275,6 +346,7 @@ function mergeCaps(partial?: Partial<MetaSyncCaps>): MetaSyncCaps {
   caps.maxAttemptsPerSpec = Math.max(caps.maxAttemptsPerSpec, caps.samplePerSpec)
   caps.periods = Math.max(1, caps.periods)
   caps.maxConcurrentSpecs = Math.min(Math.max(1, caps.maxConcurrentSpecs), 8)
+  caps.maxCandidates = Math.max(caps.maxAttemptsPerSpec, caps.maxCandidates || META_SYNC_DEFAULT_MAX_CANDIDATES)
   return caps
 }
 
@@ -490,7 +562,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     }
   }
 
-  const candidates = new MetaCandidateTable()
+  const candidates = new MetaCandidateTable(caps.maxCandidates)
   let leaderboardsOk = 0
   let leaderboardsFailed = 0
 
@@ -506,6 +578,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     leaderboardsOk += 1
     const groups = asArray(board.leading_groups)
     board.leading_groups = undefined
+    let processedGroups = 0
     for (const rawGroup of groups) {
       const group = asRecord(rawGroup)
       if (!group) continue
@@ -521,6 +594,11 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
         const specId = asNumber(specRec?.id)
         if (specId == null) continue
         candidates.add(realm, name, specId, level)
+      }
+      processedGroups += 1
+      if (processedGroups % META_HEAP_CHECK_EVERY_GROUPS === 0) {
+        runGuards(abort, options.deadline, asClock(options.now), heap)
+        if (syncAborted(abort)) return
       }
     }
   }, abort)
@@ -542,6 +620,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     specMeta.set(id, { className: looked.className, specName: looked.specName, treeHref: treeHref || null })
   }, abort)
 
+  candidates.evictTo(caps.maxCandidates)
   const perSpec = new Map<number, CharacterCandidate[]>()
   const specPop = new Map<string, SpecPop>()
   const allKeyLevels: number[] = []

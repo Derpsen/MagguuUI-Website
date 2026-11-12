@@ -1,12 +1,18 @@
 /**
  * Child entry for the pre-spec heap probe. Run with:
  *   node --expose-gc --max-old-space-size=256 --import tsx tests/fixtures/blizzard-meta/runPreSpecHeap.ts
+ *   META_PRE_SPEC_MODE=400k ... (403k unique players, still bounded by maxCandidates)
  */
 import Database from 'better-sqlite3'
 import { initializeDatabase } from '../../../server/database/bootstrap'
 import { resetBlizzardAccessTokenCache } from '../../../server/utils/blizzardAuth'
-import { buildMetaSnapshot } from '../../../server/utils/blizzardMetaSync'
+import { defaultMetaHeapMonitor } from '../../../server/utils/blizzardMetaHeap'
+import { META_SYNC_DEFAULT_MAX_CANDIDATES, buildMetaSnapshot } from '../../../server/utils/blizzardMetaSync'
+import { META_SYNC_CLI_DEFAULT_HEAP_MB } from '../../../server/utils/metaSyncCliHeap'
 import {
+  PRE_SPEC_400K_GROUPS,
+  PRE_SPEC_400K_REALM_COUNT,
+  PRE_SPEC_400K_UNIQUE,
   PRE_SPEC_DUNGEON_COUNT,
   PRE_SPEC_PERIOD_COUNT,
   PRE_SPEC_REALM_COUNT,
@@ -16,6 +22,7 @@ import {
 } from './preSpecHeapFixture'
 
 const CREDENTIALS = { id: 'id', secret: 'secret' }
+const mode400k = process.env.META_PRE_SPEC_MODE === '400k'
 
 function gc() {
   if (typeof globalThis.gc !== 'function') {
@@ -35,11 +42,20 @@ const baseline = heapUsed()
 let peak = baseline
 const sqlite = new Database(':memory:')
 initializeDatabase(sqlite)
+const prod = defaultMetaHeapMonitor()
+
+const fetcher = mode400k
+  ? createPreSpecHeapFetcher({
+      realmCount: PRE_SPEC_400K_REALM_COUNT,
+      uniqueAcrossBoards: true,
+      groupsForRealm: () => PRE_SPEC_400K_GROUPS,
+    })
+  : createPreSpecHeapFetcher()
 
 let liveAfterGcBytes = 0
 let heapBeforeClearGcBytes = 0
 const { payload, preSpec, leaderboards } = await buildMetaSnapshot({
-  fetcher: createPreSpecHeapFetcher(),
+  fetcher,
   credentials: CREDENTIALS,
   sqlite,
   caps: {
@@ -50,17 +66,16 @@ const { payload, preSpec, leaderboards } = await buildMetaSnapshot({
     samplePerSpec: 200,
     maxAttemptsPerSpec: 400,
     maxConcurrentSpecs: 1,
+    maxCandidates: META_SYNC_DEFAULT_MAX_CANDIDATES,
   },
   heap: {
     used: () => {
-      const used = heapUsed()
+      const used = prod.used()
       if (used > peak) peak = used
       return used
     },
-    // Do not trip early: production compares against V8 heap_size_limit (~352 MB
-    // with a 256 cap). This probe must finish so we can compare live vs garbage.
-    limit: () => 1024 * 1024 * 1024,
-    fraction: 0.85,
+    limit: prod.limit,
+    fraction: prod.fraction,
   },
   sleep: async () => {},
   stopAfter: 'pre-spec',
@@ -80,9 +95,11 @@ const rssAfterGc = process.memoryUsage().rss
 const v8 = (await import('node:v8')).default.getHeapStatistics()
 
 const result = {
+  mode: mode400k ? '400k' : 'eu',
   boardJsonBytes,
-  expectedCandidates: expectedUniqueCandidates(PRE_SPEC_REALM_COUNT),
-  realms: PRE_SPEC_REALM_COUNT,
+  expectedIncoming: mode400k ? PRE_SPEC_400K_UNIQUE : expectedUniqueCandidates(PRE_SPEC_REALM_COUNT),
+  maxCandidates: META_SYNC_DEFAULT_MAX_CANDIDATES,
+  realms: mode400k ? PRE_SPEC_400K_REALM_COUNT : PRE_SPEC_REALM_COUNT,
   dungeons: PRE_SPEC_DUNGEON_COUNT,
   periods: PRE_SPEC_PERIOD_COUNT,
   planned: preSpec?.planned ?? leaderboards.planned,
@@ -97,6 +114,8 @@ const result = {
   peakHeapBytes: peak,
   rssAfterGcBytes: rssAfterGc,
   heapLimitBytes: v8.heap_size_limit,
+  guardLimitBytes: prod.limit(),
+  cliHeapMb: META_SYNC_CLI_DEFAULT_HEAP_MB,
 }
 
 console.log(JSON.stringify(result))

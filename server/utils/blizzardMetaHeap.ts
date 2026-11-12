@@ -3,12 +3,33 @@
  * with a named error so the caller can release the lock and leave the last
  * good snapshot in place, instead of letting the process OOM.
  * The comparison uses this process's `process.memoryUsage().heapUsed` only,
- * never cgroup / container `memory.current`, RSS, or `external`.
+ * never cgroup / container `memory.current`, RSS, or `external`. The ceiling prefers the process `--max-old-space-size` when set, and the default trip fraction is 70%.
  */
 
 import { getHeapStatistics } from 'node:v8'
 
-export const META_HEAP_FRACTION = 0.85
+export const META_HEAP_FRACTION = 0.70
+
+const MAX_OLD_SPACE_VALUE = /^--max[-_]old[-_]space[-_]size=(\d+)$/
+const MAX_OLD_SPACE_IN_OPTIONS = /--max[-_]old[-_]space[-_]size=(\d+)/g
+
+/** Prefer execArgv (what this process actually started with), then NODE_OPTIONS. Accepts the underscore spelling too. */
+export function readMaxOldSpaceSizeMb(
+  execArgv: readonly string[] = process.execArgv,
+  nodeOptions: string = process.env.NODE_OPTIONS || '',
+): number | null {
+  let found: number | null = null
+  for (const arg of execArgv) {
+    const match = arg.match(MAX_OLD_SPACE_VALUE)
+    if (match) found = Number(match[1])
+  }
+  if (found != null && Number.isFinite(found) && found > 0) return found
+  for (const match of nodeOptions.matchAll(MAX_OLD_SPACE_IN_OPTIONS)) {
+    found = Number(match[1])
+  }
+  return found != null && Number.isFinite(found) && found > 0 ? found : null
+}
+
 
 export class MetaHeapGuardError extends Error {
   readonly heapUsed: number
@@ -46,13 +67,28 @@ export type MetaHeapMonitor = {
   fraction?: number
 }
 
-export function defaultMetaHeapLimitBytes(): number {
+/**
+ * Effective guard ceiling: the smaller of V8 heap_size_limit, an explicit
+ * NUXT_META_HEAP_LIMIT_MB, and the process --max-old-space-size (hyphen or
+ * underscore form, execArgv first, then NODE_OPTIONS). The default fraction
+ * is 70% of this ceiling so the job aborts before V8 starts ineffective
+ * mark-compacts near the old-space cap.
+ */
+export function defaultMetaHeapLimitBytes(
+  env: NodeJS.ProcessEnv = process.env,
+  execArgv: readonly string[] = process.execArgv,
+): number {
   const stats = getHeapStatistics()
-  const fromEnv = Number(process.env.NUXT_META_HEAP_LIMIT_MB)
+  let limit = stats.heap_size_limit
+  const fromEnv = Number(env.NUXT_META_HEAP_LIMIT_MB)
   if (Number.isFinite(fromEnv) && fromEnv > 0) {
-    return Math.min(fromEnv * 1024 * 1024, stats.heap_size_limit)
+    limit = Math.min(limit, fromEnv * 1024 * 1024)
   }
-  return stats.heap_size_limit
+  const oldSpaceMb = readMaxOldSpaceSizeMb(execArgv, env.NODE_OPTIONS || '')
+  if (oldSpaceMb != null) {
+    limit = Math.min(limit, oldSpaceMb * 1024 * 1024)
+  }
+  return limit
 }
 
 export function defaultMetaHeapMonitor(): MetaHeapMonitor {

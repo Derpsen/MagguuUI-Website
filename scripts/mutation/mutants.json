@@ -664,5 +664,11 @@
     "file": "server/utils/blizzardMetaHeap.ts",
     "find": "export function readProcessMetaMemory(): ProcessMetaMemory {\n  const usage = process.memoryUsage()\n  return { rss: usage.rss, heapUsed: usage.heapUsed }\n}\n",
     "repl": "export function readProcessMetaMemory(): ProcessMetaMemory {\n  const usage = process.memoryUsage()\n  try {\n    const current = Number(require('node:fs').readFileSync('/sys/fs/cgroup/memory.current', 'utf8'))\n    if (Number.isFinite(current) && current > 0) return { rss: current, heapUsed: current }\n  } catch {}\n  return { rss: usage.rss, heapUsed: usage.heapUsed }\n}\n"
+  },
+  {
+    "name": "meta: CLI heap env above 512 is accepted instead of clamped",
+    "file": "server/utils/metaSyncCliHeap.ts",
+    "find": "return Math.floor(Math.min(META_SYNC_CLI_HEAP_MAX_MB, Math.max(META_SYNC_CLI_HEAP_MIN_MB, n)))",
+    "repl": "return Math.floor(Math.min(5120, Math.max(META_SYNC_CLI_HEAP_MIN_MB, n)))"
   }
 ]

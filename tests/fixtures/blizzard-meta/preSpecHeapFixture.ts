@@ -31,6 +31,11 @@ export const PRE_SPEC_LEADERBOARD_CAP = 500
 export const PRE_SPEC_DUNGEON_IDS = [401, 402, 403, 404, 405, 406, 407, 408] as const
 export const PRE_SPEC_PERIOD_IDS = [997, 998, 999] as const
 
+/** 80×8×3 boards × 42 groups × 5 unique members = 403 200 players, no reuse. */
+export const PRE_SPEC_400K_REALM_COUNT = 80
+export const PRE_SPEC_400K_GROUPS = 42
+export const PRE_SPEC_400K_UNIQUE = PRE_SPEC_400K_REALM_COUNT * PRE_SPEC_DUNGEON_COUNT * PRE_SPEC_PERIOD_COUNT * PRE_SPEC_400K_GROUPS * 5
+
 export const PRE_SPEC_SPECS = Object.entries(BLIZZARD_SPEC_BY_ID)
   .map(([id, meta]) => ({ specId: Number(id), ...meta }))
   .sort((a, b) => a.specId - b.specId)
@@ -115,8 +120,14 @@ export function fullLeaderboardJsonBytes(): number {
   return Buffer.byteLength(JSON.stringify(createLeaderboardBoard(1305, 401, 999, PRE_SPEC_LEADERBOARD_CAP)), 'utf8')
 }
 
-export function createPreSpecHeapFetcher(options?: { realmCount?: number }): BlizzardFetcher {
+export function createPreSpecHeapFetcher(options?: {
+  realmCount?: number
+  uniqueAcrossBoards?: boolean
+  groupsForRealm?: (index: number) => number
+}): BlizzardFetcher {
   const realmCount = options?.realmCount ?? PRE_SPEC_REALM_COUNT
+  const groupsOf = options?.groupsForRealm ?? groupsForRealmIndex
+  const uniqueAcrossBoards = options?.uniqueAcrossBoards === true
   const realmIndex = {
     connected_realms: Array.from({ length: realmCount }, (_, index) => ({
       href: `https://eu.api.blizzard.com/data/wow/connected-realm/${1000 + index}?namespace=dynamic-eu`,
@@ -145,7 +156,17 @@ export function createPreSpecHeapFetcher(options?: { realmCount?: number }): Bli
       const dungeonId = Number(boardMatch[2])
       const periodId = Number(boardMatch[3])
       const realmIndexInRange = realmId - 1000
-      return ok(createLeaderboardBoard(realmId, dungeonId, periodId, groupsForRealmIndex(realmIndexInRange)))
+      const groups = groupsOf(realmIndexInRange)
+      const board = createLeaderboardBoard(realmId, dungeonId, periodId, groups)
+      if (uniqueAcrossBoards) {
+        for (const group of board.leading_groups) {
+          for (const member of group.members) {
+            member.profile.name = `${member.profile.name}d${dungeonId}p${periodId}`
+            member.profile.id = member.profile.id * 1000 + dungeonId * 3 + (periodId % 3)
+          }
+        }
+      }
+      return ok(board)
     }
     if (url.includes('/playable-specialization/index')) return ok(specIndex)
     const playableMatch = url.match(/\/playable-specialization\/(\d+)/)

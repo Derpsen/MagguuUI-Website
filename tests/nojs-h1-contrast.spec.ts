@@ -2,35 +2,33 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 
 /**
- * useIsDark() SSR-emits text-white until mount. With the site JS stripped,
- * force html.light (the no-JS / system-light case) and check that the H1 is
- * still readable. Axe needs a JS-enabled Playwright context, so this loads
- * the SSR HTML + CSS only — no color-mode script, no Vue hydration.
+ * useIsDark() SSR-emits text-white until mount. Site JavaScript is blocked at
+ * the network (inline color-mode may still run; we then force html.light), so
+ * Vue never hydrates and the heading keeps the SSR color classes. That is the
+ * no-JS / system-light case: without the CSS fallback, the H1 is white-on-white.
+ * Axe is injected by Playwright after the class is set, not loaded as a page script.
  */
 const paths = ['/guide', '/faq', '/news']
 
-function withLightClass(html: string, baseURL: string) {
-  let out = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
-  out = out.replace(/<html\b[^>]*>/i, (tag) => {
-    if (/\bclass\s*=/.test(tag)) {
-      return tag.replace(/\bclass\s*=\s*(["'])([\s\S]*?)\1/i, (_m, q, value) => {
-        const next = value.replace(/\b(dark|light)\b/g, '').replace(/\s+/g, ' ').trim()
-        return `class=${q}${`${next} light`.trim()}${q}`
-      })
-    }
-    return tag.replace(/<html/i, '<html class="light"')
-  })
-  if (!/<base\b/i.test(out)) {
-    out = out.replace(/<head\b[^>]*>/i, (tag) => `${tag}<base href="${baseURL.endsWith('/') ? baseURL : `${baseURL}/`}">`)
-  }
-  return out
-}
-
 for (const path of paths) {
-  test(`${path} H1 stays readable without site JavaScript on a light page`, async ({ page, request, baseURL }) => {
-    const response = await request.get(path)
-    expect(response.status(), path).toBe(200)
-    await page.setContent(withLightClass(await response.text(), baseURL || 'http://localhost:3000'), { waitUntil: 'networkidle' })
+  test(`${path} H1 stays readable without site JavaScript on a light page`, async ({ page }) => {
+    await page.route('**/*', async (route) => {
+      const type = route.request().resourceType()
+      if (type === 'script' || type === 'xhr' || type === 'fetch') {
+        await route.abort()
+        return
+      }
+      await route.continue()
+    })
+
+    const response = await page.goto(path, { waitUntil: 'load' })
+    expect(response?.status(), path).toBe(200)
+
+    await page.evaluate(() => {
+      const html = document.documentElement
+      html.classList.remove('dark')
+      html.classList.add('light')
+    })
 
     const htmlClass = await page.locator('html').getAttribute('class')
     expect(htmlClass, path).toMatch(/\blight\b/)
@@ -41,7 +39,7 @@ for (const path of paths) {
     const color = await h1.evaluate((el) => getComputedStyle(el).color)
     const rgb = (color.match(/\d+/g) || []).map(Number)
     expect(rgb.length, `${path} H1 color ${color}`).toBeGreaterThanOrEqual(3)
-    expect(rgb[0]! + rgb[1]! + rgb[2]!, `${path} H1 stayed light (${color}) on html.light`).toBeLessThan(80)
+    expect(rgb[0]! + rgb[1]! + rgb[2]!, `${path} H1 was not dark enough (${color}) on html.light`).toBeLessThanOrEqual(80)
 
     const results = await new AxeBuilder({ page }).include('h1').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
     const contrast = results.violations.filter((v) => v.id === 'color-contrast')

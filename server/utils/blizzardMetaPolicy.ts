@@ -6,6 +6,7 @@ import { META_CLASSES } from '~/utils/metaCatalog'
 import {
   META_MAX_429_RATE,
   META_MIN_PROFILE_SUCCESS_RATIO,
+  META_MIN_BUILD_SAMPLE,
   META_MIN_SHOW_SAMPLE,
   META_SANITY_N_FLOOR_RATIO,
   META_SANITY_SPEC_FLIP_N,
@@ -95,8 +96,11 @@ export type MetaSnapshotCoverage = {
   wellCoveredProfiles: number
 }
 
-/** Coverage uses profileCount, not leaderboard n. Well-covered means profileCount >= META_MIN_SHOW_SAMPLE. */
-export function metaSnapshotCoverage(payload: MetaSnapshotPayload | null | undefined): MetaSnapshotCoverage {
+/** Coverage uses profileCount, not leaderboard n. Default well-covered is the UI show floor; last-good / rollback use META_MIN_BUILD_SAMPLE. */
+export function metaSnapshotCoverage(
+  payload: MetaSnapshotPayload | null | undefined,
+  minProfileCount = META_MIN_SHOW_SAMPLE,
+): MetaSnapshotCoverage {
   if (!payload) return { specsWithData: 0, profiles: 0, wellCoveredSpecs: 0, wellCoveredProfiles: 0 }
   let specsWithData = 0
   let profiles = 0
@@ -109,7 +113,7 @@ export function metaSnapshotCoverage(payload: MetaSnapshotPayload | null | undef
         specsWithData += 1
         profiles += n
       }
-      if (n >= META_MIN_SHOW_SAMPLE) {
+      if (n >= minProfileCount) {
         wellCoveredSpecs += 1
         wellCoveredProfiles += n
       }
@@ -127,9 +131,9 @@ export function shouldKeepLastGoodMetaSnapshot(
   previous: MetaSnapshotPayload | null | undefined,
   incoming: MetaSnapshotPayload,
 ): boolean {
-  const prev = metaSnapshotCoverage(previous)
+  const prev = metaSnapshotCoverage(previous, META_MIN_BUILD_SAMPLE)
   if (prev.specsWithData === 0 && prev.profiles === 0) return false
-  const next = metaSnapshotCoverage(incoming)
+  const next = metaSnapshotCoverage(incoming, META_MIN_BUILD_SAMPLE)
   if (next.wellCoveredSpecs > prev.wellCoveredSpecs) return false
   if (next.wellCoveredSpecs === prev.wellCoveredSpecs) {
     if (next.wellCoveredSpecs > 0) {

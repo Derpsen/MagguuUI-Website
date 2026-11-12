@@ -136,17 +136,17 @@ describe('traffic gate respects a mid-wait pause', () => {
     await traffic.run(async () => {})
     const throttled = waits.at(-1) ?? 0
     assert.ok(throttled >= 40 && throttled <= 60, `throttled gap should be ~50ms, got ${throttled}`)
-    for (let i = 0; i < 10; i++) traffic.noteSuccess()
+    for (let i = 0; i < 79; i++) traffic.noteSuccess()
     waits.length = 0
     await traffic.run(async () => {})
     const stillThrottled = waits.at(-1) ?? 0
-    assert.ok(stillThrottled >= 40 && stillThrottled <= 60, `10 clean calls must not recover, got ${stillThrottled}`)
-    for (let i = 0; i < 80; i++) traffic.noteSuccess()
+    assert.ok(stillThrottled >= 40 && stillThrottled <= 60, `79 clean calls must not recover, got ${stillThrottled}`)
+    traffic.noteSuccess()
     await traffic.run(async () => {}) // drain any leftover wide slot
     waits.length = 0
     await traffic.run(async () => {})
     const recovered = waits.at(-1) ?? 0
-    assert.ok(recovered >= 20 && recovered <= 30, `rate should climb back toward 25ms, got ${recovered}`)
+    assert.ok(recovered >= 20 && recovered <= 30, `rate should climb back toward 25ms after 80 clean calls, got ${recovered}`)
   })
 })
 
@@ -171,6 +171,25 @@ describe('traffic throttle waves', () => {
     assert.ok(once >= 40 && once <= 60, `one wave should halve once to ~50ms, got ${once}`)
   })
 
+  it('ignores a 429 from a request started before the last throttle but still extends the pause', async () => {
+    let t = 0
+    const waits: number[] = []
+    const traffic = createBlizzardTraffic({
+      maxRps: 40,
+      concurrency: 1,
+      sleep: async (ms) => { waits.push(ms) },
+      now: () => t,
+    })
+    await traffic.run(async () => {})
+    t = 10
+    traffic.noteThrottle()
+    t = 40
+    traffic.noteThrottle()
+    waits.length = 0
+    await traffic.run(async () => {})
+    assert.deepEqual(waits, [50], `late in-flight 429 should extend the pause to t+gap (90), got ${waits.join(',')}`)
+  })
+
   it('does not open the gap past the 8 rps floor', async () => {
     let t = 0
     const waits: number[] = []
@@ -180,9 +199,8 @@ describe('traffic throttle waves', () => {
       sleep: async (ms) => { waits.push(ms); t += ms },
       now: () => t,
     })
-    await traffic.run(async () => {})
     for (let i = 0; i < 6; i++) {
-      if (i > 0) t += 1_000
+      await traffic.run(async () => {})
       traffic.noteThrottle()
     }
     waits.length = 0

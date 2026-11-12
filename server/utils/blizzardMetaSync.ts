@@ -77,6 +77,7 @@ import {
   clearExpiredMetaSyncStaging,
   clearMetaSyncStaging,
   deleteExpiredMetaSnapshots,
+  deleteStagedMetaSnapshot,
   promoteMetaSnapshot,
   readCurrentMetaSnapshot,
   readMetaSyncRunContext,
@@ -152,8 +153,6 @@ type SyncOptions = {
   stopAfter?: 'pre-spec'
   /** Tests only: called after pre-spec stats are ready, before the candidate table is dropped. */
   onAfterPreSpec?: (info: MetaPreSpecStats) => void
-  /** After each finished spec, publish a growing snapshot when last-good is empty. */
-  onPartialSnapshot?: (payload: MetaSnapshotPayload) => void
   warn?: (message: string) => void
 }
 
@@ -1409,17 +1408,6 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     const specCalls = stats.calls - callsBefore
     const rps = (specCalls * 1000) / elapsed
     options.warn?.(`[blizzard:nightly] spec ${meta.className}/${meta.specName} done profiles=${profiles} attempts=${attempts} duration=${(elapsed / 1000).toFixed(1)}s rate=${rps.toFixed(1)} rps`)
-    if (options.onPartialSnapshot) {
-      const partial = assemblePayloadFromStaging({
-        sqlite: staging.sqlite,
-        runToken,
-        nowMs: asClock(options.now)(),
-        failures,
-      })
-      if (partial && metaSnapshotCoverage(partial.payload).specsWithData > 0) {
-        options.onPartialSnapshot(partial.payload)
-      }
-    }
   }, abort)
   } catch (error) {
     if (!isMetaDeadlineError(error)) throw error
@@ -1664,6 +1652,7 @@ export async function runScheduledBlizzardMetaSync(input: {
     const reasons = [...policy.reasons]
     if (leaderboardRatio < 0.9) reasons.push(`leaderboards ${built.leaderboards.ok}/${built.leaderboards.planned} below 0.9`)
     if (reasons.length) {
+      deleteStagedMetaSnapshot(input.sqlite, staged.snapshotId)
       return {
         status: 'partial' as const,
         reason: reasons.join('; '),

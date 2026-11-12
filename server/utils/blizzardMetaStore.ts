@@ -9,8 +9,8 @@ import type Database from 'better-sqlite3'
  */
 
 import { clampMetaSnapshotShares, explainMetaSnapshotRejection, parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
-import { coverageIsBetterThan, metaSnapshotCoverage } from './blizzardMetaPolicy'
-import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload, type MetaTalentLayout } from '~/utils/metaTypes'
+import { metaSnapshotCoverage } from './blizzardMetaPolicy'
+import { META_MIN_BUILD_SAMPLE, META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload, type MetaTalentLayout } from '~/utils/metaTypes'
 import { BLIZZARD_META_LOCK_TTL_MS } from './blizzardMetaLock'
 import type { MetaKeyLevelStats, SerializedProfileBucket, SpecPop } from './blizzardMetaAggregate'
 import { META_SYNC_STAGING_TABLES_SQL } from '../database/metaSyncStagingSql'
@@ -252,6 +252,14 @@ export function writeStagedMetaSnapshot(
   return { snapshotId: id, region: row.region }
 }
 
+/** Drop a staging row that was never promoted (DoD 1.39: leftover staging must not accumulate). */
+export function deleteStagedMetaSnapshot(sqlite: MetaSqlite, snapshotId: number): boolean {
+  const result = sqlite.prepare(
+    "DELETE FROM meta_snapshots WHERE snapshot_id = ? AND status = 'staging'",
+  ).run(snapshotId) as { changes?: number }
+  return (result.changes ?? 0) > 0
+}
+
 /**
  * Switch the active pointer to a staged (or already ok) snapshot in one
  * transaction. A crash before this runs leaves the previous pointer in place.
@@ -300,8 +308,11 @@ export function writeMetaSnapshot(
 }
 
 /**
- * Re-activate the previous unexpired ok snapshot for the region.
- * Documented rollback path (also usable as raw SQL — see docs/meta-nightly.md).
+ * Re-activate the newest unexpired ok snapshot before the current one
+ * (DoD 1.27). Older rows are skipped only when their wellCoveredSpecs are
+ * below that predecessor's — thin partial intermediates are walked past,
+ * but a slightly lower per-spec sample must not jump back to a much older
+ * fuller snapshot.
  */
 export function rollbackMetaSnapshot(
   sqlite: MetaSqlite,
@@ -317,21 +328,24 @@ export function rollbackMetaSnapshot(
       AND snapshot_id != ?
     ORDER BY fetched_at DESC, snapshot_id DESC
   `).all(region, nowSec, current?.snapshotId ?? -1) as SnapshotRow[]
-  // Skip thinner mid-run intermediates: pick the best remaining last-good
-  // (well-covered specs, then profiles), ties broken by most recent.
-  let previous: StoredMetaSnapshot | null = null
-  let previousCoverage: ReturnType<typeof metaSnapshotCoverage> | null = null
+  let pick: StoredMetaSnapshot | null = null
+  let pickWellCovered = 0
   for (const row of rows) {
     const stored = rowToStored(row)
     if (!stored) continue
-    const coverage = metaSnapshotCoverage(stored.payload)
-    if (!previous || !previousCoverage || coverageIsBetterThan(coverage, previousCoverage)) {
-      previous = stored
-      previousCoverage = coverage
+    const coverage = metaSnapshotCoverage(stored.payload, META_MIN_BUILD_SAMPLE)
+    if (!pick) {
+      pick = stored
+      pickWellCovered = coverage.wellCoveredSpecs
+      continue
+    }
+    if (coverage.wellCoveredSpecs > pickWellCovered) {
+      pick = stored
+      pickWellCovered = coverage.wellCoveredSpecs
     }
   }
-  if (!previous) return null
-  return promoteMetaSnapshot(sqlite, previous.snapshotId, region, now)
+  if (!pick) return null
+  return promoteMetaSnapshot(sqlite, pick.snapshotId, region, now)
 }
 
 export function recordMetaRun(

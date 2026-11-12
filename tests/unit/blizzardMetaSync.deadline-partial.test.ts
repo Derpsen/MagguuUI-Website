@@ -11,6 +11,8 @@ import {
   shouldKeepLastGoodMetaSnapshot,
 } from '../../server/utils/blizzardMetaPolicy'
 import {
+  buildMetaSnapshot,
+  isMetaDeadlineError,
   runScheduledBlizzardMetaSync,
   sleepUntilMetaDeadline,
   type MetaSyncCaps,
@@ -134,6 +136,34 @@ describe('metaSnapshotCoverage / shouldKeepLastGoodMetaSnapshot', () => {
   it('replaces last-good when coverage is equal (does not keep on a >= tie)', () => {
     const previous = profilesPayload(200, 39)
     assert.equal(shouldKeepLastGoodMetaSnapshot(previous, profilesPayload(200, 39)), false)
+  })
+})
+
+describe('decideDeadlinePartialPublish policy', () => {
+  const clean = { plannedProfiles: 8000, successfulProfiles: 8000, stats: { calls: 100, http429: 0 } }
+  const high429 = { ...clean, stats: { calls: 100, http429: 34 } }
+
+  it('keeps last-good when coverage is not thinner but the 429 rate fails policy', () => {
+    const previous = profilesPayload(200, 39)
+    const incoming = profilesPayload(200, 39)
+    assert.equal(shouldKeepLastGoodMetaSnapshot(previous, incoming), false)
+    const decision = decideDeadlinePartialPublish({ payload: incoming, previous, ...high429 })
+    assert.equal(decision.outcome, 'kept-last-good')
+    assert.ok(decision.reasons.some(reason => /429/.test(reason)))
+  })
+
+  it('does not publish when there is no last-good and the 429 rate fails policy', () => {
+    const incoming = profilesPayload(200, 40)
+    const decision = decideDeadlinePartialPublish({ payload: incoming, previous: null, ...high429 })
+    assert.equal(decision.outcome, 'not-published')
+    assert.ok(decision.reasons.some(reason => /429/.test(reason)))
+  })
+
+  it('can publish an incomplete catalog on the deadline path when there is no last-good', () => {
+    const incoming = profilesPayload(200, 3)
+    const decision = decideDeadlinePartialPublish({ payload: incoming, previous: null, ...clean })
+    assert.equal(decision.outcome, 'published')
+    assert.deepEqual(decision.reasons, [])
   })
 })
 
@@ -320,5 +350,70 @@ describe('sleepUntilMetaDeadline', () => {
     const sleep = sleepUntilMetaDeadline(async (ms) => { waits.push(ms); t += ms }, 1300, () => t)
     await assert.rejects(() => sleep(5_000), /job deadline/)
     assert.deepEqual(waits, [300])
+  })
+})
+
+describe('tripAbort reason', () => {
+  it('aborts the controller with the deadline error as the reason', async () => {
+    const sqlite = openStore()
+    const abort = new AbortController()
+    const now = 1_700_000_000_000
+    await assert.rejects(() => buildMetaSnapshot({
+      fetcher: createHeapFixtureFetcher(),
+      credentials: { id: 'id', secret: 'secret' },
+      sleep: async () => {},
+      now,
+      deadline: now - 1,
+      sqlite,
+      abortController: abort,
+      caps: tightCaps(),
+    }), /job deadline/)
+    assert.ok(abort.signal.aborted)
+    assert.ok(isMetaDeadlineError(abort.signal.reason), `reason was ${String(abort.signal.reason)}`)
+    assert.match((abort.signal.reason as Error).message, /job deadline/)
+  })
+})
+
+describe('policy fail staging cleanup', () => {
+  it('clears the staging snapshot when a finished run fails policy and has no last-good', { timeout: 30_000 }, async () => {
+    const sqlite = openStore()
+    const now = Date.now()
+    let t = now
+    const deadline = now + 10_000_000
+    const baseFetcher = createHeapFixtureFetcher()
+    let calls = 0
+    const fetcher = async (request: Parameters<typeof baseFetcher>[0]) => {
+      const url = request.url
+      if (!url.includes('oauth') && !url.includes('token')) {
+        calls += 1
+        if (calls % 2 === 1) {
+          return {
+            status: 429,
+            headers: { get: (name: string) => name.toLowerCase() === 'retry-after' ? '0' : null },
+            body: null,
+          }
+        }
+      }
+      return baseFetcher(request)
+    }
+    const result = await runScheduledBlizzardMetaSync({
+      sqlite,
+      config: CREDENTIALS_CONFIG,
+      fetcher,
+      now: () => t,
+      deadline,
+      caps: tightCaps(),
+      kumaPush: async () => 'pushed',
+      purgeMeta: async () => 'purged',
+      sleep: async () => {},
+    })
+    assert.equal(result.status, 'partial')
+    assert.equal(result.partialOutcome, 'not-published')
+    assert.equal(result.snapshotId, null)
+    const staging = sqlite.prepare("SELECT COUNT(*) AS n FROM meta_snapshots WHERE status = 'staging'").get() as { n: number }
+    assert.equal(staging.n, 0)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, t), null)
+    assert.ok((result.http429 ?? 0) > 0, `expected 429s in stats, reason=${result.reason}`)
+    assert.match(result.reason || '', /429|catalog|class|spec|success/i)
   })
 })

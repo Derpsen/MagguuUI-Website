@@ -113,6 +113,8 @@ export function createBlizzardTraffic(options: {
   let nextSlot = 0
   let active = 0
   let lastThrottleAt = Number.NEGATIVE_INFINITY
+  let lastThrottleStartedAt = Number.NEGATIVE_INFINITY
+  let lastFinishedStartedAt = Number.NEGATIVE_INFINITY
   const queue: Array<() => void> = []
 
   return {
@@ -121,13 +123,17 @@ export function createBlizzardTraffic(options: {
     },
     noteThrottle() {
       const t = now()
-      // A parallel 429 wave must halve rps only once; later signals in the
-      // same gap only extend the pause.
-      if (Number.isFinite(lastThrottleAt) && t - lastThrottleAt < gap) {
+      const startedAt = lastFinishedStartedAt
+      // Ignore 429s from requests that started before the last throttle
+      // (already in flight in the same wave), and repeated signals for the
+      // same start. Still extend the pause so late 429s in the wave hold
+      // subsequent waiters.
+      if (Number.isFinite(lastThrottleAt) && (startedAt < lastThrottleAt || startedAt === lastThrottleStartedAt)) {
         nextSlot = Math.max(nextSlot, t + gap)
         return
       }
       lastThrottleAt = t
+      lastThrottleStartedAt = startedAt
       gap = Math.min(maxGap, Math.max(gap * 2, targetGap * 2))
       healthy = 0
       nextSlot = Math.max(nextSlot, t + gap)
@@ -154,7 +160,15 @@ export function createBlizzardTraffic(options: {
           const arrived = Math.max(now(), at)
           if (arrived < nextSlot) continue
           nextSlot = arrived + gap
-          return await fn()
+          const startedAt = arrived
+          try {
+            const result = await fn()
+            lastFinishedStartedAt = startedAt
+            return result
+          } catch (error) {
+            lastFinishedStartedAt = startedAt
+            throw error
+          }
         }
       } finally {
         active -= 1

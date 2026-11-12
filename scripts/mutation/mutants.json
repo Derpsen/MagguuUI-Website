@@ -802,5 +802,35 @@
     "file": "server/utils/blizzardMetaStore.ts",
     "find": "  const parsed = parseMetaSnapshotPayload(clampMetaSnapshotShares(payload))\n",
     "repl": "  const parsed = parseMetaSnapshotPayload(payload)\n"
+  },
+  {
+    "name": "meta: deadline keep-last-good ignores policy reasons",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "  if (input.previous && (thinner || policy.reasons.length)) {\n",
+    "repl": "  if (input.previous && (thinner)) {\n"
+  },
+  {
+    "name": "meta: deadline without last-good publishes despite policy reasons",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "  if (!input.previous && policy.reasons.length) {\n",
+    "repl": "  if (false) {\n"
+  },
+  {
+    "name": "meta: deadline path requires a complete catalog",
+    "file": "server/utils/blizzardMetaPolicy.ts",
+    "find": "    requireCompleteCatalog: false,\n",
+    "repl": "    requireCompleteCatalog: true,\n"
+  },
+  {
+    "name": "meta: tripAbort aborts without the error reason",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "  if (!abort.signal.aborted) abort.abort(error)\n",
+    "repl": "  if (!abort.signal.aborted) abort.abort()\n"
+  },
+  {
+    "name": "meta: in-flight 429 debounce does not extend the pause",
+    "file": "server/utils/blizzardHttp.ts",
+    "find": "      if (Number.isFinite(lastThrottleAt) && (startedAt < lastThrottleAt || startedAt === lastThrottleStartedAt)) {\n        nextSlot = Math.max(nextSlot, t + gap)\n        return\n      }\n",
+    "repl": "      if (Number.isFinite(lastThrottleAt) && (startedAt < lastThrottleAt || startedAt === lastThrottleStartedAt)) {\n        return\n      }\n"
   }
 ]

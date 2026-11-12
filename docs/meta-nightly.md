@@ -80,6 +80,8 @@ A protected manual trigger is the CLI packed into the production image as `.outp
 docker exec MagguuUI node .output/server/meta-sync-cli.mjs
 ```
 
+CI smokes that binary in the PR image build (`.github/workflows/docker-scan.yml`, after `docker build` + `load`) and again in the main `docker.yml` image smoke: `docker run` / `docker exec` of `node .output/server/meta-sync-cli.mjs` with no Blizzard credentials, expecting exit `4` and JSON `status: "skipped"`.
+
 The process starts in `/app` (the container `WORKDIR`), opens the same SQLite database as the website, and shares the cross-process lock (`meta_sync_lock`, owner token + 45-minute TTL, or until the job deadline). If the nightly (or another CLI) already holds the lock, the command exits 2 and prints a JSON summary whose `status` is `locked` and whose `reason` is `A Meta update is already running`. Staging rows older than the lock TTL are dropped at the start of a run; a still-fresh token is left alone.
 
 The CLI calls `runScheduledBlizzardMetaSync` (lean sampling, heap guard, deadline, fail-closed promote, last-good snapshot kept). It can run even when `NUXT_META_NIGHTLY` is off, but still needs `NUXT_BLIZZARD_CLIENT_ID` and `NUXT_BLIZZARD_CLIENT_SECRET` from the container environment (same as the app; secrets are never printed). It prints one JSON object to stdout: `status`, `durationMs`, `peakRssBytes`, `peakHeapUsedBytes`, `specsWithData`, `http429`, and `reason` when present. Exit codes: `0` ok, `1` error, `2` locked, `3` partial, `4` skipped.

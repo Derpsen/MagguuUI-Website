@@ -97,6 +97,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     trigger lives in the image as `.output/server/meta-sync-cli.mjs` (built in
     the Nitro `compiled` hook). Unraid & Server runs it with
     `docker exec MagguuUI node .output/server/meta-sync-cli.mjs` from `/app`.
+    CI smokes it against the built image (docker-scan on the PR, docker.yml on main) with no credentials and expects exit 4 / `skipped`.
     It reuses `runScheduledBlizzardMetaSync` (lean path, heap guard, deadline,
     fail-closed, last-good kept), even when `NUXT_META_NIGHTLY` is off, still
     needs Blizzard credentials, never prints secrets, and prints a JSON summary

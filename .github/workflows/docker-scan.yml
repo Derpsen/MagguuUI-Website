@@ -6,8 +6,17 @@ on:
     paths:
       - Dockerfile
       - .dockerignore
+      - docker-entrypoint.sh
       - package.json
       - package-lock.json
+      - nuxt.config.ts
+      - server/cli/**
+      - server/utils/metaSyncCli.ts
+      - server/utils/blizzardMetaSync.ts
+      - server/utils/blizzardMetaLock.ts
+      - server/database/metaSyncLockSql.ts
+      - tools/build-meta-sync-cli.mjs
+      - .github/workflows/docker-scan.yml
   schedule:
     - cron: "0 6 * * 1"
   workflow_dispatch:
@@ -42,6 +51,17 @@ jobs:
             VCS_REF=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Smoke Meta sync CLI (no credentials, expect skipped)
+        run: |
+          set +e
+          out=$(docker run --rm scan-target:latest node .output/server/meta-sync-cli.mjs)
+          rc=$?
+          set -e
+          printf '%s\n' "$out"
+          echo "exit=$rc"
+          test "$rc" -eq 4
+          printf '%s\n' "$out" | tail -n 1 | jq -e '.status == "skipped" and .http429 == 0 and (.reason | test("NUXT_BLIZZARD_CLIENT_ID"))'
 
       - name: Run Trivy
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0

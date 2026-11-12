@@ -17,7 +17,6 @@ const props = defineProps<{
 
 const sizes = computed(() => props.sizes || '(min-width: 1280px) 1200px, 100vw')
 
-const isDark = useIsDark()
 const open = ref(false)
 const trigger = ref<HTMLButtonElement | null>(null)
 const dialog = ref<HTMLElement | null>(null)
@@ -83,17 +82,17 @@ onBeforeUnmount(() => {
           :alt="props.alt"
           :width="props.width"
           :height="props.height"
-          class="w-full border rounded-md"
-          :class="isDark ? 'border-white/10' : 'border-gray-200'"
+          class="shot-img w-full"
+          :class="props.eager ? 'shot-img--hero' : ''"
           :loading="props.eager ? 'eager' : 'lazy'"
           :fetchpriority="props.eager ? 'high' : undefined"
           decoding="async"
         />
       </picture>
     </button>
-    <figcaption class="mt-2 text-sm">
-      <span class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">{{ caption }}</span>
-      <span v-if="description" class="block mt-0.5" :class="isDark ? 'text-silver-300' : 'text-gray-600'">{{ description }}</span>
+    <figcaption class="mt-3 text-sm">
+      <span class="mg-kicker">{{ caption }}</span>
+      <span v-if="description" class="block mt-1 mg-muted">{{ description }}</span>
     </figcaption>
     <Teleport to="body">
       <div
@@ -140,3 +139,10 @@ onBeforeUnmount(() => {
     </Teleport>
   </figure>
 </template>
+
+<style scoped>
+/* Tokens (assets/css/tokens.css): the border and the shadow follow html.dark / html:not(.dark), no JS class binding. */
+.shot-img { border: 1px solid var(--mg-line-strong); border-radius: var(--mg-r-lg); background: var(--mg-surface); }
+.shot-img--hero { border-radius: var(--mg-r-xl); box-shadow: 0 0 0 1px var(--mg-line), 0 32px 80px -24px rgb(0 0 0 / 0.55); }
+.shot-trigger:focus-visible .shot-img { outline: 2px solid var(--mg-focus); outline-offset: 3px; }
+</style>

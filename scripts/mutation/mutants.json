@@ -706,5 +706,47 @@
     "file": "unraid/magguuui-website.xml",
     "find": "Default=\"--enable-source-maps --max-old-space-size=640\"",
     "repl": "Default=\"--enable-source-maps --max-old-space-size=768\""
+  },
+  {
+    "name": "home: reduced-motion guard on the rise animation removed",
+    "file": "pages/index.vue",
+    "find": "@media (prefers-reduced-motion: no-preference) {\n  .home-rise {",
+    "repl": "@media (min-width: 0px) {\n  .home-rise {"
+  },
+  {
+    "name": "home: H1 gradient end colour weakened to the accent fill",
+    "file": "pages/index.vue",
+    "find": "var(--mg-accent-text) 100%);\n  -webkit-background-clip",
+    "repl": "var(--mg-accent) 100%);\n  -webkit-background-clip"
+  },
+  {
+    "name": "menu: scroll lock never set",
+    "file": "layouts/default.vue",
+    "find": "setScrollLock(document.documentElement, open)",
+    "repl": "void open"
+  },
+  {
+    "name": "menu: focus not returned to the hamburger",
+    "file": "layouts/default.vue",
+    "find": "if (returnFocus) nextTick(() => focusMenuButton())",
+    "repl": "if (returnFocus) nextTick(() => {})"
+  },
+  {
+    "name": "menu: breakpoint change does not close the menu",
+    "file": "layouts/default.vue",
+    "find": "query => window.matchMedia(query), () => closeMenu())",
+    "repl": "query => window.matchMedia(query), () => {})"
+  },
+  {
+    "name": "menu: breakpoint listener closes on every change",
+    "file": "utils/menuLock.ts",
+    "find": "if (event.matches) onDesktop()",
+    "repl": "onDesktop()"
+  },
+  {
+    "name": "menu: scroll lock class not released on unmount",
+    "file": "layouts/default.vue",
+    "find": "setScrollLock(document.documentElement, false)",
+    "repl": "void 0"
   }
 ]

@@ -4,10 +4,14 @@
     <a id="meta-hero-cta" :href="ctaHref" class="btn-primary mt-4 inline-flex items-center gap-2">
       {{ kl.heroCta }} <span aria-hidden="true">→</span>
     </a>
-    <dl class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-      <div v-for="stat in stats" :key="stat.label">
+    <dl class="mt-6 grid grid-cols-2 gap-4">
+      <div v-for="stat in stats" :key="stat.label" :class="stat.wide ? 'col-span-2' : undefined">
         <dt class="text-xs uppercase tracking-[0.12em]" :class="tone.muted.value">{{ stat.label }}</dt>
-        <dd class="mt-1 text-2xl font-semibold tabular-nums" :class="tone.strong.value">
+        <dd
+          class="mt-1 text-2xl font-semibold tabular-nums"
+          :class="[tone.strong.value, stat.wide ? 'break-words' : 'truncate whitespace-nowrap']"
+          :title="stat.value"
+        >
           <time v-if="stat.datetime" :datetime="stat.datetime">{{ stat.value }}</time>
           <template v-else>{{ stat.value }}</template>
         </dd>
@@ -31,13 +35,14 @@ const kl = META_UI_COPY_KL
 const tone = useMetaTone()
 
 const stats = computed(() => [
-  { label: kl.statClasses, value: String(META_CLASSES.length), datetime: '' },
-  { label: kl.statSpecs, value: String(META_CLASSES.reduce((n, cls) => n + cls.specs.length, 0)), datetime: '' },
-  { label: kl.statSample, value: props.freshness ? props.freshness.players.toLocaleString('en-GB') : '—', datetime: '' },
+  { label: kl.statClasses, value: String(META_CLASSES.length), datetime: '', wide: false },
+  { label: kl.statSpecs, value: String(META_CLASSES.reduce((n, cls) => n + cls.specs.length, 0)), datetime: '', wide: false },
+  { label: kl.statSample, value: props.freshness ? props.freshness.players.toLocaleString('en-GB') : '—', datetime: '', wide: false },
   {
     label: kl.statUpdated,
     value: props.freshness ? (formatMetaFetchedAt(props.freshness.fetchedAt) || '—') : '—',
     datetime: props.freshness ? new Date(metaFetchedAtMs(props.freshness.fetchedAt)).toISOString() : '',
+    wide: true,
   },
 ])
 </script>

@@ -30,6 +30,15 @@ export default defineNuxtPlugin(() => {
     } catch { /* never break the page */ }
   }
 
+  // Flush listeners are registered immediately. If web-vitals is already loaded,
+  // defer the send so its own hidden-page callbacks can queue the final values
+  // first (those listeners are added later, when the idle import resolves).
+  const flushAfterVitals = () => { setTimeout(flush, 0) }
+  addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushAfterVitals() })
+  addEventListener('pagehide', flushAfterVitals)
+  // Vitals describe the landing page; later SPA navigations are not measured.
+  router.afterEach(() => { flush() })
+
   const start = () => {
     void import('web-vitals').then(({ onLCP, onINP, onCLS, onTTFB }) => {
       const push = (m: { name: string, value: number }) => { queue.push({ name: m.name, value: m.value }) }
@@ -37,14 +46,11 @@ export default defineNuxtPlugin(() => {
       onINP(push)
       onCLS(push)
       onTTFB(push)
-      // Registered after web-vitals' own listeners, so final LCP/CLS/INP values
-      // are queued before this flush runs.
-      addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush() })
-      addEventListener('pagehide', flush)
     }).catch(() => {})
   }
-  // Vitals describe the landing page; later SPA navigations are not measured.
-  router.afterEach(() => { flush() })
-  if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 4000 })
-  else setTimeout(start, 2000)
+  // Only the library import is deferred. A short rIC timeout forced this work
+  // while Lighthouse was still in the TBT window (the 4 s deadline became a
+  // 400 ms+ long task on /meta).
+  if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 15000 })
+  else setTimeout(start, 10000)
 })

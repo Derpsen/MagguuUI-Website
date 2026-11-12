@@ -1,4 +1,4 @@
-# /meta UI (PR C)
+# /meta UI (PR C + C2)
 
 Public Mythic+ Meta pages: `/meta`, `/meta/<class>`, `/meta/<class>/<spec>`.
 English copy, SSR, no third-party scripts on the page. Data comes from the
@@ -33,8 +33,7 @@ switches the heatmap to that hero tree’s talent counts.
 Heatmap columns are Class | Hero | Spec, grouped core / flexible / rare.
 Counts and percentages are always in text. Nodes with `unmapped: true`
 get an “Unmapped choice” label (choice nodes not in the published static
-layout). Wowhead links use `spellId` when present; there is no Wowhead
-tooltip script.
+layout). Talent and gear names use our own accessible tooltips (hover, focus, Escape), not Wowhead scripts or Wowhead links.
 
 Gear is a two-column slot list (not cards): icon, name, ilvl, source,
 enchant/gems, pick rate, and a low-sample badge when `lowSample` is set.
@@ -74,13 +73,27 @@ so class-colored text stays contrast-safe in dark and light.
 Vue files are kept green under `vue-tsc --noEmit`. The existing repo-wide
 vue-tsc error set is a separate audit PR.
 
+## C2 (tooltips and budget)
+
+- Own accessible tooltips on talent and gear names (DoD 3.08): hover, focus,
+  Escape to dismiss. Plain site style, no third-party scripts, no Wowhead
+  links or tooltip widgets.
+- Lighthouse budgets for `/meta` and `/meta/mage/fire` follow DoD 6.01 and are
+  a hard CI gate (other pages in the same workflow stay advisory). The numbers
+  and the CLS fix are recorded in `docs/meta-lighthouse-baseline.md`. CI seeds
+  the fixture with `scripts/seed-meta-fixture.ts` (and `NUXT_ALLOW_META_FIXTURE_SEED=true`) before the production
+  Lighthouse server starts; the script refuses to run in production outside
+  CI and must never be used on Unraid. The spec page SSR-renders the heatmap,
+  gear and tooltips, then hydrates that below-fold block only when it is
+  visible (`LazyMetaSpecBelowFold` + `hydrate-on-visible`) so it stays off the
+  mobile TBT path.
+- `/meta` is in the Retail header, footer and sitemap (the index only, not
+  every class or spec page) after that budget went green in CI.
+
 ## Not in this PR
 
-- AdSense / TCF / `AdBanner` migration (PR D, DoD 11.02)
+- AdSense / TCF / `AdBanner` migration, including Google CSP entries in
+  `server/utils/htmlCsp.ts` (PR D, DoD 11.02)
 - Header/footer 10–11px labels (audit)
-- Lighthouse budget, own tooltips, and putting `/meta` in the header, footer
-  and sitemap (stacked PR C2, DoD 6.01 / 14.07 / 3.08). `/meta` stays off
-  nav/sitemap until C2 *and* that budget are green. The fixture snapshot is
-  the measurement baseline until a live one exists.
 - Deleting `MetaLoadoutCopy`, `MetaGearRow`, `MetaPopularityBars`,
   `MetaShareBar` — those unused prototype components are not in this tree

@@ -12,7 +12,7 @@ test('sitemap.xml lists the public pages, never admin, api, feeds or query varia
   expect(res.headers()['content-type']).toContain('xml')
   const xml = await res.text()
   // Dev answers with the request origin; production uses site.url (checked live).
-  for (const path of ['/', '/strings', '/guide', '/addons', '/configurator', '/changelog', '/faq', '/news', '/about', '/imprint', '/privacy', '/forever', '/forever/guide', '/forever/download', '/forever/strings']) {
+  for (const path of ['/', '/strings', '/guide', '/meta', '/addons', '/configurator', '/changelog', '/faq', '/news', '/about', '/imprint', '/privacy', '/forever', '/forever/guide', '/forever/download', '/forever/strings']) {
     expect(xml).toMatch(new RegExp(`<loc>https?://[^/<]+${path}</loc>`))
   }
   const locs = [...xml.matchAll(/<loc>([^<]*)<\/loc>/g)].map(m => m[1]!)
@@ -32,7 +32,10 @@ test('sitemap.xml lists the public pages, never admin, api, feeds or query varia
   expect(locs.filter(loc => /\/news\//.test(loc))).toHaveLength(publishedNewsPaths.length)
   expect(locs.join('\n')).not.toMatch(/\/admin|\/api\/|feed\.xml|atom\.xml|\?/)
   expect(locs.join('\n')).not.toMatch(/pouch-of-violet-dust-launch-celebration/)
-  expect(locs.join('\n')).not.toMatch(/\/meta(\/|$)/)
+  expect(locs.filter(loc => loc.endsWith('/meta') || loc.includes('/meta/'))).toEqual(
+    locs.filter(loc => loc.endsWith('/meta')),
+  )
+  expect(locs.some(loc => loc.endsWith('/meta'))).toBe(true)
   expect(xml.toLowerCase()).not.toContain('nuxtjs/sitemap')
   expect(xml).not.toContain('<xhtml:link')
 })

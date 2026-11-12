@@ -77,8 +77,8 @@ watch(() => route.path, (path) => { if (shown.value && path.startsWith('/changel
 
 onMounted(() => {
   const run = () => { void check() }
-  if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 3000 })
-  else setTimeout(run, 1500)
+  if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 15000 })
+  else setTimeout(run, 10000)
 })
 </script>
 

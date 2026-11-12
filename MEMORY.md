@@ -639,3 +639,32 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
   - The raw `NUXT_ADS` string must not ship in the client payload; expose only a boolean (`nuxtAdsEnabled` / `useNuxtAdsEnabled`).
   - The ads runtime/verify script should also check that slot markup is present when the flag is on and absent when it is off or empty.
   - Google CSP entries in `server/utils/htmlCsp.ts:37-38` belong to PR D (AdSense), not C.
+
+## 2026-11-12 Meta C2 started
+
+- Branch/PR C2: own `/meta` tooltips (DoD 3.08), Lighthouse budgets for `/meta` and `/meta/mage/fire` against the fixture (DoD 6.01 / 14.07). `/meta` stays out of nav, sitemap and footer until that budget is green in CI. Do not start AdSense/PR D.
+- Cheap Code-Review LOWs from the #185 note, included here: client payload is a boolean (`nuxt-ads-enabled`), not the raw `NUXT_ADS` string; `scripts/verify-ads-runtime.mjs` supplies a dummy `NUXT_ADMIN_PASSWORD` when unset, seeds the fixture, and checks AdSlot markup on / off; `e2e-ads (NUXT_ADS=on)` job in `build.yml` runs `tests/meta-ads.spec.ts` (not part of the required aggregator; listed in the failure-alarm `needs`).
+- Still later / not C2: Google CSP entries in `server/utils/htmlCsp.ts:37-38` belong to PR D.
+
+## 2026-11-12 Meta C2 TBT cut (no budget loosen)
+
+- `/meta/mage/fire` mobile TBT was 381 ms vs the 320 budget. Real work, not a looser budget: the spec page SSR-renders heatmap, gear and tooltips, then hydrates that below-fold island only when visible (`LazyMetaSpecBelowFold` + `hydrate-on-visible`).
+- `useMetaTone` class tokens (and below-fold inline colours) now include light + `dark:` / CSS-variable pairs so an unhydrated island stays contrast-safe once `<html>` is light. Tooltip e2e scrolls `#talents` and waits for `[data-meta-below-fold][data-hydrated=true]`.
+- `/meta` still stays out of nav/sitemap/footer until this budget is green in CI on #190. Budget numbers unchanged.
+
+## 2026-11-12 Meta C2 nav after green budget
+
+- After the TBT cut, CI Lighthouse on #190 (`27e1408`) had no budget warnings on `/meta` or `/meta/mage/fire` (fire mobile TBT ~126 ms vs 320). Pre-existing advisory misses remain on `/` mobile LCP and `/changelog` desktop CLS. `/meta` is now in the Retail header, footer and sitemap (index only). Budget file unchanged. Do not merge until asked.
+
+## 2026-11-12 Meta C2 Code-Review follow-ups (#190)
+
+- Gear tooltips: `truncate` moved off the `MetaTooltip` root onto an inner label span so the panel and focus ring are not clipped. e2e covers a secondary gear trigger at 390 and 1280 px, plus Escape on a hover-opened panel (WCAG 1.4.13).
+- `/meta` Lighthouse budgets now match DoD 6.01 and are a hard gate (`tools/lighthouse-budget.mjs` exits 1 on a /meta miss). `/meta` desktop CLS 0.033 was a wrap in the index hero/class picker, not a looser budget. Baseline: `docs/meta-lighthouse-baseline.md`.
+- Cheap LOWs: seed script refuses to run in production outside CI; `e2e-ads` is in the required `build (26, false)` aggregator.
+- Pre-existing, not this PR: with JavaScript off, the H1 can be white-on-white on a light page (and under `prefers-color-scheme` / system) on `/guide`, `/faq` and `/news` — `MetaShell` / `useIsDark` still SSR the dark text classes until mount. Follow up separately; do not fold it into C2.
+
+## 2026-11-12 Meta C2 Code-Review pass 2 (#190)
+
+- `MetaHomeHero` "Last update" used `truncate whitespace-nowrap` in a 2-col cell, which clipped the timestamp below ~500 px. The Updated stat is now `col-span-2` with a `title`, and e2e at 390 px asserts the full string is unclipped. Desktop `/meta` CLS must stay under the 0.03 DoD cap (do not bring back the 4-col wrap).
+- Cheap LOWs: baseline numbers taken from Lighthouse run 43148115810 (median of 3; `/meta` mobile TBT 178 ms, 22 ms under the 200 ms cap). Seed guard runs before any `server/database` import and requires `NUXT_ALLOW_META_FIXTURE_SEED=true` in production (`CI=true` is not a bypass). Web-vitals flush listeners register immediately; only the library import is deferred. Gear tooltip e2e walks every `#gear` trigger, not `.first()`.
+- Keep the `/meta` script gate. Do not add the Lighthouse workflow to GitHub branch protection. A gear tooltip near the viewport bottom may flip; left as-is, not changed in this pass.

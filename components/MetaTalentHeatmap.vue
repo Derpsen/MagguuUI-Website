@@ -15,19 +15,19 @@
               <li
                 v-for="talent in tree.byBand[band.id]"
                 :key="talent.id"
-                class="flex items-baseline justify-between gap-2 px-2 py-1 text-sm"
-                :style="{ backgroundColor: heat(talent.share) }"
+                class="flex items-baseline justify-between gap-2 bg-[var(--meta-heat-light)] px-2 py-1 text-sm dark:bg-[var(--meta-heat-dark)]"
+                :style="heatStyle(talent.share)"
               >
                 <span class="min-w-0">
-                  <a
-                    v-if="talent.spellId"
-                    :href="wowheadSpellUrl(talent.spellId)"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="underline underline-offset-4"
-                    :class="tone.strong.value"
-                  >{{ talent.label }}<span class="sr-only"> — {{ band.label }}, {{ formatShare(talent.share) }}, {{ talent.count }} {{ copy.parses }}{{ talent.unmapped ? `, ${ui.unmappedNode}` : '' }} (opens in a new tab)</span></a>
-                  <span v-else :class="tone.strong.value">{{ talent.label }}<span class="sr-only"> — {{ band.label }}, {{ formatShare(talent.share) }}, {{ talent.count }} {{ copy.parses }}{{ talent.unmapped ? `, ${ui.unmappedNode}` : '' }}</span></span>
+                  <MetaTooltip :trigger-class="tone.strong.value">
+                    {{ talent.label }}
+                    <template #content>
+                      <span class="font-mono text-[0.65rem] uppercase tracking-[0.12em]" :class="tone.label.value">{{ band.label }}</span>
+                      <span class="mt-1 block">{{ talent.label }}</span>
+                      <span class="mt-1 block tabular-nums">{{ copy.pickRate }} {{ formatShare(talent.share) }} · {{ talent.count }} {{ copy.parses }}</span>
+                      <span v-if="talent.unmapped" class="mt-1 block" :class="tone.muted.value">{{ ui.unmappedNode }}</span>
+                    </template>
+                  </MetaTooltip>
                   <span v-if="talent.unmapped" class="ml-2 font-mono text-xs uppercase tracking-[0.12em]" :class="tone.heatMuted.value">{{ ui.unmappedNode }}</span>
                 </span>
                 <span class="shrink-0 text-xs tabular-nums" :class="tone.strong.value" aria-hidden="true">
@@ -45,7 +45,6 @@
 </template>
 
 <script setup lang="ts">
-import { wowheadSpellUrl } from '~/utils/metaCatalog'
 import { META_COPY } from '~/utils/metaCopy'
 import { formatShare } from '~/utils/metaFormat'
 import type { MetaTalentBand, MetaTalentCount, MetaTalentGroups } from '~/utils/metaTypes'
@@ -83,9 +82,9 @@ const trees = computed(() => [
 ])
 const hasAny = computed(() => trees.value.some(tree => tree.talents.length))
 
-function heat(share: number) {
-  const max = tone.isDark.value ? 28 : 22
-  const pct = Math.round(Math.max(0, Math.min(1, share)) * max)
-  return `color-mix(in srgb, var(--color-brand-500) ${pct}%, transparent)`
+function heatStyle(share: number) {
+  const clamped = Math.max(0, Math.min(1, share))
+  const mix = (max: number) => `color-mix(in srgb, var(--color-brand-500) ${Math.round(clamped * max)}%, transparent)`
+  return { '--meta-heat-light': mix(22), '--meta-heat-dark': mix(28) }
 }
 </script>

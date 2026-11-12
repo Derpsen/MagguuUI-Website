@@ -1,10 +1,11 @@
-// Advisory Lighthouse budget check (never fails the build).
+// Lighthouse budget check.
 //
 // Usage: node tools/lighthouse-budget.mjs <budgets.json> mobile=<lhci-dir> desktop=<lhci-dir>
 // Each <lhci-dir> is a Lighthouse CI results folder (manifest.json + lhr-*.json).
 // Writes a markdown table to $GITHUB_STEP_SUMMARY (or stdout) and prints one
-// `::warning::` annotation per exceeded budget. Always exits 0.
-import { appendFileSync, existsSync, readFileSync } from 'node:fs'
+// annotation per exceeded budget. /meta and /meta/* are a hard gate (::error,
+// exit 1). Other pages stay advisory (::warning, do not fail the process).
+import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -40,6 +41,25 @@ export function extractMetrics(lhr) {
  * @param {Record<string, number> | undefined} budget
  * @returns {{ key: string, label: string, value: number | null, limit: number | null, kind: string, unit: string, ok: boolean | null }[]}
  */
+
+/** @param {(number | null | undefined)[]} values */
+export function median(values) {
+  const a = values.filter((v) => typeof v === 'number' && Number.isFinite(v)).sort((x, y) => x - y)
+  if (a.length === 0) return null
+  const mid = Math.floor(a.length / 2)
+  return a.length % 2 ? a[mid] : (a[mid - 1] + a[mid]) / 2
+}
+
+/** Per-metric median of several extractMetrics() results. */
+export function medianMetrics(samples) {
+  return Object.fromEntries(METRICS.map((m) => {
+    const raw = median(samples.map((s) => s[m.key]))
+    if (raw == null) return [m.key, null]
+    if (m.key === 'cls') return [m.key, Math.round(raw * 1000) / 1000]
+    return [m.key, Math.round(raw)]
+  }))
+}
+
 export function compare(measured, budget) {
   return METRICS.map((m) => {
     const value = measured[m.key] ?? null
@@ -52,15 +72,44 @@ export function compare(measured, budget) {
 
 const escapeData = (s) => s.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')
 
+/** /meta and every spec page under it are a hard CI gate (DoD 6.01). */
+export function isHardBudgetPage(page) {
+  return page === '/meta' || page.startsWith('/meta/')
+}
+
 /** @param {string} page @param {string} mode @param {ReturnType<typeof compare>} rows */
 export function annotations(page, mode, rows) {
+  const hard = isHardBudgetPage(page)
   return rows
     .filter((r) => r.ok === false)
     .map((r) => {
       const op = r.kind === 'min' ? 'below the minimum of' : 'above the budget of'
-      const msg = `${page} (${mode}): ${r.label} ${r.value}${r.unit} is ${op} ${r.limit}${r.unit}. Advisory only, the job stays green.`
-      return `::warning title=Lighthouse budget::${escapeData(msg)}`
+      const tail = hard ? 'This fails the Lighthouse job.' : 'Advisory only, the job stays green unless a /meta budget also missed.'
+      const msg = `${page} (${mode}): ${r.label} ${r.value}${r.unit} is ${op} ${r.limit}${r.unit}. ${tail}`
+      const kind = hard ? 'error' : 'warning'
+      return `::${kind} title=Lighthouse budget::${escapeData(msg)}`
     })
+}
+
+/** @param {{ page: string, mode: string, rows: ReturnType<typeof compare> }[]} results */
+export function hardBudgetFailed(results) {
+  return results.some((r) => isHardBudgetPage(r.page) && r.rows.some((x) => x.ok === false))
+}
+
+/**
+ * @param {{ page: string, mode: string }[]} results
+ * @param {Record<string, { mobile?: unknown, desktop?: unknown }>} budgets
+ */
+export function missingHardCoverage(results, budgets) {
+  const seen = new Set(results.map((r) => `${r.page} ${r.mode}`))
+  const missing = []
+  for (const [page, modes] of Object.entries(budgets)) {
+    if (!isHardBudgetPage(page)) continue
+    for (const mode of ['mobile', 'desktop']) {
+      if (modes?.[mode] && !seen.has(`${page} ${mode}`)) missing.push(`${page} (${mode})`)
+    }
+  }
+  return missing
 }
 
 const cell = (r) => {
@@ -75,8 +124,8 @@ export function summaryMarkdown(results) {
   const lines = [
     '## Lighthouse budgets (advisory)',
     '',
-    'Production build served locally on a shared runner, median of 3 runs per URL. ' +
-      'Budgets live in `.github/lighthouse-budgets.json`; exceeding one only raises a warning.',
+    'Production build served locally on a shared runner, per-metric median of all Lighthouse CI runs per URL (typically 3). ' +
+      'Budgets live in `.github/lighthouse-budgets.json`. `/meta` pages are a hard gate; other pages are advisory.',
     '',
     `| Page | Mode | ${METRICS.map((m) => m.label).join(' | ')} |`,
     `|---|---|${METRICS.map(() => '---').join('|')}|`,
@@ -87,19 +136,45 @@ export function summaryMarkdown(results) {
   return lines.join('\n') + '\n'
 }
 
-/** @param {string} dir @returns {{ path: string, lhr: any }[]} representative run per URL */
+/** @param {string} dir @returns {{ path: string, lhr: any }[]} every LHR in the folder */
 export function readRuns(dir) {
+  if (!existsSync(dir)) return []
+  const files = new Set()
   const manifestPath = join(dir, 'manifest.json')
-  if (!existsSync(manifestPath)) return []
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  if (existsSync(manifestPath)) {
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+    for (const entry of manifest) {
+      const candidates = [entry.jsonPath, join(dir, basename(entry.jsonPath ?? ''))]
+      const file = candidates.find((p) => p && existsSync(p))
+      if (file) files.add(file)
+    }
+  }
+  // treosh/lighthouse-ci-action artifacts often ship lhr-*.json without a manifest.
+  if (files.size === 0) {
+    for (const name of readdirSync(dir)) {
+      if (name.startsWith('lhr-') && name.endsWith('.json')) files.add(join(dir, name))
+    }
+  }
   const runs = []
-  for (const entry of manifest.filter((e) => e.isRepresentativeRun)) {
-    const candidates = [entry.jsonPath, join(dir, basename(entry.jsonPath ?? ''))]
-    const file = candidates.find((p) => p && existsSync(p))
-    if (!file) continue
-    runs.push({ path: new URL(entry.url).pathname || '/', lhr: JSON.parse(readFileSync(file, 'utf8')) })
+  for (const file of files) {
+    const lhr = JSON.parse(readFileSync(file, 'utf8'))
+    const rawUrl = lhr.requestedUrl || lhr.finalUrl
+    if (!rawUrl) continue
+    runs.push({ path: new URL(rawUrl).pathname || '/', lhr })
   }
   return runs
+}
+
+/** One median-metrics row per URL. */
+export function aggregateRuns(runs) {
+  const byPath = new Map()
+  for (const run of runs) {
+    if (!byPath.has(run.path)) byPath.set(run.path, [])
+    byPath.get(run.path).push(extractMetrics(run.lhr))
+  }
+  return [...byPath.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([path, samples]) => ({ path, metrics: medianMetrics(samples), samples: samples.length }))
 }
 
 export function main(argv) {
@@ -109,26 +184,32 @@ export function main(argv) {
   const warnings = []
   for (const arg of dirs) {
     const [mode, dir] = arg.split('=')
-    const runs = readRuns(dir)
-    if (runs.length === 0) warnings.push(`::warning title=Lighthouse budget::No Lighthouse results found for ${mode} (${dir}). Advisory only.`)
-    for (const run of runs) {
-      const rows = compare(extractMetrics(run.lhr), budgets[run.path]?.[mode])
-      results.push({ page: run.path, mode, rows })
-      warnings.push(...annotations(run.path, mode, rows))
+    const pages = aggregateRuns(readRuns(dir))
+    if (pages.length === 0) warnings.push(`::warning title=Lighthouse budget::No Lighthouse results found for ${mode} (${dir}). Advisory only.`)
+    for (const page of pages) {
+      const rows = compare(page.metrics, budgets[page.path]?.[mode])
+      results.push({ page: page.path, mode, rows })
+      warnings.push(...annotations(page.path, mode, rows))
     }
   }
   const md = summaryMarkdown(results)
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, md)
   else process.stdout.write(md)
+  const missing = missingHardCoverage(results, budgets)
+  for (const pageMode of missing) {
+    warnings.push(`::error title=Lighthouse budget::No Lighthouse results for ${pageMode}. /meta budgets are a hard gate.`)
+  }
   for (const w of warnings) console.log(w)
-  return { results, warnings }
+  const failed = hardBudgetFailed(results) || missing.length > 0
+  return { results, warnings, failed, missing }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
-    main(process.argv.slice(2))
+    const { failed } = main(process.argv.slice(2))
+    process.exit(failed ? 1 : 0)
   } catch (error) {
-    console.log(`::warning title=Lighthouse budget::Budget check could not run: ${escapeData(String(error?.message ?? error))}`)
+    console.log(`::error title=Lighthouse budget::Budget check could not run: ${escapeData(String(error?.message ?? error))}`)
+    process.exit(1)
   }
-  process.exit(0)
 }

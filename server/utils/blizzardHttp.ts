@@ -5,7 +5,10 @@
  * Retries 429/5xx (Retry-After when present, otherwise exponential backoff +
  * jitter) up to 6 attempts, then counts the item as failed. 404/403 are not
  * retried. 401 can refresh the token once. Optional global rate gate (≤ 40
- * rps, hard cap 50) and concurrency limit.
+ * rps, hard cap 50) and concurrency limit. A 429 pauses the whole gate until
+ * Retry-After (waiting requests re-check so a stale slot cannot fire during
+ * the pause) and halves the current rps, which then climbs back toward the
+ * target after a run of clean responses.
  */
 
 import { ofetch } from 'ofetch'
@@ -88,6 +91,8 @@ function headerBag(headers: Headers | Record<string, string> | undefined): { get
 export type BlizzardTraffic = {
   run: <T>(fn: () => Promise<T>) => Promise<T>
   pauseUntil: (untilMs: number) => void
+  noteThrottle: () => void
+  noteSuccess: () => void
 }
 
 export function createBlizzardTraffic(options: {
@@ -100,7 +105,11 @@ export function createBlizzardTraffic(options: {
   const concurrency = Math.max(1, options.concurrency ?? META_CONCURRENCY)
   const sleep = options.sleep ?? (ms => new Promise(resolve => setTimeout(resolve, ms)))
   const now = options.now ?? (() => Date.now())
-  const gap = 1000 / maxRps
+  const targetGap = 1000 / maxRps
+  const minRps = Math.min(maxRps, 8)
+  const maxGap = 1000 / minRps
+  let gap = targetGap
+  let healthy = 0
   let nextSlot = 0
   let active = 0
   const queue: Array<() => void> = []
@@ -109,15 +118,35 @@ export function createBlizzardTraffic(options: {
     pauseUntil(untilMs) {
       nextSlot = Math.max(nextSlot, untilMs)
     },
+    noteThrottle() {
+      gap = Math.min(maxGap, Math.max(gap * 2, targetGap * 2))
+      healthy = 0
+      nextSlot = Math.max(nextSlot, now() + gap)
+    },
+    noteSuccess() {
+      healthy += 1
+      if (healthy >= 80 && gap > targetGap) {
+        gap = Math.max(targetGap, gap / 2)
+        healthy = 0
+      }
+    },
     async run(fn) {
       if (active >= concurrency) await new Promise<void>(resolve => { queue.push(resolve) })
       active += 1
       try {
-        const start = now()
-        const at = Math.max(start, nextSlot)
-        nextSlot = at + gap
-        if (at > start) await sleep(at - start)
-        return await fn()
+        // Re-check nextSlot after every sleep so pauseUntil (Retry-After) can
+        // still hold a waiter that had already started waiting on a stale slot.
+        // If the test clock is frozen, a completed sleep is treated as having
+        // reached `at`.
+        for (;;) {
+          const start = now()
+          const at = Math.max(start, nextSlot)
+          if (at > start) await sleep(at - start)
+          const arrived = Math.max(now(), at)
+          if (arrived < nextSlot) continue
+          nextSlot = arrived + gap
+          return await fn()
+        }
       } finally {
         active -= 1
         queue.shift()?.()
@@ -212,14 +241,20 @@ export async function blizzardRequest(
       continue
     }
 
-    if (res.status === 404 || res.status === 403) return res
+    if (res.status === 404 || res.status === 403) {
+      options.traffic?.noteSuccess()
+      return res
+    }
 
     const retryable = res.status === 429 || res.status >= 500
     if (retryable && attempt + 1 < maxAttempts) {
       if (options.stats) options.stats.retries += 1
       const retryAfter = res.headers.get('retry-after')
       const wait = retryWaitMs(retryAfter, attempt, clock(), jitter)
-      if (res.status === 429 && options.traffic) options.traffic.pauseUntil(clock() + wait)
+      if (res.status === 429 && options.traffic) {
+        options.traffic.pauseUntil(clock() + wait)
+        options.traffic.noteThrottle()
+      }
       await sleep(wait)
       continue
     }
@@ -229,6 +264,7 @@ export async function blizzardRequest(
       const hint = sanitizeBlizzardLog(`Blizzard HTTP ${res.status} for ${input.method} ${input.url}`, options.secrets ?? [])
       throw new Error(hint)
     }
+    options.traffic?.noteSuccess()
     return res
   }
 

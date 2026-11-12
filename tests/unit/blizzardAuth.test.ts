@@ -84,3 +84,64 @@ describe('Retry-After parsing', () => {
     )
   })
 })
+
+describe('traffic gate respects a mid-wait pause', () => {
+  it('does not let a waiting request fire through a Retry-After pause on a stale slot', async () => {
+    let t = 0
+    const pending: Array<() => void> = []
+    const sleep = (ms: number) => new Promise<void>((resolve) => {
+      pending.push(() => { t += ms; resolve() })
+    })
+    const traffic = createBlizzardTraffic({
+      maxRps: 10,
+      concurrency: 2,
+      sleep,
+      now: () => t,
+    })
+    const fired: number[] = []
+    const first = traffic.run(async () => { fired.push(t) })
+    await first
+    assert.deepEqual(fired, [0])
+
+    let secondFired = false
+    const second = traffic.run(async () => { secondFired = true; fired.push(t) })
+    assert.equal(pending.length, 1, 'second request should be waiting for its rate-gate slot')
+    traffic.pauseUntil(1000)
+    pending.shift()?.()
+    await Promise.resolve()
+    assert.equal(secondFired, false, 'stale slot must not fire during the pause')
+    // The waiter re-checks and sleeps the remaining pause.
+    assert.equal(pending.length, 1)
+    pending.shift()?.()
+    await second
+    assert.equal(secondFired, true)
+    assert.ok(fired[1]! >= 1000, `second fire was at ${fired[1]}`)
+  })
+
+  it('halves the current rate after a throttle and later recovers toward the target', async () => {
+    let t = 0
+    const waits: number[] = []
+    const traffic = createBlizzardTraffic({
+      maxRps: 40,
+      concurrency: 1,
+      sleep: async (ms) => { waits.push(ms); t += ms },
+      now: () => t,
+    })
+    await traffic.run(async () => {})
+    await traffic.run(async () => {})
+    const baseline = waits.at(-1) ?? 0
+    assert.ok(baseline >= 20 && baseline <= 30, `target gap should be 25ms, got ${baseline}`)
+    traffic.noteThrottle()
+    waits.length = 0
+    await traffic.run(async () => {})
+    const throttled = waits.at(-1) ?? 0
+    assert.ok(throttled >= 40 && throttled <= 60, `throttled gap should be ~50ms, got ${throttled}`)
+    for (let i = 0; i < 80; i++) traffic.noteSuccess()
+    await traffic.run(async () => {}) // drain any leftover wide slot
+    waits.length = 0
+    await traffic.run(async () => {})
+    const recovered = waits.at(-1) ?? 0
+    assert.ok(recovered >= 20 && recovered <= 30, `rate should climb back toward 25ms, got ${recovered}`)
+  })
+})
+

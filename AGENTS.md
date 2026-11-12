@@ -87,7 +87,8 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     (default 400), `NUXT_META_MAX_CONCURRENT_SPECS` (default 1, max 8).
     The nightly samples spec by spec, keeps only per-spec count maps, and
     writes those aggregates to SQLite staging before assemble / gates / promote.
-    Profile sampling uses `caps.concurrency` (rate-gated ≤ 40 rps) within each
+    Profile sampling uses `caps.concurrency` (default 8, rate-gated ≤ 40 rps,
+    adaptive down to 8 rps after a 429, waiters honour `Retry-After`) within each
     spec and stops at `samplePerSpec` / `maxAttemptsPerSpec`. Progress is logged
     per finished spec and every 50 HTTP calls with a request rate. After each
     finished spec, a growing snapshot is promoted only when last-good is empty,

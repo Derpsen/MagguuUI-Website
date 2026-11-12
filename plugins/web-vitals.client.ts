@@ -45,6 +45,8 @@ export default defineNuxtPlugin(() => {
   }
   // Vitals describe the landing page; later SPA navigations are not measured.
   router.afterEach(() => { flush() })
-  if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 4000 })
-  else setTimeout(start, 2000)
+  // A short rIC timeout forces this import while Lighthouse is still in the
+  // TBT window (the 4 s deadline became a 400 ms+ long task on /meta).
+  if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 15000 })
+  else setTimeout(start, 10000)
 })

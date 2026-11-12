@@ -292,7 +292,7 @@
 
     <ClientOnly>
       <ConsentBanner v-if="consentUi.enabled.value" />
-      <LazyWhatsNewBanner />
+      <LazyWhatsNewBanner hydrate-on-idle />
     </ClientOnly>
 
     <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-4" enter-to-class="opacity-100 translate-y-0"

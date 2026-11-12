@@ -57,6 +57,8 @@ describe('plugin wiring', () => {
     assert.ok(c.indexOf('clientOptedOut()') < c.indexOf('sendBeacon'))
     assert.match(c, /\/api\/v1\/vitals/)
     assert.doesNotMatch(c, /cookie|localStorage|getClientIp/i)
+    // Keep the forced-idle deadline out of the Lighthouse TBT window.
+    assert.match(c, /requestIdleCallback\(start, \{ timeout: 15000 \}\)/)
   })
   it('the server vitals endpoint stays anonymous and honours the signals too', () => {
     const c = code('server/api/v1/vitals.post.ts')

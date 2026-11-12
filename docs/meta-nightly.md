@@ -77,8 +77,10 @@ The Unraid container may also raise `NODE_OPTIONS=--max-old-space-size=640` (lim
 A protected manual trigger is the CLI packed into the production image as `.output/server/meta-sync-cli.mjs`. Unraid & Server runs it with:
 
 ```sh
-docker exec MagguuUI node .output/server/meta-sync-cli.mjs
+docker exec -it MagguuUI node .output/server/meta-sync-cli.mjs
 ```
+
+Use `-it` so Ctrl-C reaches the CLI. A `docker stop` of the container does not SIGTERM an exec process, so the lock can stay held for up to 50 minutes.
 
 CI smokes that binary in the PR image build (`.github/workflows/docker-scan.yml`, after `docker build` + `load`) and again in the main `docker.yml` image smoke: `docker run` / `docker exec` of `node .output/server/meta-sync-cli.mjs` with no Blizzard credentials, expecting exit `4` and JSON `status: "skipped"`.
 

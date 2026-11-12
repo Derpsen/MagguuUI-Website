@@ -132,7 +132,7 @@ Important values include:
 - `NUXT_META_KUMA_PUSH_URL` (optional Kuma push URL; never logged)
 - `NUXT_META_SAMPLE_PER_SPEC` / `NUXT_META_MAX_ATTEMPTS_PER_SPEC` (optional; defaults 200 / 400)
 - `NUXT_META_MAX_CONCURRENT_SPECS` (optional; default 1) and `NUXT_META_HEAP_LIMIT_MB` (optional heap-guard cap)
-- Manual Meta snapshot (Unraid & Server, after this image is live): `docker exec MagguuUI node .output/server/meta-sync-cli.mjs`. Shares the SQLite lock with the nightly (exit 2 if a run is already in progress; lock TTL is the 45-minute job deadline plus 5 minutes of grace). SIGINT/SIGTERM abort the run, release the lock, and exit non-zero. Same lean path and heap guard. It is a second Node process next to the website and inherits `NODE_OPTIONS`; peak memory is server plus CLI. Never prints secrets. Do not fire it until the image that contains the CLI has been pulled.
+- Manual Meta snapshot (Unraid & Server, after this image is live): `docker exec -it MagguuUI node .output/server/meta-sync-cli.mjs` (`-it` so Ctrl-C reaches the CLI). Shares the SQLite lock with the nightly (exit 2 if a run is already in progress; lock TTL is the 45-minute job deadline plus 5 minutes of grace). SIGINT/SIGTERM abort the run, release the lock, and exit non-zero. A `docker stop` of the container does not SIGTERM an exec process, so the lock can stay held for up to 50 minutes. Same lean path and heap guard. It is a second Node process next to the website and inherits `NODE_OPTIONS`; peak memory is server plus CLI. Never prints secrets. Do not fire it until the image that contains the CLI has been pulled.
 - `NUXT_GITHUB_REPO`
 - `NUXT_GITHUB_WEBHOOK_SECRET`
 - `NUXT_SYNC_SEEDED_CONTENT`

@@ -97,7 +97,8 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     Kuma push, optional Cloudflare `/meta` prefix purge. A protected manual
     trigger lives in the image as `.output/server/meta-sync-cli.mjs` (built in
     the Nitro `compiled` hook). Unraid & Server runs it with
-    `docker exec MagguuUI node .output/server/meta-sync-cli.mjs` from `/app`.
+    `docker exec -it MagguuUI node .output/server/meta-sync-cli.mjs` from `/app`
+    (`-it` so Ctrl-C reaches the CLI).
     CI smokes it against the built image (docker-scan on the PR, docker.yml on main) with no credentials and expects exit 4 / `skipped`.
     It reuses `runScheduledBlizzardMetaSync` (lean path, heap guard, deadline,
     fail-closed, last-good kept), even when `NUXT_META_NIGHTLY` is off, still
@@ -107,7 +108,9 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     separate Node process next to the website and inherits `NODE_OPTIONS`
     (including `--max-old-space-size`); peak memory is server plus CLI, not
     instead of the server. SIGINT/SIGTERM abort the in-flight sync so the lock
-    is released in `finally`, and the process exits non-zero. If the lock is held, it exits 2 with
+    is released in `finally`, and the process exits non-zero. A `docker stop` of
+    the container does not SIGTERM an exec process, so the lock can stay held
+    for up to 50 minutes. If the lock is held, it exits 2 with
     "A Meta update is already running". A `locked` run is pushed to Kuma as
     `down`. Tests stay fixture-only
     (no network), including a 40×200 heap-growth test and a simulated heap-breach test. The concurrent abort test trips the heap guard only once so later workers must honour the abort flag (`Promise.allSettled`, no fetches or staging writes after abort; staging stays empty after 1.5 s). An external `abortController` mid spec-phase or mid icon-phase must not promote a partial snapshot. The full spec layout follows in a

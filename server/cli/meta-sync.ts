@@ -6,7 +6,7 @@
 import { sqlite } from '../database'
 import { sanitizeBlizzardLog } from '../utils/blizzardAuth'
 import { createOfetchBlizzardFetcher } from '../utils/blizzardHttp'
-import { runMetaSyncCli } from '../utils/metaSyncCli'
+import { installMetaSyncCliSignalHandlers, runMetaSyncCli } from '../utils/metaSyncCli'
 
 function secretsFromEnv(): string[] {
   return [
@@ -21,6 +21,8 @@ async function main() {
   const warn = (message: string) => {
     process.stderr.write(`${sanitizeBlizzardLog(message, secrets)}\n`)
   }
+  const abortController = new AbortController()
+  const stopSignals = installMetaSyncCliSignalHandlers(abortController)
   try {
     const { summary, exitCode } = await runMetaSyncCli({
       sqlite,
@@ -38,6 +40,7 @@ async function main() {
       force: true,
       warn,
       secrets,
+      abortController,
     })
     process.stdout.write(`${JSON.stringify(summary)}\n`)
     process.exitCode = exitCode
@@ -54,6 +57,8 @@ async function main() {
     })}\n`)
     process.stderr.write(`${reason}\n`)
     process.exitCode = 1
+  } finally {
+    stopSignals()
   }
 }
 

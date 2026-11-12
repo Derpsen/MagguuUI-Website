@@ -8,6 +8,22 @@ import { runScheduledBlizzardMetaSyncGuarded, type ScheduledMetaResult } from '.
 import type { MetaSqlite } from './blizzardMetaStore'
 import type { BlizzardFetcher } from './blizzardHttp'
 
+/**
+ * SIGINT/SIGTERM abort the in-flight sync so `withBlizzardMetaLock` can
+ * release in `finally`. Do not `process.exit` here — that would skip cleanup.
+ */
+export function installMetaSyncCliSignalHandlers(abort: AbortController): () => void {
+  const handler = () => {
+    if (!abort.signal.aborted) abort.abort()
+  }
+  process.on('SIGINT', handler)
+  process.on('SIGTERM', handler)
+  return () => {
+    process.off('SIGINT', handler)
+    process.off('SIGTERM', handler)
+  }
+}
+
 export const META_SYNC_CLI_EXIT = {
   ok: 0,
   error: 1,

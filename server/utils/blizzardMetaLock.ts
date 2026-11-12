@@ -6,12 +6,14 @@
  */
 import { randomUUID } from 'node:crypto'
 import { META_SYNC_LOCK_TABLE_SQL } from '../database/metaSyncLockSql'
+import { META_JOB_TIMEOUT_MS } from '~/utils/metaTypes'
 import type { MetaSqlite } from './blizzardMetaStore'
 
-const TTL_MS = 45 * 60 * 1000
+/** Extra hold after the job deadline so a winding-down run cannot be overlapped. */
+export const BLIZZARD_META_LOCK_GRACE_MS = 5 * 60 * 1000
+export const BLIZZARD_META_LOCK_TTL_MS = META_JOB_TIMEOUT_MS + BLIZZARD_META_LOCK_GRACE_MS
+const TTL_MS = BLIZZARD_META_LOCK_TTL_MS
 const LOCK_ID = 1
-
-export const BLIZZARD_META_LOCK_TTL_MS = TTL_MS
 
 export type BlizzardMetaLockClock = number | (() => number)
 

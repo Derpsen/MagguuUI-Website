@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict'
-import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { spawn, spawnSync } from 'node:child_process'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { after, describe, it } from 'node:test'
 import Database from 'better-sqlite3'
 import { fixtureFetcher } from '../fixtures/blizzard-meta/fetcher'
 import { initializeDatabase } from '../../server/database/bootstrap'
-import { tryAcquireBlizzardMetaLock } from '../../server/utils/blizzardMetaLock'
+import { isBlizzardMetaLockHeld, tryAcquireBlizzardMetaLock } from '../../server/utils/blizzardMetaLock'
 import { exitCodeForMetaSync, META_SYNC_CLI_EXIT, runMetaSyncCli, summarizeMetaSyncCli } from '../../server/utils/metaSyncCli'
 import { buildMetaSyncCli } from '../../tools/build-meta-sync-cli.mjs'
 
@@ -154,5 +155,60 @@ describe('meta sync CLI build', () => {
     assert.match(String(summary.reason || ''), /NUXT_BLIZZARD_CLIENT_ID/)
     assert.doesNotMatch(result.stdout + result.stderr, /Dynamic require/)
     rmSync(cwd, { recursive: true, force: true })
+  })
+})
+
+describe('meta sync CLI signals', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'meta-sync-cli-signal-'))
+  after(() => rmSync(dir, { recursive: true, force: true }))
+
+  it('aborts on SIGTERM, releases the SQLite lock, and exits non-zero', { timeout: 20_000 }, async () => {
+    const dbPath = join(dir, 'signal.db')
+    const readyFile = join(dir, 'ready')
+    const sqlite = new Database(dbPath)
+    sqlite.pragma('journal_mode = WAL')
+    sqlite.pragma('busy_timeout = 5000')
+    initializeDatabase(sqlite)
+
+    const childPath = join(dirname(fileURLToPath(import.meta.url)), 'helpers', 'metaSyncCliSignalChild.ts')
+    const child = spawn(process.execPath, ['--import', 'tsx', childPath, dbPath, readyFile], {
+      cwd: join(dirname(fileURLToPath(import.meta.url)), '..', '..'),
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    let stdout = ''
+    let stderr = ''
+    child.stdout.setEncoding('utf8')
+    child.stderr.setEncoding('utf8')
+    child.stdout.on('data', (chunk: string) => { stdout += chunk })
+    child.stderr.on('data', (chunk: string) => { stderr += chunk })
+
+    const started = Date.now()
+    while (!existsSync(readyFile)) {
+      if (Date.now() - started > 10_000) {
+        child.kill('SIGKILL')
+        sqlite.close()
+        throw new Error(`child never became ready\nstdout=${stdout}\nstderr=${stderr}`)
+      }
+      await new Promise((resolve) => setTimeout(resolve, 20))
+    }
+    assert.equal(readFileSync(readyFile, 'utf8').includes('ready'), true)
+    assert.equal(isBlizzardMetaLockHeld(sqlite), true)
+
+    const finished = new Promise<{ status: number | null }>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        child.kill('SIGKILL')
+        reject(new Error(`child did not exit after SIGTERM\nstdout=${stdout}\nstderr=${stderr}`))
+      }, 8_000)
+      child.on('close', (status) => {
+        clearTimeout(timer)
+        resolve({ status })
+      })
+    })
+    const sent = child.kill('SIGTERM')
+    assert.equal(sent, true)
+    const { status } = await finished
+    assert.notEqual(status, 0, `expected non-zero exit, got ${status}\nstdout=${stdout}\nstderr=${stderr}`)
+    assert.equal(isBlizzardMetaLockHeld(sqlite), false, `lock still held after SIGTERM\nstdout=${stdout}\nstderr=${stderr}`)
+    sqlite.close()
   })
 })

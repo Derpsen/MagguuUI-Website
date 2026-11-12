@@ -652,5 +652,11 @@
     "file": "server/utils/blizzardMetaLock.ts",
     "find": "  sqlite.prepare('DELETE FROM meta_sync_lock WHERE id = ? AND owner_token = ?').run(LOCK_ID, ownerToken)\n",
     "repl": "  sqlite.prepare('DELETE FROM meta_sync_lock WHERE id = ?').run(LOCK_ID)\n"
+  },
+  {
+    "name": "meta: lock acquire is a non-atomic SELECT then INSERT OR REPLACE",
+    "file": "server/utils/blizzardMetaLock.ts",
+    "find": "  const acquire = sqlite.transaction(() => {\n    const result = sqlite.prepare(`\n      INSERT INTO meta_sync_lock (id, owner_token, held_until)\n      VALUES (?, ?, ?)\n      ON CONFLICT(id) DO UPDATE SET\n        owner_token = excluded.owner_token,\n        held_until = excluded.held_until\n      WHERE meta_sync_lock.held_until <= ?\n    `).run(LOCK_ID, ownerToken, heldUntil, t)\n    if (result.changes !== 1) return { ok: false } as const\n    return { ok: true, ownerToken, heldUntil } as const\n  })\n  return acquire.immediate()\n",
+    "repl": "  const row = sqlite.prepare('SELECT held_until FROM meta_sync_lock WHERE id = ?').get(LOCK_ID) as { held_until: number } | undefined\n  if (row && row.held_until > t) return { ok: false }\n  sqlite.prepare('INSERT OR REPLACE INTO meta_sync_lock (id, owner_token, held_until) VALUES (?, ?, ?)').run(LOCK_ID, ownerToken, heldUntil)\n  return { ok: true, ownerToken, heldUntil }\n"
   }
 ]

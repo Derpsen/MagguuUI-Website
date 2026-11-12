@@ -1622,8 +1622,8 @@ export async function runScheduledBlizzardMetaSync(input: {
           partialOutcome: decision.outcome,
         }
       }
-      const stagedPartial = writeStagedMetaSnapshot(input.sqlite, built.payload, clock())
-      const promotedPartial = promoteMetaSnapshot(input.sqlite, stagedPartial.snapshotId, built.payload.region, clock())
+      const stagedPartial = writeStagedMetaSnapshot(input.sqlite, decision.payload, clock())
+      const promotedPartial = promoteMetaSnapshot(input.sqlite, stagedPartial.snapshotId, decision.payload.region, clock())
       const purgePartial = input.purgeMeta ?? purgeCloudflareMeta
       await purgePartial()
       return {
@@ -1652,6 +1652,32 @@ export async function runScheduledBlizzardMetaSync(input: {
     const reasons = [...policy.reasons]
     if (leaderboardRatio < 0.9) reasons.push(`leaderboards ${built.leaderboards.ok}/${built.leaderboards.planned} below 0.9`)
     if (reasons.length) {
+      if (!previous) {
+        const firstPartial = decideDeadlinePartialPublish({
+          payload: built.payload,
+          previous: null,
+          plannedProfiles,
+          successfulProfiles: built.payload.sampled.profiles,
+          stats: built.stats,
+        })
+        if (firstPartial.outcome === 'published') {
+          deleteStagedMetaSnapshot(input.sqlite, staged.snapshotId)
+          const stagedFirst = writeStagedMetaSnapshot(input.sqlite, firstPartial.payload, clock())
+          const promotedFirst = promoteMetaSnapshot(input.sqlite, stagedFirst.snapshotId, firstPartial.payload.region, clock())
+          const purgeFirst = input.purgeMeta ?? purgeCloudflareMeta
+          await purgeFirst()
+          return {
+            status: 'partial' as const,
+            reason: `published first partial snapshot${firstPartial.reasons.length ? ` (${firstPartial.reasons.join('; ')})` : ''}`,
+            snapshotId: promotedFirst.snapshotId,
+            stats: built.stats,
+            failures: built.failures,
+            nPerSpec,
+            dropped: built.preSpec?.dropped,
+            partialOutcome: 'published' as const,
+          }
+        }
+      }
       deleteStagedMetaSnapshot(input.sqlite, staged.snapshotId)
       return {
         status: 'partial' as const,

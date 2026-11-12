@@ -218,6 +218,8 @@ export type MetaFreshness = {
   keyLevels: { min: number, max: number } | null
   region: typeof META_REGION
   source: 'blizzard'
+  /** First-publish or deadline partial; omitted on a complete ok snapshot. */
+  partial?: true
 }
 
 export type MetaTalentTreeState = {

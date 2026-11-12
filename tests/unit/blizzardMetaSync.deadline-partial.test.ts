@@ -8,6 +8,7 @@ import { META_CLASSES } from '../../utils/metaCatalog'
 import {
   decideDeadlinePartialPublish,
   metaSnapshotCoverage,
+  omitThinMetaSpecs,
   shouldKeepLastGoodMetaSnapshot,
 } from '../../server/utils/blizzardMetaPolicy'
 import {
@@ -19,7 +20,7 @@ import {
 } from '../../server/utils/blizzardMetaSync'
 import { readCurrentMetaSnapshot, writeMetaSnapshot } from '../../server/utils/blizzardMetaStore'
 import { parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
-import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload } from '../../utils/metaTypes'
+import { META_MIN_BUILD_SAMPLE, META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload } from '../../utils/metaTypes'
 import { createHeapFixtureFetcher } from '../fixtures/blizzard-meta/heapFixture'
 
 const CREDENTIALS_CONFIG = {
@@ -152,11 +153,30 @@ describe('decideDeadlinePartialPublish policy', () => {
     assert.ok(decision.reasons.some(reason => /429/.test(reason)))
   })
 
-  it('does not publish when there is no last-good and the 429 rate fails policy', () => {
+  it('publishes a marked first partial when there is no last-good, even if the 429 rate fails policy', () => {
     const incoming = profilesPayload(200, 40)
     const decision = decideDeadlinePartialPublish({ payload: incoming, previous: null, ...high429 })
-    assert.equal(decision.outcome, 'not-published')
+    assert.equal(decision.outcome, 'published')
     assert.ok(decision.reasons.some(reason => /429/.test(reason)))
+    assert.equal(decision.payload.freshness.partial, true)
+    assert.equal(metaSnapshotCoverage(decision.payload, META_MIN_BUILD_SAMPLE).wellCoveredSpecs, 40)
+  })
+
+  it('does not publish a first partial when every spec is below the build-sample floor', () => {
+    const incoming = profilesPayload(1, 40)
+    const decision = decideDeadlinePartialPublish({ payload: incoming, previous: null, ...high429 })
+    assert.equal(decision.outcome, 'not-published')
+    assert.ok(decision.reasons.some(reason => /build-sample floor|no specs/.test(reason)))
+    assert.equal(decision.payload.classes.length, 0)
+  })
+
+  it('omits specs below the build-sample floor from a first partial', () => {
+    const mixed = profilesPayload(200, 2)
+    mixed.classes[0]!.specs[0]!.profileCount = 200
+    mixed.classes[0]!.specs[1]!.profileCount = 12
+    const omitted = omitThinMetaSpecs(mixed)
+    assert.equal(metaSnapshotCoverage(omitted, META_MIN_BUILD_SAMPLE).wellCoveredSpecs, 1)
+    assert.ok(omitted.classes[0]!.specs.every(spec => (spec.profileCount ?? 0) >= META_MIN_BUILD_SAMPLE))
   })
 
   it('can publish an incomplete catalog on the deadline path when there is no last-good', () => {
@@ -164,6 +184,7 @@ describe('decideDeadlinePartialPublish policy', () => {
     const decision = decideDeadlinePartialPublish({ payload: incoming, previous: null, ...clean })
     assert.equal(decision.outcome, 'published')
     assert.deepEqual(decision.reasons, [])
+    assert.equal(decision.payload.freshness.partial, true)
   })
 })
 
@@ -193,7 +214,7 @@ describe('deadline partial snapshot', () => {
       fetcher,
       now: () => t,
       deadline,
-      caps: tightCaps(),
+      caps: tightCaps({ samplePerSpec: 50, maxAttemptsPerSpec: 50 }),
       kumaPush: async () => 'pushed',
       purgeMeta: async () => {
         purges.push('purged')
@@ -216,6 +237,8 @@ describe('deadline partial snapshot', () => {
     assert.ok(current)
     assert.equal(current.snapshotId, result.snapshotId)
     assert.ok(metaSnapshotCoverage(current.payload).specsWithData >= 1)
+    assert.equal(current.payload.freshness.partial, true)
+    assert.ok(current.payload.classes.every(cls => cls.specs.every(spec => (spec.profileCount ?? 0) >= META_MIN_BUILD_SAMPLE)))
   })
 
   it('keeps last-good when the deadline hits after a thinner partial', { timeout: 30_000 }, async () => {

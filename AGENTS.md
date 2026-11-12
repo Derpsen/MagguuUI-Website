@@ -100,11 +100,15 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     `META_SANITY_SPEC_FLIP_N`) plus a per-spec sample floor
     (`profileCount >= META_MIN_BUILD_SAMPLE` = 50; local sync4 min was 208
     across 40 specs). A 40×1 snapshot cannot replace a 39×200 last-good; one
-    `ok` row is promoted and purged at the end or deadline. Without a last-good
-    snapshot, a policy failure (for example a 34 % 429 rate like local sync4
-    before the rate-gate stampede fix) is `not-published` (exit 3, `/meta`
-    stays empty). That is DoD-conform; the rate-gate fix should cut 429s far
-    below the 5 % gate. `rollbackMetaSnapshot` re-points at the newest prior
+    `ok` row is promoted and purged at the end or deadline. If there has never
+    been a last-good snapshot, a partial with real specs (each published spec
+    `profileCount >= META_MIN_BUILD_SAMPLE` = 50; thinner specs omitted) may go
+    live even when the 429-rate gate fails (for example 34 % 429 like local
+    sync4 before the rate-gate fix): exit 3, `partialOutcome=published`,
+    `freshness.partial` set, `/meta` shows a "Partial data" note. Once a
+    last-good exists, a partial replaces it only if it passes the quality gate
+    (coverage ≥ last-good and n ≥ 50 per published spec, plus 429 / success /
+    50 % n / n-flip). `rollbackMetaSnapshot` re-points at the newest prior
     `ok` snapshot and only walks past older rows with fewer well-covered specs
     (thin partial intermediates). A deadline with 0 specs stays `error` / exit 1.
     External abort mid spec-phase or mid icon-phase still does not promote.
@@ -246,7 +250,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
   `same-origin`.
 - Homepage stats/pills: `GET /api/v1/catalog-summary` only. Do not fetch `/api/v1/profiles` (or layouts/wowup/changelogs) on `/` just to count — those blobs belong on `/strings`.
 - ECharts stays admin-only (`utils/echartsSetup.ts` + `components/admin/charts`). Do not restore a global `plugins/echarts.client.ts`.
-- Gate: `npm run typecheck`, `npm run lint`, `npm run test:unit`, and `npm run build`. Add `npm run verify:smoke` and `npm test` only when a page, component, layout, or public route changed. After dependency changes also run `npm run audit:prod`.
+- Gate: `npm run typecheck`, `npm run lint`, `npm run test:unit`, and `npm run build`. Add `npm run verify:smoke` and `npm test` only when a page, component, layout, or public route changed. After dependency changes also run `npm run audit:prod`. Local `npm run test:unit` and `scripts/mutation/check.py` pass `--test-concurrency=2` (not 0) so the Ubuntu VM does not peg every core and spin up Unraid fans; override by passing the flag explicitly. CI may keep its own setting if a workflow passes the flag; if it just runs `npm run test:unit` it gets 2.
 - Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier). `npm run lint` also runs `lint:uselect` (rejects option-shaped `value: ""`).
 - Validation uses Zod.
 - Motion: page View Transitions via `experimental.viewTransition` (Nuxt skips them under reduced motion). Scroll reveal is CSS-only `.reveal` (`animation-timeline: view()`), transform-only (opacity fails contrast audits), never on the LCP section, and off under `prefers-reduced-motion`. No JS animation libs.
@@ -392,6 +396,7 @@ npm run lint           # ESLint + USelect empty-value check
 npm run lint:fix       # auto-fix safe ESLint findings
 npm run lint:uselect    # reject option-shaped value: "" on select items
 npm run typecheck      # TypeScript check
+npm run test:unit      # node --test with --test-concurrency=2 (local default)
 npm run build          # production build (.output/)
 npm run verify         # clean + build + production smoke test
 npm run verify:smoke   # smoke test against existing .output/

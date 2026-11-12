@@ -129,12 +129,14 @@ function parseFreshness(value: unknown): MetaFreshness | null {
   if (value.region !== META_REGION || value.source !== 'blizzard') return null
   const keyLevels = parseKeySpan(value.keyLevels)
   if (value.keyLevels != null && !keyLevels) return null
+  if (value.partial != null && value.partial !== true) return null
   return {
     fetchedAt: value.fetchedAt,
     players: value.players,
     keyLevels,
     region: META_REGION,
     source: 'blizzard',
+    ...(value.partial === true ? { partial: true as const } : {}),
   }
 }
 

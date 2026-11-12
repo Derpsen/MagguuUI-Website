@@ -61,6 +61,9 @@ describe('meta snapshot fixture', () => {
     assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, name: 'nope' } }), null)
     assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, fetchedAt: ok.freshness.fetchedAt * 1000 } }), null)
     assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, fetchedAt: -1 } }), null)
+    assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, partial: false } }), null)
+    const marked = parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, partial: true } })
+    assert.equal(marked?.freshness.partial, true)
     assert.equal(parseMetaSnapshotPayload({
       ...ok,
       classes: [...ok.classes, { ...ok.classes[0]!, slug: 'not-a-class' }],

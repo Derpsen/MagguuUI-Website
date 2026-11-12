@@ -148,35 +148,64 @@ export function shouldKeepLastGoodMetaSnapshot(
 
 export type MetaPartialOutcome = 'published' | 'kept-last-good' | 'not-published'
 
+/** Drop specs below the build-sample floor so a first partial never publishes n < 50. */
+export function omitThinMetaSpecs(
+  payload: MetaSnapshotPayload,
+  minProfileCount = META_MIN_BUILD_SAMPLE,
+): MetaSnapshotPayload {
+  const classes = payload.classes
+    .map((cls) => {
+      const specs = cls.specs.filter(spec => (spec.profileCount ?? 0) >= minProfileCount)
+      return { ...cls, specs, n: specs.reduce((sum, spec) => sum + spec.n, 0) }
+    })
+    .filter(cls => cls.specs.length > 0)
+  return { ...payload, classes }
+}
+
+export function markMetaSnapshotPartial(payload: MetaSnapshotPayload): MetaSnapshotPayload {
+  if (payload.freshness.partial) return payload
+  return { ...payload, freshness: { ...payload.freshness, partial: true } }
+}
+
 export function decideDeadlinePartialPublish(input: {
   payload: MetaSnapshotPayload
   previous: MetaSnapshotPayload | null
   plannedProfiles: number
   successfulProfiles: number
   stats: { calls: number, http429: number }
-}): { outcome: MetaPartialOutcome, reasons: string[] } {
-  const coverage = metaSnapshotCoverage(input.payload)
-  if (coverage.specsWithData === 0) {
-    return { outcome: 'not-published', reasons: ['no specs with data'] }
-  }
+}): { outcome: MetaPartialOutcome, reasons: string[], payload: MetaSnapshotPayload } {
+  const publishable = omitThinMetaSpecs(input.payload)
+  const coverage = metaSnapshotCoverage(publishable, META_MIN_BUILD_SAMPLE)
   const policy = evaluateMetaRunPolicy({
     plannedProfiles: input.plannedProfiles,
     successfulProfiles: input.successfulProfiles,
     stats: input.stats,
-    payload: input.payload,
+    payload: publishable,
     previous: input.previous,
     requireCompleteCatalog: false,
   })
-  const thinner = input.previous ? shouldKeepLastGoodMetaSnapshot(input.previous, input.payload) : false
+  const thinner = input.previous ? shouldKeepLastGoodMetaSnapshot(input.previous, publishable) : false
+  if (coverage.wellCoveredSpecs === 0) {
+    const raw = metaSnapshotCoverage(input.payload)
+    const reasons = [raw.specsWithData === 0 ? 'no specs with data' : 'no specs at the build-sample floor']
+    if (input.previous) {
+      return { outcome: 'kept-last-good', reasons, payload: publishable }
+    }
+    return { outcome: 'not-published', reasons, payload: publishable }
+  }
   if (input.previous && (thinner || policy.reasons.length)) {
     const reasons = [...policy.reasons]
     if (thinner) reasons.push('incoming coverage is thinner than last-good')
-    return { outcome: 'kept-last-good', reasons }
+    return { outcome: 'kept-last-good', reasons, payload: publishable }
   }
-  if (!input.previous && policy.reasons.length) {
-    return { outcome: 'not-published', reasons: policy.reasons }
+  // No last-good has ever existed: a partial with real specs (each n >= 50)
+  // may go live even when the 429-rate gate fails. Always mark deadline /
+  // first-partial publishes so /meta can show "Partial data".
+  return {
+    outcome: 'published',
+    reasons: policy.reasons,
+    payload: markMetaSnapshotPartial(publishable),
   }
-  return { outcome: 'published', reasons: [] }
 }
 
 export function coverageIsBetterThan(candidate: MetaSnapshotCoverage, other: MetaSnapshotCoverage): boolean {

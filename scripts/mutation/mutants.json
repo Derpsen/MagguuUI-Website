@@ -748,5 +748,11 @@
     "file": "layouts/default.vue",
     "find": "setScrollLock(document.documentElement, false)",
     "repl": "void 0"
+  },
+  {
+    "name": "meta: stale-refresh off",
+    "file": "server/utils/blizzardMetaSync.ts",
+    "find": "      if (live.best !== top.best || live.runs !== top.runs) {\n        heap.pop()\n        heap.push({ key: top.key, best: live.best, runs: live.runs })\n        continue\n      }\n",
+    "repl": "      if (false) {\n        heap.pop()\n        heap.push({ key: top.key, best: live.best, runs: live.runs })\n        continue\n      }\n"
   }
 ]

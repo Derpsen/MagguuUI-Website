@@ -7,7 +7,6 @@ import { initializeDatabase } from '../../server/database/bootstrap'
 import { resetBlizzardAccessTokenCache } from '../../server/utils/blizzardAuth'
 import {
   META_HEAP_CHECK_EVERY_GROUPS,
-  META_SYNC_DEFAULT_MAX_CANDIDATES,
   META_SYNC_DEFAULT_MAX_PER_SPEC,
   MetaCandidateTable,
   buildMetaSnapshot,
@@ -139,6 +138,38 @@ describe('meta pre-spec heap (CLI cap, production guard)', () => {
     assert.equal(table.counters.uniquePlayers, 4)
   })
 
+
+  it('refreshes a heap-top player who improves, then evicts the true worst past the cap', () => {
+    const cap = 4
+    const specId = 63
+    const uncapped = new MetaCandidateTable(100_000)
+    const capped = new MetaCandidateTable(cap)
+    const sightings: Array<{ name: string, best: number }> = [
+      { name: 'worst', best: 10 },
+      { name: 'a', best: 20 },
+      { name: 'b', best: 21 },
+      { name: 'c', best: 22 },
+      // heap-top 'worst' improves past everyone currently kept
+      { name: 'worst', best: 40 },
+      // these beat the original 10 (and a=20) but not the improved 40
+      { name: 'd', best: 23 },
+      { name: 'e', best: 24 },
+      { name: 'f', best: 19 },
+    ]
+    for (const sighting of sightings) {
+      uncapped.add('r', sighting.name, specId, sighting.best)
+      capped.add('r', sighting.name, specId, sighting.best)
+    }
+    const expected = (uncapped.topBySpec(cap).get(specId) ?? []).map(p => `${p.name}:${p.best}:${p.runs}`)
+    const got = (capped.topBySpec(cap).get(specId) ?? []).map(p => `${p.name}:${p.best}:${p.runs}`)
+    assert.deepEqual(got, expected)
+    const names = new Set((capped.topBySpec(cap).get(specId) ?? []).map(p => p.name))
+    assert.ok(names.has('worst'), `improved heap-top player must survive, got ${[...names].join(',')}`)
+    assert.ok(!names.has('a'), 'true worst after the improvement must be evicted')
+    assert.ok(!names.has('f'))
+    assert.equal(capped.size, cap)
+  })
+
   it('per-spec top-N by best matches an uncapped table (quality ~1.0)', () => {
     const capPerSpec = 20
     const topN = 10
@@ -192,13 +223,13 @@ describe('meta pre-spec heap (CLI cap, production guard)', () => {
   })
 
 
-  it('does not overwrite a legacy maxCandidates total with the per-spec cap', () => {
-    const caps = mergeMetaSyncCaps({ maxCandidates: 32_000, maxAttemptsPerSpec: 400 })
-    assert.equal(caps.maxCandidates, 32_000)
-    assert.equal(caps.maxCandidatesPerSpec, META_SYNC_DEFAULT_MAX_PER_SPEC)
+  it('keeps an explicit per-spec cap and does not expose a global maxCandidates', () => {
     const onlyPerSpec = mergeMetaSyncCaps({ maxCandidatesPerSpec: 50, maxAttemptsPerSpec: 40, samplePerSpec: 20 })
     assert.equal(onlyPerSpec.maxCandidatesPerSpec, 50)
-    assert.equal(onlyPerSpec.maxCandidates, META_SYNC_DEFAULT_MAX_CANDIDATES)
+    assert.equal('maxCandidates' in onlyPerSpec, false)
+    const defaults = mergeMetaSyncCaps({ maxAttemptsPerSpec: 400 })
+    assert.equal(defaults.maxCandidatesPerSpec, META_SYNC_DEFAULT_MAX_PER_SPEC)
+    assert.equal('maxCandidates' in defaults, false)
   })
 
   it('warns when ingest drops candidates under the per-spec cap', { timeout: 60_000 }, async () => {

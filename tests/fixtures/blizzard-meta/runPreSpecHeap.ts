@@ -1,7 +1,7 @@
 /**
  * Child entry for the pre-spec heap probe. Run with:
  *   node --expose-gc --max-old-space-size=256 --import tsx tests/fixtures/blizzard-meta/runPreSpecHeap.ts
- *   META_PRE_SPEC_MODE=400k ... (403k unique players, still bounded by maxCandidates)
+ *   META_PRE_SPEC_MODE=400k ... (403k unique players, still bounded by the per-spec cap)
  */
 import Database from 'better-sqlite3'
 import { initializeDatabase } from '../../../server/database/bootstrap'
@@ -66,7 +66,6 @@ const { payload, preSpec, leaderboards } = await buildMetaSnapshot({
     samplePerSpec: 200,
     maxAttemptsPerSpec: 400,
     maxConcurrentSpecs: 1,
-    maxCandidates: META_SYNC_DEFAULT_MAX_CANDIDATES,
   },
   heap: {
     used: () => {

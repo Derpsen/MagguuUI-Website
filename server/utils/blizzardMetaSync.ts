@@ -103,14 +103,12 @@ export type MetaSyncCaps = {
   maxConcurrentSpecs: number
   /** Per-spec bound on players kept during ingest, ranked by best then runs. */
   maxCandidatesPerSpec: number
-  /** @deprecated Global total; no longer used for eviction. Kept for callers. */
-  maxCandidates: number
 }
 
 /** Keep at least 2× the final per-spec sample so multi-spec assignment does not starve a list. */
 export const META_SYNC_DEFAULT_MAX_PER_SPEC = 800
-/** Historical alias (40 × 800). Eviction is per-spec, not a global top list. */
-export const META_SYNC_DEFAULT_MAX_CANDIDATES = 32_000
+/** Historical alias for 40 × 800. Eviction is per-spec; this is not a global cap. */
+export const META_SYNC_DEFAULT_MAX_CANDIDATES = 40 * META_SYNC_DEFAULT_MAX_PER_SPEC
 
 export const META_SYNC_DEFAULT_CAPS: MetaSyncCaps = {
   samplePerSpec: 200,
@@ -121,7 +119,6 @@ export const META_SYNC_DEFAULT_CAPS: MetaSyncCaps = {
   periods: META_PREVIOUS_PERIODS + 1,
   maxConcurrentSpecs: 1,
   maxCandidatesPerSpec: META_SYNC_DEFAULT_MAX_PER_SPEC,
-  maxCandidates: META_SYNC_DEFAULT_MAX_CANDIDATES,
 }
 
 const API_ROOT = 'https://eu.api.blizzard.com'
@@ -508,7 +505,15 @@ export class MetaCandidateTable {
   /** Evict every spec down to capPerSpec (or `keep` when given as a per-spec bound). */
   evictTo(keep: number = this.capPerSpec) {
     for (const specId of [...this.bySpec.keys()]) {
-      while ((this.bySpec.get(specId)?.length ?? 0) > keep) this.evictWorst(specId)
+      let left = this.bySpec.get(specId)?.length ?? 0
+      let steps = left
+      while (left > keep) {
+        if (steps-- <= 0) {
+          throw new Error(`MetaCandidateTable.evictTo exceeded the iteration bound on spec ${specId}`)
+        }
+        this.evictWorst(specId)
+        left = this.bySpec.get(specId)?.length ?? 0
+      }
     }
   }
 
@@ -678,10 +683,6 @@ export function mergeMetaSyncCaps(partial?: Partial<MetaSyncCaps>): MetaSyncCaps
       ? Math.floor(requestedPerSpec)
       : META_SYNC_DEFAULT_MAX_PER_SPEC,
   )
-  const requestedTotal = partial?.maxCandidates
-  caps.maxCandidates = requestedTotal != null && Number.isFinite(requestedTotal) && requestedTotal > 0
-    ? Math.max(1, Math.floor(requestedTotal))
-    : META_SYNC_DEFAULT_MAX_CANDIDATES
   return caps
 }
 

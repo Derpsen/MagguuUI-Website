@@ -8,9 +8,10 @@
  * Never cached: a status page must see the live process.
  */
 
-import { db } from '~/server/database'
+import { db, sqlite } from '~/server/database'
 import { sql } from 'drizzle-orm'
 import { readBuildInfo } from '~/utils/buildInfo'
+import { metaSnapshotAgeHours, readLastMetaRun, readMetaSnapshotState } from '~/server/utils/blizzardMetaStore'
 
 const startedAt = new Date(Date.now() - Math.round(process.uptime() * 1000)).toISOString()
 
@@ -23,6 +24,19 @@ export default defineEventHandler((event) => {
   } catch {
     dbOk = false
   }
+  let meta: { status: 'ok' | 'empty' | 'unavailable', snapshotAgeHours: number | null, lastRunStatus: string | null }
+  try {
+    const state = readMetaSnapshotState(sqlite)
+    const snapshot = state.status === 'ok' ? state.snapshot : null
+    const last = readLastMetaRun(sqlite)
+    meta = {
+      status: state.status,
+      snapshotAgeHours: metaSnapshotAgeHours(snapshot),
+      lastRunStatus: last?.status ?? null,
+    }
+  } catch {
+    meta = { status: 'unavailable', snapshotAgeHours: null, lastRunStatus: null }
+  }
   const body = {
     status: dbOk ? 'ok' : 'degraded',
     timestamp: new Date().toISOString(),
@@ -30,6 +44,7 @@ export default defineEventHandler((event) => {
     uptimeSeconds: Math.round(process.uptime()),
     build: { sha: build.gitSha, shortSha: build.shortSha, time: build.buildTime },
     checks: { database: dbOk ? 'ok' : 'unavailable' },
+    meta,
   }
   if (!dbOk) setResponseStatus(event, 503)
   return body

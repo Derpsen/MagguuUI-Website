@@ -74,3 +74,41 @@ export function schedulePurgeCloudflareCache(delayMs = 1500): void {
   }, delayMs)
   timer.unref?.()
 }
+
+
+const META_PURGE_ORIGIN = 'ui.magguu.xyz'
+
+/**
+ * Purge `/meta` and `/meta/**` at the edge after a new snapshot is promoted.
+ * Uses Cloudflare prefix purge. Missing credentials = logged no-op (same as
+ * purgeCloudflareCache). Does not fall back to purge_everything.
+ */
+export async function purgeCloudflareMeta(
+  env: CloudflarePurgeEnv = process.env,
+  fetchImpl: FetchLike = globalThis.fetch as unknown as FetchLike,
+  origin = META_PURGE_ORIGIN,
+): Promise<PurgeResult> {
+  const zone = env.CLOUDFLARE_ZONE_ID?.trim()
+  const token = env.CLOUDFLARE_API_TOKEN?.trim()
+  if (!zone || !token) {
+    console.info('[Cache] Cloudflare /meta purge skipped: CLOUDFLARE_ZONE_ID / CLOUDFLARE_API_TOKEN not set')
+    return 'skipped'
+  }
+  const prefixes = [`${origin}/meta`]
+  try {
+    const res = await fetchImpl(`https://api.cloudflare.com/client/v4/zones/${encodeURIComponent(zone)}/purge_cache`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefixes }),
+    })
+    if (!res.ok) {
+      console.error(`[Cache] Cloudflare /meta purge failed: HTTP ${res.status} ${(await res.text()).slice(0, 300)}`)
+      return 'failed'
+    }
+    console.info('[Cache] Cloudflare /meta prefixes purged')
+    return 'purged'
+  } catch (err) {
+    console.error('[Cache] Cloudflare /meta purge failed:', err)
+    return 'failed'
+  }
+}

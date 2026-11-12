@@ -10,6 +10,7 @@ import type {
   MetaFreshness,
   MetaGearCount,
   MetaHeroSplit,
+  MetaHeroTalentGroup,
   MetaKeyLevels,
   MetaLoadout,
   MetaPeriods,
@@ -21,6 +22,8 @@ import type {
   MetaTalentBand,
   MetaTalentCount,
   MetaTalentGroups,
+  MetaTalentLayout,
+  MetaTalentLayoutNode,
   MetaTalentTree,
   MetaTalentTreeState,
 } from './metaTypes'
@@ -164,7 +167,22 @@ const BANDS: MetaTalentBand[] = ['core', 'flexible', 'rare']
 function parseTalent(value: unknown): MetaTalentCount | null {
   if (!isRecord(value) || !isFiniteNumber(value.id) || !isStr(value.label) || !isNonNeg(value.count) || !isShare(value.share)) return null
   if (!TREES.includes(value.tree as MetaTalentTree) || !BANDS.includes(value.band as MetaTalentBand)) return null
-  return { id: value.id, label: value.label, count: value.count, share: value.share, tree: value.tree as MetaTalentTree, band: value.band as MetaTalentBand }
+  if (value.node != null && !isFiniteNumber(value.node)) return null
+  if (value.spellId != null && !isFiniteNumber(value.spellId)) return null
+  if (value.icon != null && !isStr(value.icon)) return null
+  if (value.unmapped != null && typeof value.unmapped !== 'boolean') return null
+  return {
+    id: value.id,
+    label: value.label,
+    count: value.count,
+    share: value.share,
+    tree: value.tree as MetaTalentTree,
+    band: value.band as MetaTalentBand,
+    node: value.node == null ? null : value.node,
+    spellId: value.spellId == null ? null : value.spellId,
+    icon: value.icon == null ? null : value.icon,
+    unmapped: value.unmapped === true,
+  }
 }
 
 function parseTalents(value: unknown): MetaTalentGroups | null {
@@ -183,6 +201,7 @@ function parseGearItem(value: unknown): MetaGearCount | null {
   if (value.setName != null && !isStr(value.setName)) return null
   if (value.ilvl != null && !isFiniteNumber(value.ilvl)) return null
   if (value.source != null && !isStr(value.source)) return null
+  if (value.icon != null && !isStr(value.icon)) return null
   let enchant: MetaGearCount['enchant'] = null
   if (value.enchant != null) {
     enchant = parseIdLabel(value.enchant)
@@ -203,6 +222,7 @@ function parseGearItem(value: unknown): MetaGearCount | null {
     embellished: value.embellished,
     ilvl: value.ilvl == null ? null : value.ilvl,
     source: value.source == null ? null : value.source,
+    icon: value.icon == null ? null : value.icon,
     lowSample: value.lowSample,
     enchant,
     gems: gems as Array<{ id: number, label: string }>,
@@ -238,6 +258,61 @@ function mapList<T>(value: unknown, parse: (item: unknown) => T | null): T[] | n
   return items as T[]
 }
 
+
+function parseLayoutChoice(value: unknown): { talentId: number, label: string, spellId: number | null } | null {
+  if (!isRecord(value) || !isFiniteNumber(value.talentId) || !isStr(value.label)) return null
+  if (value.spellId != null && !isFiniteNumber(value.spellId)) return null
+  return { talentId: value.talentId, label: value.label, spellId: value.spellId == null ? null : value.spellId }
+}
+
+function parseLayoutNode(value: unknown): MetaTalentLayoutNode | null {
+  if (!isRecord(value) || !isFiniteNumber(value.node) || !isNonNeg(value.maxRank) || !Array.isArray(value.unlocks) || !Array.isArray(value.choices)) return null
+  if (value.row != null && !isFiniteNumber(value.row)) return null
+  if (value.col != null && !isFiniteNumber(value.col)) return null
+  if (value.type != null && !isStr(value.type)) return null
+  if (!value.unlocks.every(item => typeof item === 'number' && Number.isFinite(item))) return null
+  const choices = value.choices.map(parseLayoutChoice)
+  if (choices.some(item => !item)) return null
+  return {
+    node: value.node,
+    row: value.row == null ? null : value.row,
+    col: value.col == null ? null : value.col,
+    type: value.type == null ? null : value.type,
+    maxRank: value.maxRank,
+    unlocks: value.unlocks as number[],
+    choices: choices as Array<{ talentId: number, label: string, spellId: number | null }>,
+  }
+}
+
+function parseTalentLayout(value: unknown): MetaTalentLayout | null {
+  if (value == null) return null
+  if (!isRecord(value) || !Array.isArray(value.class) || !Array.isArray(value.spec) || !Array.isArray(value.hero)) return null
+  const classNodes = value.class.map(parseLayoutNode)
+  const specNodes = value.spec.map(parseLayoutNode)
+  if (classNodes.some(item => !item) || specNodes.some(item => !item)) return null
+  const hero = []
+  for (const item of value.hero) {
+    if (!isRecord(item) || !isFiniteNumber(item.id) || !isStr(item.label) || !Array.isArray(item.nodes)) return null
+    const nodes = item.nodes.map(parseLayoutNode)
+    if (nodes.some(node => !node)) return null
+    hero.push({ id: item.id, label: item.label, nodes: nodes as MetaTalentLayoutNode[] })
+  }
+  return { class: classNodes as MetaTalentLayoutNode[], spec: specNodes as MetaTalentLayoutNode[], hero }
+}
+
+function parseTalentsByHero(value: unknown): MetaHeroTalentGroup[] | null {
+  if (!Array.isArray(value)) return null
+  const rows: MetaHeroTalentGroup[] = []
+  for (const item of value) {
+    if (!isRecord(item) || !isNonNeg(item.n)) return null
+    const heroTree = parseIdLabel(item.heroTree)
+    const talents = parseTalents(item.talents)
+    if (!heroTree || !talents) return null
+    rows.push({ heroTree, n: item.n, talents })
+  }
+  return rows
+}
+
 function parseSpec(value: unknown): MetaSpecSummary | null {
   if (!isRecord(value) || !isStr(value.slug) || !isStr(value.label) || !isNonNeg(value.n) || !isShare(value.share) || !isNonNeg(value.profileCount)) return null
   if (typeof value.empty !== 'boolean' || typeof value.collecting !== 'boolean' || typeof value.lowSample !== 'boolean') return null
@@ -250,6 +325,12 @@ function parseSpec(value: unknown): MetaSpecSummary | null {
   const heroSplit = mapList(value.heroSplit, parseHeroSplit)
   const loadouts = mapList(value.loadouts, parseLoadout)
   const talents = parseTalents(value.talents)
+  const talentsByHero = value.talentsByHero == null ? [] : parseTalentsByHero(value.talentsByHero)
+  let talentLayout: MetaTalentLayout | null = null
+  if (value.talentLayout != null) {
+    talentLayout = parseTalentLayout(value.talentLayout)
+    if (!talentLayout) return null
+  }
   const stats = mapList(value.stats, parseStat)
   const gearSlots = mapList(value.gearSlots, parseSlotGroup)
   const trinkets = mapList(value.trinkets, parseGearItem)
@@ -258,7 +339,7 @@ function parseSpec(value: unknown): MetaSpecSummary | null {
   const enchants = mapList(value.enchants, parseEnchantGem)
   const gems = mapList(value.gems, parseEnchantGem)
   const races = mapList(value.races, parseRace)
-  if (!heroSplit || !loadouts || !talents || !stats || !gearSlots || !trinkets || !rings || !embellishments || !enchants || !gems || !races) return null
+  if (!heroSplit || !loadouts || !talents || !talentsByHero || !stats || !gearSlots || !trinkets || !rings || !embellishments || !enchants || !gems || !races) return null
   let bestBuild: MetaLoadout | null = null
   if (value.bestBuild != null) {
     bestBuild = parseLoadout(value.bestBuild)
@@ -280,6 +361,8 @@ function parseSpec(value: unknown): MetaSpecSummary | null {
     heroSplit,
     loadouts,
     talents,
+    talentsByHero,
+    talentLayout,
     stats,
     gearSlots,
     trinkets,
@@ -376,6 +459,7 @@ export function parseMetaSnapshotPayload(input: unknown): MetaSnapshotPayload | 
   const freshness = parseFreshness(value.freshness)
   if (!freshness) return null
   if (!isRecord(value.sampled) || !isNonNeg(value.sampled.realms) || !isNonNeg(value.sampled.leaderboards) || !isNonNeg(value.sampled.players) || !isNonNeg(value.sampled.profiles) || !isNonNeg(value.sampled.skipped404) || !isNonNeg(value.sampled.specMismatch)) return null
+  if (value.sampled.unknownTalentNodes != null && !isNonNeg(value.sampled.unknownTalentNodes)) return null
   const basis = parseBasis(value.basis, season, periods, talentTree, freshness, value.sampled.profiles)
   if (!basis) return null
   const classes = mapList(value.classes, parseClass)
@@ -397,6 +481,7 @@ export function parseMetaSnapshotPayload(input: unknown): MetaSnapshotPayload | 
       profiles: value.sampled.profiles,
       skipped404: value.sampled.skipped404,
       specMismatch: value.sampled.specMismatch,
+      unknownTalentNodes: value.sampled.unknownTalentNodes == null ? 0 : value.sampled.unknownTalentNodes,
     },
     classes,
   }

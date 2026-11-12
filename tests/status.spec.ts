@@ -57,7 +57,11 @@ test('the status endpoint exposes only the whitelisted coarse fields and is cach
 
 test('/api/health is unchanged and stays separate', async ({ request }) => {
   const body = await (await request.get('/api/health')).json() as Record<string, unknown>
-  expect(Object.keys(body).sort()).toEqual(['build', 'checks', 'startedAt', 'status', 'timestamp', 'uptimeSeconds'])
+  expect(Object.keys(body).sort()).toEqual(['build', 'checks', 'meta', 'startedAt', 'status', 'timestamp', 'uptimeSeconds'])
+  expect(body.meta && typeof body.meta === 'object').toBeTruthy()
+  expect(body.meta).toHaveProperty('snapshotAgeHours')
+  expect(body.meta).toHaveProperty('status')
+  expect(body.meta).toHaveProperty('lastRunStatus')
 })
 
 test('the page renders its state on the server, without JavaScript', async ({ browser }) => {

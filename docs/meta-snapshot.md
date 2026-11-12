@@ -62,6 +62,7 @@ measurement baseline until a live snapshot exists, plus own tooltips. AdBanner
 | `sampled.profiles` | number | Profile fetches (specializations + equipment). |
 | `sampled.skipped404` | number | Private/missing profiles skipped. |
 | `sampled.specMismatch` | number | Profiles dropped because the active spec ≠ the leaderboard spec. |
+| `sampled.unknownTalentNodes` | number | Talent picks whose node/id is not in the published static tree (kept, marked `unmapped`). |
 | `classes` | `MetaClassSummary[]` | Classes that appeared in the sample. |
 
 ### `freshness`
@@ -169,3 +170,11 @@ measurement baseline until a live snapshot exists, plus own tooltips. AdBanner
 - **Protection Warrior** — `lowSample: true`
 
 Season / period / tree hash values in the fixture are examples. Replace them with the live season, the current period plus the two previous, and the current talent-tree hash.
+
+
+## Optional data-layer fields (nightly)
+
+- Gear entries may include `icon` (filename, no host), `ilvl`, and `source` (`Dungeon`, `Raid`, `Crafted`, …).
+- `talentsByHero` holds talent counts split by hero tree.
+- `talentLayout` is the static class/spec/hero node layout for the heatmap, including empty `CHOICE` nodes.
+- Talent rows may include `node`, `spellId`, `icon`, and `unmapped`.

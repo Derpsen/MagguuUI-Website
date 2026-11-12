@@ -4,7 +4,8 @@ import type Database from 'better-sqlite3'
  * active pointer per region is switched only after a complete write, so
  * readers never see a half snapshot. Expired rows (≤ 30 days) are deleted
  * after the pointer is cleared or moved; a tombstone remains so pages can
- * show "Data unavailable" instead of "Collecting data".
+ * show "Data unavailable" instead of "Collecting data". Nightly run history
+ * lives in meta_runs and is cleaned up on the same TTL.
  */
 
 import { parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
@@ -29,6 +30,23 @@ export type MetaSnapshotState =
   | { status: 'empty' }
   | { status: 'unavailable' }
 
+export type MetaRunStatus = 'ok' | 'partial' | 'error' | 'skipped' | 'locked'
+
+export type MetaRunRecord = {
+  runId: number
+  startedAt: number
+  endedAt: number
+  status: MetaRunStatus
+  reason: string | null
+  calls: number
+  http429: number
+  http404: number
+  specMismatch: number
+  durationMs: number
+  snapshotId: number | null
+  nPerSpec: Record<string, number> | null
+}
+
 type SnapshotRow = {
   snapshot_id: number
   region: string
@@ -39,6 +57,21 @@ type SnapshotRow = {
   status: string
   payload: string
   source: string
+}
+
+type RunRow = {
+  run_id: number
+  started_at: number
+  ended_at: number
+  status: string
+  reason: string | null
+  calls: number
+  http_429: number
+  http_404: number
+  spec_mismatch: number
+  duration_ms: number
+  snapshot_id: number | null
+  n_per_spec: string | null
 }
 
 function asStored(row: SnapshotRow, payload: MetaSnapshotPayload): StoredMetaSnapshot {
@@ -63,6 +96,13 @@ function rowById(sqlite: MetaSqlite, snapshotId: number): SnapshotRow | undefine
     WHERE snapshot_id = ?
     LIMIT 1
   `).get(snapshotId) as SnapshotRow | undefined
+}
+
+function rowToStored(row: SnapshotRow | undefined): StoredMetaSnapshot | null {
+  if (!row) return null
+  const payload = parseMetaSnapshotPayload(row.payload)
+  if (!payload) return null
+  return asStored(row, payload)
 }
 
 function insertSnapshotRow(
@@ -91,6 +131,12 @@ function setActivePointer(sqlite: MetaSqlite, region: string, snapshotId: number
     VALUES (?, ?)
     ON CONFLICT(region) DO UPDATE SET snapshot_id = excluded.snapshot_id
   `).run(region, snapshotId)
+}
+
+function hasMetaRunsTable(sqlite: MetaSqlite): boolean {
+  return Boolean(sqlite.prepare(`
+    SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'meta_runs'
+  `).get())
 }
 
 /**
@@ -128,9 +174,23 @@ export function deleteExpiredMetaSnapshots(sqlite: MetaSqlite, now = Date.now())
         AND snapshot_id NOT IN (SELECT snapshot_id FROM meta_snapshot_active)
     `).run(nowSec) as { changes?: number }
     removed = result.changes ?? 0
+    if (hasMetaRunsTable(sqlite)) {
+      sqlite.prepare('DELETE FROM meta_runs WHERE ended_at <= ?').run(nowSec - Math.floor(META_SNAPSHOT_TTL_MS / 1000))
+    }
   })
   run()
   return removed
+}
+
+export function readMetaSnapshotById(
+  sqlite: MetaSqlite,
+  snapshotId: number,
+  now = Date.now(),
+): StoredMetaSnapshot | null {
+  const nowSec = Math.floor(now / 1000)
+  const row = rowById(sqlite, snapshotId)
+  if (!row || row.expires_at <= nowSec || row.status === 'expired') return null
+  return rowToStored(row)
 }
 
 export function readCurrentMetaSnapshot(
@@ -210,7 +270,7 @@ export function promoteMetaSnapshot(
 
 /**
  * Write a complete snapshot and switch the active pointer in one transaction.
- * Sanity gates that may refuse to promote belong in the nightly job (later PR).
+ * The nightly job stages first, runs sanity gates, then calls promote separately.
  */
 export function writeMetaSnapshot(
   sqlite: MetaSqlite,
@@ -229,4 +289,127 @@ export function writeMetaSnapshot(
   const stored = readCurrentMetaSnapshot(sqlite, parsed.region, now)
   if (!stored || stored.snapshotId !== id) throw new Error('Meta snapshot was written but could not be read back')
   return stored
+}
+
+/**
+ * Re-activate the previous unexpired ok snapshot for the region.
+ * Documented rollback path (also usable as raw SQL — see docs/meta-nightly.md).
+ */
+export function rollbackMetaSnapshot(
+  sqlite: MetaSqlite,
+  region = META_REGION,
+  now = Date.now(),
+): StoredMetaSnapshot | null {
+  const current = readCurrentMetaSnapshot(sqlite, region, now)
+  const nowSec = Math.floor(now / 1000)
+  const row = sqlite.prepare(`
+    SELECT snapshot_id, region, season, period, fetched_at, expires_at, status, payload, source
+    FROM meta_snapshots
+    WHERE region = ? AND status = 'ok' AND expires_at > ?
+      AND snapshot_id != ?
+    ORDER BY fetched_at DESC, snapshot_id DESC
+    LIMIT 1
+  `).get(region, nowSec, current?.snapshotId ?? -1) as SnapshotRow | undefined
+  const previous = rowToStored(row)
+  if (!previous) return null
+  return promoteMetaSnapshot(sqlite, previous.snapshotId, region, now)
+}
+
+export function recordMetaRun(
+  sqlite: MetaSqlite,
+  input: {
+    startedAt: number
+    endedAt?: number
+    status: MetaRunStatus
+    reason?: string | null
+    calls?: number
+    http429?: number
+    http404?: number
+    specMismatch?: number
+    snapshotId?: number | null
+    nPerSpec?: Record<string, number> | null
+  },
+): MetaRunRecord {
+  const endedAt = input.endedAt ?? Date.now()
+  const startedSec = Math.floor(input.startedAt / 1000)
+  const endedSec = Math.floor(endedAt / 1000)
+  const durationMs = Math.max(0, endedAt - input.startedAt)
+  if (!hasMetaRunsTable(sqlite)) {
+    return {
+      runId: 0,
+      startedAt: startedSec,
+      endedAt: endedSec,
+      status: input.status,
+      reason: input.reason ?? null,
+      calls: input.calls ?? 0,
+      http429: input.http429 ?? 0,
+      http404: input.http404 ?? 0,
+      specMismatch: input.specMismatch ?? 0,
+      durationMs,
+      snapshotId: input.snapshotId ?? null,
+      nPerSpec: input.nPerSpec ?? null,
+    }
+  }
+  const inserted = sqlite.prepare(`
+    INSERT INTO meta_runs (
+      started_at, ended_at, status, reason, calls, http_429, http_404,
+      spec_mismatch, duration_ms, snapshot_id, n_per_spec
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    startedSec,
+    endedSec,
+    input.status,
+    input.reason ?? null,
+    input.calls ?? 0,
+    input.http429 ?? 0,
+    input.http404 ?? 0,
+    input.specMismatch ?? 0,
+    durationMs,
+    input.snapshotId ?? null,
+    input.nPerSpec ? JSON.stringify(input.nPerSpec) : null,
+  ) as { lastInsertRowid: number }
+  const read = readLastMetaRun(sqlite)
+  if (!read) throw new Error('Meta run was written but could not be read back')
+  if (read.runId !== Number(inserted.lastInsertRowid)) return { ...read, runId: Number(inserted.lastInsertRowid) }
+  return read
+}
+
+export function readLastMetaRun(sqlite: MetaSqlite): MetaRunRecord | null {
+  if (!hasMetaRunsTable(sqlite)) return null
+  const row = sqlite.prepare(`
+    SELECT run_id, started_at, ended_at, status, reason, calls, http_429, http_404,
+           spec_mismatch, duration_ms, snapshot_id, n_per_spec
+    FROM meta_runs
+    ORDER BY run_id DESC
+    LIMIT 1
+  `).get() as RunRow | undefined
+  if (!row) return null
+  let nPerSpec: Record<string, number> | null = null
+  if (row.n_per_spec) {
+    try {
+      const parsed = JSON.parse(row.n_per_spec) as unknown
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) nPerSpec = parsed as Record<string, number>
+    } catch {
+      nPerSpec = null
+    }
+  }
+  return {
+    runId: row.run_id,
+    startedAt: row.started_at,
+    endedAt: row.ended_at,
+    status: row.status as MetaRunStatus,
+    reason: row.reason,
+    calls: row.calls,
+    http429: row.http_429,
+    http404: row.http_404,
+    specMismatch: row.spec_mismatch,
+    durationMs: row.duration_ms,
+    snapshotId: row.snapshot_id,
+    nPerSpec,
+  }
+}
+
+export function metaSnapshotAgeHours(snapshot: StoredMetaSnapshot | null, now = Date.now()): number | null {
+  if (!snapshot) return null
+  return Math.max(0, (now / 1000 - snapshot.fetchedAt) / 3600)
 }

@@ -1,6 +1,7 @@
 import { PUBLIC_SITE_ORIGIN, PUBLIC_SITE_SETTINGS_DEFAULTS } from './utils/siteSettingsDefaults'
 import { isGithubNightlyEnabled } from './utils/githubSchedule'
 import { applyAdminManifestPolicy } from './utils/adminManifest'
+import { isMetaNightlyEnabled } from './utils/metaSchedule'
 
 const defaultSiteName = PUBLIC_SITE_SETTINGS_DEFAULTS.site_name
 const defaultMetaTitle = PUBLIC_SITE_SETTINGS_DEFAULTS.meta_title
@@ -229,6 +230,18 @@ export default defineNuxtConfig({
     // Read back at runtime via githubNightlyFromRuntimeConfig(useRuntimeConfig())
     // so a string "false" is not treated as on. Unknown values warn once and use the default.
     githubNightly: isGithubNightlyEnabled(),
+    // Meta snapshot (EU Mythic+). Default off; also skipped without credentials.
+    // Override with NUXT_META_NIGHTLY=on|true|1|yes or off|false|0|no.
+    // Credentials: NUXT_BLIZZARD_CLIENT_ID / NUXT_BLIZZARD_CLIENT_SECRET (server-only, never logged).
+    // Optional: NUXT_BLIZZARD_REGION (phase 1: eu only), NUXT_META_KUMA_PUSH_URL,
+    // NUXT_META_SAMPLE_PER_SPEC (default 200), NUXT_META_MAX_ATTEMPTS_PER_SPEC (default 400).
+    blizzardClientId: process.env.NUXT_BLIZZARD_CLIENT_ID || '',
+    blizzardClientSecret: process.env.NUXT_BLIZZARD_CLIENT_SECRET || '',
+    blizzardRegion: process.env.NUXT_BLIZZARD_REGION || 'eu',
+    metaNightly: isMetaNightlyEnabled(),
+    metaKumaPushUrl: process.env.NUXT_META_KUMA_PUSH_URL || '',
+    metaSamplePerSpec: process.env.NUXT_META_SAMPLE_PER_SPEC || '',
+    metaMaxAttemptsPerSpec: process.env.NUXT_META_MAX_ATTEMPTS_PER_SPEC || '',
 
     webauthnRpName: 'MagguuUI Admin',
     webauthnRpId: process.env.NUXT_WEBAUTHN_RP_ID || '',

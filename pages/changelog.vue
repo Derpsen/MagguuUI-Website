@@ -22,7 +22,7 @@
       </p>
     </div>
 
-    <h1 class="mt-3 text-4xl sm:text-5xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">Changelog</h1>
+    <h1 class="mg-h1 mt-3" :class="isDark ? 'text-white' : 'text-gray-950'">Changelog</h1>
 
     <form method="get" action="/changelog" class="mt-6 border-b pb-6" :class="isDark ? 'border-white/10' : 'border-gray-200'" data-testid="changelog-filter">
       <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">

@@ -4,7 +4,7 @@
 
     <header class="mb-8 max-w-2xl">
       <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-2" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Configurator</p>
-      <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">Profile configurator</h1>
+      <h1 class="mg-h1" :class="isDark ? 'text-white' : 'text-gray-950'">Profile configurator</h1>
       <p class="mt-3 text-sm leading-relaxed" :class="muted">
         Pick the addons you want. You get the matching WowUp collections, a plain install list and the Magguu profile strings for exactly those addons.
         Your choice lives in the page address, so you can bookmark or share it; it is not stored or sent anywhere. Copy clicks on import strings are counted anonymously (no cookies, no personal data), see <NuxtLink to="/privacy" class="underline underline-offset-4">Privacy</NuxtLink>.

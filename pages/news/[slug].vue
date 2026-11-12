@@ -19,7 +19,7 @@
     </p>
 
     <template v-if="article">
-      <h1 class="text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">
+      <h1 class="mg-h1" :class="isDark ? 'text-white' : 'text-gray-950'">
         {{ article.title }}
       </h1>
       <p class="mt-3 text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">

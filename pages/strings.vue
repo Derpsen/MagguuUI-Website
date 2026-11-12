@@ -9,7 +9,7 @@
     <header class="mb-8 grid gap-3 sm:grid-cols-[minmax(0,1fr)_16rem] sm:items-end">
       <div>
         <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-2" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Workbench</p>
-        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">Import Strings</h1>
+        <h1 class="mg-h1" :class="isDark ? 'text-white' : 'text-gray-950'">Import Strings</h1>
       </div>
       <p class="text-sm leading-relaxed sm:text-right" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ tabSubtitle }}</p>
     </header>

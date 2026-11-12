@@ -1,7 +1,7 @@
 <template>
   <article class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20" data-testid="forever-guide-page">
     <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="label">WoW Forever</p>
-    <h1 class="text-4xl font-semibold tracking-tight" :class="strong">Guide</h1>
+    <h1 class="mg-h1" :class="strong">Guide</h1>
     <p class="mt-3 text-sm leading-relaxed" :class="muted">
       Forever uses the same MagguuUI package as Retail (Camelot flavor). Retail-only addons such as EXBoss, Smart Reminders and Premade Groups Filter are not part of Forever.
     </p>

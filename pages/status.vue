@@ -1,7 +1,7 @@
 <template>
   <article class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20" data-testid="status-page">
     <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Status</p>
-    <h1 class="text-4xl font-semibold tracking-tight" :class="strong">Website status</h1>
+    <h1 class="mg-h1" :class="strong">Website status</h1>
     <p class="mt-3 text-sm leading-relaxed" :class="muted">
       A coarse view of this website, measured by the site itself. It does not cover any other service.
     </p>

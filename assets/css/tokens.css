@@ -1,0 +1,118 @@
+/**
+ * MagguuUI design system, PR 1 — tokens.
+ *
+ * Scope: the public shell only (`.public-shell`, layouts/default.vue). The admin shell keeps its own tokens in
+ * admin.css until PR 5. Colours follow `html.dark` / `html:not(.dark)` (set by @nuxtjs/color-mode before first paint),
+ * never an `isDark` class binding, so no-JS pages and a reload in light mode render correctly.
+ *
+ * Every text/background pair below is AA (>= 4.5:1, large text >= 3:1). tests/unit/designTokens.test.ts parses this
+ * file and fails the build when a pair drops under AA. Change a hex here and the table in AGENTS.md follows.
+ */
+
+/* Tailwind utilities for the tokens: bg-mg-surface, text-mg-fg-muted, border-mg-line, ... They only reference the
+   variables below (`inline`), so they resolve per theme and per scope. */
+@theme inline {
+  --color-mg-bg: var(--mg-bg);
+  --color-mg-surface: var(--mg-surface);
+  --color-mg-surface-2: var(--mg-surface-2);
+  --color-mg-surface-3: var(--mg-surface-3);
+  --color-mg-line: var(--mg-line);
+  --color-mg-line-strong: var(--mg-line-strong);
+  --color-mg-fg: var(--mg-fg);
+  --color-mg-fg-muted: var(--mg-fg-muted);
+  --color-mg-fg-subtle: var(--mg-fg-subtle);
+  --color-mg-accent: var(--mg-accent);
+  --color-mg-accent-text: var(--mg-accent-text);
+  --color-mg-on-accent: var(--mg-on-accent);
+  --color-mg-warn: var(--mg-warn);
+  --color-mg-danger: var(--mg-danger);
+}
+
+/* ─── Theme-independent tokens ─────────────────── */
+.public-shell {
+  /* Layout */
+  --mg-container: 72rem;          /* page column; also remaps Tailwind max-w-5xl inside the shell (see ui.css) */
+  --mg-container-narrow: 46rem;   /* long-form reading column */
+  --mg-gutter: 1rem;              /* horizontal page padding; 1.5rem from 640px */
+  --mg-header-h: 3.5rem;          /* sticky header; meta spec nav (top-14) and .public-setup-nav stick below it */
+
+  /* Radius */
+  --mg-r-sm: 0.375rem;
+  --mg-r-md: 0.625rem;
+  --mg-r-lg: 0.875rem;
+  --mg-r-xl: 1.25rem;
+
+  /* Type scale (fluid, mobile first). Plus Jakarta Sans 800 for display, 700 headings, 400/500 body. */
+  --mg-fs-display: clamp(2.5rem, 1.55rem + 4.6vw, 4.75rem);
+  --mg-fs-h1: clamp(2.125rem, 1.6rem + 2.4vw, 3.25rem);
+  --mg-fs-h2: clamp(1.5rem, 1.25rem + 1.1vw, 2.125rem);
+  --mg-fs-h3: 1.25rem;
+  --mg-fs-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  --mg-fs-body: 1rem;
+  --mg-fs-small: 0.875rem;
+  --mg-fs-micro: 0.6875rem;
+  --mg-lh-tight: 1.04;
+  --mg-lh-heading: 1.15;
+  --mg-lh-body: 1.65;
+  --mg-track-display: -0.045em;
+  --mg-track-heading: -0.025em;
+  --mg-track-kicker: 0.16em;
+
+  /* Motion */
+  --mg-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --mg-dur: 160ms;
+}
+
+/* ─── Dark (default) ───────────────────────────── */
+html.dark .public-shell {
+  color-scheme: dark;
+  --mg-bg: #06090d;
+  --mg-surface: #0c1118;
+  --mg-surface-2: #121923;
+  --mg-surface-3: #1a2331;
+  --mg-line: rgb(255 255 255 / 0.08);
+  --mg-line-strong: rgb(255 255 255 / 0.18);
+  --mg-fg: #f3f6fa;
+  --mg-fg-muted: #a5b1c2;
+  --mg-fg-subtle: #8393a8;
+  --mg-accent: #0cd29d;
+  --mg-accent-text: #3fe0b8;
+  --mg-on-accent: #03221a;
+  --mg-warn: #f5b94a;
+  --mg-danger: #ff8a8a;
+  --mg-focus: #3fe0b8;
+  --mg-glow: rgb(12 210 157 / 0.32);
+  --mg-glow-2: rgb(56 189 248 / 0.16);
+  --mg-header-bg: rgb(6 9 13 / 0.78);
+  --mg-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px rgb(0 0 0 / 0.38);
+  --mg-cta-shadow: 0 0 0 1px rgb(12 210 157 / 0.5), 0 8px 24px -6px rgb(12 210 157 / 0.55);
+
+  /* Legacy bridge: the pages still use Tailwind silver-* classes. */
+  --color-silver-500: #8b9bb0;
+  --color-silver-600: #8090a4;
+}
+
+/* ─── Light ────────────────────────────────────── */
+html:not(.dark) .public-shell {
+  color-scheme: light;
+  --mg-bg: #f5f7fa;
+  --mg-surface: #ffffff;
+  --mg-surface-2: #eef2f6;
+  --mg-surface-3: #e4eaf1;
+  --mg-line: rgb(10 17 28 / 0.1);
+  --mg-line-strong: rgb(10 17 28 / 0.2);
+  --mg-fg: #0a111c;
+  --mg-fg-muted: #455468;
+  --mg-fg-subtle: #566579;
+  --mg-accent: #0cd29d;
+  --mg-accent-text: #04664e;
+  --mg-on-accent: #03221a;
+  --mg-warn: #8a5300;
+  --mg-danger: #b42318;
+  --mg-focus: #04664e;
+  --mg-glow: rgb(12 210 157 / 0.26);
+  --mg-glow-2: rgb(56 189 248 / 0.14);
+  --mg-header-bg: rgb(245 247 250 / 0.82);
+  --mg-shadow: 0 1px 2px rgb(10 17 28 / 0.05), 0 10px 28px -8px rgb(10 17 28 / 0.12);
+  --mg-cta-shadow: 0 1px 2px rgb(4 102 78 / 0.3), 0 8px 20px -8px rgb(12 210 157 / 0.7);
+}

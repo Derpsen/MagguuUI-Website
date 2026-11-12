@@ -1,13 +1,15 @@
 /**
  * MagguuUI — Global Styles
- * Charcoal + Ellesmere teal primary brand
- * With Light Theme support
+ * Public design system: tokens.css (tokens) + ui.css (base components + shell). This file keeps the legacy
+ * page classes and the admin shell helpers. Ellesmere teal is the brand accent.
  *
  * Tailwind CSS v4 — CSS-first configuration
  */
 
 @import "tailwindcss";
 @import "@nuxt/ui";
+@import "./tokens.css";
+@import "./ui.css";
 
 /* ─── Theme: Fonts ─────────────────────────────── */
 @theme {
@@ -77,16 +79,10 @@ code, pre, .font-mono {
    DARK THEME (default)
    ═══════════════════════════════════════════════════ */
 
+/* Page background behind the shell (overscroll, error pages). Same value as --mg-bg in tokens.css. The muted silver
+   tokens for the legacy page classes are set there too. */
 html.dark body {
-  background: #0b1118;
-}
-
-html.dark .public-shell {
-  background-color: #0b1118;
-  /* Muted text tokens (dates, kickers, footer, notes). Stock silver-500/600
-     sat at 4.0:1 / 2.5:1 on #0b1118; these clear 4.5:1 on page and card. */
-  --color-silver-500: #8b9bb0;
-  --color-silver-600: #8090a4;
+  background: #06090d;
 }
 
 /* ─── App Shells ────────────────────────────────── */
@@ -95,12 +91,6 @@ html, body, #__nuxt {
   min-height: 100%;
 }
 
-.public-shell :is(a, button, [role="button"], [role="tab"], summary, input, select, textarea):focus-visible,
-.public-shell [tabindex]:not([tabindex="-1"]):focus-visible {
-  outline: 2px solid var(--color-brand-400, #0CD29D);
-  outline-offset: 2px;
-  border-radius: 0.5rem;
-}
 
 .public-shell,
 .admin-shell {
@@ -109,7 +99,6 @@ html, body, #__nuxt {
   isolation: isolate;
 }
 
-.public-grid-overlay,
 .admin-grid-overlay {
   position: absolute;
   inset: 0;
@@ -117,7 +106,6 @@ html, body, #__nuxt {
   z-index: 0;
 }
 
-.public-grid-overlay::before,
 .admin-grid-overlay::before {
   content: '';
   position: absolute;
@@ -130,8 +118,6 @@ html, body, #__nuxt {
   mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent 82%);
 }
 
-.public-shell::before,
-.public-shell::after,
 .admin-shell::before,
 .admin-shell::after {
   content: '';
@@ -141,28 +127,6 @@ html, body, #__nuxt {
   filter: blur(80px);
   opacity: 0.8;
   animation: shellFloat 18s ease-in-out infinite;
-}
-
-.public-shell::before {
-  top: -7rem;
-  left: -5rem;
-  width: 24rem;
-  height: 24rem;
-  background: radial-gradient(circle, rgba(12, 210, 157, 0.16), transparent 68%);
-}
-
-.public-shell::after {
-  top: 14rem;
-  right: -7rem;
-  width: 28rem;
-  height: 28rem;
-  background: radial-gradient(circle, rgba(12, 210, 157, 0.11), transparent 70%);
-  animation-delay: -6s;
-}
-
-.public-shell::before,
-.public-shell::after {
-  content: none;
 }
 
 .admin-shell::before {
@@ -193,70 +157,15 @@ html, body, #__nuxt {
   z-index: 1;
 }
 
+
+
+
+/* Shared with the admin shell (admin.css refines it); the public shell no longer uses it. */
 .surface-panel {
   background: linear-gradient(145deg, rgba(12, 16, 22, 0.92), rgba(10, 14, 18, 0.95));
   border: 1px solid rgba(12, 210, 157, 0.12);
   backdrop-filter: blur(24px) saturate(150%);
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-
-.public-nav-shell {
-  background: linear-gradient(145deg, rgba(12, 16, 22, 0.84), rgba(14, 18, 24, 0.78));
-  border: 1px solid rgba(12, 210, 157, 0.12);
-  backdrop-filter: blur(20px) saturate(150%);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25);
-}
-
-.public-header-backdrop {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(12, 16, 22, 0.8) 0%, rgba(12, 16, 22, 0.48) 58%, rgba(12, 16, 22, 0) 100%);
-  backdrop-filter: blur(24px) saturate(145%);
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0.88) 70%, transparent 100%);
-}
-
-.public-progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, rgba(8, 143, 111, 0.95), rgba(12, 210, 157, 0.95), rgba(12, 210, 157, 0.9));
-  transform-origin: 0 50%;
-  box-shadow: 0 0 18px rgba(12, 210, 157, 0.22), 0 0 12px rgba(12, 210, 157, 0.18);
-}
-
-.public-status-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-radius: 999px;
-  padding: 0.5rem 0.85rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  backdrop-filter: blur(16px);
-}
-
-.public-quick-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(12, 210, 157, 0.04));
-  border: 1px solid rgba(12, 210, 157, 0.1);
-  transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
-}
-
-.public-quick-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(12, 210, 157, 0.22);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(12, 210, 157, 0.08));
-}
-
-.footer-link-stack a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.footer-link-stack a:hover {
-  transform: translateX(4px);
 }
 
 .admin-search-trigger {
@@ -353,35 +262,40 @@ html.light .string-copy-btn:hover,
 html.light .string-copy-btn.is-copied { border-color: #0f766e; color: #0f766e; }
 html.light .string-copy-btn:focus-visible { outline-color: #0f766e; }
 
-/* ─── Gradient Buttons (toned down) ──────────────── */
-
+/* ─── Primary CTA (legacy class name, design-system look) ──────────────── */
+/* Padding, radius and size stay with the page's utilities; colour and glow come from the tokens (same as .mg-btn--primary). */
 .btn-gradient {
-  background: linear-gradient(135deg, #088F6F 0%, #0AA882 55%, #0CD29D 100%);
-  background-size: 200% 200%;
-  box-shadow: 0 4px 16px rgba(8, 143, 111, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  transition: all 0.3s ease;
-  color: #fff;
+  background: var(--mg-accent, #0cd29d);
+  color: var(--mg-on-accent, #03221a);
+  box-shadow: var(--mg-cta-shadow);
+  font-weight: 650;
+  border-radius: var(--mg-r-md, 0.625rem);
+  transition: background-color 160ms var(--mg-ease, ease), transform 160ms var(--mg-ease, ease), box-shadow 160ms var(--mg-ease, ease);
 }
-
-.btn-gradient:hover {
-  background-position: 100% 100%;
-  box-shadow: 0 6px 24px rgba(8, 143, 111, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  transform: translateY(-1px);
-}
-
-.btn-gradient:active { transform: translateY(0); }
+.btn-gradient:hover { background: color-mix(in srgb, var(--mg-accent, #0cd29d) 88%, #fff); transform: translateY(-1px); }
+.btn-gradient:active { transform: none; }
 
 /* Download row: outlined buttons, quiet hover (no lift, the filled one keeps its own). */
-.dl-btn { transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease; }
-
-/* Public section headings: one size for every H2 on the marketing pages. */
-.home-h2 {
-  font-size: 1.5rem;
-  line-height: 1.2;
-  font-weight: 600;
-  letter-spacing: -0.015em;
+.dl-btn {
+  min-height: 2.5rem;
+  border-radius: var(--mg-r-md, 0.625rem);
+  border-color: var(--mg-line-strong, rgb(148 163 184 / 0.35));
+  background: var(--mg-surface, transparent);
+  color: var(--mg-fg, inherit);
+  transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
 }
-@media (min-width: 640px) { .home-h2 { font-size: 1.75rem; } }
+.dl-btn:hover { background: var(--mg-surface-2, transparent); border-color: var(--mg-fg-subtle, currentColor); }
+.dl-btn.btn-gradient { border-color: transparent; background: var(--mg-accent, #0cd29d); }
+.dl-btn.btn-gradient:hover { background: color-mix(in srgb, var(--mg-accent, #0cd29d) 88%, #fff); }
+
+/* Public section headings: one size for every H2 on the marketing pages (same scale as .mg-h2). */
+.home-h2 {
+  font-size: var(--mg-fs-h2, 1.5rem);
+  line-height: var(--mg-lh-heading, 1.2);
+  font-weight: 700;
+  letter-spacing: var(--mg-track-heading, -0.015em);
+  text-wrap: balance;
+}
 
 .btn-gradient-green {
   background: linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%);
@@ -410,33 +324,9 @@ html.light .string-copy-btn:focus-visible { outline-color: #0f766e; }
 }
 
 /* Public chrome accents — Ellesmere teal primary */
-.public-brand-mark {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-brand-400) 28%, transparent);
-}
-html:not(.dark) .public-brand-mark {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-brand-500) 22%, transparent);
-}
-.public-nav-active-dot {
-  width: 0.375rem;
-  height: 0.375rem;
-  border-radius: 999px;
-  background: var(--color-ellesmere);
-  flex-shrink: 0;
-}
-.public-footer-brand-accent {
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(12, 210, 157, 0.35), rgba(12, 210, 157, 0.7), transparent);
-}
-.hero-stat-divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(12, 210, 157, 0.35), rgba(12, 210, 157, 0.4), transparent);
-}
-html:not(.dark) .hero-stat-divider {
-  background: linear-gradient(90deg, transparent, rgba(8, 143, 111, 0.28), rgba(12, 210, 157, 0.3), transparent);
-}
 
-/* ─── Unified Public Button Primitives ────────────────────── */
-/* Use these instead of hand-rolling per-page button styles. */
+/* ─── Legacy button names (kept for MetaHomeHero, MetaCopyCode and the strings edit dialog) ──────────────── */
+/* Same look as .mg-btn; new code uses .mg-btn + .mg-btn--primary|secondary|ghost (ui.css). Fallbacks cover teleported dialogs. */
 
 .btn-primary,
 .btn-secondary,
@@ -446,11 +336,11 @@ html:not(.dark) .hero-stat-divider {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-weight: 600;
+  font-weight: 650;
   font-size: 0.875rem;
-  border-radius: 0.75rem;
+  border-radius: var(--mg-r-md, 0.625rem);
   padding: 0.625rem 1rem;
-  transition: all 0.2s ease;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
   cursor: pointer;
   white-space: nowrap;
   line-height: 1.25;
@@ -465,80 +355,41 @@ html:not(.dark) .hero-stat-divider {
   cursor: not-allowed;
 }
 
-/* Primary: main CTA — bright teal + dark text for contrast */
 .btn-primary {
-  color: #04241c;
-  background: linear-gradient(135deg, #0CD29D 0%, #45e0bb 100%);
-  background-size: 200% 200%;
-  box-shadow: 0 4px 14px rgba(12, 210, 157, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  color: var(--mg-on-accent, #03221a);
+  background: var(--mg-accent, #0cd29d);
+  box-shadow: var(--mg-cta-shadow, none);
 }
 .btn-primary:hover:not(:disabled) {
-  background-position: 100% 100%;
-  color: #031a14;
-  box-shadow: 0 6px 24px rgba(12, 210, 157, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  background: color-mix(in srgb, var(--mg-accent, #0cd29d) 88%, #fff);
   transform: translateY(-1px);
 }
-.btn-primary:active:not(:disabled) { transform: translateY(0); }
+.btn-primary:active:not(:disabled) { transform: none; }
 
-/* Secondary: subdued filled action */
 .btn-secondary {
-  color: rgb(203 213 225);
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.08);
+  color: var(--mg-fg, #e0e6ee);
+  background: var(--mg-surface, rgb(255 255 255 / 0.05));
+  border-color: var(--mg-line-strong, rgb(255 255 255 / 0.12));
 }
-html:not(.dark) .btn-secondary {
-  color: rgb(55 65 81);
-  background: rgb(255 255 255 / 0.9);
-  border-color: rgb(204 245 234);
-  box-shadow: 0 1px 2px rgba(8, 143, 111, 0.06);
-}
-.btn-secondary:hover:not(:disabled) {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
-}
-html:not(.dark) .btn-secondary:hover:not(:disabled) {
-  color: rgb(17 24 39);
-  background: #fff;
-}
+.btn-secondary:hover:not(:disabled) { background: var(--mg-surface-2, rgb(255 255 255 / 0.08)); }
 
-/* Ghost: low-emphasis cancel/text action */
 .btn-ghost {
-  color: rgb(148 163 184);
+  color: var(--mg-fg-muted, #94a3b8);
   background: transparent;
 }
-html:not(.dark) .btn-ghost {
-  color: rgb(107 114 128);
-}
 .btn-ghost:hover:not(:disabled) {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.05);
-}
-html:not(.dark) .btn-ghost:hover:not(:disabled) {
-  color: rgb(17 24 39);
-  background: rgb(243 244 246);
+  color: var(--mg-fg, #fff);
+  background: var(--mg-surface-2, rgb(255 255 255 / 0.05));
 }
 
-/* Icon-only square button */
 .btn-icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  padding: 0;
-  color: rgb(148 163 184);
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-html:not(.dark) .btn-icon {
-  color: rgb(107 114 128);
-  background: rgb(243 244 246);
-  border-color: rgb(229 231 235);
+  padding: 0.5rem;
+  color: var(--mg-fg-muted, #94a3b8);
+  background: transparent;
 }
 .btn-icon:hover:not(:disabled) {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-}
-html:not(.dark) .btn-icon:hover:not(:disabled) {
-  color: rgb(17 24 39);
-  background: rgb(229 231 235);
+  color: var(--mg-fg, #fff);
+  background: var(--mg-surface-2, rgb(255 255 255 / 0.05));
 }
 
 /* ─── Custom Select Dropdown ────────────────────── */
@@ -650,17 +501,7 @@ html:not(.dark) .btn-icon:hover:not(:disabled) {
 
 /* ─── Feature Cards ──────────────────────────────── */
 
-.feature-card {
-  background: linear-gradient(145deg, rgba(14, 18, 24, 0.85), rgba(12, 16, 22, 0.92));
-  border: 1px solid rgba(12, 210, 157, 0.05);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
-.feature-card:hover {
-  border-color: color-mix(in srgb, var(--color-ellesmere) 28%, rgba(12, 210, 157, 0.12));
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 28px rgba(12, 210, 157, 0.05), 0 0 22px rgba(12, 210, 157, 0.06);
-}
 
 /* ─── Addon Pills ─────────────────────────────────── */
 
@@ -732,27 +573,8 @@ html:not(.dark) .btn-icon:hover:not(:disabled) {
 
 /* ─── Heading Glow (bright light behind page titles) ── */
 
-.heading-glow {
-  position: relative;
-}
 
-.heading-glow::before {
-  content: '';
-  position: absolute;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80%;
-  height: 160%;
-  background: radial-gradient(ellipse at center, rgba(12, 210, 157, 0.1) 0%, rgba(12, 210, 157, 0.05) 35%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-  filter: blur(30px);
-}
 
-html.light .heading-glow::before {
-  background: radial-gradient(ellipse at center, rgba(12, 210, 157, 0.08) 0%, rgba(12, 210, 157, 0.03) 35%, transparent 70%);
-}
 
 /* ─── Prose/Markdown Styling ──────────────────────── */
 
@@ -826,12 +648,11 @@ html.light .guide-content a:hover { color: #088F6F; }
    ═══════════════════════════════════════════════════ */
 
 html.light body {
-  background: #f0f4f8;
+  background: #f5f7fa;
 }
 
+/* Muted text tokens for the legacy gray-* page classes in light mode (stock gray-400/500 sat at 2.4:1 / 4.4:1). */
 html.light .public-shell {
-  background-color: #eef4fb;
-  /* Muted text tokens for light mode. Stock gray-400/500 sat at 2.4:1 / 4.4:1. */
   --color-gray-400: #5b6474;
   --color-gray-500: #4a5565;
 }
@@ -861,10 +682,10 @@ html.light .glass-card {
    classless page (browser-default white background). White text is only used
    when html.dark is present, which is also what paints the dark background. */
 html:not(.dark) .public-shell h1 {
-  color: #0f172a;
+  color: var(--mg-fg);
 }
 html.dark .public-shell h1 {
-  color: #fff;
+  color: var(--mg-fg);
 }
 
 /* Guide/Strings: force readable titles under html.light (beats leftover text-white / silver-*) */
@@ -890,7 +711,6 @@ html.light .guide-jump .guide-jump-num {
   color: #0AA882;
 }
 
-html.light .public-grid-overlay::before,
 html.light .admin-grid-overlay::before {
   opacity: 0.14;
 }
@@ -901,19 +721,9 @@ html.light .surface-panel {
   box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.96);
 }
 
-html.light .public-nav-shell {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(246, 249, 255, 0.88));
-  border-color: rgba(12, 210, 157, 0.12);
-  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
-}
 
-html.light .public-header-backdrop {
-  background: linear-gradient(180deg, rgba(238, 244, 251, 0.82) 0%, rgba(238, 244, 251, 0.54) 58%, rgba(238, 244, 251, 0) 100%);
-}
 
-html.light .public-status-chip {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
-}
+
 
 html.light .public-quick-card {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.85), rgba(246, 249, 255, 0.92));
@@ -985,15 +795,7 @@ html.light .tab-inactive:hover {
 html.light .badge-count-active { background: rgba(12, 210, 157, 0.12); color: #0AA882; }
 html.light .badge-count-inactive { background: rgba(0, 0, 0, 0.04); color: #94a3b8; }
 
-html.light .feature-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.95));
-  border-color: rgba(12, 210, 157, 0.08);
-}
 
-html.light .feature-card:hover {
-  border-color: color-mix(in srgb, var(--color-ellesmere) 26%, rgba(12, 210, 157, 0.16));
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08), 0 0 18px rgba(12, 210, 157, 0.05);
-}
 
 html.light .addon-pill {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(248, 250, 252, 0.9));
@@ -1086,15 +888,12 @@ html.light .addon-chip-badge--required {
 }
 
 .section-eyebrow {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+  font-family: var(--font-mono);
+  font-size: var(--mg-fs-micro, 0.6875rem);
+  font-weight: 500;
+  letter-spacing: var(--mg-track-kicker, 0.16em);
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-ellesmere) 80%, #94a3b8);
-  font-family: inherit;
-}
-html.light .section-eyebrow {
-  color: #0f766e;
+  color: var(--mg-accent-text, #3fe0b8);
 }
 
 .latest-card:focus-visible {
@@ -1219,13 +1018,7 @@ html.light .btn-gradient-green {
 }
 
 /* ─── Post-P1: public sticky setup nav + light-nav contrast ─── */
-.public-setup-nav {
-  top: 3.5rem;
-}
 
-/* Plain icon/text buttons in Light too (no white box, 2026-11-02): only the colour changes. */
-html.light .public-theme-toggle { color: #334155; }
-html.light .public-theme-toggle:hover { color: #020617; }
 
 html.light .public-setup-nav__shell {
   background: rgba(255, 255, 255, 0.96);

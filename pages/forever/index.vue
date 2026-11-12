@@ -1,7 +1,7 @@
 <template>
   <article class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-20" data-testid="forever-page">
     <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="label">WoW Forever</p>
-    <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight" :class="strong">MagguuUI on Forever</h1>
+    <h1 class="mg-h1" :class="strong">MagguuUI on Forever</h1>
     <p class="mt-4 max-w-2xl text-base leading-relaxed" :class="muted">
       Forever is included in the MagguuUI package as the Camelot flavor. One download covers Retail and Forever; Forever keeps its own profiles and SavedVariables. Built on EllesmereUI.
     </p>

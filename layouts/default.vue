@@ -1,80 +1,68 @@
 <!--
   Default Layout — Public Pages
   Used by: all public pages, Retail and /forever/**
+  Design system PR 1: colours come from tokens (assets/css/tokens.css) through html.dark / html:not(.dark),
+  not from isDark class bindings, so the shell is correct without JavaScript and after a reload in light mode.
 -->
 
 <template>
   <UApp>
-  <div class="public-shell min-h-screen flex flex-col transition-colors duration-300"
-    :class="isDark ? 'text-silver-200' : 'text-gray-800'">
+  <div class="public-shell min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:px-3 focus:py-2 focus:bg-brand-500 focus:text-white focus:text-sm focus:font-medium">
       Skip to main content
     </a>
 
     <!-- z-[70] while the mobile menu is open: the overlay (z-[65]) must not cover the logo and the close button. -->
-    <header class="sticky top-0 border-b backdrop-blur-md"
-      :class="[mobileOpen ? 'z-[70]' : 'z-50', isDark ? 'bg-[#0b1118]/95 border-white/10' : 'bg-[#eef4fb]/95 border-gray-200']">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-6">
-        <NuxtLink to="/" class="flex items-center gap-2 shrink-0">
-          <img src="/favicon-32.png" alt="" width="22" height="22" class="w-[22px] h-[22px]" />
-          <span class="text-sm font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">MagguuUI</span>
+    <header class="mg-header" :class="mobileOpen ? 'z-[70]' : 'z-50'">
+      <div class="mg-container mg-header__row">
+        <NuxtLink to="/" class="mg-wordmark shrink-0">
+          <img src="/favicon-32.png" alt="" width="24" height="24" class="w-6 h-6" />
+          <span>Magguu<span class="mg-wordmark__ui">UI</span></span>
         </NuxtLink>
 
-        <nav class="hidden lg:inline-flex items-center shrink-0 p-0.5 rounded-md border font-mono text-[11px] uppercase tracking-[0.14em]"
-          :class="isDark ? 'border-white/15' : 'border-gray-300 bg-white'" aria-label="Product" data-testid="product-switch">
-          <NuxtLink v-for="p in PRODUCT_SWITCH" :key="p.product" :to="p.to" :aria-current="product === p.product ? 'page' : undefined" :data-product="p.product"
-            class="px-2.5 py-1 rounded transition-colors"
-            :class="segmentClass(p.product)">{{ p.label }}</NuxtLink>
+        <nav class="mg-segment hidden xl:inline-flex shrink-0" aria-label="Product" data-testid="product-switch">
+          <NuxtLink v-for="p in PRODUCT_SWITCH" :key="p.product" :to="p.to" :aria-current="product === p.product ? 'page' : undefined" :data-product="p.product">{{ p.label }}</NuxtLink>
         </nav>
 
-        <nav class="hidden lg:flex items-center gap-4 min-w-0 overflow-x-auto text-sm" aria-label="Primary">
+        <nav class="mg-nav hidden xl:flex" aria-label="Primary">
           <NuxtLink
-            v-for="link in navLinks" :key="link.to" :to="link.to"
-            class="shrink-0 py-1 border-b"
-            :class="isActive(link.to)
-              ? isDark
-                ? 'border-brand-300 text-white'
-                : 'border-brand-700 text-gray-950'
-              : isDark
-                ? 'border-transparent text-silver-400 hover:text-white'
-                : 'border-transparent text-gray-500 hover:text-gray-950'"
+            v-for="link in desktopNavLinks" :key="link.to" :to="link.to"
+            class="mg-nav-link"
+            :aria-current="isActive(link.to) ? 'page' : undefined"
           >
             {{ link.label }}
           </NuxtLink>
         </nav>
 
-        <div class="ml-auto flex items-center gap-3 shrink-0">
+        <div class="ml-auto flex items-center gap-1 sm:gap-2 shrink-0">
           <button
             type="button"
-            class="inline-flex items-center justify-center w-8 h-8"
-            :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-950'"
+            class="mg-icon-btn"
             aria-label="Search (Ctrl+K)"
             title="Search (Ctrl+K)"
             aria-keyshortcuts="Control+K Meta+K"
             data-testid="public-search-open"
             @click="openSearch"
           >
-            <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4" />
+            <UIcon name="i-heroicons-magnifying-glass" class="w-[18px] h-[18px]" />
           </button>
           <LazyPublicSearch v-if="searchMounted" v-model:open="searchOpen" />
           <button
-            class="public-theme-toggle inline-flex items-center justify-center w-8 h-8"
-            :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-950'"
+            class="public-theme-toggle mg-icon-btn"
             :title="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
             :aria-label="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
             data-color-mode-toggle
             @click="setTheme(isDark ? 'light' : 'dark')"
           >
-            <UIcon v-if="isDark" name="i-heroicons-sun" class="w-4 h-4" />
-            <UIcon v-else name="i-heroicons-moon" class="w-4 h-4" />
+            <UIcon v-if="isDark" name="i-heroicons-sun" class="w-[18px] h-[18px]" />
+            <UIcon v-else name="i-heroicons-moon" class="w-[18px] h-[18px]" />
           </button>
-          <NuxtLink v-if="isLoggedIn" to="/admin" class="hidden sm:inline text-sm" :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-950'">Admin</NuxtLink>
-          <NuxtLink v-else to="/admin/login" class="hidden sm:inline text-sm" :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-950'">Login</NuxtLink>
-          <NuxtLink v-if="primaryAction" :to="primaryAction.to" data-cta="header-setup" class="btn-gradient hidden sm:inline-flex items-center px-3 py-1.5 rounded-md text-sm font-semibold">
+          <NuxtLink v-if="isLoggedIn" to="/admin" class="mg-nav-link hidden sm:inline-flex">Admin</NuxtLink>
+          <NuxtLink v-else to="/admin/login" class="mg-nav-link hidden sm:inline-flex">Login</NuxtLink>
+          <NuxtLink v-if="primaryAction" :to="primaryAction.to" data-cta="header-setup" class="mg-btn mg-btn--primary mg-btn--sm hidden sm:inline-flex">
             {{ primaryAction.label }}
           </NuxtLink>
-          <button class="lg:hidden inline-flex items-center justify-center w-8 h-8"
-            :class="isDark ? 'text-silver-300 hover:text-white' : 'text-gray-700 hover:text-gray-950'"
+          <button class="mg-icon-btn xl:hidden"
             :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
             @click="mobileOpen = !mobileOpen">
             <UIcon :name="mobileOpen ? 'i-heroicons-x-mark' : 'i-heroicons-bars-3'" class="w-5 h-5" />
@@ -82,14 +70,14 @@
         </div>
       </div>
 
-      <div v-if="isLoggedIn" class="border-t" :class="isDark ? 'border-white/10' : 'border-gray-200'">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between gap-3 text-xs">
-          <p :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-            Logged in as <strong class="font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ user?.username }}</strong>
+      <div v-if="isLoggedIn" class="border-t" style="border-color: var(--mg-line)">
+        <div class="mg-container py-2 flex items-center justify-between gap-3 text-xs">
+          <p class="mg-muted">
+            Logged in as <strong class="font-semibold" style="color: var(--mg-fg)">{{ user?.username }}</strong>
           </p>
           <div class="flex items-center gap-4">
-            <NuxtLink to="/admin" :class="isDark ? 'text-brand-300 hover:text-white' : 'text-brand-700 hover:text-brand-900'">Admin Panel</NuxtLink>
-            <button type="button" @click="handleLogout" :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-600 hover:text-gray-950'">Logout</button>
+            <NuxtLink to="/admin" style="color: var(--mg-accent-text)">Admin Panel</NuxtLink>
+            <button type="button" class="mg-muted hover:underline" @click="handleLogout">Logout</button>
           </div>
         </div>
       </div>
@@ -103,47 +91,37 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-if="mobileOpen" class="fixed inset-0 z-[65] lg:hidden" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+      <div v-if="mobileOpen" class="fixed inset-0 z-[65] xl:hidden" role="dialog" aria-modal="true" aria-label="Mobile navigation">
         <button
-          class="absolute inset-0 bg-brand-950/55 backdrop-blur-sm"
+          class="absolute inset-0 bg-black/60"
           aria-label="Close mobile menu"
           @click="mobileOpen = false"
         />
 
-        <div ref="mobileMenuPanel" class="absolute inset-x-3 top-16">
-          <div class="public-nav-shell rounded-[1.6rem] p-4 shadow-2xl">
-            <nav class="grid grid-cols-2 p-0.5 mb-3 rounded-md border font-mono text-xs uppercase tracking-[0.14em]" :class="isDark ? 'border-white/15' : 'border-gray-300 bg-white'" aria-label="Product" data-testid="product-switch-mobile">
+        <div ref="mobileMenuPanel" class="absolute inset-x-3 top-16 max-h-[calc(100dvh-5rem)] overflow-y-auto">
+          <div class="mg-sheet p-4">
+            <nav class="mg-segment grid grid-cols-2 w-full mb-3" aria-label="Product" data-testid="product-switch-mobile">
               <NuxtLink v-for="p in PRODUCT_SWITCH" :key="p.product" :to="p.to" :aria-current="product === p.product ? 'page' : undefined" :data-product="p.product"
-                class="min-h-11 flex items-center justify-center rounded transition-colors"
-                :class="segmentClass(p.product)"
+                class="min-h-11 flex items-center justify-center"
                 @click="mobileOpen = false">{{ p.label }}</NuxtLink>
             </nav>
             <div class="grid">
               <NuxtLink v-for="link in navLinks" :key="link.to" :to="link.to"
-                class="py-2.5 text-sm border-b"
-                :class="isActive(link.to)
-                  ? isDark
-                    ? 'text-white border-white/10'
-                    : 'text-gray-950 border-gray-200'
-                  : isDark
-                    ? 'text-silver-300 border-white/10'
-                    : 'text-gray-600 border-gray-200'"
+                class="mg-sheet-link"
+                :aria-current="isActive(link.to) ? 'page' : undefined"
                 @click="mobileOpen = false">
                 {{ link.label }}
               </NuxtLink>
-              <NuxtLink v-if="primaryAction" :to="primaryAction.to"
-                class="py-2.5 text-sm font-semibold"
-                :class="isDark ? 'text-brand-300' : 'text-brand-700'"
-                @click="mobileOpen = false">
-                {{ primaryAction.label }}
-              </NuxtLink>
             </div>
+            <NuxtLink v-if="primaryAction" :to="primaryAction.to"
+              class="mg-btn mg-btn--primary mg-btn--lg w-full mt-4"
+              @click="mobileOpen = false">
+              {{ primaryAction.label }}
+            </NuxtLink>
 
-            <div class="flex items-center justify-between gap-3 mt-4 pt-4 border-t"
-              :class="isDark ? 'border-white/8' : 'border-brand-100'">
+            <div class="flex items-center justify-between gap-3 mt-4 pt-4 border-t" style="border-color: var(--mg-line)">
               <button
-                class="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-all"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.05]' : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'"
+                class="mg-btn mg-btn--ghost mg-btn--sm"
                 @click="setTheme(isDark ? 'light' : 'dark')"
               >
                 <UIcon :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'" class="w-4 h-4" />
@@ -151,8 +129,7 @@
               </button>
 
               <NuxtLink :to="isLoggedIn ? '/admin' : '/admin/login'"
-                class="inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-all"
-                :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.05]' : 'text-gray-600 hover:text-gray-900 hover:bg-white/80'"
+                class="mg-btn mg-btn--ghost mg-btn--sm"
                 @click="mobileOpen = false">
                 <UIcon :name="isLoggedIn ? 'i-heroicons-squares-2x2' : 'i-heroicons-lock-closed'" class="w-4 h-4" />
                 {{ isLoggedIn ? 'Admin' : 'Login' }}
@@ -172,75 +149,66 @@
         leave-from-class="opacity-100 translate-y-0"
         leave-to-class="opacity-0 -translate-y-2"
       >
-        <div v-if="maintenanceMode || bannerText" class="px-4 sm:px-6 lg:px-8 mt-3">
-          <div class="max-w-7xl mx-auto">
-            <div class="surface-panel rounded-2xl px-4 py-3 flex items-start sm:items-center justify-between gap-3"
-              :class="maintenanceMode
-                ? isDark
-                  ? 'border-amber-400/20'
-                  : 'border-amber-200'
-                : isDark
-                  ? 'border-brand-400/12'
-                  : 'border-brand-100'">
-              <div class="flex items-start gap-3">
-                <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl flex-shrink-0"
-                  :class="maintenanceMode
-                    ? isDark
-                      ? 'bg-amber-400/10 text-amber-300'
-                      : 'bg-amber-50 text-amber-700'
-                    : isDark
-                      ? 'bg-brand-400/12 text-brand-300'
-                      : 'bg-brand-50 text-brand-700'">
-                  <UIcon :name="maintenanceMode ? 'i-heroicons-wrench-screwdriver' : 'i-heroicons-megaphone'" class="w-4.5 h-4.5" />
-                </span>
-                <div>
-                  <p class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
-                    {{ maintenanceMode ? 'Maintenance mode enabled' : 'Site notice' }}
-                  </p>
-                  <p class="text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-                    {{ bannerText || 'This site is currently undergoing maintenance. Some features may be unavailable.' }}
-                  </p>
-                </div>
-              </div>
-
-              <span class="hidden sm:inline-flex public-status-chip" :class="siteStatusClasses">
-                <span class="inline-block w-2 h-2 rounded-full" :class="siteStatusDot" />
-                {{ siteStatusLabel }}
-              </span>
+        <div v-if="maintenanceMode || bannerText" class="mg-container mt-3">
+          <div class="mg-notice" :class="maintenanceMode ? 'mg-notice--warn' : ''">
+            <div class="min-w-0">
+              <p class="text-sm font-semibold" style="color: var(--mg-fg)">
+                {{ maintenanceMode ? 'Maintenance mode enabled' : 'Site notice' }}
+              </p>
+              <p class="text-sm leading-relaxed mg-muted">
+                {{ bannerText || 'This site is currently undergoing maintenance. Some features may be unavailable.' }}
+              </p>
             </div>
+            <span class="mg-badge shrink-0 hidden sm:inline-flex" :class="maintenanceMode ? '' : 'mg-badge--accent'">
+              <span class="inline-block w-1.5 h-1.5 rounded-full" :style="{ background: maintenanceMode ? 'var(--mg-warn)' : 'var(--mg-accent)' }" />
+              {{ siteStatusLabel }}
+            </span>
           </div>
         </div>
       </Transition>
-
     </div>
 
     <main id="main-content" class="public-main-shell flex-1"><slot /></main>
 
-    <!-- Ad placement: above footer -->
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Ad placement: above footer. Renders nothing while NUXT_ADS is off. -->
+    <div class="mg-container mg-ad-region">
       <LazyAdBanner placement="footer" />
     </div>
 
-    <footer class="mt-16 px-4 sm:px-6 lg:px-8 pb-8">
-      <div class="max-w-5xl mx-auto">
-        <div class="border-t pt-8" :class="isDark ? 'border-white/10' : 'border-gray-200'">
-          <div class="flex items-baseline justify-between gap-4 mb-4">
-            <p class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ siteName }}</p>
-            <p class="text-xs" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Ellesmere setup for WoW Retail.</p>
-          </div>
+    <footer class="mg-footer mt-16 sm:mt-24">
+      <div class="mg-container py-10 sm:py-14">
+        <div class="grid gap-10 md:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))]">
           <div>
-            <div class="flex flex-wrap items-center gap-x-1 gap-y-1 text-[13px]">
-              <template v-for="(link, i) in footerLinks" :key="link.label">
-                <span v-if="i > 0" class="mx-1 text-[10px]" :class="isDark ? 'text-white/15' : 'text-gray-300'">&bull;</span>
-                <NuxtLink v-if="link.to" :to="link.to" class="px-1.5 py-0.5 rounded-md transition-colors"
-                  :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.04]' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'">
-                  {{ link.label }}
-                </NuxtLink>
+            <NuxtLink to="/" class="mg-wordmark" aria-label="MagguuUI home">
+              <img src="/favicon-32.png" alt="" width="24" height="24" class="w-6 h-6" />
+              <span>{{ siteName }}</span>
+            </NuxtLink>
+            <p class="mt-3 max-w-xs text-sm leading-relaxed mg-muted">Ellesmere setup for WoW Retail.</p>
+            <div class="mt-4 flex items-center gap-1 -ml-2">
+              <a v-if="socialLinks.github" :href="socialLinks.github" target="_blank" rel="noopener noreferrer"
+                class="mg-icon-btn" title="GitHub" aria-label="GitHub">
+                <svg aria-hidden="true" class="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
+              </a>
+              <a v-if="socialLinks.discord" :href="socialLinks.discord" target="_blank" rel="noopener noreferrer"
+                class="mg-icon-btn" title="Discord" aria-label="Discord">
+                <svg aria-hidden="true" class="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" /></svg>
+              </a>
+              <a v-if="socialLinks.curseforge" :href="socialLinks.curseforge" target="_blank" rel="noopener noreferrer"
+                class="mg-icon-btn" title="CurseForge" aria-label="CurseForge">
+                <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.326 9.2025h-2.6408l-.6327-1.0023H5.6723v-1.5H18.326v2.5023zm-3.3735 0L11.2 15.8h-4.5l3.752-6.5975h4.5z" /></svg>
+              </a>
+            </div>
+          </div>
+
+          <nav v-for="group in footerGroups" :key="group.title" :aria-label="`Footer: ${group.title}`">
+            <p class="mg-kicker mb-3">{{ group.title }}</p>
+            <ul class="mg-footer-list">
+              <li v-for="link in group.links" :key="link.label">
+                <NuxtLink v-if="link.to" :to="link.to">{{ link.label }}</NuxtLink>
                 <button
                   v-else-if="link.consent"
                   type="button"
-                  class="px-1.5 py-0.5 rounded-md transition-colors"
-                  :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.04]' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'"
+                  class="mg-footer-link"
                   data-testid="cookie-settings"
                   @click="consentUi.reopen"
                 >
@@ -250,42 +218,18 @@
                   v-else-if="link.contact"
                   :href="contactMailto"
                   data-cta="footer-contact"
-                  class="px-1.5 py-0.5 rounded-md transition-colors"
-                  :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/[0.04]' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'"
                 >
                   {{ link.label }}
                 </a>
-              </template>
-            </div>
+              </li>
+            </ul>
+          </nav>
+        </div>
 
-            <div class="mt-4 pt-3 border-t flex flex-col items-center gap-3 sm:flex-row sm:justify-between"
-              :class="isDark ? 'border-white/6' : 'border-brand-100'">
-              <span class="text-[11px]" :class="isDark ? 'text-silver-600' : 'text-gray-400'">
-                &copy; {{ new Date().getFullYear() }} {{ siteName }} &mdash; All rights reserved.
-              </span>
-
-              <div class="flex items-center gap-1">
-                <a v-if="socialLinks.github" :href="socialLinks.github" target="_blank" rel="noopener noreferrer"
-                  class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all"
-                  :class="isDark ? 'text-silver-500 hover:text-white hover:bg-white/[0.06]' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'"
-                  title="GitHub" aria-label="GitHub">
-                  <svg aria-hidden="true" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
-                </a>
-                <a v-if="socialLinks.discord" :href="socialLinks.discord" target="_blank" rel="noopener noreferrer"
-                  class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all"
-                  :class="isDark ? 'text-silver-500 hover:text-white hover:bg-white/[0.06]' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'"
-                  title="Discord" aria-label="Discord">
-                  <svg aria-hidden="true" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" /></svg>
-                </a>
-                <a v-if="socialLinks.curseforge" :href="socialLinks.curseforge" target="_blank" rel="noopener noreferrer"
-                  class="inline-flex items-center justify-center w-9 h-9 rounded-lg transition-all"
-                  :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.08]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'"
-                  title="CurseForge" aria-label="CurseForge">
-                  <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.326 9.2025h-2.6408l-.6327-1.0023H5.6723v-1.5H18.326v2.5023zm-3.3735 0L11.2 15.8h-4.5l3.752-6.5975h4.5z" /></svg>
-                </a>
-              </div>
-            </div>
-          </div>
+        <div class="mt-10 pt-6 border-t" style="border-color: var(--mg-line)">
+          <p class="text-xs mg-subtle">
+            &copy; {{ new Date().getFullYear() }} {{ siteName }} &mdash; All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
@@ -297,7 +241,7 @@
 
     <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-4" enter-to-class="opacity-100 translate-y-0"
       leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-4">
-        <button v-if="showBackToTop" class="fixed bottom-6 right-6 z-40 inline-flex items-center justify-center w-10 h-10 border text-sm" :class="isDark ? 'border-white/15 bg-brand-950 text-white' : 'border-gray-300 bg-white text-gray-950'" aria-label="Back to top" @click="scrollToTop">
+        <button v-if="showBackToTop" class="mg-icon-btn fixed bottom-6 right-6 z-40 border" style="width: 2.75rem; height: 2.75rem; background: var(--mg-surface); border-color: var(--mg-line-strong); color: var(--mg-fg)" aria-label="Back to top" @click="scrollToTop">
           <UIcon name="i-heroicons-arrow-up" class="w-5 h-5" />
         </button>
     </Transition>
@@ -308,7 +252,7 @@
 <script setup lang="ts">
 import { SPECULATION_RULES } from '~/utils/speculationRules'
 import { isPrivateRepoUrl } from '~/utils/privateRepoLinks'
-import { PRODUCT_SWITCH, isNavActive, navLinksFor, primaryActionFor, productForPath, type Product } from '~/utils/productNav'
+import { PRODUCT_SWITCH, isNavActive, navLinksFor, primaryActionFor, productForPath } from '~/utils/productNav'
 
 const colorMode = useColorMode()
 const route = useRoute()
@@ -358,6 +302,8 @@ function handleLogout() {
 // Two products: Retail pages get the Retail nav, /forever/** the Forever nav (utils/productNav.ts).
 const product = computed(() => productForPath(route.path))
 const navLinks = computed(() => navLinksFor(product.value))
+// The logo is the Home link on desktop; the mobile menu lists Home too.
+const desktopNavLinks = computed(() => navLinks.value.filter(link => link.to !== '/'))
 const primaryAction = computed(() => primaryActionFor(product.value))
 
 const socialLinks = computed(() => ({
@@ -366,23 +312,40 @@ const socialLinks = computed(() => ({
   curseforge: siteSettings.value.curseforge_url || '',
 }))
 
-const footerLinks = computed(() => [
-  { label: 'Strings', to: '/strings' },
-  { label: 'Guide', to: '/guide' },
-  { label: 'Meta', to: '/meta' },
-  { label: 'Addons', to: '/addons' },
-  { label: 'Configurator', to: '/configurator' },
-  { label: 'WoW Forever', to: '/forever' },
-  { label: 'News', to: '/news' },
-  { label: 'Changelog', to: '/changelog' },
-  { label: 'FAQ', to: '/faq' },
-  { label: 'About', to: '/about' },
-  { label: 'Legal notice', to: '/imprint' },
-  { label: 'Privacy', to: '/privacy' },
-  { label: 'Status', to: '/status' },
-  { label: 'Contact', contact: true },
-  // Unless the operator switched the detailed visitor log off (NUXT_VISITOR_LOG=false); reopens the consent choice.
-  ...(consentUi.enabled.value ? [{ label: 'Cookie settings', consent: true }] : []),
+// Footer columns (same links as before, grouped). `consent` is the Cookie settings button, `contact` the mailto link.
+interface FooterLink { label: string, to?: string, consent?: true, contact?: true }
+const footerGroups = computed<{ title: string, links: FooterLink[] }[]>(() => [
+  {
+    title: 'Setup',
+    links: [
+      { label: 'Guide', to: '/guide' },
+      { label: 'Strings', to: '/strings' },
+      { label: 'Addons', to: '/addons' },
+      { label: 'Configurator', to: '/configurator' },
+      { label: 'WoW Forever', to: '/forever' },
+    ],
+  },
+  {
+    title: 'Explore',
+    links: [
+      { label: 'Meta', to: '/meta' },
+      { label: 'News', to: '/news' },
+      { label: 'Changelog', to: '/changelog' },
+      { label: 'FAQ', to: '/faq' },
+      { label: 'About', to: '/about' },
+    ],
+  },
+  {
+    title: 'Site',
+    links: [
+      { label: 'Legal notice', to: '/imprint' },
+      { label: 'Privacy', to: '/privacy' },
+      { label: 'Status', to: '/status' },
+      { label: 'Contact', contact: true },
+      // Unless the operator switched the detailed visitor log off (NUXT_VISITOR_LOG=false); reopens the consent choice.
+      ...(consentUi.enabled.value ? [{ label: 'Cookie settings', consent: true as const }] : []),
+    ],
+  },
 ])
 const bannerText = computed(() => siteSettings.value.banner_text || '')
 const maintenanceMode = computed(() => siteSettings.value.maintenance_mode === 'true')
@@ -391,33 +354,6 @@ const siteStatusLabel = computed(() => {
   if (bannerText.value) return 'Notice'
   return 'Live'
 })
-const siteStatusDot = computed(() => {
-  if (maintenanceMode.value) return 'bg-amber-400'
-  if (bannerText.value) return 'bg-brand-400'
-  return 'bg-ellesmere'
-})
-const siteStatusClasses = computed(() => {
-  if (maintenanceMode.value) {
-    return isDark.value
-      ? 'bg-amber-400/10 text-amber-300 border border-amber-400/20'
-      : 'bg-amber-50 text-amber-700 border border-amber-200'
-  }
-  if (bannerText.value) {
-    return isDark.value
-      ? 'bg-brand-400/10 text-brand-300 border border-brand-400/18'
-      : 'bg-brand-50 text-brand-700 border border-brand-100'
-  }
-  return isDark.value
-    ? 'bg-ellesmere/10 text-ellesmere border border-ellesmere/20'
-    : 'bg-ellesmere/10 text-emerald-800 border border-ellesmere/30'
-})
-
-/** Retail | Forever segmented control: the current product is the filled segment. */
-function segmentClass(p: Product): string {
-  if (product.value === p) return isDark.value ? 'bg-white/10 text-brand-200' : 'bg-brand-50 text-brand-800'
-  return isDark.value ? 'text-silver-300 hover:text-white' : 'text-gray-600 hover:text-gray-950'
-}
-
 function isActive(path: string): boolean {
   return isNavActive(route.path, path)
 }

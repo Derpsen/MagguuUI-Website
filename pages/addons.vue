@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
     <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Catalog</p>
-    <h1 class="text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">Addons</h1>
+    <h1 class="mg-h1" :class="isDark ? 'text-white' : 'text-gray-950'">Addons</h1>
     <div class="mt-4 space-y-3 text-sm leading-relaxed max-w-2xl" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
       <p>
         EllesmereUI is required. Download it and MagguuUI from CurseForge, Wago, or WoWInterface. The Starter pack addons are recommended; everything else is optional.

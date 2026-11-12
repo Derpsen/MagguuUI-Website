@@ -14,7 +14,7 @@
     </div>
 
     <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Reference</p>
-    <h1 class="text-4xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">FAQ</h1>
+    <h1 class="mg-h1" :class="isDark ? 'text-white' : 'text-gray-950'">FAQ</h1>
     <p class="mt-3 max-w-xl text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
       Setup, profiles, and the problems that show up after the first login.
     </p>

@@ -448,7 +448,8 @@ const features = computed(() => featureCopy.value.map((feat) => {
   line-height: 0.98;
   letter-spacing: -0.055em;
   color: var(--mg-fg);
-  /* Gradient fill; both ends are AA text colours on the page background (checked in designTokens.test.ts). */
+  /* Gradient fill: every stop must be an AA text colour on the page background; the stops are parsed and checked per
+     theme in designTokens.test.ts, so a weaker stop fails there. */
   background-image: linear-gradient(100deg, var(--mg-fg) 0%, var(--mg-fg) 38%, var(--mg-accent-text) 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -531,11 +532,12 @@ const features = computed(() => featureCopy.value.map((feat) => {
 .home-tint { margin-top: 5rem; padding-bottom: 5rem; background: linear-gradient(180deg, transparent, var(--mg-surface) 14rem, var(--mg-surface)); border-top: 1px solid var(--mg-line); }
 @media (min-width: 768px) { .home-tint { margin-top: 8rem; padding-bottom: 6rem; } }
 .home-tint .home-section { padding-top: 4rem; }
-.home-split { display: grid; gap: 3rem; align-items: start; }
+.home-split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3rem; align-items: start; }
+.home-split > * { min-width: 0; }
 @media (min-width: 1024px) { .home-split { grid-template-columns: minmax(0, 1.25fr) minmax(16rem, 0.75fr); gap: 4rem; } }
-.home-addons { margin-top: 1.5rem; display: grid; column-gap: 2rem; }
+.home-addons { margin-top: 1.5rem; display: grid; grid-template-columns: minmax(0, 1fr); column-gap: 2rem; }
 @media (min-width: 640px) { .home-addons { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.home-addons > li { border-bottom: 1px solid var(--mg-line); }
+.home-addons > li { min-width: 0; border-bottom: 1px solid var(--mg-line); }
 .home-addon { display: flex; align-items: center; gap: 0.75rem; min-height: 3.25rem; padding: 0.5rem 0; }
 .home-addon__name { font-size: 0.9375rem; font-weight: 650; color: var(--mg-fg); }
 .home-addon:hover .home-addon__name { text-decoration: underline; text-underline-offset: 0.2em; }

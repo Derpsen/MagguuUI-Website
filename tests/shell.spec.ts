@@ -71,3 +71,18 @@ test('at 1280px the full navigation is in the header, the fallback menu is not',
   await expect(page.locator('header nav[aria-label="Primary"] a[href="/meta"]')).toBeVisible()
   await expect(page.getByTestId('nojs-menu')).toHaveCount(0)
 })
+
+test('menu closes when the viewport grows to the desktop layout: aria-expanded false, scroll lock released', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await hydrated(page)
+  await page.getByRole('button', { name: 'Open menu' }).click()
+  await expect(page.locator('#mobile-menu')).toBeVisible()
+  await expect(page.locator('html')).toHaveClass(/mg-scroll-lock/)
+  await page.setViewportSize({ width: 1400, height: 900 })
+  await expect(page.locator('#mobile-menu')).toHaveCount(0)
+  await expect(page.locator('html')).not.toHaveClass(/mg-scroll-lock/)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'false')
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).not.toBe('hidden')
+})

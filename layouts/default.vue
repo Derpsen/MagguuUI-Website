@@ -272,6 +272,7 @@
 
 <script setup lang="ts">
 import { SPECULATION_RULES } from '~/utils/speculationRules'
+import { focusElement, onMenuBreakpoint, setScrollLock } from '~/utils/menuLock'
 import { isPrivateRepoUrl } from '~/utils/privateRepoLinks'
 import { PRODUCT_SWITCH, isNavActive, navLinksFor, primaryActionFor, productForPath } from '~/utils/productNav'
 
@@ -398,10 +399,14 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+function focusMenuButton() {
+  focusElement(menuButton.value)
+}
+
 /** Close the menu; `returnFocus` puts focus back on the hamburger (Escape, backdrop), a link click navigates instead. */
 function closeMenu(returnFocus = false) {
   mobileOpen.value = false
-  if (returnFocus) nextTick(() => menuButton.value?.focus())
+  if (returnFocus) nextTick(() => focusMenuButton())
 }
 
 function handleMobileKeydown(e: KeyboardEvent) {
@@ -430,7 +435,7 @@ function handleMobileKeydown(e: KeyboardEvent) {
 watch(mobileOpen, async (open) => {
   if (!import.meta.client) return
   // Scroll lock on <html> while the menu is open; released on close, on route change (it closes the menu) and on unmount.
-  document.documentElement.classList.toggle('mg-scroll-lock', open)
+  setScrollLock(document.documentElement, open)
   if (open) {
     await nextTick()
     const firstLink = mobileMenuPanel.value?.querySelector<HTMLElement>('a[href], button')
@@ -438,8 +443,12 @@ watch(mobileOpen, async (open) => {
   }
 })
 
+let stopMenuBreakpoint: (() => void) | undefined
+
 onMounted(() => {
   menuReady.value = true
+  // Growing past the hamburger breakpoint hides the menu: close it so aria-expanded and the scroll lock are released.
+  stopMenuBreakpoint = onMenuBreakpoint(query => window.matchMedia(query), () => closeMenu())
   handleWindowScroll()
   window.addEventListener('scroll', handleWindowScroll, { passive: true })
   window.addEventListener('keydown', handleMobileKeydown)
@@ -447,7 +456,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (import.meta.client) {
-    document.documentElement.classList.remove('mg-scroll-lock')
+    setScrollLock(document.documentElement, false)
+    stopMenuBreakpoint?.()
     window.removeEventListener('scroll', handleWindowScroll)
     window.removeEventListener('keydown', handleMobileKeydown)
   }

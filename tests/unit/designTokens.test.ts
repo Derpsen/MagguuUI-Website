@@ -99,7 +99,122 @@ describe('design system: shell source rules', () => {
     assert.match(layout, /aria-controls="mobile-menu"/)
     assert.match(layout, /id="mobile-menu"/)
     assert.match(layout, /<details v-else class="mg-nojs-menu/)
-    assert.match(layout, /mg-scroll-lock/)
+    assert.match(layout, /setScrollLock\(document\.documentElement, open\)/)
+    assert.match(ui, /html\.mg-scroll-lock \{ overflow: hidden; \}/)
   })
 })
 
+
+/** Home page CSS (pages/index.vue): the parts that colour tests on tokens alone cannot see. */
+describe('home: motion guard and gradient headline', () => {
+  const home = readFileSync(join(process.cwd(), 'pages/index.vue'), 'utf8')
+  const style = home.slice(home.indexOf('<style'), home.indexOf('</style>'))
+
+  /** Every declaration with its stack of enclosing at-rule preludes (a tiny brace walker, enough for this file). */
+  function declarations(source: string): Array<{ prop: string, value: string, atRules: string[] }> {
+    const out: Array<{ prop: string, value: string, atRules: string[] }> = []
+    const stack: Array<{ at: string | null }> = []
+    let buffer = ''
+    const text = source.replace(/\/\*[\s\S]*?\*\//g, '')
+    for (const ch of text) {
+      if (ch === '{') {
+        const prelude = buffer.trim()
+        stack.push({ at: prelude.startsWith('@') ? prelude : null })
+        buffer = ''
+      } else if (ch === '}') {
+        flush()
+        stack.pop()
+        buffer = ''
+      } else if (ch === ';') {
+        flush()
+        buffer = ''
+      } else buffer += ch
+    }
+    function flush() {
+      const m = buffer.trim().match(/^([a-z-]+)\s*:\s*([\s\S]+)$/)
+      if (m && stack.length) out.push({ prop: m[1]!, value: m[2]!.trim(), atRules: stack.map(s => s.at).filter((a): a is string => !!a) })
+    }
+    return out
+  }
+
+  it('the declaration walker sees guarded and unguarded animations (self-check)', () => {
+    const d = declarations('.a { animation: x 1s; } @media (prefers-reduced-motion: no-preference) { .b { animation: y 1s; } @supports (animation-timeline: view()) { .c { animation-timeline: view(); } } }')
+    assert.deepEqual(d.map(x => x.atRules.length), [0, 1, 2])
+  })
+
+  it('every animation declaration sits inside prefers-reduced-motion: no-preference', () => {
+    const animated = declarations(style).filter(d => /^animation(-|$)/.test(d.prop))
+    assert.ok(animated.length >= 3, 'expected the hero drift, the rise and the flatten animations')
+    for (const d of animated) {
+      assert.ok(
+        d.atRules.some(a => /^@media\s*\(\s*prefers-reduced-motion:\s*no-preference\s*\)$/.test(a)),
+        `${d.prop}: ${d.value} must be guarded by prefers-reduced-motion: no-preference`,
+      )
+    }
+  })
+
+  it('will-change (a standing compositor layer) is only promoted inside the guard', () => {
+    for (const d of declarations(style).filter(d => d.prop === 'will-change')) {
+      assert.ok(d.atRules.some(a => a.includes('prefers-reduced-motion')), `${d.prop}: ${d.value} must be guarded`)
+    }
+  })
+
+  for (const [theme, t] of Object.entries(THEMES)) {
+    it(`${theme}: every colour stop of the H1 gradient is AA on the page background and surface`, () => {
+      const block = style.match(/\.home-hero__name \{([^}]*)\}/)?.[1] ?? ''
+      const image = block.match(/background-image:\s*(linear-gradient\([^;]*\))\s*;/)?.[1]
+      assert.ok(image, 'H1 gradient missing')
+      assert.match(block, /background-clip:\s*text/)
+      const stops = [...image!.matchAll(/var\(--mg-([a-z0-9-]+)\)|(#[0-9a-fA-F]{6})\b|(rgba?\([^)]*\)|hsla?\([^)]*\))/g)]
+      assert.ok(stops.length >= 2, 'gradient needs at least two stops')
+      for (const m of stops) {
+        assert.ok(!m[3], `stop ${m[3]} is not an opaque hex/token colour`)
+        const colour = m[1] ? t[m[1]] : m[2]
+        assert.ok(colour, `stop ${m[0]} does not resolve to a token`)
+        for (const surface of ['bg', 'surface']) {
+          const ratio = contrastRatio(colour!, t[surface]!)
+          assert.ok(ratio >= 4.5, `${theme}: ${m[0]} on ${surface} is ${ratio.toFixed(2)}:1`)
+        }
+      }
+    })
+  }
+})
+
+/** Self-managed fonts (assets/css/fonts.css): the contract that keeps the font swap from shifting the layout. */
+describe('fonts: no layout shift from the webfont swap', () => {
+  const fonts = readFileSync(join(process.cwd(), 'assets/css/fonts.css'), 'utf8')
+  const main = readFileSync(join(process.cwd(), 'assets/css/main.css'), 'utf8')
+  const preload = readFileSync(join(process.cwd(), 'plugins/font-preload.ts'), 'utf8')
+  const faces = [...fonts.matchAll(/@font-face \{([^}]*)\}/g)].map(m => m[1]!)
+
+  it('every real face is font-display: optional, every fallback face is metric-matched', () => {
+    const real = faces.filter(f => /url\(/.test(f))
+    const fallback = faces.filter(f => /local\(/.test(f))
+    assert.ok(real.length >= 6, 'Jakarta 400/600/700/800 + Mono 400/700')
+    for (const f of real) assert.match(f, /font-display:\s*optional/)
+    assert.ok(fallback.length >= 6)
+    for (const f of fallback) {
+      assert.match(f, /size-adjust:\s*[\d.]+%/)
+      assert.match(f, /ascent-override:\s*[\d.]+%/)
+      assert.match(f, /descent-override:\s*[\d.]+%/)
+      assert.match(f, /line-gap-override:\s*0%/)
+    }
+  })
+
+  it('the font stacks put the metric-matched fallbacks right after the webfont', () => {
+    assert.match(main, /--font-sans:\s*'Plus Jakarta Sans',\s*'MG Sans /)
+    assert.match(main, /--font-mono:\s*'JetBrains Mono',\s*'MG Mono /)
+  })
+
+  it('the faces the first screen needs are preloaded (optional only swaps in when the file is early)', () => {
+    for (const w of ['400', '600', '700', '800']) assert.match(preload, new RegExp(`plus-jakarta-sans-latin-${w}-normal\\.woff2`))
+    assert.match(preload, /rel:\s*'preload'/)
+    assert.match(preload, /crossorigin:\s*'anonymous'/)
+  })
+
+  it('@nuxt/fonts no longer manages these families (it would emit a second, swapping face)', () => {
+    const cfg = readFileSync(join(process.cwd(), 'nuxt.config.ts'), 'utf8')
+    assert.match(cfg, /name: 'Plus Jakarta Sans', provider: 'none'/)
+    assert.match(cfg, /name: 'JetBrains Mono', provider: 'none'/)
+  })
+})

@@ -715,6 +715,8 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 - Axe flags nothing for the gradient-filled H1 (both gradient ends are AA text colours); keep that in mind before adding more `background-clip: text` headings.
 - Code-Review LOWs of #195 fixed in this PR: ad-region margin only with a rendered ad, no-JS `<details>` menu 1024-1279 px, hamburger `aria-expanded`/`aria-controls`/scroll lock/focus return, skip-link contrast, flat shell for the admin preview frame, header exactly 56 px.
 
+- Code-Review on #196 (`0758b3e`, Changes): MEDIUM 1 fixed (`.home-split`/`.home-addons` `minmax(0, 1fr)` + `min-width: 0`; e2e now checks the bounding rect of every element at 320/360/390 because `overflow-x: clip` hides overflow from `scrollWidth`). MEDIUM 2 fixed by self-managing the fonts (`assets/css/fonts.css`, `font-display: optional`, preload plugin, metric-matched fallbacks): throttled 320 px CLS 0.1756 (once 0.3760) -> 0.0000 over 8 runs; Lighthouse unchanged within noise (`/meta` mobile 83, `/` mobile 75 / TBT 111). Finding: the old `@nuxt/fonts` npm provider only ever emitted weight 400, so all bold text site-wide was synthetic bold; the real 600/700/800 faces now render (slightly different glyph widths, e2e and screenshots re-checked). LOW fixed: the menu closes when the viewport reaches 1280 px. New unit tests and 7 mutants (reduced-motion guard, gradient end colour, scroll lock, focus return, breakpoint close, unmount release).
+
 
 ## 2026-11-12 manual Meta CLI (this PR)
 

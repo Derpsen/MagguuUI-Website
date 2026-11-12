@@ -189,18 +189,9 @@ export default defineNuxtConfig({
 
   fonts: {
     families: [
-      {
-        name: 'Plus Jakarta Sans',
-        provider: 'npm',
-        weights: ['400', '500', '600', '700', '800'],
-        styles: ['normal'],
-      },
-      {
-        name: 'JetBrains Mono',
-        provider: 'npm',
-        weights: ['400', '500', '700'],
-        styles: ['normal'],
-      },
+      // Self-managed in assets/css/fonts.css (real weights, optional display, preloads, metric-matched fallbacks).
+      { name: 'Plus Jakarta Sans', provider: 'none' },
+      { name: 'JetBrains Mono', provider: 'none' },
     ],
   },
 

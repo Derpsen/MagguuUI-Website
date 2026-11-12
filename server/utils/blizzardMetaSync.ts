@@ -730,8 +730,6 @@ export function isMetaDeadlineError(error: unknown): boolean {
   return error instanceof Error && error.message.includes('job deadline')
 }
 
-export { decideDeadlinePartialPublish, metaSnapshotCoverage, shouldKeepLastGoodMetaSnapshot, type MetaPartialOutcome } from './blizzardMetaPolicy'
-
 export function sleepUntilMetaDeadline(
   sleep: ((ms: number) => Promise<void>) | undefined,
   deadline: number | undefined,

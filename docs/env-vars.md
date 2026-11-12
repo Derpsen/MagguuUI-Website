@@ -36,7 +36,7 @@ Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` 
 | `NUXT_META_KUMA_PUSH_URL` | empty | Optional Uptime Kuma push URL (token in the path). The job pushes `up` on `ok`/`skipped` and `down` on `partial`/`error`/`locked`. Never logged. Empty = no-op. |
 | `NUXT_META_SAMPLE_PER_SPEC` | `200` | Profile sample target per spec (default in the 150–200 range). |
 | `NUXT_META_MAX_ATTEMPTS_PER_SPEC` | `400` | Max profile attempts per spec before giving up. |
-| `NUXT_ADS` | off | Master switch for reserved `AdSlot` markup on `/meta`. Default **off** = no markup. Recognised on-values: `on`/`true`/`1`/`yes`. Resolved at **runtime** (`plugins/nuxt-ads.ts` via `useState`, not by mutating `runtimeConfig`). Empty or missing `NUXT_ADS` is off. A container env change does not need a rebuild. `NUXT_PUBLIC_ADS` is a fallback if `NUXT_ADS` is unset. AdSense loading is a later PR. |
+| `NUXT_ADS` | off | Master switch for reserved `AdSlot` markup on `/meta`. Default **off** = no markup. Recognised on-values: `on`/`true`/`1`/`yes`. Resolved at **runtime** (`plugins/nuxt-ads.ts` via `useState`, not by mutating `runtimeConfig`). The client payload is a boolean (`nuxt-ads-enabled`), not the raw env string. Empty or missing `NUXT_ADS` is off. A container env change does not need a rebuild. `NUXT_PUBLIC_ADS` is a fallback if `NUXT_ADS` is unset. AdSense loading is a later PR. |
 
 ## Notes
 
@@ -46,4 +46,5 @@ Most variables are prefixed `NUXT_` for Nuxt runtime config. `API_BEARER_TOKEN` 
 - Changing `NUXT_JWT_SECRET` invalidates all existing sessions. Users must log in again.
 - The admin password can also be changed via the admin UI after first login.
 - Mirror `API_BEARER_TOKEN` as the AddOn repository secret `WEBSITE_API_KEY`. The workflow consumes the coherent `/api/v1/sync/snapshot` contract; its component projections live under the same `/api/v1/sync/*` namespace. The token must never be exposed to browser code.
+- Lighthouse and `scripts/verify-ads-runtime.mjs` seed the `/meta` fixture with `npx tsx scripts/seed-meta-fixture.ts` before a production start. That is a CI/dev script, not an env flag. Never run it on Unraid; `NUXT_E2E_SEED` already stays off in production.
 - Set `NUXT_OG_IMAGE_SECRET` in production if dynamic OG image generation stays enabled. Generate it outside the repo with `npx nuxt-og-image generate-secret` and store it only as a host/container secret.

@@ -639,3 +639,9 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
   - The raw `NUXT_ADS` string must not ship in the client payload; expose only a boolean (`nuxtAdsEnabled` / `useNuxtAdsEnabled`).
   - The ads runtime/verify script should also check that slot markup is present when the flag is on and absent when it is off or empty.
   - Google CSP entries in `server/utils/htmlCsp.ts:37-38` belong to PR D (AdSense), not C.
+
+## 2026-11-12 Meta C2 started
+
+- Branch/PR C2: own `/meta` tooltips (DoD 3.08), Lighthouse budgets for `/meta` and `/meta/mage/fire` against the fixture (DoD 6.01 / 14.07). `/meta` stays out of nav, sitemap and footer until that budget is green in CI. Do not start AdSense/PR D.
+- Cheap Code-Review LOWs from the #185 note, included here: client payload is a boolean (`nuxt-ads-enabled`), not the raw `NUXT_ADS` string; `scripts/verify-ads-runtime.mjs` supplies a dummy `NUXT_ADMIN_PASSWORD` when unset, seeds the fixture, and checks AdSlot markup on / off; `e2e-ads (NUXT_ADS=on)` job in `build.yml` runs `tests/meta-ads.spec.ts` (not part of the required aggregator; listed in the failure-alarm `needs`).
+- Still later / not C2: Google CSP entries in `server/utils/htmlCsp.ts:37-38` belong to PR D.

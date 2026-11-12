@@ -68,6 +68,9 @@ jobs:
 
       - run: npm run build
 
+      - name: Seed Meta fixture into the local database
+        run: npx tsx scripts/seed-meta-fixture.ts
+
       - name: Start production server
         run: |
           nohup node .output/server/index.mjs > server.log 2>&1 &
@@ -88,6 +91,8 @@ jobs:
             http://localhost:3124/
             http://localhost:3124/changelog
             http://localhost:3124/guide
+            http://localhost:3124/meta
+            http://localhost:3124/meta/mage/fire
           configPath: .github/lighthouse/mobile.json
           runs: 3
           uploadArtifacts: true
@@ -108,6 +113,8 @@ jobs:
             http://localhost:3124/
             http://localhost:3124/changelog
             http://localhost:3124/guide
+            http://localhost:3124/meta
+            http://localhost:3124/meta/mage/fire
           configPath: .github/lighthouse/desktop.json
           runs: 3
           uploadArtifacts: true

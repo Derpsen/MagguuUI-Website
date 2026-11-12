@@ -1,7 +1,4 @@
-import { isNuxtAdsEnabled } from '~/utils/metaUiCopy'
-
-/** SSR/client ads master switch from the nuxt-ads plugin payload. Default off. */
+/** Public ads flag. Always a boolean — the raw NUXT_ADS string is not in the payload. */
 export function useNuxtAdsEnabled() {
-  const raw = useState('nuxt-ads-raw', () => '')
-  return computed(() => isNuxtAdsEnabled(raw.value))
+  return useState('nuxt-ads-enabled', () => false)
 }

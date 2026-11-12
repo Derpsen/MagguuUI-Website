@@ -97,6 +97,43 @@ jobs:
       - name: Playwright smoke tests (shard ${{ matrix.shard }}/2)
         run: npm test -- --shard="${SHARD}/2"
 
+
+  # Ads layout e2e, separate from the sharded suite so NUXT_ADS=on does not
+  # change the default-off main run. Not part of the required aggregator:
+  # a failure is visible on the PR but does not block `build (26, false)`.
+  e2e-ads:
+    name: e2e-ads (NUXT_ADS=on)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NUXT_OG_IMAGE_SECRET: ci-dummy-og-image-secret
+      NUXT_ADS: on
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+          cache: npm
+
+      - run: npm ci
+
+      - name: Cache Playwright browser
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright browser
+        run: npm run test:install
+
+      - name: Playwright ads layout (NUXT_ADS=on)
+        run: npm test -- tests/meta-ads.spec.ts --workers=1
+
   build:
     # Aggregator with the exact name of the required check (`build (26, false)`).
     # !cancelled() instead of success(): a failed need must FAIL this job, never skip it (a skipped required check passes).
@@ -123,7 +160,7 @@ jobs:
     # Failure alarm to the escalation webhook (main only; silent without secrets; never fails the run).
     # Template: failure-alarm.yml. Dedupe: one per run, none if the same workflow already failed on this commit.
     name: failure alarm
-    needs: [checks, e2e, build]
+    needs: [checks, e2e, e2e-ads, build]
     if: ${{ failure() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     permissions:
       actions: read

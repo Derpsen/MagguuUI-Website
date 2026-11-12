@@ -22,13 +22,19 @@
                   <p class="font-mono text-xs uppercase tracking-[0.12em]" :class="tone.label.value">{{ row.label }}</p>
                   <p class="shrink-0 text-base font-semibold tabular-nums" :class="tone.strong.value">{{ formatShare(row.items[0]!.share) }}</p>
                 </div>
-                <a
-                  :href="wowheadItemUrl(row.items[0]!.itemId)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="text-sm font-medium underline underline-offset-4"
+                <MetaTooltip
+                  class="text-sm font-medium"
+                  :trigger-class="'font-medium'"
                   :style="{ color: metaQualityColor(row.items[0]!.quality, tone.isDark.value) }"
-                >{{ row.items[0]!.label }}<span class="sr-only"> (opens in a new tab)</span></a>
+                >
+                  {{ row.items[0]!.label }}
+                  <template #content>
+                    <span class="font-mono text-[0.65rem] uppercase tracking-[0.12em]" :class="tone.label.value">{{ row.label }}</span>
+                    <span class="mt-1 block">{{ row.items[0]!.label }}</span>
+                    <span class="mt-1 block tabular-nums">{{ copy.pickRate }} {{ formatShare(row.items[0]!.share) }} · {{ row.items[0]!.count }} {{ copy.parses }}</span>
+                    <span v-if="metaLine(row.items[0]!).length" class="mt-1 block" :class="tone.muted.value">{{ metaLine(row.items[0]!).join(' · ') }}</span>
+                  </template>
+                </MetaTooltip>
                 <p class="mt-0.5 text-xs" :class="tone.muted.value">
                   <template v-for="(meta, mi) in metaLine(row.items[0]!)" :key="meta">
                     <span v-if="mi" aria-hidden="true"> · </span>{{ meta }}
@@ -44,13 +50,18 @@
             </div>
             <ol v-if="row.items.length > 1" class="mt-2 space-y-1 border-t pt-2" :class="tone.rule.value">
               <li v-for="item in row.items.slice(1)" :key="item.itemId" class="flex items-baseline justify-between gap-3 text-xs">
-                <a
-                  :href="wowheadItemUrl(item.itemId)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="min-w-0 truncate underline underline-offset-4"
+                <MetaTooltip
+                  class="min-w-0 truncate"
                   :style="{ color: metaQualityColor(item.quality, tone.isDark.value) }"
-                >{{ item.label }}<span class="sr-only"> (opens in a new tab)</span></a>
+                >
+                  {{ item.label }}
+                  <template #content>
+                    <span class="font-mono text-[0.65rem] uppercase tracking-[0.12em]" :class="tone.label.value">{{ row.label }}</span>
+                    <span class="mt-1 block">{{ item.label }}</span>
+                    <span class="mt-1 block tabular-nums">{{ copy.pickRate }} {{ formatShare(item.share) }} · {{ item.count }} {{ copy.parses }}</span>
+                    <span v-if="metaLine(item).length" class="mt-1 block" :class="tone.muted.value">{{ metaLine(item).join(' · ') }}</span>
+                  </template>
+                </MetaTooltip>
                 <span class="shrink-0 tabular-nums" :class="tone.muted.value">{{ formatShare(item.share) }} · {{ item.count }}</span>
               </li>
             </ol>
@@ -63,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { metaQualityColor, wowheadItemUrl } from '~/utils/metaCatalog'
+import { metaQualityColor } from '~/utils/metaCatalog'
 import { META_COPY } from '~/utils/metaCopy'
 import { formatShare, formatSharePercent } from '~/utils/metaFormat'
 import { META_UI_COPY, META_UI_COPY_KL, blizzardIconUrl, type MetaGearCardItem, type MetaGearCardSlot } from '~/utils/metaUiCopy'

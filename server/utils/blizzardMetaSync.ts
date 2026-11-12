@@ -128,6 +128,10 @@ type SyncOptions = {
   heap?: MetaHeapMonitor
   runToken?: string
   abortController?: AbortController
+  /** Tests only: stop after leaderboard ingest, spec index, and candidate trim. */
+  stopAfter?: 'pre-spec'
+  /** Tests only: called after pre-spec stats are ready, before the candidate table is dropped. */
+  onAfterPreSpec?: (info: MetaPreSpecStats) => void
 }
 
 type CharacterCandidate = {
@@ -178,10 +182,85 @@ function asString(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
 
+function minMax(values: readonly number[]): { min: number, max: number } | null {
+  if (!values.length) return null
+  let min = values[0]!
+  let max = values[0]!
+  for (const value of values) {
+    if (value < min) min = value
+    if (value > max) max = value
+  }
+  return { min, max }
+}
+
+
 function idFromHref(href: string): number | null {
   const match = href.match(/connected-realm\/(\d+)/i) || href.match(/\/(\d+)(?:\?|$)/)
   return match ? Number(match[1]) : null
 }
+
+/** Compact per-player table for leaderboard ingest.
+ *  A Map of object values retains the parsed board graph (EU-scale fixture:
+ *  166k players → ~440 MB live). Parallel arrays stay around 70 MB. */
+class MetaCandidateTable {
+  private readonly index = new Map<string, number>()
+  private readonly realms: string[] = []
+  private readonly names: string[] = []
+  private readonly specIds: number[][] = []
+  private readonly runs: number[][] = []
+  private readonly bests: number[][] = []
+
+  get size() {
+    return this.names.length
+  }
+
+  add(realm: string, name: string, specId: number, level: number) {
+    const key = `${realm}/${name}`
+    let i = this.index.get(key)
+    if (i == null) {
+      i = this.names.length
+      this.index.set(key, i)
+      this.realms.push(realm)
+      this.names.push(name)
+      this.specIds.push([specId])
+      this.runs.push([1])
+      this.bests.push([level])
+      return
+    }
+    const ids = this.specIds[i]!
+    const pos = ids.indexOf(specId)
+    if (pos < 0) {
+      ids.push(specId)
+      this.runs[i]!.push(1)
+      this.bests[i]!.push(level)
+      return
+    }
+    this.runs[i]![pos]! += 1
+    if (level > this.bests[i]![pos]!) this.bests[i]![pos] = level
+  }
+
+  *players(): Iterable<{ realm: string, name: string, specs: Array<{ specId: number, runs: number, best: number }> }> {
+    for (let i = 0; i < this.names.length; i++) {
+      const ids = this.specIds[i]!
+      const specs = ids.map((specId, pos) => ({
+        specId,
+        runs: this.runs[i]![pos]!,
+        best: this.bests[i]![pos]!,
+      }))
+      yield { realm: this.realms[i]!, name: this.names[i]!, specs }
+    }
+  }
+
+  clear() {
+    this.index.clear()
+    this.realms.length = 0
+    this.names.length = 0
+    this.specIds.length = 0
+    this.runs.length = 0
+    this.bests.length = 0
+  }
+}
+
 
 function dungeonIdOf(board: unknown): number | null {
   const rec = asRecord(board)
@@ -330,11 +409,23 @@ function openStagingDb(sqlite?: MetaSqlite): { sqlite: MetaSqlite, close: () => 
   return { sqlite: db, close: () => { db.close() } }
 }
 
+export type MetaPreSpecStats = {
+  realms: number
+  dungeons: number
+  periods: number
+  planned: number
+  ok: number
+  failed: number
+  candidates: number
+  retained: number
+}
+
 export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   payload: MetaSnapshotPayload
   stats: BlizzardHttpStats
   failures: ProfileFailures
   leaderboards: { planned: number, ok: number, failed: number }
+  preSpec?: MetaPreSpecStats
 }> {
   const caps = mergeCaps(options.caps)
   const clock = asClock(options.now)
@@ -399,9 +490,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     }
   }
 
-  const candidates = new Map<string, { realm: string, name: string, specs: Record<number, { runs: number, best: number }> }>()
-  const specRuns = new Map<number, { appearances: number, levels: number[] }>()
-  const runsSeen = new Set<string>()
+  const candidates = new MetaCandidateTable()
   let leaderboardsOk = 0
   let leaderboardsFailed = 0
 
@@ -415,18 +504,13 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
       return
     }
     leaderboardsOk += 1
-    for (const rawGroup of asArray(board.leading_groups)) {
+    const groups = asArray(board.leading_groups)
+    board.leading_groups = undefined
+    for (const rawGroup of groups) {
       const group = asRecord(rawGroup)
       if (!group) continue
       const level = asNumber(group.keystone_level) ?? 0
       const members = asArray(group.members)
-      const memberIds = members.map((member) => {
-        const rec = asRecord(member)
-        return asNumber(asRecord(rec?.profile)?.id) ?? 0
-      }).sort((a, b) => a - b)
-      const runKey = `${dungeonId}:${asNumber(group.completed_timestamp) ?? 0}:${asNumber(group.duration) ?? 0}:${memberIds.join(',')}`
-      const dup = runsSeen.has(runKey)
-      runsSeen.add(runKey)
       for (const rawMember of members) {
         const rec = asRecord(rawMember)
         const profile = asRecord(rec?.profile)
@@ -436,30 +520,18 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
         const specRec = asRecord(rec?.specialization)
         const specId = asNumber(specRec?.id)
         if (specId == null) continue
-        if (!dup) {
-          const current = specRuns.get(specId) ?? { appearances: 0, levels: [] }
-          current.appearances += 1
-          current.levels.push(level)
-          specRuns.set(specId, current)
-        }
-        const key = `${realm}/${name}`
-        const candidate = candidates.get(key) ?? { realm, name, specs: {} }
-        const slot = candidate.specs[specId] ?? { runs: 0, best: 0 }
-        slot.runs += 1
-        slot.best = Math.max(slot.best, level)
-        candidate.specs[specId] = slot
-        candidates.set(key, candidate)
+        candidates.add(realm, name, specId, level)
       }
     }
   }, abort)
 
   const specIndex = asRecord(await get('/data/wow/playable-specialization/index', STATIC))
   const specMeta = new Map<number, { className: string, specName: string, treeHref: string | null }>()
-  await Promise.all(asArray(specIndex?.character_specializations).map(async (item) => {
+  const specEntries = asArray(specIndex?.character_specializations)
+  await mapPool(specEntries, 1, async (item) => {
     if (syncAborted(abort)) return
     const id = asNumber(asRecord(item)?.id)
     if (id == null) return
-    if (syncAborted(abort)) return
     const body = asRecord(await get(`/data/wow/playable-specialization/${id}`, STATIC))
     if (!body) return
     const className = asString(asRecord(body.playable_class)?.name)
@@ -468,15 +540,13 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     if (!looked || !findMetaClass(toMetaSlug(looked.className))) return
     const treeHref = asString(asRecord(asRecord(body.spec_talent_tree)?.key)?.href)
     specMeta.set(id, { className: looked.className, specName: looked.specName, treeHref: treeHref || null })
-  }))
+  }, abort)
 
   const perSpec = new Map<number, CharacterCandidate[]>()
   const specPop = new Map<string, SpecPop>()
   const allKeyLevels: number[] = []
-  for (const candidate of candidates.values()) {
-    const assigned = Object.entries(candidate.specs)
-      .map(([id, slot]) => ({ specId: Number(id), ...slot }))
-      .sort((a, b) => b.runs - a.runs || b.best - a.best)[0]
+  for (const candidate of candidates.players()) {
+    const assigned = [...candidate.specs].sort((a, b) => b.runs - a.runs || b.best - a.best)[0]
     if (!assigned) continue
     const meta = specMeta.get(assigned.specId) || (() => {
       const looked = lookupBlizzardSpec(assigned.specId)
@@ -506,8 +576,24 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     }
     specPop.set(popKey, pop)
   }
-  for (const list of perSpec.values()) list.sort((a, b) => b.best - a.best || b.runs - a.runs)
+  let retained = 0
+  for (const list of perSpec.values()) {
+    list.sort((a, b) => b.best - a.best || b.runs - a.runs)
+    if (list.length > caps.maxAttemptsPerSpec) list.length = caps.maxAttemptsPerSpec
+    retained += list.length
+  }
   const totalCharacters = [...specPop.values()].reduce((sum, pop) => sum + pop.count, 0)
+  const candidateCount = candidates.size
+  const preSpec: MetaPreSpecStats = {
+    realms: realmIds.length,
+    dungeons: dungeonIds.length,
+    periods: periodIds.length,
+    planned: jobs.length,
+    ok: leaderboardsOk,
+    failed: leaderboardsFailed,
+    candidates: candidateCount,
+    retained,
+  }
 
   runGuards(abort, options.deadline, asClock(options.now), heap)
   if (syncAborted(abort)) throw new Error('Meta nightly aborted')
@@ -520,7 +606,52 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     totalCharacters,
     allKeyLevels,
   })
+  options.onAfterPreSpec?.(preSpec)
   candidates.clear()
+
+  if (options.stopAfter === 'pre-spec') {
+    return {
+      payload: {
+        region: META_REGION,
+        focus: META_FOCUS,
+        season: { id: seasonId, label: seasonLabel },
+        periods,
+        talentTree: null,
+        freshness: {
+          fetchedAt: Math.floor(clock() / 1000),
+          players: totalCharacters,
+          keyLevels: minMax(allKeyLevels),
+          region: META_REGION,
+          source: 'blizzard',
+        },
+        basis: {
+          region: META_REGION,
+          focus: META_FOCUS,
+          season: { id: seasonId, label: seasonLabel },
+          periods,
+          talentTree: null,
+          keyLevels: minMax(allKeyLevels),
+          players: totalCharacters,
+          profiles: 0,
+          source: 'blizzard',
+        },
+        sampled: {
+          realms: realmIds.length,
+          leaderboards: leaderboardsOk,
+          players: totalCharacters,
+          profiles: 0,
+          skipped404: 0,
+          specMismatch: 0,
+          unknownTalentNodes: 0,
+        },
+        classes: [],
+      },
+      stats,
+      failures,
+      leaderboards: { planned: jobs.length, ok: leaderboardsOk, failed: leaderboardsFailed },
+      preSpec,
+    }
+  }
 
   const specIds = [...perSpec.keys()]
   await mapPool(specIds, caps.maxConcurrentSpecs, async (specId) => {
@@ -699,7 +830,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     : { hash: null, build: version != null ? String(version) : null }
 
   const successfulProfiles = [...profileBySpec.values()].reduce((sum, bucket) => sum + bucket.profiles, 0)
-  const keyLevels = context.allKeyLevels.length ? { min: Math.min(...context.allKeyLevels), max: Math.max(...context.allKeyLevels) } : null
+  const keyLevels = minMax(context.allKeyLevels)
   const fetchedAt = Math.floor(now / 1000)
   const season = context.season
   const payload: MetaSnapshotPayload = {

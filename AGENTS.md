@@ -103,7 +103,11 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     inherit the website's 640 MB cap; the heap guard compares this process
     `heapUsed` to V8 `heap_size_limit` only, never cgroup `memory.current`.
     A lean sync should stay around 100–150 MB heap / under 250 MB RSS; CI
-    smokes start RSS under 150 MB and start heap under 50 MB.
+    smokes start RSS under 150 MB and start heap under 50 MB. Pre-spec
+    ingest keeps a compact per-player table (not a Map of board-backed
+    objects), trims each spec to `maxAttemptsPerSpec`, and loads playable
+    specializations sequentially. An EU-scale fixture of that phase peaks
+    around 130 MB heap under the 256 MB cap.
     CI smokes it against the built image (docker-scan on the PR, docker.yml on main) with no credentials and expects exit 4 / `skipped`.
     It reuses `runScheduledBlizzardMetaSync` (lean path, heap guard, deadline,
     fail-closed, last-good kept), even when `NUXT_META_NIGHTLY` is off, still

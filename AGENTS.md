@@ -87,6 +87,32 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     (default 400), `NUXT_META_MAX_CONCURRENT_SPECS` (default 1, max 8).
     The nightly samples spec by spec, keeps only per-spec count maps, and
     writes those aggregates to SQLite staging before assemble / gates / promote.
+    Profile sampling uses `caps.concurrency` (default 8, rate-gated ≤ 40 rps,
+    adaptive down to 8 rps after a 429, waiters honour `Retry-After`) within each
+    spec and stops at `samplePerSpec` / `maxAttemptsPerSpec`. Progress is logged
+    per finished spec and every 50 HTTP calls with a request rate. After each
+    finished spec the aggregate is staged, but mid-run snapshots are not promoted.
+    If the 45 min deadline hits after at least one spec has data, the run is
+    status `partial` (CLI exit 3) and `partialOutcome` is `published`,
+    `kept-last-good`, or `not-published`. Deadline partials still pass the
+    blocking sanity gates (DoD 1.24 / 1.26, including the 1.24 first-partial
+    exception: 429 rate ≤ 5 % (`META_MAX_429_RATE`),
+    profile success ≥ 70 %, 50 % n, n≥50→0 flip — DoD 1.26 is 50, matching
+    `META_SANITY_SPEC_FLIP_N`) plus a per-spec sample floor
+    (`profileCount >= META_MIN_BUILD_SAMPLE` = 50; local sync4 min was 208
+    across 40 specs). A 40×1 snapshot cannot replace a 39×200 last-good; one
+    `ok` row is promoted and purged at the end or deadline. If there has never
+    been a last-good snapshot, a partial with real specs (each published spec
+    `profileCount >= META_MIN_BUILD_SAMPLE` = 50; thinner specs omitted) may go
+    live even when the 429-rate gate fails (for example 34 % 429 like local
+    sync4 before the rate-gate fix): exit 3, `partialOutcome=published`,
+    `freshness.partial` set, `/meta` shows a "Partial data" note. Once a
+    last-good exists, a partial replaces it only if it passes the quality gate
+    (coverage ≥ last-good and n ≥ 50 per published spec, plus 429 / success /
+    50 % n / n-flip). `rollbackMetaSnapshot` re-points at the newest prior
+    `ok` snapshot, skipping only rows marked `freshness.partial` (a 39×200
+    non-partial predecessor wins over an older 40×200 row). A deadline with 0 specs stays `error` / exit 1.
+    External abort mid spec-phase or mid icon-phase still does not promote.
     A heap guard aborts at 70% of the effective ceiling on a CLI-sized old-space (≤ 512 MB) and at 85% in the website process (544 MB of the 640 MB cap; `--max-old-space-size` when set, else V8 `heap_size_limit`, optionally capped by `NUXT_META_HEAP_LIMIT_MB`). It also checks inside a leaderboard, not only between boards.
     A breach ends the run with status `error`, releases the lock, and keeps the last-good snapshot.
     Cross-process SQLite lock (row in `meta_sync_lock`, owner token + TTL of the
@@ -225,7 +251,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
   `same-origin`.
 - Homepage stats/pills: `GET /api/v1/catalog-summary` only. Do not fetch `/api/v1/profiles` (or layouts/wowup/changelogs) on `/` just to count — those blobs belong on `/strings`.
 - ECharts stays admin-only (`utils/echartsSetup.ts` + `components/admin/charts`). Do not restore a global `plugins/echarts.client.ts`.
-- Gate: `npm run typecheck`, `npm run lint`, `npm run test:unit`, and `npm run build`. Add `npm run verify:smoke` and `npm test` only when a page, component, layout, or public route changed. After dependency changes also run `npm run audit:prod`.
+- Gate: `npm run typecheck`, `npm run lint`, `npm run test:unit`, and `npm run build`. Add `npm run verify:smoke` and `npm test` only when a page, component, layout, or public route changed. After dependency changes also run `npm run audit:prod`. Local `npm run test:unit` and `scripts/mutation/check.py` pass `--test-concurrency=2` (not 0) so the Ubuntu VM does not peg every core and spin up Unraid fans; override by passing the flag explicitly. CI may keep its own setting if a workflow passes the flag; if it just runs `npm run test:unit` it gets 2.
 - Lint with `npm run lint` / `npm run lint:fix` (Nuxt ESLint Flat Config; no separate Prettier). `npm run lint` also runs `lint:uselect` (rejects option-shaped `value: ""`).
 - Validation uses Zod.
 - Motion: page View Transitions via `experimental.viewTransition` (Nuxt skips them under reduced motion). Scroll reveal is CSS-only `.reveal` (`animation-timeline: view()`), transform-only (opacity fails contrast audits), never on the LCP section, and off under `prefers-reduced-motion`. No JS animation libs.
@@ -371,6 +397,7 @@ npm run lint           # ESLint + USelect empty-value check
 npm run lint:fix       # auto-fix safe ESLint findings
 npm run lint:uselect    # reject option-shaped value: "" on select items
 npm run typecheck      # TypeScript check
+npm run test:unit      # node --test with --test-concurrency=2 (local default)
 npm run build          # production build (.output/)
 npm run verify         # clean + build + production smoke test
 npm run verify:smoke   # smoke test against existing .output/
@@ -657,7 +684,7 @@ Deliberately supersedes the privacy-minimal stance for CONSENTED visitors only. 
 - **Open legal points (docs only, not shown in the UI; not legal advice)**: (1) TODO owner: confirm a data processing agreement (DPA / AVV) with Cloudflare; the Privacy text (s12) already says the site is reached through a Cloudflare Tunnel, that Cloudflare acts as processor and transport and adds the country/city headers, and that it is the only external service; the DPA itself is not confirmed. (2) The Legal notice stays without name and address by the owner's decision (provider identification under German DDG s.5 is an open point). (3) Full IP and user agent for 13 months and a 13-month visitor cookie are the owner's explicit choice. (4) Backups older than the cutoff may still contain deleted rows.
 - **Live walkthrough**: `LIVE_URL=https://ui.magguu.xyz npx playwright test -c playwright.live.config.ts` (spec `live/walkthrough.live.ts`, never part of the normal run). Every non-GET request is aborted, there is no admin login. The only POSTs allowed are the consent calls of the two isolated tests: "Necessary only" sets just `mg_consent`; "Accept all" runs only with `LIVE_ACCEPT=1`, creates exactly one live visitor row and withdraws it again in the same test. Admin pages are tested by Unraid & Server, the privacy review is Code-Review's.
 - **Review follow-ups (F1 to F9, 2026-10-25)**: F9 `tests/consent.spec.ts` polls for the session cookies (the row is written before the browser processes Set-Cookie; this was the red docker verify at 86f0f3c). F1/F6 the web-vitals plugin checks GPC/DNT in the browser, Privacy s4 names `mg_consent` and the two localStorage keys (`nuxt-color-mode`, `lastSeenVersion`), s7 names the page load measurement (path + LCP/INP/CLS/TTFB, no id, deleted after 90 days), s11 names every cookie lifetime, the banner text states what happens without and with a click. F2 `AdBanner.vue` needs flag + consent "yes" + no GPC/DNT before it renders or loads anything (live `adsense_enabled` is `false`); **before AdSense is ever switched on, add a separate "advertising" purpose to the banner and Privacy**. F4 `server/utils/retentionCleanup.ts`: each retention step is isolated, failures are logged, not swallowed. F5 a GPC/DNT signal deletes the records and all three cookies (also the stored "yes"); the client asks the server once when a stored choice meets a signal. F7 per-network daily caps (`VISITOR_SESSIONS_PER_IP_DAY` 100, `VISITOR_HITS_PER_IP_DAY` 3000, column `visitor_sessions.ip_bucket` = IPv4 or IPv6 /64) so a hand-set `mg_consent` cannot fill the global limits. F8 the iconify `dns-prefetch` link is gone (consent proof columns are NOT stored: skipped on purpose, the cookie already carries time + version). The flag check and plugin wiring are covered by `tests/unit/consentWiring.test.ts`.
-- **Mutation check and drafts guard**: `python3 scripts/mutation/check.py [start [end]]` applies 126 hand-made mutants (flag checks, GPC/DNT, same-origin, body caps, trusted-proxy and CF headers, honeypot, time-trap token, route and plugin wiring, Meta live clock / lock / 429 pause) to a copy of the repo and runs the unit tests; all are killed, a survivor means a missing test (add one, then add the mutant). `tests/unit/draftIsolation.test.ts` keeps draft code in admin files only and the public content query on published rows; `scripts/verify-build.mjs` (`verifyDraftsNotPublic`) checks the built public pages and their initial scripts for draft markers.
+- **Mutation check and drafts guard**: `python3 scripts/mutation/check.py [start [end]]` applies 149 hand-made mutants (flag checks, GPC/DNT, same-origin, body caps, trusted-proxy and CF headers, honeypot, time-trap token, route and plugin wiring, Meta live clock / lock / 429 pause, deadline policy, tripAbort reason, in-flight 429 debounce) to a copy of the repo and runs the unit tests. Record the SCORE line from a full `python3 scripts/mutation/check.py` run; do not claim "all killed" from a partial slice. A survivor means a missing test (add one, then add the mutant). `tests/unit/draftIsolation.test.ts` keeps draft code in admin files only and the public content query on published rows; `scripts/verify-build.mjs` (`verifyDraftsNotPublic`) checks the built public pages and their initial scripts for draft markers.
 - **Live walkthrough** (not part of `npm test`): `LIVE_URL=https://ui.magguu.xyz npx playwright test -c playwright.live.config.ts` runs `live/walkthrough.live.ts` against production (public pages x mobile 390 / desktop 1280 x dark / light, axe, console and network checks, banner and cookie flow). All writes are aborted; the only calls let through are the consent calls of the isolated "Necessary only" test and, with `LIVE_ACCEPT=1`, "Accept all" (creates one visitor row, withdrawn in the same test). No admin login. First live run findings (fixed): `:global(html.light) .x :deep(y)` in a scoped style compiles to a bare `html.light{...}` rule (restyles the whole page; use `html.light .x :deep(y)`, `verifyNoBareThemeRules` in verify-build guards it), light-theme contrast of prose text and inline code, and the scrollable string preview needs `tabindex="0"` (axe `scrollable-region-focusable`, mobile only). Cloudflare injects its own `/cdn-cgi/challenge-platform` detection beacon on the live site; the spec ignores it.
 
 - **Visual audit (2026-10-25)**: the footer contact link renders `href="/imprint"` in the server HTML and becomes `mailto:` after mount (Cloudflare Email Obfuscation, see `ContactEmail`), so it always has a real href (`tests/layout-links.spec.ts`, which also asserts every header/footer/mobile-menu link and button has an accessible name). Theme switch: `setTheme` in `layouts/default.vue` sets `html.theme-switching` (transitions off, `assets/css/main.css`) for the frames of the switch; before, text classes flipped instantly while the shell background faded 300 ms (contrast dipped to 2.94 in a frame). `tests/theme-switch.spec.ts` samples every animation frame and requires contrast >= 3. `tests/visual-audit.spec.ts` = console + axe for /, /guide, /strings, light and dark, 1280x800.

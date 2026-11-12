@@ -15,6 +15,8 @@ describe('meta copy and paths', () => {
     assert.match(META_COPY_DE.attribution, /Daten bereitgestellt von der Battle.net-API/)
     assert.equal(META_COPY.indexTitle, 'Mythic+ Meta')
     assert.match(META_COPY.empty, /Collecting data/)
+    assert.equal(META_COPY.partialNote, 'Partial data.')
+    assert.equal(META_COPY_DE.partialNote, 'Unvollständige Daten.')
     assert.equal(META_COPY.specTitle('Mage', 'Fire'), 'Fire Mage – Mythic+ Builds')
   })
 

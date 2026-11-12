@@ -10,6 +10,9 @@
         </dd>
       </div>
     </dl>
+    <p v-if="freshness?.partial" class="mt-2 text-xs font-medium" role="note" :class="tone.isDark.value ? 'text-amber-300' : 'text-amber-800'">
+      {{ copy.partialNote }}
+    </p>
     <p v-if="stale" class="mt-2 text-xs font-medium" role="note" :class="tone.isDark.value ? 'text-amber-300' : 'text-amber-800'">
       This snapshot is older than {{ staleAfterDays }} days and may not reflect the current patch.
     </p>

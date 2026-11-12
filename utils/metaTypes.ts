@@ -36,8 +36,8 @@ export const META_SAMPLE_PER_SPEC = 200
 export const META_MAX_ATTEMPTS_PER_SPEC = 400
 /** Target request rate for the nightly (hard cap 50/s). */
 export const META_MAX_RPS = 40
-/** In-flight Blizzard requests during the nightly. */
-export const META_CONCURRENCY = 16
+/** In-flight Blizzard requests during the nightly. Kept modest so a 429 can pause the gate before a burst slips through. */
+export const META_CONCURRENCY = 8
 /** Per-request timeout in ms. */
 export const META_REQUEST_TIMEOUT_MS = 20_000
 /** Stale lock / run deadline. 200 profiles/spec takes about 15–20 minutes. */
@@ -218,6 +218,8 @@ export type MetaFreshness = {
   keyLevels: { min: number, max: number } | null
   region: typeof META_REGION
   source: 'blizzard'
+  /** First-publish or deadline partial; omitted on a complete ok snapshot. */
+  partial?: true
 }
 
 export type MetaTalentTreeState = {

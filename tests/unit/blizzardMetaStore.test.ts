@@ -3,13 +3,17 @@ import { describe, it } from 'node:test'
 import { readFileSync } from 'node:fs'
 import Database from 'better-sqlite3'
 import { initializeDatabase } from '../../server/database/bootstrap'
+import { META_CLASSES } from '../../utils/metaCatalog'
 import { parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
+import { markMetaSnapshotPartial } from '../../server/utils/blizzardMetaPolicy'
 import { META_REGION, META_SNAPSHOT_TTL_MS } from '../../utils/metaTypes'
 import {
   deleteExpiredMetaSnapshots,
+  deleteStagedMetaSnapshot,
   promoteMetaSnapshot,
   readCurrentMetaSnapshot,
   readMetaSnapshotState,
+  rollbackMetaSnapshot,
   writeMetaSnapshot,
   writeStagedMetaSnapshot,
 } from '../../server/utils/blizzardMetaStore'
@@ -25,6 +29,52 @@ function payload() {
   const parsed = parseMetaSnapshotPayload(readFileSync(new URL('../fixtures/blizzard-meta/snapshot.json', import.meta.url), 'utf8'))
   assert.ok(parsed)
   return parsed
+}
+
+function withProfileCounts(base: ReturnType<typeof payload>, profileCount: number): ReturnType<typeof payload> {
+  return {
+    ...base,
+    classes: base.classes.map(cls => ({
+      ...cls,
+      specs: cls.specs.map(spec => ({ ...spec, profileCount })),
+    })),
+  }
+}
+
+
+function specCountPayload(perSpec: number, specCount: number): ReturnType<typeof payload> {
+  const base = payload()
+  const template = base.classes[0]!.specs[0]!
+  let left = specCount
+  const classes = []
+  for (const cls of META_CLASSES) {
+    const specs = []
+    for (const spec of cls.specs) {
+      if (left <= 0) break
+      left -= 1
+      specs.push({
+        ...template,
+        slug: spec.slug,
+        label: spec.name,
+        n: 8000,
+        share: 0,
+        profileCount: perSpec,
+      })
+    }
+    if (specs.length) classes.push({ slug: cls.slug, label: cls.name, n: specs.reduce((sum, spec) => sum + spec.n, 0), specs })
+    if (left <= 0) continue
+  }
+  return { ...base, classes }
+}
+
+function oneSpecPayload(base: ReturnType<typeof payload>, profileCount: number): ReturnType<typeof payload> {
+  return {
+    ...base,
+    classes: base.classes.slice(0, 1).map(cls => ({
+      ...cls,
+      specs: cls.specs.slice(0, 1).map(spec => ({ ...spec, profileCount })),
+    })),
+  }
 }
 
 describe('meta snapshot store', () => {
@@ -102,5 +152,78 @@ describe('meta snapshot store', () => {
     assert.equal(cols.some(c => c.name === 'id'), false)
     const written = writeMetaSnapshot(sqlite, payload())
     assert.equal(readCurrentMetaSnapshot(sqlite)?.snapshotId, written.snapshotId)
+  })
+
+  it('clamps an over-1 heroSplit share so a built snapshot can be stored', () => {
+    const sqlite = open()
+    const raw = payload()
+    const fire = raw.classes.find(cls => cls.slug === 'mage')?.specs.find(spec => spec.slug === 'fire')
+    assert.ok(fire)
+    assert.ok(fire.heroSplit[0])
+    fire.heroSplit[0].share = 1.414
+    const written = writeMetaSnapshot(sqlite, raw)
+    const stored = readCurrentMetaSnapshot(sqlite)
+    assert.ok(stored)
+    assert.equal(stored.snapshotId, written.snapshotId)
+    const storedFire = stored.payload.classes.find(cls => cls.slug === 'mage')?.specs.find(spec => spec.slug === 'fire')
+    assert.ok(storedFire)
+    assert.equal(storedFire.heroSplit[0]?.share, 1)
+  })
+
+  it('rolls back past a thin partial intermediate to the fuller predecessor', () => {
+    const sqlite = open()
+    const now = Date.now()
+    const full = writeMetaSnapshot(sqlite, withProfileCounts(payload(), 200), now, META_SNAPSHOT_TTL_MS)
+    const thin = writeMetaSnapshot(sqlite, markMetaSnapshotPartial(oneSpecPayload(payload(), 1)), now + 1_000, META_SNAPSHOT_TTL_MS)
+    const current = writeMetaSnapshot(sqlite, withProfileCounts(payload(), 200), now + 2_000, META_SNAPSHOT_TTL_MS)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + 3_000)?.snapshotId, current.snapshotId)
+    const rolled = rollbackMetaSnapshot(sqlite, META_REGION, now + 3_000)
+    assert.ok(rolled)
+    assert.equal(rolled.snapshotId, full.snapshotId)
+    assert.notEqual(rolled.snapshotId, thin.snapshotId)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + 3_000)?.snapshotId, full.snapshotId)
+  })
+
+  it('rolls back to the newest predecessor, not an older slightly fuller snapshot', () => {
+    const sqlite = open()
+    const now = Date.now()
+    const base = payload()
+    const oldest = writeMetaSnapshot(sqlite, withProfileCounts(base, 200), now, META_SNAPSHOT_TTL_MS)
+    const predecessor = writeMetaSnapshot(sqlite, withProfileCounts(base, 198), now + 1_000, META_SNAPSHOT_TTL_MS)
+    const current = writeMetaSnapshot(sqlite, withProfileCounts(base, 199), now + 2_000, META_SNAPSHOT_TTL_MS)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + 3_000)?.snapshotId, current.snapshotId)
+    const rolled = rollbackMetaSnapshot(sqlite, META_REGION, now + 3_000)
+    assert.ok(rolled)
+    assert.equal(rolled.snapshotId, predecessor.snapshotId)
+    assert.notEqual(rolled.snapshotId, oldest.snapshotId)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + 3_000)?.snapshotId, predecessor.snapshotId)
+  })
+
+
+  it('rolls back to the newest non-partial predecessor even when an older row covers more specs', () => {
+    const sqlite = open()
+    const now = Date.now()
+    const olderFull = writeMetaSnapshot(sqlite, specCountPayload(200, 40), now, META_SNAPSHOT_TTL_MS)
+    const predecessor = writeMetaSnapshot(sqlite, specCountPayload(200, 39), now + 1_000, META_SNAPSHOT_TTL_MS)
+    const current = writeMetaSnapshot(sqlite, specCountPayload(200, 40), now + 2_000, META_SNAPSHOT_TTL_MS)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + 3_000)?.snapshotId, current.snapshotId)
+    const rolled = rollbackMetaSnapshot(sqlite, META_REGION, now + 3_000)
+    assert.ok(rolled)
+    assert.equal(rolled.snapshotId, predecessor.snapshotId)
+    assert.notEqual(rolled.snapshotId, olderFull.snapshotId)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + 3_000)?.snapshotId, predecessor.snapshotId)
+  })
+
+  it('deletes only a staging snapshot and leaves ok rows alone', () => {
+    const sqlite = open()
+    const now = 1_700_000_000_000
+    const ok = writeMetaSnapshot(sqlite, payload(), now, META_SNAPSHOT_TTL_MS)
+    const staged = writeStagedMetaSnapshot(sqlite, payload(), now + 1_000, META_SNAPSHOT_TTL_MS)
+    assert.equal(deleteStagedMetaSnapshot(sqlite, staged.snapshotId), true)
+    assert.equal(deleteStagedMetaSnapshot(sqlite, staged.snapshotId), false)
+    assert.equal(deleteStagedMetaSnapshot(sqlite, ok.snapshotId), false)
+    assert.equal(readCurrentMetaSnapshot(sqlite, META_REGION, now + 1_000)?.snapshotId, ok.snapshotId)
+    const leftover = sqlite.prepare("SELECT COUNT(*) AS n FROM meta_snapshots WHERE status = 'staging'").get() as { n: number }
+    assert.equal(leftover.n, 0)
   })
 })

@@ -35,6 +35,7 @@ export type MetaCopy = {
   source: string
   sourceValue: string
   noSnapshot: string
+  partialNote: string
   roleAll: string
   roleDps: string
   roleTank: string
@@ -148,6 +149,7 @@ export const META_COPY_EN: MetaCopy = {
   source: 'Source',
   sourceValue: 'Blizzard Battle.net API',
   noSnapshot: 'No snapshot yet.',
+  partialNote: 'Partial data.',
   roleAll: 'All',
   roleDps: 'DPS',
   roleTank: 'Tank',
@@ -219,6 +221,7 @@ export const META_COPY_DE: MetaCopy = {
   attribution: 'Daten bereitgestellt von der Battle.net-API von Blizzard. Nicht affiliert mit oder empfohlen von Blizzard Entertainment.',
   empty: 'Daten werden gesammelt.',
   unavailable: 'Daten nicht verfügbar.',
+  partialNote: 'Unvollständige Daten.',
 }
 
 /** Confirmed language: English. */

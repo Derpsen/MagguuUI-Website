@@ -17,4 +17,12 @@ describe('meta own tooltips', () => {
     assert.match(tip, /aria-describedby/)
     assert.match(tip, /keydown\.escape/)
   })
+
+  it('defers hydration of the below-fold heatmap, gear and tooltips until they are visible', () => {
+    const page = readFileSync(new URL('../../pages/meta/[classSlug]/[specSlug].vue', import.meta.url), 'utf8')
+    assert.match(page, /<LazyMetaSpecBelowFold\b/)
+    assert.match(page, /hydrate-on-visible/)
+    assert.doesNotMatch(page, /<MetaTalentHeatmap\b/)
+    assert.doesNotMatch(page, /<MetaGearSlots\b/)
+  })
 })

@@ -645,3 +645,9 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 - Branch/PR C2: own `/meta` tooltips (DoD 3.08), Lighthouse budgets for `/meta` and `/meta/mage/fire` against the fixture (DoD 6.01 / 14.07). `/meta` stays out of nav, sitemap and footer until that budget is green in CI. Do not start AdSense/PR D.
 - Cheap Code-Review LOWs from the #185 note, included here: client payload is a boolean (`nuxt-ads-enabled`), not the raw `NUXT_ADS` string; `scripts/verify-ads-runtime.mjs` supplies a dummy `NUXT_ADMIN_PASSWORD` when unset, seeds the fixture, and checks AdSlot markup on / off; `e2e-ads (NUXT_ADS=on)` job in `build.yml` runs `tests/meta-ads.spec.ts` (not part of the required aggregator; listed in the failure-alarm `needs`).
 - Still later / not C2: Google CSP entries in `server/utils/htmlCsp.ts:37-38` belong to PR D.
+
+## 2026-11-12 Meta C2 TBT cut (no budget loosen)
+
+- `/meta/mage/fire` mobile TBT was 381 ms vs the 320 budget. Real work, not a looser budget: the spec page SSR-renders heatmap, gear and tooltips, then hydrates that below-fold island only when visible (`LazyMetaSpecBelowFold` + `hydrate-on-visible`).
+- `useMetaTone` class tokens (and below-fold inline colours) now include light + `dark:` / CSS-variable pairs so an unhydrated island stays contrast-safe once `<html>` is light. Tooltip e2e scrolls `#talents` and waits for `[data-meta-below-fold][data-hydrated=true]`.
+- `/meta` still stays out of nav/sitemap/footer until this budget is green in CI on #190. Budget numbers unchanged.

@@ -37,9 +37,7 @@ const tooltipId = `meta-tip-${useId()}`
 const open = ref(false)
 let hideTimer: ReturnType<typeof setTimeout> | null = null
 
-const panelClass = computed(() => (tone.isDark.value
-  ? 'border bg-gray-950 shadow-none'
-  : 'border bg-white shadow-none'))
+const panelClass = 'border bg-white shadow-none dark:bg-gray-950'
 
 function show() {
   if (hideTimer) { clearTimeout(hideTimer); hideTimer = null }

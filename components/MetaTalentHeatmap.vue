@@ -15,8 +15,8 @@
               <li
                 v-for="talent in tree.byBand[band.id]"
                 :key="talent.id"
-                class="flex items-baseline justify-between gap-2 px-2 py-1 text-sm"
-                :style="{ backgroundColor: heat(talent.share) }"
+                class="flex items-baseline justify-between gap-2 bg-[var(--meta-heat-light)] px-2 py-1 text-sm dark:bg-[var(--meta-heat-dark)]"
+                :style="heatStyle(talent.share)"
               >
                 <span class="min-w-0">
                   <MetaTooltip :trigger-class="tone.strong.value">
@@ -82,9 +82,9 @@ const trees = computed(() => [
 ])
 const hasAny = computed(() => trees.value.some(tree => tree.talents.length))
 
-function heat(share: number) {
-  const max = tone.isDark.value ? 28 : 22
-  const pct = Math.round(Math.max(0, Math.min(1, share)) * max)
-  return `color-mix(in srgb, var(--color-brand-500) ${pct}%, transparent)`
+function heatStyle(share: number) {
+  const clamped = Math.max(0, Math.min(1, share))
+  const mix = (max: number) => `color-mix(in srgb, var(--color-brand-500) ${Math.round(clamped * max)}%, transparent)`
+  return { '--meta-heat-light': mix(22), '--meta-heat-dark': mix(28) }
 }
 </script>

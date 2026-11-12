@@ -81,7 +81,10 @@ vue-tsc error set is a separate audit PR.
 - Lighthouse budgets for `/meta` and `/meta/mage/fire` use the checked-in
   snapshot fixture as the baseline (DoD 6.01 / 14.07). CI seeds it with
   `scripts/seed-meta-fixture.ts` before the production Lighthouse server starts.
-  Never set a fixture-seed flag on Unraid.
+  Never set a fixture-seed flag on Unraid. The spec page SSR-renders the
+  heatmap, gear and tooltips, then hydrates that below-fold block only when
+  it is visible (`LazyMetaSpecBelowFold` + `hydrate-on-visible`) so it stays
+  off the mobile TBT path.
 - `/meta` stays off the header, footer and sitemap until that budget is green
   in CI; then the links go in.
 

@@ -86,6 +86,9 @@ test('/meta/mage/fire is a filled fixture spec page with CLS under 0.1, and empt
   const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
   expect(axe.violations.map(v => v.id)).toEqual([])
   expect(await page.locator('a[href*="wowhead"]').count()).toBe(0)
+  // Heatmap/tooltips are SSR'd but hydrate only when visible, so scroll first.
+  await page.locator('#talents').scrollIntoViewIfNeeded()
+  await expect(page.locator('[data-meta-below-fold][data-hydrated="true"]')).toBeVisible()
   const trigger = page.locator('[data-meta-tooltip-trigger]').first()
   await expect(trigger).toBeVisible()
   await trigger.focus()

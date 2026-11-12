@@ -91,7 +91,7 @@ Style: Marco dislikes "AI slop" (cards, icon boxes, flashy buttons). Use plain s
     `tests/unit/blizzardMetaSync.test.ts`, `tests/unit/blizzardMetaStore.test.ts`,
     `tests/unit/metaSnapshot.test.ts`, `tests/unit/metaCopy.test.ts`,
     `tests/meta.spec.ts`.
-    **DoD / rollout:** Own tooltips (DoD 3.08) and the `/meta` Lighthouse budget measured against the fixture snapshot (DoD 6.01 / 14.07) land in C2. `/meta` stays off the header, footer and sitemap until that budget is green in CI; then the links go in. AdBanner / AdSense migration is PR D. Routes and APIs stay reachable by direct URL so the pages can be reviewed and budgeted.
+    **DoD / rollout:** Own tooltips (DoD 3.08) and the `/meta` Lighthouse budget measured against the fixture snapshot (DoD 6.01 / 14.07) land in C2. Below-fold heatmap, gear and tooltips on a spec page are SSR'd and hydrate only when visible (`LazyMetaSpecBelowFold`, `hydrate-on-visible`) to keep mobile TBT in budget. `/meta` stays off the header, footer and sitemap until that budget is green in CI; then the links go in. AdBanner / AdSense migration is PR D. Routes and APIs stay reachable by direct URL so the pages can be reviewed and budgeted.
   - Settings header/metric also shows `App {version} · sha-{short}` (or `dev`)
     from the same `GIT_SHA` via `/api/v1/admin/system/info`. docker.yml already
     passes `GIT_SHA=${{ github.sha }}`.

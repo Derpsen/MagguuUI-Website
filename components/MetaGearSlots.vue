@@ -12,8 +12,8 @@
                 alt=""
                 width="36"
                 height="36"
-                class="h-9 w-9 shrink-0"
-                :style="{ boxShadow: `inset 0 0 0 1px ${metaQualityColor(row.items[0]!.quality, tone.isDark.value)}` }"
+                class="h-9 w-9 shrink-0 shadow-[inset_0_0_0_1px_var(--meta-q-light)] dark:shadow-[inset_0_0_0_1px_var(--meta-q-dark)]"
+                :style="qualityStyle(row.items[0]!.quality)"
                 loading="lazy"
                 decoding="async"
               >
@@ -23,9 +23,9 @@
                   <p class="shrink-0 text-base font-semibold tabular-nums" :class="tone.strong.value">{{ formatShare(row.items[0]!.share) }}</p>
                 </div>
                 <MetaTooltip
-                  class="text-sm font-medium"
+                  class="text-sm font-medium text-[var(--meta-q-light)] dark:text-[var(--meta-q-dark)]"
                   :trigger-class="'font-medium'"
-                  :style="{ color: metaQualityColor(row.items[0]!.quality, tone.isDark.value) }"
+                  :style="qualityStyle(row.items[0]!.quality)"
                 >
                   {{ row.items[0]!.label }}
                   <template #content>
@@ -51,8 +51,8 @@
             <ol v-if="row.items.length > 1" class="mt-2 space-y-1 border-t pt-2" :class="tone.rule.value">
               <li v-for="item in row.items.slice(1)" :key="item.itemId" class="flex items-baseline justify-between gap-3 text-xs">
                 <MetaTooltip
-                  class="min-w-0 truncate"
-                  :style="{ color: metaQualityColor(item.quality, tone.isDark.value) }"
+                  class="min-w-0 truncate text-[var(--meta-q-light)] dark:text-[var(--meta-q-dark)]"
+                  :style="qualityStyle(item.quality)"
                 >
                   {{ item.label }}
                   <template #content>
@@ -97,6 +97,13 @@ const LEFT = ['HEAD', 'NECK', 'SHOULDER', 'BACK', 'CHEST', 'WRIST', 'HANDS']
 const RIGHT = ['WAIST', 'LEGS', 'FEET', 'FINGER', 'TRINKET', 'MAIN_HAND', 'OFF_HAND', 'RANGED']
 
 type Row = { key: string, label: string, items: MetaGearCardItem[], anchor?: string }
+
+function qualityStyle(quality: string | null | undefined) {
+  return {
+    '--meta-q-light': metaQualityColor(quality, false),
+    '--meta-q-dark': metaQualityColor(quality, true),
+  }
+}
 
 function mergeSlot(map: Map<string, MetaGearCardItem[]>, slot: string, items: MetaGearCardItem[]) {
   const existing = map.get(slot) ?? []

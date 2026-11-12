@@ -16,11 +16,13 @@ const FACE_URLS: Record<FontFaceId, string> = {
 /**
  * Preloads the faces the first screen of this route draws (utils/fontPreload.ts, assets/css/fonts.css uses
  * `font-display: optional`): the font has to be in before the first render or the page keeps the metric-matched
- * fallback for this view. Same hashed files as the CSS.
+ * fallback for this view. Same hashed files as the CSS. Evaluated once per request (server) and once at boot (client,
+ * same path as the server HTML): a reactive getter would add a watcher to the hydration task, and later client-side
+ * navigations gain nothing from a preload (the faces are cached by then).
  */
 export default defineNuxtPlugin(() => {
   const route = useRoute()
-  useHead(() => ({
+  useHead({
     link: fontFacesForPath(route.path).map(id => ({
       rel: 'preload',
       as: 'font',
@@ -28,5 +30,5 @@ export default defineNuxtPlugin(() => {
       href: FACE_URLS[id],
       crossorigin: 'anonymous',
     })),
-  }))
+  })
 })

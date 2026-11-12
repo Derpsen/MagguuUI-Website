@@ -1,48 +1,85 @@
 /**
- * In-process lock so the nightly Meta job cannot overlap itself.
- * A stuck hold expires after TTL, but a running job can ask to be held
- * until its deadline so a second run cannot start mid-job.
+ * Cross-process Meta sync lock stored in SQLite, so the nightly task and the
+ * manual CLI (a second Node process in the same container) cannot overlap.
+ * A stuck hold expires after TTL, but a running job can ask to be held until
+ * its deadline so a second run cannot start mid-job.
  */
+import { randomUUID } from 'node:crypto'
+import { META_SYNC_LOCK_TABLE_SQL } from '../database/metaSyncLockSql'
+import { META_JOB_TIMEOUT_MS } from '~/utils/metaTypes'
+import type { MetaSqlite } from './blizzardMetaStore'
 
-const TTL_MS = 45 * 60 * 1000
-let heldUntil = 0
-
-export const BLIZZARD_META_LOCK_TTL_MS = TTL_MS
+/** Extra hold after the job deadline so a winding-down run cannot be overlapped. */
+export const BLIZZARD_META_LOCK_GRACE_MS = 5 * 60 * 1000
+export const BLIZZARD_META_LOCK_TTL_MS = META_JOB_TIMEOUT_MS + BLIZZARD_META_LOCK_GRACE_MS
+const TTL_MS = BLIZZARD_META_LOCK_TTL_MS
+const LOCK_ID = 1
 
 export type BlizzardMetaLockClock = number | (() => number)
+
+export type BlizzardMetaLockAcquire =
+  | { ok: true, ownerToken: string, heldUntil: number }
+  | { ok: false }
 
 function at(now: BlizzardMetaLockClock): number {
   return typeof now === 'function' ? now() : now
 }
 
-export function tryAcquireBlizzardMetaLock(now: BlizzardMetaLockClock = Date.now(), holdUntil = 0): boolean {
+export function ensureMetaSyncLockTable(sqlite: MetaSqlite) {
+  sqlite.exec(META_SYNC_LOCK_TABLE_SQL)
+}
+
+export function tryAcquireBlizzardMetaLock(
+  sqlite: MetaSqlite,
+  now: BlizzardMetaLockClock = Date.now(),
+  holdUntil = 0,
+  ownerToken = randomUUID(),
+): BlizzardMetaLockAcquire {
+  ensureMetaSyncLockTable(sqlite)
   const t = at(now)
-  if (heldUntil > t) return false
-  heldUntil = Math.max(t + TTL_MS, holdUntil)
-  return true
+  const heldUntil = Math.max(t + TTL_MS, holdUntil)
+  const acquire = sqlite.transaction(() => {
+    const result = sqlite.prepare(`
+      INSERT INTO meta_sync_lock (id, owner_token, held_until)
+      VALUES (?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        owner_token = excluded.owner_token,
+        held_until = excluded.held_until
+      WHERE meta_sync_lock.held_until <= ?
+    `).run(LOCK_ID, ownerToken, heldUntil, t)
+    if (result.changes !== 1) return { ok: false } as const
+    return { ok: true, ownerToken, heldUntil } as const
+  })
+  return acquire.immediate()
 }
 
-export function releaseBlizzardMetaLock() {
-  heldUntil = 0
+export function releaseBlizzardMetaLock(sqlite: MetaSqlite, ownerToken: string) {
+  ensureMetaSyncLockTable(sqlite)
+  sqlite.prepare('DELETE FROM meta_sync_lock WHERE id = ? AND owner_token = ?').run(LOCK_ID, ownerToken)
 }
 
-export function isBlizzardMetaLockHeld(now: BlizzardMetaLockClock = Date.now()): boolean {
-  return heldUntil > at(now)
+export function isBlizzardMetaLockHeld(sqlite: MetaSqlite, now: BlizzardMetaLockClock = Date.now()): boolean {
+  ensureMetaSyncLockTable(sqlite)
+  const row = sqlite.prepare('SELECT held_until FROM meta_sync_lock WHERE id = ?').get(LOCK_ID) as { held_until: number } | undefined
+  return Boolean(row && row.held_until > at(now))
 }
 
-export function resetBlizzardMetaLock() {
-  heldUntil = 0
+export function resetBlizzardMetaLock(sqlite: MetaSqlite) {
+  ensureMetaSyncLockTable(sqlite)
+  sqlite.prepare('DELETE FROM meta_sync_lock WHERE id = ?').run(LOCK_ID)
 }
 
 export async function withBlizzardMetaLock<T>(
+  sqlite: MetaSqlite,
   fn: () => Promise<T>,
   now: BlizzardMetaLockClock = Date.now(),
   holdUntil = 0,
 ): Promise<{ ok: true, value: T } | { ok: false, reason: 'locked' }> {
-  if (!tryAcquireBlizzardMetaLock(now, holdUntil)) return { ok: false, reason: 'locked' }
+  const acquired = tryAcquireBlizzardMetaLock(sqlite, now, holdUntil)
+  if (!acquired.ok) return { ok: false, reason: 'locked' }
   try {
     return { ok: true, value: await fn() }
   } finally {
-    releaseBlizzardMetaLock()
+    releaseBlizzardMetaLock(sqlite, acquired.ownerToken)
   }
 }

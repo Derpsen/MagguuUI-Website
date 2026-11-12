@@ -65,6 +65,7 @@ import {
 import { withBlizzardMetaLock } from './blizzardMetaLock'
 import { evaluateMetaRunPolicy } from './blizzardMetaPolicy'
 import {
+  clearExpiredMetaSyncStaging,
   clearMetaSyncStaging,
   deleteExpiredMetaSnapshots,
   promoteMetaSnapshot,
@@ -154,6 +155,9 @@ export type ScheduledMetaResult = {
   status: MetaRunStatus
   reason?: string
   snapshotId?: number | null
+  http429?: number
+  specsWithData?: number
+  durationMs?: number
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -348,7 +352,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   const { get } = createGetter(options, stats, traffic, secrets, abort)
   const staging = openStagingDb(options.sqlite)
   const runToken = options.runToken || `meta-sync-${clock()}`
-  clearMetaSyncStaging(staging.sqlite)
+  clearExpiredMetaSyncStaging(staging.sqlite, now)
   const failures: ProfileFailures = {
     notFound: 0, other: 0, specMismatch: 0, noLoadout: 0,
     badLoadoutCode: 0, outdatedTree: 0, exceptions: 0, attempted: 0,
@@ -686,6 +690,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     if (icon) spellIcons.set(id, icon)
   }, abort)
   applySpellIcons(classes, spellIcons)
+  if (syncAborted(abort)) throw new Error('Meta nightly aborted')
 
   const hashes = [...new Set(currentHashByClass.values())]
   const version = versions.sort((a, b) => versions.filter(v => v === b).length - versions.filter(v => v === a).length)[0]
@@ -741,7 +746,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     leaderboards: context.leaderboards,
   }
   } finally {
-    try { clearMetaSyncStaging(staging.sqlite) } catch { /* keep the original error */ }
+    try { clearMetaSyncStaging(staging.sqlite, runToken) } catch { /* keep the original error */ }
     staging.close()
   }
 }
@@ -770,6 +775,8 @@ export async function runScheduledBlizzardMetaSync(input: {
   deadline?: number
   heap?: MetaHeapMonitor
   abortController?: AbortController
+  /** Manual CLI: run the same job path even when NUXT_META_NIGHTLY is off. Still needs credentials. */
+  force?: boolean
 }): Promise<ScheduledMetaResult> {
   const clock = asClock(input.now)
   const startedAt = clock()
@@ -795,12 +802,20 @@ export async function runScheduledBlizzardMetaSync(input: {
     })
     const push = input.kumaPush ?? pushMetaKuma
     await push(input.config.metaKumaPushUrl, kumaStatusForMetaRun(status), reason || status)
-    return { status, reason, snapshotId: record.snapshotId }
+    const specsWithData = nPerSpec ? Object.values(nPerSpec).filter(n => n > 0).length : 0
+    return {
+      status,
+      reason,
+      snapshotId: record.snapshotId,
+      http429: stats?.http429 ?? 0,
+      specsWithData,
+      durationMs: clock() - startedAt,
+    }
   }
 
   const credentials = blizzardCredentialsFromConfig(input.config)
-  if (!nightlyOn) {
-    const locked = await withBlizzardMetaLock(async () => {
+  if (!nightlyOn && !input.force) {
+    const locked = await withBlizzardMetaLock(input.sqlite, async () => {
       deleteExpiredMetaSnapshots(input.sqlite, clock())
     }, clock, deadline)
     if (!locked.ok) return finish('locked', 'A Meta update is already running')
@@ -812,7 +827,7 @@ export async function runScheduledBlizzardMetaSync(input: {
 
   const sampleCaps = sampleCapsFromRuntimeConfig(input.config)
   const caps = mergeCaps({ ...sampleCaps, ...input.caps })
-  const locked = await withBlizzardMetaLock(async () => {
+  const locked = await withBlizzardMetaLock(input.sqlite, async () => {
     try {
     deleteExpiredMetaSnapshots(input.sqlite, clock())
     const previous = readCurrentMetaSnapshot(input.sqlite, META_REGION, clock())

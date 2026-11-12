@@ -648,3 +648,9 @@ export const metaSyncSpecStaging = sqliteTable('meta_sync_spec_staging', {
   runIdx: index('idx_meta_sync_spec_staging_run').on(table.runToken),
 }))
 
+export const metaSyncLock = sqliteTable('meta_sync_lock', {
+  id: integer('id').primaryKey(),
+  ownerToken: text('owner_token').notNull(),
+  heldUntil: integer('held_until').notNull(),
+})
+

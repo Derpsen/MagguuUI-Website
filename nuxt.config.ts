@@ -70,7 +70,7 @@ export default defineNuxtConfig({
     '@nuxtjs/sitemap',
     '@nuxtjs/robots',
     'nuxt-link-checker',
-    // @nuxt/icon, @nuxtjs/color-mode, @nuxt/fonts are auto-registered by @nuxt/ui v4
+    // @nuxt/icon and @nuxtjs/color-mode are auto-registered by @nuxt/ui v4 (@nuxt/fonts is not: ui.fonts: false below)
   ],
 
   site: {

@@ -914,8 +914,8 @@
   {
     "name": "fontPreload: query and hash are not stripped",
     "file": "utils/fontPreload.ts",
-    "find": "path.split(/[?#]/)[0] || '/'",
-    "repl": "path || '/'"
+    "find": "(path.split(/[?#]/)[0] || '/').toLowerCase()",
+    "repl": "(path || '/').toLowerCase()"
   },
   {
     "name": "fontPreload: admin has no mono (login draws it)",
@@ -928,6 +928,12 @@
     "file": "plugins/font-preload.ts",
     "find": "fontFacesForPath(route.path)",
     "repl": "fontFacesForPath('/')"
+  },
+  {
+    "name": "nuxt.config: @nuxt/fonts allowed again",
+    "file": "nuxt.config.ts",
+    "find": "    fonts: false,",
+    "repl": "    fonts: true,"
   },
   {
     "name": "setup.css: rise animation not behind reduced-motion",
@@ -972,12 +978,6 @@
     "repl": ""
   },
   {
-    "name": "nuxt.config: @nuxt/fonts allowed again",
-    "file": "nuxt.config.ts",
-    "find": "    fonts: false,",
-    "repl": "    fonts: true,"
-  },
-  {
     "name": "guide: hero shot lazy instead of eager",
     "file": "pages/guide.vue",
     "find": "          eager\n",
@@ -1000,5 +1000,11 @@
     "file": "assets/css/fonts.css",
     "find": "@font-face { font-family: 'MG Sans Noto Sans';",
     "repl": "@font-face { font-family: 'MG Sans Roboto'; src: local('Roboto'); size-adjust: 105.2101%; ascent-override: 98.6597%; descent-override: 21.1006%; line-gap-override: 0%; }\n@font-face { font-family: 'MG Sans Noto Sans';"
+  },
+  {
+    "name": "fontPreload: path is not lower-cased (/Admin/login)",
+    "file": "utils/fontPreload.ts",
+    "find": "[0] || '/').toLowerCase()",
+    "repl": "[0] || '/')"
   }
 ]

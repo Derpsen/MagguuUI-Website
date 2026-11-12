@@ -142,7 +142,8 @@ describe('setup pages: setup.css', () => {
   })
 
   it('card and list grids that hold long or truncating text can shrink (minmax(0, 1fr))', () => {
-    assert.match(setup, /\.guide-layout \{[^}]*minmax\(0,\s*1fr\)/)
+    // the base rule only (^ ... m): the @media rule below also contains minmax(0, 1fr) and must not satisfy this
+    assert.match(setup, /^\.guide-layout \{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);/m)
   })
 
   it('the strings tabs stack on mobile and only stick from 768px (a sticky multi-row block ate the viewport at 320px)', () => {

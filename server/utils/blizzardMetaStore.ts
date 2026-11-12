@@ -11,6 +11,7 @@ import type Database from 'better-sqlite3'
 import { parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
 import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload, type MetaTalentLayout } from '~/utils/metaTypes'
 import type { SerializedProfileBucket, SpecPop } from './blizzardMetaAggregate'
+import { META_SYNC_STAGING_TABLES_SQL } from '../database/metaSyncStagingSql'
 
 export type MetaSqlite = Database.Database
 
@@ -430,29 +431,12 @@ export type MetaSyncSpecStage = {
   className: string
   specName: string
   bucketsByHash: Record<string, SerializedProfileBucket>
-  versions: number[]
+  versionsByHash: Record<string, number[]>
   layout: MetaTalentLayout | null
 }
 
-const STAGING_TABLES_SQL = `
-  CREATE TABLE IF NOT EXISTS meta_sync_run_staging (
-    run_token TEXT PRIMARY KEY,
-    payload TEXT NOT NULL,
-    created_at INTEGER NOT NULL
-  );
-  CREATE TABLE IF NOT EXISTS meta_sync_spec_staging (
-    run_token TEXT NOT NULL,
-    spec_id INTEGER NOT NULL,
-    class_name TEXT NOT NULL,
-    spec_name TEXT NOT NULL,
-    payload TEXT NOT NULL,
-    PRIMARY KEY (run_token, spec_id)
-  );
-  CREATE INDEX IF NOT EXISTS idx_meta_sync_spec_staging_run ON meta_sync_spec_staging(run_token);
-`
-
 export function ensureMetaSyncStagingTables(sqlite: MetaSqlite) {
-  sqlite.exec(STAGING_TABLES_SQL)
+  sqlite.exec(META_SYNC_STAGING_TABLES_SQL)
 }
 
 export function clearMetaSyncStaging(sqlite: MetaSqlite, runToken?: string) {
@@ -486,7 +470,7 @@ export function writeMetaSyncSpecAggregate(sqlite: MetaSqlite, runToken: string,
       payload = excluded.payload
   `).run(runToken, stage.specId, stage.className, stage.specName, JSON.stringify({
     bucketsByHash: stage.bucketsByHash,
-    versions: stage.versions,
+    versionsByHash: stage.versionsByHash,
     layout: stage.layout,
   }))
 }
@@ -513,13 +497,13 @@ export function readMetaSyncSpecAggregates(sqlite: MetaSqlite, runToken: string)
   const out: MetaSyncSpecStage[] = []
   for (const row of rows) {
     try {
-      const parsed = JSON.parse(row.payload) as { bucketsByHash?: Record<string, SerializedProfileBucket>, versions?: number[], layout?: MetaTalentLayout | null }
+      const parsed = JSON.parse(row.payload) as { bucketsByHash?: Record<string, SerializedProfileBucket>, versionsByHash?: Record<string, number[]>, layout?: MetaTalentLayout | null }
       out.push({
         specId: row.spec_id,
         className: row.class_name,
         specName: row.spec_name,
         bucketsByHash: parsed.bucketsByHash ?? {},
-        versions: Array.isArray(parsed.versions) ? parsed.versions : [],
+        versionsByHash: parsed.versionsByHash && typeof parsed.versionsByHash === 'object' ? parsed.versionsByHash : {},
         layout: parsed.layout ?? null,
       })
     } catch {

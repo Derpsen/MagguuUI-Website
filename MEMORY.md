@@ -26,7 +26,7 @@
 - Host buffer (Unraid / Server): `NODE_OPTIONS=--max-old-space-size=640` with a 768 MB cgroup-style limit. That is additional headroom, not a substitute for the lean path.
 - There is **no** protected admin/manual trigger for the Meta sync. Only the scheduled `blizzard:nightly` task. Nitro `/_nitro/tasks` is a dev-server route, not in the production image. Do not fire it against live until this ships.
 - Tests: `tests/unit/blizzardMetaSync.heap.test.ts` (40 specs × 200 padded samples, growth budget 96 MB; simulated breach keeps last-good; legacy retain-all path is expected to exceed the budget). Isolated measurement with `--expose-gc`: lean growth 62.0 MB (peak 77.4 MB) vs legacy retain-all growth 154.0 MB (peak 170.8 MB). A later full-suite run was still under budget (lean growth 80.8 MB).
-- The no-JS H1 white-on-white contrast in light theme (`/guide`, `/faq`, `/news`) stays a separate follow-up, not this PR.
+- Public H1 contrast without JavaScript in light theme shipped separately as #192. Remaining no-JS contrast work is in the 2026-11-12 follow-up note at the end of this file.
 
 ## 2026-09-10 payload / bundle
 
@@ -681,3 +681,9 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 ## 2026-11-12 no-JS H1 contrast
 
 - With JavaScript off (or before `useIsDark` mounts), public page H1s still got `text-white` while `html.light` or a classless document used a light background. CSS now colors `.public-shell h1` as `#0f172a` unless `html.dark` is present. Covered by `tests/nojs-h1-contrast.spec.ts` (site scripts blocked at the network, `html.light` forced, axe color-contrast on `/guide`, `/faq`, `/news`).
+
+## 2026-11-12 Code-Review follow-ups after #193 / #190 / #192 ship
+
+- Real no-JS state is still whole-page white-on-white (axe `/faq` 20 nodes to `/` 113 nodes). #192 only keeps public H1s readable under `html.light`; the rest of the unhydrated light page remains a later follow-up.
+- #190 LOWs still open: document a minimum run count for the Lighthouse median, refresh baseline doc numbers, and extend the unclipped timestamp e2e beyond only 390 px.
+- #192: dark markdown H1 is slightly brighter than before (`html.dark .public-shell h1 { color: #fff }`). Follow up if markdown heading contrast looks off.

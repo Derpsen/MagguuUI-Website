@@ -2,6 +2,8 @@
  * In-process heap guard for the Meta nightly job. A breach aborts the run
  * with a named error so the caller can release the lock and leave the last
  * good snapshot in place, instead of letting the process OOM.
+ * The comparison uses `process.memoryUsage().heapUsed` only, not RSS or
+ * `external`.
  */
 
 import { getHeapStatistics } from 'node:v8'

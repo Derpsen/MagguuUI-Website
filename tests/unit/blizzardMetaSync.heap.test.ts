@@ -92,7 +92,7 @@ describe('blizzard meta sync heap budget', () => {
 
   it('keeps 40 specs × 200 padded samples under the 96 MB heap-growth budget', { timeout: 120_000 }, async () => {
     const sqlite = openStore()
-    const fetcher = createHeapFixtureFetcher()
+    const fetcher = createHeapFixtureFetcher({ uniquePad: true })
     const measured = await measurePeak(async (record) => {
       const { payload, failures } = await buildMetaSnapshot({
         fetcher,
@@ -106,6 +106,10 @@ describe('blizzard meta sync heap budget', () => {
       assert.equal(failures.exceptions, 0)
       const total = payload.classes.reduce((sum, cls) => sum + cls.specs.reduce((inner, spec) => inner + spec.n, 0), 0)
       assert.equal(total, HEAP_SPEC_COUNT * HEAP_SAMPLES_PER_SPEC)
+      const leftoverRun = sqlite.prepare('SELECT COUNT(*) AS n FROM meta_sync_run_staging').get() as { n: number }
+      const leftoverSpec = sqlite.prepare('SELECT COUNT(*) AS n FROM meta_sync_spec_staging').get() as { n: number }
+      assert.equal(leftoverRun.n, 0, 'success path must leave meta_sync_run_staging empty')
+      assert.equal(leftoverSpec.n, 0, 'success path must leave meta_sync_spec_staging empty')
     })
     assert.ok(
       measured.growth < HEAP_GROWTH_BUDGET,
@@ -163,8 +167,132 @@ describe('blizzard meta sync heap budget', () => {
     assert.ok(current)
     assert.equal(current.snapshotId, previous.snapshotId)
     assert.equal(current.payload.classes[0]?.slug, 'mage')
-    const leftover = sqlite.prepare('SELECT COUNT(*) AS n FROM meta_sync_spec_staging').get() as { n: number }
-    assert.equal(leftover.n, 0)
+    const leftoverSpec = sqlite.prepare('SELECT COUNT(*) AS n FROM meta_sync_spec_staging').get() as { n: number }
+    const leftoverRun = sqlite.prepare('SELECT COUNT(*) AS n FROM meta_sync_run_staging').get() as { n: number }
+    assert.equal(leftoverSpec.n, 0)
+    assert.equal(leftoverRun.n, 0)
+  })
+
+  it('purges leftover staging rows from a previous crash at the start of a run', async () => {
+    const sqlite = openStore()
+    const now = Date.now()
+    sqlite.prepare('INSERT INTO meta_sync_run_staging (run_token, payload, created_at) VALUES (?, ?, ?)').run('old-crash', '{}', 1)
+    sqlite.prepare('INSERT INTO meta_sync_spec_staging (run_token, spec_id, class_name, spec_name, payload) VALUES (?, ?, ?, ?, ?)').run('old-crash', 62, 'Mage', 'Fire', '{}')
+    writeMetaSnapshot(sqlite, snapshotPayload(), now, META_SNAPSHOT_TTL_MS)
+    let checks = 0
+    const heap: MetaHeapMonitor = {
+      used: () => {
+        checks += 1
+        return checks >= 1 ? 900 : 1
+      },
+      limit: () => 1000,
+      fraction: 0.85,
+    }
+    const result = await runScheduledBlizzardMetaSync({
+      sqlite,
+      config: {
+        metaNightly: 'on',
+        blizzardClientId: 'id',
+        blizzardClientSecret: 'secret',
+      },
+      fetcher: fixtureFetcher(),
+      now,
+      caps: { maxRealms: 2, periods: 1, concurrency: 2, maxConcurrentSpecs: 1 },
+      heap,
+      kumaPush: async () => 'pushed',
+      purgeMeta: async () => 'purged',
+      sleep: async () => {},
+    })
+    assert.equal(result.status, 'error')
+    const leftoverSpec = sqlite.prepare('SELECT COUNT(*) AS n FROM meta_sync_spec_staging').get() as { n: number }
+    const leftoverRun = sqlite.prepare('SELECT COUNT(*) AS n FROM meta_sync_run_staging').get() as { n: number }
+    const leftoverOld = sqlite.prepare("SELECT COUNT(*) AS n FROM meta_sync_spec_staging WHERE run_token = 'old-crash'").get() as { n: number }
+    assert.equal(leftoverSpec.n, 0)
+    assert.equal(leftoverRun.n, 0)
+    assert.equal(leftoverOld.n, 0)
+  })
+
+  it('with maxConcurrentSpecs=4 writes no staging rows after abort', { timeout: 30_000 }, async () => {
+    const sqlite = openStore()
+    const now = Date.now()
+    writeMetaSnapshot(sqlite, snapshotPayload(), now, META_SNAPSHOT_TTL_MS)
+    const abortController = new AbortController()
+    let releaseParked: () => void = () => {}
+    const parked = new Promise<void>((resolve) => { releaseParked = resolve })
+    abortController.signal.addEventListener('abort', () => { releaseParked() })
+
+    const firstSpecId = HEAP_SPECS[0]!.specId
+    const firstNamePrefix = `/s${firstSpecId}p`
+    const baseFetcher = createHeapFixtureFetcher()
+    const fetcher = async (request: Parameters<typeof baseFetcher>[0]) => {
+      const url = request.url
+      if (url.includes('/profile/wow/character/') && !url.includes(firstNamePrefix)) {
+        if (!abortController.signal.aborted) await parked
+      }
+      return baseFetcher(request)
+    }
+
+    let writesBeforeAbort = 0
+    let writesAfterAbort = 0
+    const originalPrepare = sqlite.prepare.bind(sqlite)
+    sqlite.prepare = ((sql: string) => {
+      const stmt = originalPrepare(sql)
+      if (typeof sql === 'string' && /INSERT INTO meta_sync_(spec|run)_staging/.test(sql)) {
+        const originalRun = stmt.run.bind(stmt)
+        Object.defineProperty(stmt, 'run', {
+          configurable: true,
+          value: (...args: unknown[]) => {
+            if (abortController.signal.aborted) writesAfterAbort += 1
+            else writesBeforeAbort += 1
+            return originalRun(...args)
+          },
+        })
+      }
+      return stmt
+    }) as typeof sqlite.prepare
+
+    const heap: MetaHeapMonitor = {
+      used: () => {
+        const n = (originalPrepare('SELECT COUNT(*) AS n FROM meta_sync_spec_staging').get() as { n: number }).n
+        return n >= 1 ? 900 : 1
+      },
+      limit: () => 1000,
+      fraction: 0.85,
+    }
+
+    const result = await runScheduledBlizzardMetaSync({
+      sqlite,
+      config: {
+        metaNightly: 'on',
+        blizzardClientId: 'id',
+        blizzardClientSecret: 'secret',
+      },
+      fetcher,
+      now,
+      caps: {
+        maxRealms: 1,
+        periods: 1,
+        concurrency: 4,
+        maxConcurrentSpecs: 4,
+        samplePerSpec: 2,
+        maxAttemptsPerSpec: 2,
+      },
+      heap,
+      abortController,
+      kumaPush: async () => 'pushed',
+      purgeMeta: async () => 'purged',
+      sleep: async () => {},
+    })
+
+    if (!abortController.signal.aborted) releaseParked()
+    assert.equal(result.status, 'error')
+    assert.ok(result.reason?.includes('heap'))
+    assert.ok(writesBeforeAbort >= 1, `expected at least one staging write before abort, got ${writesBeforeAbort}`)
+    assert.equal(writesAfterAbort, 0, `staging write happened after abort (${writesAfterAbort})`)
+    const leftoverSpec = sqlite.prepare('SELECT COUNT(*) AS n FROM meta_sync_spec_staging').get() as { n: number }
+    const leftoverRun = sqlite.prepare('SELECT COUNT(*) AS n FROM meta_sync_run_staging').get() as { n: number }
+    assert.equal(leftoverSpec.n, 0)
+    assert.equal(leftoverRun.n, 0)
   })
 })
 

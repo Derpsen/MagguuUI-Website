@@ -70,7 +70,7 @@ Run history lives in `meta_runs` (same 30-day cleanup window). `/api/health` exp
 
 The 2026-11-12 04:15 Europe/Berlin nightly ran out of process heap (~377 MB of a 384 MB limit), the container auto-restarted, and no new snapshot was written (0× HTTP 429). The job now samples **spec by spec**, absorbs each profile into count maps, and writes those intermediate aggregates to SQLite staging (`meta_sync_spec_staging`). Raw profile, talent and gear responses are not kept in RAM. After all specs have been staged, the snapshot is assembled from staging, then the existing gates and promote path run. Isolated 40×200 fixture measurement: lean growth 62.0 MB (peak 77.4 MB) vs a retain-all path at 154.0 MB growth (peak 170.8 MB), against a 96 MB growth budget.
 
-A heap guard checks `process.memoryUsage().heapUsed` against 85% of V8 `heap_size_limit` (or `NUXT_META_HEAP_LIMIT_MB` when set, whichever is smaller) between batches. On a breach the run ends as `error`, the in-process lock is released, staging is cleared, and the last-good snapshot stays active. The guard is what stops a second OOM from taking down the website process.
+A heap guard checks `process.memoryUsage().heapUsed` only (not RSS or `external`) against 85% of V8 `heap_size_limit` (or `NUXT_META_HEAP_LIMIT_MB` when set, whichever is smaller) between batches. On a breach the run ends as `error`, the in-process lock is released, staging is cleared, and the last-good snapshot stays active. The guard is what stops a second OOM from taking down the website process.
 
 The Unraid container may also raise `NODE_OPTIONS=--max-old-space-size=640` (limit 768 MB) as a host-side buffer. That does not replace the lean path or the guard.
 

@@ -126,6 +126,7 @@ type SyncOptions = {
   sqlite?: MetaSqlite
   heap?: MetaHeapMonitor
   runToken?: string
+  abortController?: AbortController
 }
 
 type CharacterCandidate = {
@@ -231,6 +232,7 @@ function createGetter(
   stats: BlizzardHttpStats,
   traffic: BlizzardTraffic,
   secrets: readonly string[],
+  abort: AbortController,
 ) {
   let token = ''
   const now = asClock(options.now)
@@ -245,6 +247,7 @@ function createGetter(
   }
 
   const get = async (path: string, namespace: string, soft = true): Promise<unknown> => {
+    if (abort.signal.aborted) return null
     assertDeadline(options.deadline, now)
     if (!token) await refresh()
     const sep = path.includes('?') ? '&' : '?'
@@ -273,17 +276,44 @@ function createGetter(
   return { get, refresh }
 }
 
-async function mapPool<T>(items: readonly T[], concurrency: number, worker: (item: T, index: number) => Promise<void>): Promise<void> {
+async function mapPool<T>(
+  items: readonly T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<void>,
+  abort?: AbortController,
+): Promise<void> {
   let next = 0
   const limit = Math.max(1, Math.min(concurrency, items.length || 1))
   const run = async () => {
     while (next < items.length) {
+      if (abort?.signal.aborted) return
       const index = next
       next += 1
-      await worker(items[index]!, index)
+      try {
+        await worker(items[index]!, index)
+      } catch (error) {
+        if (abort && !abort.signal.aborted) abort.abort()
+        throw error
+      }
     }
   }
-  await Promise.all(Array.from({ length: Math.min(limit, Math.max(items.length, 1)) }, () => run()))
+  const results = await Promise.allSettled(Array.from({ length: Math.min(limit, Math.max(items.length, 1)) }, () => run()))
+  const rejected = results.find((result): result is PromiseRejectedResult => result.status === 'rejected')
+  if (rejected) throw rejected.reason
+}
+
+function tripAbort(abort: AbortController, error: unknown): never {
+  if (!abort.signal.aborted) abort.abort()
+  throw error
+}
+
+function runGuards(abort: AbortController, deadline: number | undefined, now: () => number, heap: MetaHeapMonitor) {
+  try {
+    assertDeadline(deadline, now)
+    assertMetaHeapSafe(heap)
+  } catch (error) {
+    tripAbort(abort, error)
+  }
 }
 
 function openStagingDb(sqlite?: MetaSqlite): { sqlite: MetaSqlite, close: () => void } {
@@ -309,11 +339,12 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     now: clock,
   })
   const secrets = [options.credentials.id, options.credentials.secret]
-  const { get } = createGetter(options, stats, traffic, secrets)
   const heap = options.heap ?? defaultMetaHeapMonitor()
+  const abort = options.abortController ?? new AbortController()
+  const { get } = createGetter(options, stats, traffic, secrets, abort)
   const staging = openStagingDb(options.sqlite)
   const runToken = options.runToken || `meta-sync-${clock()}`
-  clearMetaSyncStaging(staging.sqlite, runToken)
+  clearMetaSyncStaging(staging.sqlite)
   const failures: ProfileFailures = {
     notFound: 0, other: 0, specMismatch: 0, noLoadout: 0,
     badLoadoutCode: 0, outdatedTree: 0, exceptions: 0, attempted: 0,
@@ -366,12 +397,11 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   let leaderboardsOk = 0
   let leaderboardsFailed = 0
 
-  let boardsDone = 0
   await mapPool(jobs, caps.concurrency, async ([realmId, dungeonId, periodId]) => {
-    assertDeadline(options.deadline, asClock(options.now))
-    if (boardsDone % 25 === 0) assertMetaHeapSafe(heap)
+    if (abort.signal.aborted) return
+    runGuards(abort, options.deadline, asClock(options.now), heap)
+    if (abort.signal.aborted) return
     const board = asRecord(await get(`/data/wow/connected-realm/${realmId}/mythic-leaderboard/${dungeonId}/period/${periodId}`, DYNAMIC))
-    boardsDone += 1
     if (!board) {
       leaderboardsFailed += 1
       return
@@ -413,13 +443,15 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
         candidates.set(key, candidate)
       }
     }
-  })
+  }, abort)
 
   const specIndex = asRecord(await get('/data/wow/playable-specialization/index', STATIC))
   const specMeta = new Map<number, { className: string, specName: string, treeHref: string | null }>()
   await Promise.all(asArray(specIndex?.character_specializations).map(async (item) => {
+    if (abort.signal.aborted) return
     const id = asNumber(asRecord(item)?.id)
     if (id == null) return
+    if (abort.signal.aborted) return
     const body = asRecord(await get(`/data/wow/playable-specialization/${id}`, STATIC))
     if (!body) return
     const className = asString(asRecord(body.playable_class)?.name)
@@ -469,7 +501,8 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   for (const list of perSpec.values()) list.sort((a, b) => b.best - a.best || b.runs - a.runs)
   const totalCharacters = [...specPop.values()].reduce((sum, pop) => sum + pop.count, 0)
 
-  assertMetaHeapSafe(heap)
+  runGuards(abort, options.deadline, asClock(options.now), heap)
+  if (abort.signal.aborted) throw new Error('Meta nightly aborted')
   writeMetaSyncRunContext(staging.sqlite, runToken, {
     season: { id: seasonId, label: seasonLabel },
     periods,
@@ -483,8 +516,8 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
 
   const specIds = [...perSpec.keys()]
   await mapPool(specIds, caps.maxConcurrentSpecs, async (specId) => {
-    assertDeadline(options.deadline, asClock(options.now))
-    assertMetaHeapSafe(heap)
+    if (abort.signal.aborted) return
+    runGuards(abort, options.deadline, asClock(options.now), heap)
     const list = perSpec.get(specId) ?? []
     const meta = specMeta.get(specId) || (list[0] ? { className: list[0].className, specName: list[0].specName, treeHref: null as string | null } : null)
     if (!meta) {
@@ -496,19 +529,22 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     const href = specMeta.get(specId)?.treeHref
     const match = href?.match(/talent-tree\/(\d+)\/playable-specialization\/(\d+)/)
     if (match) {
+      if (abort.signal.aborted) return
       const body = await get(`/data/wow/talent-tree/${match[1]}/playable-specialization/${match[2]}`, STATIC)
       layout = parseTalentTreeLayout(body, specId)
     }
     const known = layout ? knownIdsFromTalentLayout(layout) : undefined
 
     const bucketsByHash = new Map<string, ProfileBucket>()
-    const versions: number[] = []
+    const versionsByHash: Record<string, number[]> = {}
     for (let i = 0; i < list.length && (bucketsByHash.size ? [...bucketsByHash.values()].reduce((sum, bucket) => sum + bucket.profiles, 0) : 0) < caps.samplePerSpec && i < caps.maxAttemptsPerSpec; i++) {
-      assertDeadline(options.deadline, asClock(options.now))
+      if (abort.signal.aborted) return
+      runGuards(abort, options.deadline, asClock(options.now), heap)
       const target = list[i]!
       failures.attempted += 1
       try {
         const base = `/profile/wow/character/${encodeURIComponent(target.realm)}/${encodeURIComponent(target.name)}`
+        if (abort.signal.aborted) return
         const summary = asRecord(await get(base, PROFILE))
         if (!summary) {
           failures.notFound += 1
@@ -519,7 +555,9 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
           failures.specMismatch += 1
           continue
         }
+        if (abort.signal.aborted) return
         const specsBody = await get(`${base}/specializations`, PROFILE)
+        if (abort.signal.aborted) return
         const equipmentBody = await get(`${base}/equipment`, PROFILE)
         if (!specsBody || !equipmentBody) {
           failures.other += 1
@@ -556,25 +594,27 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
           knownTalentIds: known?.talentIds,
         })
         bucketsByHash.set(header.treeHash, bucket)
-        versions.push(header.version)
+        const versionList = versionsByHash[header.treeHash] ?? (versionsByHash[header.treeHash] = [])
+        versionList.push(header.version)
       } catch {
         failures.exceptions += 1
       }
     }
 
+    if (abort.signal.aborted) return
     writeMetaSyncSpecAggregate(staging.sqlite, runToken, {
       specId,
       className: meta.className,
       specName: meta.specName,
       bucketsByHash: Object.fromEntries([...bucketsByHash.entries()].map(([hash, bucket]) => [hash, serializeProfileBucket(bucket)])),
-      versions,
+      versionsByHash,
       layout,
     })
     bucketsByHash.clear()
     perSpec.delete(specId)
-  })
+  }, abort)
 
-  assertMetaHeapSafe(heap)
+  runGuards(abort, options.deadline, asClock(options.now), heap)
   const context = readMetaSyncRunContext(staging.sqlite, runToken)
   if (!context) throw new Error('Meta nightly staging context was missing')
   const stagedSpecs = readMetaSyncSpecAggregates(staging.sqlite, runToken)
@@ -616,7 +656,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     if (!profileBySpec.has(key)) profileBySpec.set(key, emptyProfileBucket())
     failures.outdatedTree += dropped
     if (current) {
-      for (const version of stage.versions) versions.push(version)
+      for (const version of stage.versionsByHash[current] ?? []) versions.push(version)
     }
     unknownTalentNodes += profileBySpec.get(key)!.unknownTalentNodes
   }
@@ -627,17 +667,19 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
   const itemIds = collectItemIds(classes)
   const itemIcons = new Map<number, string>()
   await mapPool(itemIds, caps.concurrency, async (id) => {
+    if (abort.signal.aborted) return
     const icon = extractMediaIcon(await get(`/data/wow/media/item/${id}`, STATIC))
     if (icon) itemIcons.set(id, icon)
-  })
+  }, abort)
   applyItemIcons(classes, itemIcons)
 
   const spellIds = collectSpellIds(classes)
   const spellIcons = new Map<number, string>()
   await mapPool(spellIds, caps.concurrency, async (id) => {
+    if (abort.signal.aborted) return
     const icon = extractMediaIcon(await get(`/data/wow/media/spell/${id}`, STATIC))
     if (icon) spellIcons.set(id, icon)
-  })
+  }, abort)
   applySpellIcons(classes, spellIcons)
 
   const hashes = [...new Set(currentHashByClass.values())]
@@ -694,7 +736,7 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     leaderboards: context.leaderboards,
   }
   } finally {
-    try { clearMetaSyncStaging(staging.sqlite, runToken) } catch { /* keep the original error */ }
+    try { clearMetaSyncStaging(staging.sqlite) } catch { /* keep the original error */ }
     staging.close()
   }
 }
@@ -722,6 +764,7 @@ export async function runScheduledBlizzardMetaSync(input: {
   purgeMeta?: typeof purgeCloudflareMeta
   deadline?: number
   heap?: MetaHeapMonitor
+  abortController?: AbortController
 }): Promise<ScheduledMetaResult> {
   const clock = asClock(input.now)
   const startedAt = clock()
@@ -778,6 +821,7 @@ export async function runScheduledBlizzardMetaSync(input: {
       sqlite: input.sqlite,
       heap: input.heap,
       runToken: `meta-sync-${startedAt}`,
+      abortController: input.abortController,
     })
     const staged = writeStagedMetaSnapshot(input.sqlite, built.payload, clock())
     const plannedProfiles = Math.max(built.failures.attempted, built.payload.sampled.profiles)

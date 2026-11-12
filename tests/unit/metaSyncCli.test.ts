@@ -9,6 +9,7 @@ import Database from 'better-sqlite3'
 import { fixtureFetcher } from '../fixtures/blizzard-meta/fetcher'
 import { initializeDatabase } from '../../server/database/bootstrap'
 import { isBlizzardMetaLockHeld, tryAcquireBlizzardMetaLock } from '../../server/utils/blizzardMetaLock'
+import { META_SYNC_CLI_START_HEAP_BUDGET_BYTES, META_SYNC_CLI_START_RSS_BUDGET_BYTES } from '../../server/utils/metaSyncCliHeap'
 import { exitCodeForMetaSync, META_SYNC_CLI_EXIT, runMetaSyncCli, summarizeMetaSyncCli } from '../../server/utils/metaSyncCli'
 import { buildMetaSyncCli } from '../../tools/build-meta-sync-cli.mjs'
 
@@ -133,20 +134,31 @@ describe('meta sync CLI build', () => {
   it('emits a standalone .mjs that does not inline secrets or better-sqlite3', { timeout: 30_000 }, async () => {
     // Emit next to the repo node_modules so the external better-sqlite3 import resolves.
     const outFile = join(outDir, 'meta-sync-cli.mjs')
+    const jobFile = join(outDir, 'meta-sync-job.mjs')
     mkdirSync(outDir, { recursive: true })
-    const built = await buildMetaSyncCli({ repoRoot: process.cwd(), outFile, logLevel: 'silent' })
+    const built = await buildMetaSyncCli({ repoRoot: process.cwd(), outFile, jobFile, logLevel: 'silent' })
     assert.equal(built, outFile)
-    const source = readFileSync(outFile, 'utf8')
+    const wrapper = readFileSync(outFile, 'utf8')
+    assert.match(wrapper, /meta-sync-job\.mjs/)
+    assert.match(wrapper, /max-old-space-size/)
+    const source = readFileSync(jobFile, 'utf8')
     assert.match(source, /better-sqlite3/)
     assert.ok(source.includes('import') && source.includes('better-sqlite3'), 'native addon must stay an external import')
     assert.match(source, /already running/)
     assert.doesNotMatch(source, /NUXT_BLIZZARD_CLIENT_SECRET=/)
 
     const cwd = mkdtempSync(join(tmpdir(), 'meta-sync-cli-run-'))
-    const env: NodeJS.ProcessEnv = { ...process.env, NODE_ENV: 'production' }
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      NODE_ENV: 'production',
+      // Live website cap; the wrapper must strip this and apply the CLI heap.
+      NODE_OPTIONS: '--enable-source-maps --max-old-space-size=640',
+    }
     delete env.NUXT_BLIZZARD_CLIENT_ID
     delete env.NUXT_BLIZZARD_CLIENT_SECRET
     delete env.NUXT_META_NIGHTLY
+    delete env.NUXT_META_CLI_HEAP_MB
+    delete env.META_SYNC_CLI_HEAP_APPLIED
     const result = spawnSync(process.execPath, [outFile], { cwd, env, encoding: 'utf8' })
     assert.equal(result.status, 4, `stderr=${result.stderr}\nstdout=${result.stdout}`)
     const line = (result.stdout || '').trim().split('\n').at(-1) || ''
@@ -154,6 +166,12 @@ describe('meta sync CLI build', () => {
     assert.equal(summary.status, 'skipped')
     assert.match(String(summary.reason || ''), /NUXT_BLIZZARD_CLIENT_ID/)
     assert.doesNotMatch(result.stdout + result.stderr, /Dynamic require/)
+    assert.ok(summary.peakRssBytes < META_SYNC_CLI_START_RSS_BUDGET_BYTES, `start RSS ${summary.peakRssBytes} exceeds ${META_SYNC_CLI_START_RSS_BUDGET_BYTES}`)
+    assert.ok(summary.peakHeapUsedBytes < META_SYNC_CLI_START_HEAP_BUDGET_BYTES, `start heap ${summary.peakHeapUsedBytes} exceeds ${META_SYNC_CLI_START_HEAP_BUDGET_BYTES}`)
+    // ~256 MB cap is well under the inherited 640 / live 664 MB limit.
+    assert.ok(summary.heapLimitBytes < 400 * 1024 * 1024, `heap limit ${summary.heapLimitBytes} still looks like the website 640 MB cap`)
+    assert.ok(summary.heapLimitBytes > 200 * 1024 * 1024)
+    assert.match(result.stderr, /\[meta-sync-cli\] process rss=/)
     rmSync(cwd, { recursive: true, force: true })
   })
 })

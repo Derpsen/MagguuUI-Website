@@ -2,8 +2,8 @@
  * In-process heap guard for the Meta nightly job. A breach aborts the run
  * with a named error so the caller can release the lock and leave the last
  * good snapshot in place, instead of letting the process OOM.
- * The comparison uses `process.memoryUsage().heapUsed` only, not RSS or
- * `external`.
+ * The comparison uses this process's `process.memoryUsage().heapUsed` only,
+ * never cgroup / container `memory.current`, RSS, or `external`.
  */
 
 import { getHeapStatistics } from 'node:v8'
@@ -26,6 +26,20 @@ export class MetaHeapGuardError extends Error {
   }
 }
 
+export type ProcessMetaMemory = {
+  rss: number
+  heapUsed: number
+}
+
+/**
+ * Process-local memory only. Do not read /sys/fs/cgroup/memory.current:
+ * that is the whole container (website + CLI) and is not a heapUsed value.
+ */
+export function readProcessMetaMemory(): ProcessMetaMemory {
+  const usage = process.memoryUsage()
+  return { rss: usage.rss, heapUsed: usage.heapUsed }
+}
+
 export type MetaHeapMonitor = {
   used: () => number
   limit: () => number
@@ -43,7 +57,7 @@ export function defaultMetaHeapLimitBytes(): number {
 
 export function defaultMetaHeapMonitor(): MetaHeapMonitor {
   return {
-    used: () => process.memoryUsage().heapUsed,
+    used: () => readProcessMetaMemory().heapUsed,
     limit: defaultMetaHeapLimitBytes,
     fraction: META_HEAP_FRACTION,
   }

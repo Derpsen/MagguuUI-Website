@@ -4,6 +4,7 @@
  * behaviour of runScheduledBlizzardMetaSync. Never logs secrets.
  */
 import { sanitizeBlizzardLog } from './blizzardAuth'
+import { defaultMetaHeapLimitBytes, readProcessMetaMemory } from './blizzardMetaHeap'
 import { runScheduledBlizzardMetaSyncGuarded, type ScheduledMetaResult } from './blizzardMetaSync'
 import type { MetaSqlite } from './blizzardMetaStore'
 import type { BlizzardFetcher } from './blizzardHttp'
@@ -37,6 +38,7 @@ export type MetaSyncCliSummary = {
   durationMs: number
   peakRssBytes: number
   peakHeapUsedBytes: number
+  heapLimitBytes: number
   specsWithData: number
   http429: number
   reason?: string
@@ -72,6 +74,7 @@ export function summarizeMetaSyncCli(input: {
   durationMs: number
   peakRssBytes: number
   peakHeapUsedBytes: number
+  heapLimitBytes?: number
   secrets?: readonly string[]
 }): MetaSyncCliSummary {
   const summary: MetaSyncCliSummary = {
@@ -79,6 +82,7 @@ export function summarizeMetaSyncCli(input: {
     durationMs: input.result.durationMs ?? input.durationMs,
     peakRssBytes: input.peakRssBytes,
     peakHeapUsedBytes: input.peakHeapUsedBytes,
+    heapLimitBytes: input.heapLimitBytes ?? defaultMetaHeapLimitBytes(),
     specsWithData: input.result.specsWithData ?? 0,
     http429: input.result.http429 ?? 0,
   }
@@ -107,7 +111,7 @@ export async function runMetaSyncCli(input: {
   secrets?: readonly string[]
 }): Promise<{ summary: MetaSyncCliSummary, exitCode: number }> {
   const started = typeof input.now === 'function' ? input.now() : (input.now ?? Date.now())
-  const memory = input.memory ?? (() => process.memoryUsage())
+  const memory = input.memory ?? readProcessMetaMemory
   let peakRssBytes = 0
   let peakHeapUsedBytes = 0
   const sample = () => {

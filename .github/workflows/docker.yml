@@ -182,7 +182,8 @@ jobs:
           docker pull -q "$IMAGE_REF"
           docker run --rm --user 99:100 -w /app/.output/server --entrypoint node "$IMAGE_REF" \
             -e "require('bcrypt');require('better-sqlite3')(':memory:');console.log('native modules OK as uid', process.getuid())"
-          docker run -d --name smoke \
+          docker run -d --name smoke --memory=768m \
+            -e NODE_OPTIONS='--enable-source-maps --max-old-space-size=640' \
             -e NUXT_JWT_SECRET=ci-dummy-secret-must-be-32-chars-long-XXXXXXXXXX \
             -e NUXT_APP_SECRET=ci-dummy-app-secret-must-be-32-chars-XXXXXXXXX \
             -e NUXT_ADMIN_PASSWORD=ci-dummy "$IMAGE_REF"
@@ -204,6 +205,13 @@ jobs:
           echo "meta-sync-cli exit=$cli_rc"
           if [ "$cli_rc" != 4 ]; then docker logs smoke | tail -50; docker rm -f smoke; exit 1; fi
           if ! printf '%s\n' "$cli_out" | tail -n 1 | jq -e '.status == "skipped" and .http429 == 0 and (.reason | test("NUXT_BLIZZARD_CLIENT_ID"))'; then
+            docker rm -f smoke
+            exit 1
+          fi
+          rss=$(printf '%s\n' "$cli_out" | tail -n 1 | jq -r '.peakRssBytes')
+          heap=$(printf '%s\n' "$cli_out" | tail -n 1 | jq -r '.peakHeapUsedBytes')
+          echo "start rss=$rss heap=$heap (budget rss<157286400 heap<52428800)"
+          if ! test "$rss" -lt 157286400 || ! test "$heap" -lt 52428800; then
             docker rm -f smoke
             exit 1
           fi

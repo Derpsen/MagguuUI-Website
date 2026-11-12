@@ -12,6 +12,8 @@ on:
       - nuxt.config.ts
       - server/cli/**
       - server/utils/metaSyncCli.ts
+      - server/utils/metaSyncCliHeap.ts
+      - server/utils/blizzardMetaHeap.ts
       - server/utils/blizzardMetaSync.ts
       - server/utils/blizzardMetaLock.ts
       - server/database/metaSyncLockSql.ts
@@ -55,13 +57,18 @@ jobs:
       - name: Smoke Meta sync CLI (no credentials, expect skipped)
         run: |
           set +e
-          out=$(docker run --rm scan-target:latest node .output/server/meta-sync-cli.mjs)
+          out=$(docker run --rm -e NODE_OPTIONS='--enable-source-maps --max-old-space-size=640' scan-target:latest node .output/server/meta-sync-cli.mjs)
           rc=$?
           set -e
           printf '%s\n' "$out"
           echo "exit=$rc"
           test "$rc" -eq 4
           printf '%s\n' "$out" | tail -n 1 | jq -e '.status == "skipped" and .http429 == 0 and (.reason | test("NUXT_BLIZZARD_CLIENT_ID"))'
+          rss=$(printf '%s\n' "$out" | tail -n 1 | jq -r '.peakRssBytes')
+          heap=$(printf '%s\n' "$out" | tail -n 1 | jq -r '.peakHeapUsedBytes')
+          echo "start rss=$rss heap=$heap"
+          test "$rss" -lt 157286400
+          test "$heap" -lt 52428800
 
       - name: Run Trivy
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0

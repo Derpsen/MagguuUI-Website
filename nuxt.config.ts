@@ -1,3 +1,4 @@
+import { join } from 'node:path'
 import { PUBLIC_SITE_ORIGIN, PUBLIC_SITE_SETTINGS_DEFAULTS } from './utils/siteSettingsDefaults'
 import { isGithubNightlyEnabled } from './utils/githubSchedule'
 import { applyAdminManifestPolicy } from './utils/adminManifest'
@@ -291,6 +292,14 @@ export default defineNuxtConfig({
     // import of the Nitro server chunk. Prepend the polyfill so it evaluates
     // before tsyringe, even if plugin import order is sorted later.
     hooks: {
+      async compiled(nitro) {
+        const { buildMetaSyncCli } = await import('./tools/build-meta-sync-cli.mjs')
+        const serverDir = nitro.options.output.serverDir || join(nitro.options.output.dir, 'server')
+        await buildMetaSyncCli({
+          repoRoot: nitro.options.rootDir,
+          outFile: join(serverDir, 'meta-sync-cli.mjs'),
+        })
+      },
       'rollup:before'(nitro, config) {
         if (!nitro.options) return
         const polyfill = "import 'reflect-metadata';"

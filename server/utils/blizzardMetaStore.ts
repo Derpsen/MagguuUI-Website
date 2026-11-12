@@ -10,6 +10,7 @@ import type Database from 'better-sqlite3'
 
 import { parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
 import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload, type MetaTalentLayout } from '~/utils/metaTypes'
+import { BLIZZARD_META_LOCK_TTL_MS } from './blizzardMetaLock'
 import type { SerializedProfileBucket, SpecPop } from './blizzardMetaAggregate'
 import { META_SYNC_STAGING_TABLES_SQL } from '../database/metaSyncStagingSql'
 
@@ -439,15 +440,22 @@ export function ensureMetaSyncStagingTables(sqlite: MetaSqlite) {
   sqlite.exec(META_SYNC_STAGING_TABLES_SQL)
 }
 
-export function clearMetaSyncStaging(sqlite: MetaSqlite, runToken?: string) {
+export function clearMetaSyncStaging(sqlite: MetaSqlite, runToken: string) {
   ensureMetaSyncStagingTables(sqlite)
-  if (runToken) {
-    sqlite.prepare('DELETE FROM meta_sync_spec_staging WHERE run_token = ?').run(runToken)
-    sqlite.prepare('DELETE FROM meta_sync_run_staging WHERE run_token = ?').run(runToken)
-    return
-  }
-  sqlite.exec('DELETE FROM meta_sync_spec_staging')
-  sqlite.exec('DELETE FROM meta_sync_run_staging')
+  sqlite.prepare('DELETE FROM meta_sync_spec_staging WHERE run_token = ?').run(runToken)
+  sqlite.prepare('DELETE FROM meta_sync_run_staging WHERE run_token = ?').run(runToken)
+}
+
+/** Drop leftover staging whose run is older than the lock TTL. Fresh tokens (a live run) stay. */
+export function clearExpiredMetaSyncStaging(sqlite: MetaSqlite, now = Date.now(), ttlMs = BLIZZARD_META_LOCK_TTL_MS) {
+  ensureMetaSyncStagingTables(sqlite)
+  const cutoff = Math.floor((now - ttlMs) / 1000)
+  sqlite.prepare(`
+    DELETE FROM meta_sync_spec_staging
+    WHERE run_token IN (SELECT run_token FROM meta_sync_run_staging WHERE created_at <= ?)
+       OR run_token NOT IN (SELECT run_token FROM meta_sync_run_staging)
+  `).run(cutoff)
+  sqlite.prepare('DELETE FROM meta_sync_run_staging WHERE created_at <= ?').run(cutoff)
 }
 
 export function writeMetaSyncRunContext(sqlite: MetaSqlite, runToken: string, context: MetaSyncRunContext, now = Date.now()) {

@@ -70,9 +70,21 @@ Run history lives in `meta_runs` (same 30-day cleanup window). `/api/health` exp
 
 The 2026-11-12 04:15 Europe/Berlin nightly ran out of process heap (~377 MB of a 384 MB limit), the container auto-restarted, and no new snapshot was written (0× HTTP 429). The job now samples **spec by spec**, absorbs each profile into count maps, and writes those intermediate aggregates to SQLite staging (`meta_sync_spec_staging`). Raw profile, talent and gear responses are not kept in RAM. After all specs have been staged, the snapshot is assembled from staging, then the existing gates and promote path run. Isolated 40×200 fixture measurement: lean growth 62.0 MB (peak 77.4 MB) vs a retain-all path at 154.0 MB growth (peak 170.8 MB), against a 96 MB growth budget.
 
-A heap guard checks `process.memoryUsage().heapUsed` only (not RSS or `external`) against 85% of V8 `heap_size_limit` (or `NUXT_META_HEAP_LIMIT_MB` when set, whichever is smaller) between batches. On a breach the run ends as `error`, the in-process lock is released, staging is cleared, and the last-good snapshot stays active. The guard is what stops a second OOM from taking down the website process.
+A heap guard checks `process.memoryUsage().heapUsed` only (not RSS or `external`) against 85% of V8 `heap_size_limit` (or `NUXT_META_HEAP_LIMIT_MB` when set, whichever is smaller) between batches. On a breach the run ends as `error`, the SQLite lock is released, leftover staging older than the lock TTL is cleared, and the last-good snapshot stays active. The guard is what stops a second OOM from taking down the website process.
 
 The Unraid container may also raise `NODE_OPTIONS=--max-old-space-size=640` (limit 768 MB) as a host-side buffer. That does not replace the lean path or the guard.
 
-There is no protected admin or manual trigger for this job. Production is scheduled only (`blizzard:nightly` via `server/plugins/blizzard-meta-schedule.ts`). Nitro's `/_nitro/tasks` HTTP surface exists in the dev server, not in the production image. Do not invoke the task against the live container until this change is shipped.
+A protected manual trigger is the CLI packed into the production image as `.output/server/meta-sync-cli.mjs`. Unraid & Server runs it with:
+
+```sh
+docker exec MagguuUI node .output/server/meta-sync-cli.mjs
+```
+
+The process starts in `/app` (the container `WORKDIR`), opens the same SQLite database as the website, and shares the cross-process lock (`meta_sync_lock`, owner token + 45-minute TTL, or until the job deadline). If the nightly (or another CLI) already holds the lock, the command exits 2 and prints a JSON summary whose `status` is `locked` and whose `reason` is `A Meta update is already running`. Staging rows older than the lock TTL are dropped at the start of a run; a still-fresh token is left alone.
+
+The CLI calls `runScheduledBlizzardMetaSync` (lean sampling, heap guard, deadline, fail-closed promote, last-good snapshot kept). It can run even when `NUXT_META_NIGHTLY` is off, but still needs `NUXT_BLIZZARD_CLIENT_ID` and `NUXT_BLIZZARD_CLIENT_SECRET` from the container environment (same as the app; secrets are never printed). It prints one JSON object to stdout: `status`, `durationMs`, `peakRssBytes`, `peakHeapUsedBytes`, `specsWithData`, `http429`, and `reason` when present. Exit codes: `0` ok, `1` error, `2` locked, `3` partial, `4` skipped.
+
+The CLI is a **separate Node process next to the website**. It inherits the container `NODE_OPTIONS` (including `--max-old-space-size=640` when that is set). Peak memory during a manual run is the website process plus the CLI, not a replacement for the server heap. Do not fire this command until the image that contains the CLI has been pulled by autoupdate.
+
+Nitro's `/_nitro/tasks` HTTP surface exists in the dev server, not in the production image, and is not the manual trigger.
 

@@ -596,13 +596,13 @@
   {
     "name": "meta: lock hold ignores job deadline",
     "file": "server/utils/blizzardMetaLock.ts",
-    "find": "  heldUntil = Math.max(t + TTL_MS, holdUntil)\n",
-    "repl": "  heldUntil = t + TTL_MS\n"
+    "find": "  const heldUntil = Math.max(t + TTL_MS, holdUntil)\n",
+    "repl": "  const heldUntil = t + TTL_MS\n"
   },
   {
     "name": "meta: lock is not released in finally",
     "file": "server/utils/blizzardMetaLock.ts",
-    "find": "  try {\n    return { ok: true, value: await fn() }\n  } finally {\n    releaseBlizzardMetaLock()\n  }\n",
+    "find": "  try {\n    return { ok: true, value: await fn() }\n  } finally {\n    releaseBlizzardMetaLock(sqlite, acquired.ownerToken)\n  }\n",
     "repl": "  return { ok: true, value: await fn() }\n"
   },
   {
@@ -634,5 +634,23 @@
     "file": "server/utils/blizzardMetaSync.ts",
     "find": "function syncAborted(abort?: AbortController) {\n  return Boolean(abort?.signal.aborted)\n}\n\nasync function mapPool<T>(\n  items: readonly T[],\n  concurrency: number,\n  worker: (item: T, index: number) => Promise<void>,\n  abort?: AbortController,\n): Promise<void> {\n  let next = 0\n  const limit = Math.max(1, Math.min(concurrency, items.length || 1))\n  const run = async () => {\n    while (next < items.length) {\n      if (syncAborted(abort)) return\n      const index = next\n      next += 1\n      try {\n        await worker(items[index]!, index)\n      } catch (error) {\n        if (abort && !abort.signal.aborted) abort.abort()\n        throw error\n      }\n    }\n  }\n  const results = await Promise.allSettled(Array.from({ length: Math.min(limit, Math.max(items.length, 1)) }, () => run()))\n  const rejected = results.find((result): result is PromiseRejectedResult => result.status === 'rejected')\n  if (rejected) throw rejected.reason\n}\n\n",
     "repl": "function syncAborted(abort?: AbortController) {\n  return false\n}\n\nasync function mapPool<T>(\n  items: readonly T[],\n  concurrency: number,\n  worker: (item: T, index: number) => Promise<void>,\n  abort?: AbortController,\n): Promise<void> {\n  let next = 0\n  const limit = Math.max(1, Math.min(concurrency, items.length || 1))\n  const run = async () => {\n    while (next < items.length) {\n      const index = next\n      next += 1\n      try {\n        await worker(items[index]!, index)\n      } catch (error) {\n        if (abort && !abort.signal.aborted) abort.abort()\n        throw error\n      }\n    }\n  }\n  await Promise.all(Array.from({ length: Math.min(limit, Math.max(items.length, 1)) }, () => run()))\n}\n\n"
+  },
+  {
+    "name": "meta: lock acquire ignores an active holder",
+    "file": "server/utils/blizzardMetaLock.ts",
+    "find": "      ON CONFLICT(id) DO UPDATE SET\n        owner_token = excluded.owner_token,\n        held_until = excluded.held_until\n      WHERE meta_sync_lock.held_until <= ?\n",
+    "repl": "      ON CONFLICT(id) DO UPDATE SET\n        owner_token = excluded.owner_token,\n        held_until = excluded.held_until\n      WHERE 1 OR meta_sync_lock.held_until <= ?\n"
+  },
+  {
+    "name": "meta: staging clear-all instead of lock-TTL expiry",
+    "file": "server/utils/blizzardMetaStore.ts",
+    "find": "  const cutoff = Math.floor((now - ttlMs) / 1000)\n  sqlite.prepare(`\n    DELETE FROM meta_sync_spec_staging\n    WHERE run_token IN (SELECT run_token FROM meta_sync_run_staging WHERE created_at <= ?)\n       OR run_token NOT IN (SELECT run_token FROM meta_sync_run_staging)\n  `).run(cutoff)\n  sqlite.prepare('DELETE FROM meta_sync_run_staging WHERE created_at <= ?').run(cutoff)\n",
+    "repl": "  sqlite.exec('DELETE FROM meta_sync_spec_staging')\n  sqlite.exec('DELETE FROM meta_sync_run_staging')\n"
+  },
+  {
+    "name": "meta: lock release ignores owner token",
+    "file": "server/utils/blizzardMetaLock.ts",
+    "find": "  sqlite.prepare('DELETE FROM meta_sync_lock WHERE id = ? AND owner_token = ?').run(LOCK_ID, ownerToken)\n",
+    "repl": "  sqlite.prepare('DELETE FROM meta_sync_lock WHERE id = ?').run(LOCK_ID)\n"
   }
 ]

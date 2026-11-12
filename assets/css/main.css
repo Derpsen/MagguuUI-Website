@@ -856,6 +856,17 @@ html.light .glass-card {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
+/* Page H1s stay readable without JS. useIsDark() keeps the dark (text-white)
+   fallback until mount, which is white-on-white under html.light and on a
+   classless page (browser-default white background). White text is only used
+   when html.dark is present, which is also what paints the dark background. */
+html:not(.dark) .public-shell h1 {
+  color: #0f172a;
+}
+html.dark .public-shell h1 {
+  color: #fff;
+}
+
 /* Guide/Strings: force readable titles under html.light (beats leftover text-white / silver-*) */
 html.light .guide-step-title,
 html.light .guide-step h3 {

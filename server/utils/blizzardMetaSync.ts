@@ -675,6 +675,16 @@ function dungeonIdOf(board: unknown): number | null {
     ?? asNumber(asRecord(rec?.keystone_map)?.id)
 }
 
+/** Always include the current period, even when it is missing from the season period list. */
+export function selectMetaPeriods(currentPeriodId: number, seasonPeriodIds: readonly number[], maxPeriods: number): NonNullable<MetaSnapshotPayload['periods']> {
+  const cap = Math.max(1, Math.floor(maxPeriods) || 1)
+  const older = [...new Set(seasonPeriodIds.filter(id => Number.isFinite(id) && id !== currentPeriodId && id <= currentPeriodId))].sort((a, b) => b - a)
+  return {
+    current: { id: currentPeriodId },
+    included: [currentPeriodId, ...older].slice(0, cap).map(id => ({ id })),
+  }
+}
+
 export function mergeMetaSyncCaps(partial?: Partial<MetaSyncCaps>): MetaSyncCaps {
   const caps = { ...META_SYNC_DEFAULT_CAPS, ...partial }
   caps.maxRps = Math.min(Math.max(1, caps.maxRps), 50)
@@ -1058,11 +1068,8 @@ export async function buildMetaSnapshot(options: SyncOptions): Promise<{
     .map(item => asNumber(asRecord(item)?.id) ?? asNumber(item))
     .filter((id): id is number => id != null && id <= currentPeriodId)
     .sort((a, b) => b - a)
-  const periodIds = (seasonPeriodIds.length ? seasonPeriodIds : [currentPeriodId]).slice(0, caps.periods)
-  const periods = {
-    current: { id: currentPeriodId },
-    included: periodIds.map(id => ({ id })),
-  }
+  const periods = selectMetaPeriods(currentPeriodId, seasonPeriodIds, caps.periods)
+  const periodIds = periods.included.map(row => row.id)
 
   const realmIndex = asRecord(await get('/data/wow/connected-realm/index', DYNAMIC, false))
   let realmIds = asArray(realmIndex?.connected_realms)

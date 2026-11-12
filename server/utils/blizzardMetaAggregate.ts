@@ -3,7 +3,7 @@
  * in the output. Used by the nightly sync and by fixture unit tests.
  */
 
-import { META_CLASSES, findMetaClass, toMetaSlug } from '~/utils/metaCatalog'
+import { META_CLASSES, findMetaClass, findMetaSpec, toMetaSlug } from '~/utils/metaCatalog'
 import { decodeLoadoutHeader } from '~/utils/metaLoadout'
 import {
   META_TOP_ITEMS,
@@ -831,7 +831,7 @@ export function buildClassSummaries(
   for (const [specKey, pop] of specPop) {
     const classSlug = toMetaSlug(pop.className)
     const specSlug = toMetaSlug(pop.specName)
-    if (!findMetaClass(classSlug)) continue
+    if (!findMetaClass(classSlug) || !findMetaSpec(classSlug, specSlug)) continue
     let cls = byClass.get(classSlug)
     if (!cls) {
       cls = { slug: classSlug, label: pop.className, n: 0, specs: [] }

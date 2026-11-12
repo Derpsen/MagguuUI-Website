@@ -8,7 +8,7 @@ import type Database from 'better-sqlite3'
  * lives in meta_runs and is cleaned up on the same TTL.
  */
 
-import { parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
+import { explainMetaSnapshotRejection, parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
 import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload, type MetaTalentLayout } from '~/utils/metaTypes'
 import { BLIZZARD_META_LOCK_TTL_MS } from './blizzardMetaLock'
 import type { MetaKeyLevelStats, SerializedProfileBucket, SpecPop } from './blizzardMetaAggregate'
@@ -120,7 +120,7 @@ function insertSnapshotRow(
   const season = payload.season ? String(payload.season.id) : null
   const period = payload.periods ? String(payload.periods.current.id) : null
   const parsed = parseMetaSnapshotPayload(payload)
-  if (!parsed) throw new Error('Meta snapshot payload failed validation')
+  if (!parsed) throw new Error(`Meta snapshot payload failed validation: ${explainMetaSnapshotRejection(payload)}`)
   const inserted = sqlite.prepare(`
     INSERT INTO meta_snapshots (region, season, period, fetched_at, expires_at, status, payload, source)
     VALUES (?, ?, ?, ?, ?, ?, ?, 'blizzard')
@@ -282,7 +282,7 @@ export function writeMetaSnapshot(
   ttlMs = META_SNAPSHOT_TTL_MS,
 ): StoredMetaSnapshot {
   const parsed = parseMetaSnapshotPayload(payload)
-  if (!parsed) throw new Error('Meta snapshot payload failed validation')
+  if (!parsed) throw new Error(`Meta snapshot payload failed validation: ${explainMetaSnapshotRejection(payload)}`)
   const run = sqlite.transaction(() => {
     const id = insertSnapshotRow(sqlite, parsed, now, ttlMs, 'ok')
     setActivePointer(sqlite, parsed.region, id)

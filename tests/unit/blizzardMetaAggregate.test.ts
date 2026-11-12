@@ -86,3 +86,18 @@ describe('combined-slot gear share', () => {
     assert.ok(fire.embellishments.every(item => item.share <= 1))
   })
 })
+
+describe('buildClassSummaries catalog guard', () => {
+  it('drops leaderboard specs that are not in the Meta catalog', () => {
+    const bucket = emptyProfileBucket()
+    const specPop = new Map([
+      ['Mage|Fire', { className: 'Mage', specName: 'Fire', count: 10, keyLevels: [] }],
+      ['Mage|Chronomancer', { className: 'Mage', specName: 'Chronomancer', count: 8, keyLevels: [] }],
+    ])
+    const classes = buildClassSummaries(specPop, new Map([['Mage|Fire', bucket], ['Mage|Chronomancer', bucket]]), 18)
+    const mage = classes.find(cls => cls.slug === 'mage')
+    assert.ok(mage)
+    assert.equal(mage.specs.some(spec => spec.slug === 'chronomancer'), false)
+    assert.ok(mage.specs.some(spec => spec.slug === 'fire'))
+  })
+})

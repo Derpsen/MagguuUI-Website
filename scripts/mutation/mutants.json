@@ -772,5 +772,11 @@
     "file": "server/utils/blizzardMetaSync.ts",
     "find": "  if (prev.specsWithData === 0 && prev.profiles === 0) return false\n",
     "repl": "  if (prev.specsWithData === 0 && prev.profiles === 0) return true\n"
+  },
+  {
+    "name": "meta: combined-slot gear share not clamped",
+    "file": "server/utils/blizzardMetaAggregate.ts",
+    "find": "    share: Math.min(1, share),\n",
+    "repl": "    share,\n"
   }
 ]

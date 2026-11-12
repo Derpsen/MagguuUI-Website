@@ -697,7 +697,9 @@ function toGear(entry: CountEntry, share: number, bucket?: ProfileBucket, icons?
     itemId: Number(entry.extra.itemId),
     label: entry.label,
     count: entry.count,
-    share,
+    // Combined ring/trinket/embellishment slots can total more than one item
+    // per player; the snapshot schema requires share in [0, 1].
+    share: Math.min(1, share),
     quality: entry.extra.quality ? String(entry.extra.quality) : null,
     setName: entry.extra.setName ? String(entry.extra.setName) : null,
     crafted: entry.extra.crafted === true,

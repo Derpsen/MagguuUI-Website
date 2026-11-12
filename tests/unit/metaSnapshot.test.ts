@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { readFileSync } from 'node:fs'
-import { parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
+import { clampMetaSnapshotShares, explainMetaSnapshotRejection, parseMetaSnapshotPayload } from '../../utils/metaSnapshot'
 import { META_MIN_BUILD_SAMPLE, META_MIN_SHOW_SAMPLE, specDataState } from '../../utils/metaTypes'
 
 const fixturePath = new URL('../fixtures/blizzard-meta/snapshot.json', import.meta.url)
@@ -61,6 +61,9 @@ describe('meta snapshot fixture', () => {
     assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, name: 'nope' } }), null)
     assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, fetchedAt: ok.freshness.fetchedAt * 1000 } }), null)
     assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, fetchedAt: -1 } }), null)
+    assert.equal(parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, partial: false } }), null)
+    const marked = parseMetaSnapshotPayload({ ...ok, freshness: { ...ok.freshness, partial: true } })
+    assert.equal(marked?.freshness.partial, true)
     assert.equal(parseMetaSnapshotPayload({
       ...ok,
       classes: [...ok.classes, { ...ok.classes[0]!, slug: 'not-a-class' }],
@@ -90,3 +93,49 @@ describe('meta snapshot fixture', () => {
     }), null)
   })
 })
+
+  it('explains why a live-shaped payload is rejected', () => {
+    const ok = parseMetaSnapshotPayload(readFileSync(fixturePath, 'utf8'))
+    assert.ok(ok)
+    assert.match(explainMetaSnapshotRejection({ ...ok, region: 'us' }), /region\/focus/)
+    const missingCurrent = {
+      ...ok,
+      periods: { current: { id: 100 }, included: [{ id: 99 }, { id: 98 }] },
+      basis: { ...ok.basis, periods: { current: { id: 100 }, included: [{ id: 99 }, { id: 98 }] } },
+    }
+    assert.equal(parseMetaSnapshotPayload(missingCurrent), null)
+    assert.match(explainMetaSnapshotRejection(missingCurrent), /periods\.current\.id 100 is not in periods\.included/)
+    const fire = ok.classes.flatMap(cls => cls.specs).find(spec => spec.slug === 'fire')
+    assert.ok(fire)
+    if (fire.rings[0]) {
+      const overShare = {
+        ...ok,
+        classes: ok.classes.map(cls => ({
+          ...cls,
+          specs: cls.specs.map(spec => spec.slug === 'fire'
+            ? { ...spec, rings: [{ ...fire.rings[0]!, share: 1.6 }] }
+            : spec),
+        })),
+      }
+      assert.equal(parseMetaSnapshotPayload(overShare), null)
+      assert.match(explainMetaSnapshotRejection(overShare), /rings\[0\]\.share is 1\.6/)
+    }
+  })
+
+it('clamps an over-1 heroSplit share so a finished live snapshot can parse', () => {
+  const ok = parseMetaSnapshotPayload(readFileSync(fixturePath, 'utf8'))
+  assert.ok(ok)
+  const over = structuredClone(ok)
+  const target = over.classes.find(cls => cls.slug === 'mage')?.specs.find(spec => spec.slug === 'fire')
+  assert.ok(target)
+  assert.ok(target.heroSplit[0])
+  target.heroSplit[0].share = 1.414
+  assert.equal(parseMetaSnapshotPayload(over), null)
+  const clamped = clampMetaSnapshotShares(structuredClone(over))
+  const parsed = parseMetaSnapshotPayload(clamped)
+  assert.ok(parsed)
+  const fire = parsed.classes.find(cls => cls.slug === 'mage')?.specs.find(spec => spec.slug === 'fire')
+  assert.ok(fire)
+  assert.equal(fire.heroSplit[0]?.share, 1)
+})
+

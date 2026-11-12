@@ -46,6 +46,7 @@ export type MetaSyncCliSummary = {
   http429: number
   dropped?: MetaSyncDroppedCounts
   reason?: string
+  partialOutcome?: ScheduledMetaResult['partialOutcome']
 }
 
 export type MetaSyncCliMemory = {
@@ -95,6 +96,9 @@ export function summarizeMetaSyncCli(input: {
   }
   if (input.result.reason) {
     summary.reason = sanitizeBlizzardLog(input.result.reason, input.secrets ?? [])
+  }
+  if (input.result.partialOutcome) {
+    summary.partialOutcome = input.result.partialOutcome
   }
   return summary
 }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { absorbProfile, emptyProfileBucket, isTalentMapped, majorityBestBuild, parseTalentTreeLayout } from '../../server/utils/blizzardMetaAggregate'
+import { absorbProfile, buildClassSummaries, emptyProfileBucket, isTalentMapped, majorityBestBuild, parseTalentTreeLayout, shareOf } from '../../server/utils/blizzardMetaAggregate'
 import { FIXTURE_TALENT_TREE_FIRE } from '../fixtures/blizzard-meta/responses'
 import { encodeLoadoutHeader } from '../../utils/metaLoadout'
 
@@ -57,3 +57,85 @@ describe('unmapped talent picks', () => {
     assert.equal(bucket.talents.class.get('55555')?.extra.unmapped, true)
   })
 })
+
+describe('combined-slot gear share', () => {
+  it('clamps ring/trinket/embellishment share to 1 when stacked slot counts exceed the profile total', () => {
+    const bucket = emptyProfileBucket()
+    bucket.profiles = 100
+    bucket.gear.set('FINGER_1:123', { count: 80, label: 'Loop', extra: { slot: 'FINGER_1', itemId: 123, crafted: false, embellished: false } })
+    bucket.gear.set('FINGER_2:123', { count: 80, label: 'Loop', extra: { slot: 'FINGER_2', itemId: 123, crafted: false, embellished: false } })
+    bucket.gear.set('TRINKET_1:456', { count: 90, label: 'Charm', extra: { slot: 'TRINKET_1', itemId: 456, crafted: false, embellished: false } })
+    bucket.gear.set('TRINKET_2:456', { count: 70, label: 'Charm', extra: { slot: 'TRINKET_2', itemId: 456, crafted: false, embellished: false } })
+    bucket.gear.set('HEAD:789', { count: 40, label: 'Cinder Helm', extra: { slot: 'HEAD', itemId: 789, crafted: false, embellished: true } })
+    bucket.gear.set('WRIST:321', { count: 80, label: 'Cinder Cuffs', extra: { slot: 'WRIST', itemId: 321, crafted: false, embellished: true } })
+    const specPop = new Map([
+      ['Mage|Fire', { className: 'Mage', specName: 'Fire', count: 100, keyLevels: [] }],
+    ])
+    const classes = buildClassSummaries(specPop, new Map([['Mage|Fire', bucket]]), 100)
+    const fire = classes.find(cls => cls.slug === 'mage')?.specs.find(spec => spec.slug === 'fire')
+    assert.ok(fire)
+    const ring = fire.rings.find(item => item.itemId === 123)
+    const trinket = fire.trinkets.find(item => item.itemId === 456)
+    assert.ok(ring)
+    assert.ok(trinket)
+    assert.equal(ring.count, 160)
+    assert.equal(trinket.count, 160)
+    assert.equal(ring.count / fire.profileCount, 1.6)
+    assert.equal(trinket.count / fire.profileCount, 1.6)
+    assert.equal(ring.share, 1)
+    assert.equal(trinket.share, 1)
+    assert.ok(fire.embellishments.length >= 1)
+    assert.ok(fire.embellishments.every(item => item.share <= 1))
+  })
+})
+
+describe('buildClassSummaries catalog guard', () => {
+  it('drops leaderboard specs that are not in the Meta catalog', () => {
+    const bucket = emptyProfileBucket()
+    const specPop = new Map([
+      ['Mage|Fire', { className: 'Mage', specName: 'Fire', count: 10, keyLevels: [] }],
+      ['Mage|Chronomancer', { className: 'Mage', specName: 'Chronomancer', count: 8, keyLevels: [] }],
+    ])
+    const classes = buildClassSummaries(specPop, new Map([['Mage|Fire', bucket], ['Mage|Chronomancer', bucket]]), 18)
+    const mage = classes.find(cls => cls.slug === 'mage')
+    assert.ok(mage)
+    assert.equal(mage.specs.some(spec => spec.slug === 'chronomancer'), false)
+    assert.ok(mage.specs.some(spec => spec.slug === 'fire'))
+  })
+})
+
+describe('shareOf clamp', () => {
+  it('clamps a share above 1 down to 1', () => {
+    assert.equal(shareOf(1414, 1000), 1)
+    assert.equal(shareOf(0, 1000), 0)
+    assert.equal(shareOf(500, 1000), 0.5)
+  })
+})
+
+describe('hero split per profile', () => {
+  it('counts a hero tree once when two active loadouts use the same tree', () => {
+    const bucket = emptyProfileBucket()
+    absorbProfile(bucket, {
+      specsBody: {
+        specializations: [{
+          loadouts: [
+            { is_active: true, talent_loadout_code: 'AAA', hero_talent_tree: { id: 31, name: 'Templar' } },
+            { is_active: true, talent_loadout_code: 'BBB', hero_talent_tree: { id: 31, name: 'Templar' } },
+          ],
+        }],
+      },
+      equipmentBody: { equipped_items: [] },
+    })
+    assert.equal(bucket.profiles, 1)
+    assert.equal(bucket.heroes.get('31')?.count, 1)
+    const specPop = new Map([
+      ['Paladin|Retribution', { className: 'Paladin', specName: 'Retribution', count: 1, keyLevels: [] }],
+    ])
+    const ret = buildClassSummaries(specPop, new Map([['Paladin|Retribution', bucket]]), 1)
+      .find(cls => cls.slug === 'paladin')?.specs.find(spec => spec.slug === 'retribution')
+    assert.ok(ret)
+    assert.equal(ret.heroSplit[0]?.share, 1)
+    assert.equal(ret.heroSplit[0]?.count, 1)
+  })
+})
+

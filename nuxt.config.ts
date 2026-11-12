@@ -233,9 +233,9 @@ export default defineNuxtConfig({
     // Meta snapshot (EU Mythic+). Default off; also skipped without credentials.
     // Override with NUXT_META_NIGHTLY=on|true|1|yes or off|false|0|no.
     // Credentials: NUXT_BLIZZARD_CLIENT_ID / NUXT_BLIZZARD_CLIENT_SECRET (server-only, never logged).
-    // Optional: NUXT_BLIZZARD_REGION (phase 1: eu only), NUXT_META_KUMA_PUSH_URL,
+    // Further env: NUXT_BLIZZARD_REGION (phase 1: eu only), NUXT_META_KUMA_PUSH_URL,
     // NUXT_META_SAMPLE_PER_SPEC (default 200), NUXT_META_MAX_ATTEMPTS_PER_SPEC (default 400),
-    // NUXT_META_MAX_CONCURRENT_SPECS (default 1), NUXT_META_HEAP_LIMIT_MB (optional guard cap).
+    // NUXT_META_MAX_CONCURRENT_SPECS (default 1), NUXT_META_HEAP_LIMIT_MB (heap-guard cap).
     blizzardClientId: process.env.NUXT_BLIZZARD_CLIENT_ID || '',
     blizzardClientSecret: process.env.NUXT_BLIZZARD_CLIENT_SECRET || '',
     blizzardRegion: process.env.NUXT_BLIZZARD_REGION || 'eu',

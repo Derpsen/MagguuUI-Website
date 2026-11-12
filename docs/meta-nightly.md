@@ -31,7 +31,9 @@ EU connected realms, current Mythic+ season, current period plus the two previou
 
 ## Sanity gates (before promote)
 
-The job writes a staging row first, then promotes the active pointer only when every blocking gate passes. Otherwise the previous snapshot stays active (`partial`). Deadline partials follow the same rule (DoD 1.24 / 1.26): they still go through `evaluateMetaRunPolicy` (429 rate ≤ 5 %, profile success ≥ 70 %, total `n` ≥ 50 % of last-good, no spec flipping from `n ≥ 50` to `0`) plus a per-spec sample floor (`profileCount >= META_MIN_SHOW_SAMPLE`). A 40×1 snapshot cannot replace a 39×200 last-good. The complete-catalog check is skipped only on the deadline path so an unfinished run can still publish when there is no last-good; mid-run intermediates are never promoted, and `rollbackMetaSnapshot` skips thinner partial rows in favour of the best remaining last-good.
+The job writes a staging row first, then promotes the active pointer only when every blocking gate passes. Otherwise the previous snapshot stays active (`partial`). Deadline partials follow the same rule (DoD 1.24 / 1.26): they still go through `evaluateMetaRunPolicy` (429 rate ≤ `META_MAX_429_RATE` = 5 %, profile success ≥ 70 %, total `n` ≥ 50 % of last-good, no spec flipping from `n ≥ 50` to `0`; DoD 1.26 is 50, matching `META_SANITY_SPEC_FLIP_N`) plus a per-spec sample floor (`profileCount >= META_MIN_BUILD_SAMPLE` = 50, raised from the UI show floor of 10 after the local sync4 run showed a minimum of 208 profiles per spec across 40 specs). A 40×1 snapshot cannot replace a 39×200 last-good. The complete-catalog check is skipped only on the deadline path so an unfinished run can still publish when there is no last-good; mid-run intermediates are never promoted, and `rollbackMetaSnapshot` re-points at the newest prior `ok` snapshot, walking past an older row only when that row has fewer well-covered specs than the predecessor (thin partial intermediates), not when it merely has a slightly higher per-spec sample.
+
+Without a last-good snapshot, a run that fails policy (for example a 34 % 429 rate like local sync4, before the rate-gate stampede fix) is `not-published`: CLI exit 3, `/meta` stays empty. That is DoD-conform (1.24: below the gate ⇒ snapshot not promoted). The rate-gate fix (Retry-After re-check, concurrency 8, adaptive rps) should cut 429s far below the 5 % gate; a later run should then be able to publish.
 
 - Leaderboards ≥ 90 % ok
 - All 13 classes and all catalog specs present in the payload (empty specs are filled in)
@@ -52,7 +54,7 @@ Builds are grouped by hero tree + core talents (talents picked by at least 80 % 
 
 ## Rollback
 
-`rollbackMetaSnapshot(sqlite)` re-points the region at the previous unexpired `ok` snapshot. Raw SQL equivalent:
+`rollbackMetaSnapshot(sqlite)` re-points the region at the newest unexpired `ok` snapshot before the current one. A slightly lower per-spec sample (for example 198 vs an older 200) stays on that predecessor; only a thinner well-covered-spec count is walked past as a partial intermediate. Raw SQL equivalent:
 
 ```sql
 -- inspect

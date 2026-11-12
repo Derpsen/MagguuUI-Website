@@ -12,6 +12,8 @@ The `blizzard:nightly` task runs at **03:15 UTC**, after `github:nightly` at 02:
 | `NUXT_META_KUMA_PUSH_URL` | empty | Optional Uptime Kuma push URL (token in the path). Never logged. `up` on `ok`/`skipped`, `down` on `partial`/`error`/`locked`. |
 | `NUXT_META_SAMPLE_PER_SPEC` | `200` | Profile sample target per spec (default in the 150–200 range). |
 | `NUXT_META_MAX_ATTEMPTS_PER_SPEC` | `400` | Max profile attempts per spec. |
+| `NUXT_META_MAX_CONCURRENT_SPECS` | `1` | Max specs sampled in parallel (1–8). Keep at 1 on Unraid. |
+| `NUXT_META_HEAP_LIMIT_MB` | (V8 limit) | Optional heap-guard cap in MB. The job aborts at 85% of the effective limit, releases the lock, and keeps the last-good snapshot. |
 | `CLOUDFLARE_ZONE_ID` / `CLOUDFLARE_API_TOKEN` | empty | After a successful promote, purge `/meta` and `/meta/**` by prefix (`ui.magguu.xyz/meta`). Missing credentials = no-op. Does not call `purge_everything`. |
 
 ## Population (decision 0.07)
@@ -63,3 +65,14 @@ ON CONFLICT(region) DO UPDATE SET snapshot_id = excluded.snapshot_id;
 ```
 
 Run history lives in `meta_runs` (same 30-day cleanup window). `/api/health` exposes `meta.status`, `meta.snapshotAgeHours`, and `meta.lastRunStatus` with no secrets.
+
+## Memory
+
+The 2026-11-12 04:15 Europe/Berlin nightly ran out of process heap (~377 MB of a 384 MB limit), the container auto-restarted, and no new snapshot was written (0× HTTP 429). The job now samples **spec by spec**, absorbs each profile into count maps, and writes those intermediate aggregates to SQLite staging (`meta_sync_spec_staging`). Raw profile, talent and gear responses are not kept in RAM. After all specs have been staged, the snapshot is assembled from staging, then the existing gates and promote path run. Isolated 40×200 fixture measurement: lean growth 62.0 MB (peak 77.4 MB) vs a retain-all path at 154.0 MB growth (peak 170.8 MB), against a 96 MB growth budget.
+
+A heap guard checks `process.memoryUsage().heapUsed` only (not RSS or `external`) against 85% of V8 `heap_size_limit` (or `NUXT_META_HEAP_LIMIT_MB` when set, whichever is smaller) between batches. On a breach the run ends as `error`, the in-process lock is released, staging is cleared, and the last-good snapshot stays active. The guard is what stops a second OOM from taking down the website process.
+
+The Unraid container may also raise `NODE_OPTIONS=--max-old-space-size=640` (limit 768 MB) as a host-side buffer. That does not replace the lean path or the guard.
+
+There is no protected admin or manual trigger for this job. Production is scheduled only (`blizzard:nightly` via `server/plugins/blizzard-meta-schedule.ts`). Nitro's `/_nitro/tasks` HTTP surface exists in the dev server, not in the production image. Do not invoke the task against the live container until this change is shipped.
+

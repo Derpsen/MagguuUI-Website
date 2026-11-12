@@ -631,3 +631,20 @@ export const metaRuns = sqliteTable('meta_runs', {
   endedAtIdx: index('idx_meta_runs_ended_at').on(table.endedAt),
 }))
 
+export const metaSyncRunStaging = sqliteTable('meta_sync_run_staging', {
+  runToken: text('run_token').primaryKey(),
+  payload: text('payload').notNull(),
+  createdAt: integer('created_at').notNull(),
+})
+
+export const metaSyncSpecStaging = sqliteTable('meta_sync_spec_staging', {
+  runToken: text('run_token').notNull(),
+  specId: integer('spec_id').notNull(),
+  className: text('class_name').notNull(),
+  specName: text('spec_name').notNull(),
+  payload: text('payload').notNull(),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.runToken, table.specId] }),
+  runIdx: index('idx_meta_sync_spec_staging_run').on(table.runToken),
+}))
+

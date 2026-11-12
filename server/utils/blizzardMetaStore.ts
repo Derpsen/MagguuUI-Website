@@ -9,7 +9,9 @@ import type Database from 'better-sqlite3'
  */
 
 import { parseMetaSnapshotPayload } from '~/utils/metaSnapshot'
-import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload } from '~/utils/metaTypes'
+import { META_REGION, META_SNAPSHOT_TTL_MS, type MetaSnapshotPayload, type MetaTalentLayout } from '~/utils/metaTypes'
+import type { SerializedProfileBucket, SpecPop } from './blizzardMetaAggregate'
+import { META_SYNC_STAGING_TABLES_SQL } from '../database/metaSyncStagingSql'
 
 export type MetaSqlite = Database.Database
 
@@ -412,4 +414,101 @@ export function readLastMetaRun(sqlite: MetaSqlite): MetaRunRecord | null {
 export function metaSnapshotAgeHours(snapshot: StoredMetaSnapshot | null, now = Date.now()): number | null {
   if (!snapshot) return null
   return Math.max(0, (now / 1000 - snapshot.fetchedAt) / 3600)
+}
+
+export type MetaSyncRunContext = {
+  season: MetaSnapshotPayload['season']
+  periods: MetaSnapshotPayload['periods']
+  realmCount: number
+  leaderboards: { planned: number, ok: number, failed: number }
+  specPop: SpecPop[]
+  totalCharacters: number
+  allKeyLevels: number[]
+}
+
+export type MetaSyncSpecStage = {
+  specId: number
+  className: string
+  specName: string
+  bucketsByHash: Record<string, SerializedProfileBucket>
+  versionsByHash: Record<string, number[]>
+  layout: MetaTalentLayout | null
+}
+
+export function ensureMetaSyncStagingTables(sqlite: MetaSqlite) {
+  sqlite.exec(META_SYNC_STAGING_TABLES_SQL)
+}
+
+export function clearMetaSyncStaging(sqlite: MetaSqlite, runToken?: string) {
+  ensureMetaSyncStagingTables(sqlite)
+  if (runToken) {
+    sqlite.prepare('DELETE FROM meta_sync_spec_staging WHERE run_token = ?').run(runToken)
+    sqlite.prepare('DELETE FROM meta_sync_run_staging WHERE run_token = ?').run(runToken)
+    return
+  }
+  sqlite.exec('DELETE FROM meta_sync_spec_staging')
+  sqlite.exec('DELETE FROM meta_sync_run_staging')
+}
+
+export function writeMetaSyncRunContext(sqlite: MetaSqlite, runToken: string, context: MetaSyncRunContext, now = Date.now()) {
+  ensureMetaSyncStagingTables(sqlite)
+  sqlite.prepare(`
+    INSERT INTO meta_sync_run_staging (run_token, payload, created_at)
+    VALUES (?, ?, ?)
+    ON CONFLICT(run_token) DO UPDATE SET payload = excluded.payload, created_at = excluded.created_at
+  `).run(runToken, JSON.stringify(context), Math.floor(now / 1000))
+}
+
+export function writeMetaSyncSpecAggregate(sqlite: MetaSqlite, runToken: string, stage: MetaSyncSpecStage) {
+  ensureMetaSyncStagingTables(sqlite)
+  sqlite.prepare(`
+    INSERT INTO meta_sync_spec_staging (run_token, spec_id, class_name, spec_name, payload)
+    VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT(run_token, spec_id) DO UPDATE SET
+      class_name = excluded.class_name,
+      spec_name = excluded.spec_name,
+      payload = excluded.payload
+  `).run(runToken, stage.specId, stage.className, stage.specName, JSON.stringify({
+    bucketsByHash: stage.bucketsByHash,
+    versionsByHash: stage.versionsByHash,
+    layout: stage.layout,
+  }))
+}
+
+export function readMetaSyncRunContext(sqlite: MetaSqlite, runToken: string): MetaSyncRunContext | null {
+  ensureMetaSyncStagingTables(sqlite)
+  const row = sqlite.prepare('SELECT payload FROM meta_sync_run_staging WHERE run_token = ?').get(runToken) as { payload: string } | undefined
+  if (!row?.payload) return null
+  try {
+    return JSON.parse(row.payload) as MetaSyncRunContext
+  } catch {
+    return null
+  }
+}
+
+export function readMetaSyncSpecAggregates(sqlite: MetaSqlite, runToken: string): MetaSyncSpecStage[] {
+  ensureMetaSyncStagingTables(sqlite)
+  const rows = sqlite.prepare('SELECT spec_id, class_name, spec_name, payload FROM meta_sync_spec_staging WHERE run_token = ? ORDER BY spec_id').all(runToken) as Array<{
+    spec_id: number
+    class_name: string
+    spec_name: string
+    payload: string
+  }>
+  const out: MetaSyncSpecStage[] = []
+  for (const row of rows) {
+    try {
+      const parsed = JSON.parse(row.payload) as { bucketsByHash?: Record<string, SerializedProfileBucket>, versionsByHash?: Record<string, number[]>, layout?: MetaTalentLayout | null }
+      out.push({
+        specId: row.spec_id,
+        className: row.class_name,
+        specName: row.spec_name,
+        bucketsByHash: parsed.bucketsByHash ?? {},
+        versionsByHash: parsed.versionsByHash && typeof parsed.versionsByHash === 'object' ? parsed.versionsByHash : {},
+        layout: parsed.layout ?? null,
+      })
+    } catch {
+      /* skip a corrupt staging row */
+    }
+  }
+  return out
 }

@@ -131,6 +131,7 @@ Important values include:
 - `NUXT_ADS` (optional, default off: no reserved AdSlot markup on /meta; `on`/`true`/`1`/`yes` to enable the reserved boxes. AdSense itself is a later PR.)
 - `NUXT_META_KUMA_PUSH_URL` (optional Kuma push URL; never logged)
 - `NUXT_META_SAMPLE_PER_SPEC` / `NUXT_META_MAX_ATTEMPTS_PER_SPEC` (optional; defaults 200 / 400)
+- `NUXT_META_MAX_CONCURRENT_SPECS` (optional; default 1) and `NUXT_META_HEAP_LIMIT_MB` (optional heap-guard cap)
 - `NUXT_GITHUB_REPO`
 - `NUXT_GITHUB_WEBHOOK_SECRET`
 - `NUXT_SYNC_SEEDED_CONTENT`

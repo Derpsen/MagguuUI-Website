@@ -1017,3 +1017,105 @@ export function applyItemIcons(classes: MetaClassSummary[], icons: Map<number, s
     }
   }
 }
+
+type SerializedCountMap = Array<[string, CountEntry]>
+type SerializedHeroTalent = {
+  label: string
+  profiles: number
+  talents: Record<MetaTalentTree, SerializedCountMap>
+}
+
+export type SerializedProfileBucket = {
+  profiles: number
+  talents: Record<MetaTalentTree, SerializedCountMap>
+  loadouts: SerializedCountMap
+  heroes: SerializedCountMap
+  gear: SerializedCountMap
+  stats: Array<[string, { label: string, total: number }]>
+  enchants: SerializedCountMap
+  gems: SerializedCountMap
+  races: SerializedCountMap
+  gearMods: Array<[string, { enchants: SerializedCountMap, gems: SerializedCountMap }]>
+  talentsByHero: Array<[number, SerializedHeroTalent]>
+  ilvlSamples: Array<[string, number[]]>
+  builds: BuildSample[]
+  unknownTalentNodes: number
+}
+
+function serializeCountMap(map: CountMap): SerializedCountMap {
+  return [...map.entries()]
+}
+
+function deserializeCountMap(rows: SerializedCountMap | undefined): CountMap {
+  return new Map(Array.isArray(rows) ? rows : [])
+}
+
+function serializeTalents(talents: Record<MetaTalentTree, CountMap>): Record<MetaTalentTree, SerializedCountMap> {
+  return {
+    class: serializeCountMap(talents.class),
+    spec: serializeCountMap(talents.spec),
+    hero: serializeCountMap(talents.hero),
+  }
+}
+
+function deserializeTalents(raw: Record<MetaTalentTree, SerializedCountMap> | undefined): Record<MetaTalentTree, CountMap> {
+  return {
+    class: deserializeCountMap(raw?.class),
+    spec: deserializeCountMap(raw?.spec),
+    hero: deserializeCountMap(raw?.hero),
+  }
+}
+
+/** JSON-safe form of a per-spec aggregate, for SQLite staging. */
+export function serializeProfileBucket(bucket: ProfileBucket): SerializedProfileBucket {
+  return {
+    profiles: bucket.profiles,
+    talents: serializeTalents(bucket.talents),
+    loadouts: serializeCountMap(bucket.loadouts),
+    heroes: serializeCountMap(bucket.heroes),
+    gear: serializeCountMap(bucket.gear),
+    stats: [...bucket.stats.entries()],
+    enchants: serializeCountMap(bucket.enchants),
+    gems: serializeCountMap(bucket.gems),
+    races: serializeCountMap(bucket.races),
+    gearMods: [...bucket.gearMods.entries()].map(([key, mods]) => [key, {
+      enchants: serializeCountMap(mods.enchants),
+      gems: serializeCountMap(mods.gems),
+    }]),
+    talentsByHero: [...bucket.talentsByHero.entries()].map(([id, hero]) => [id, {
+      label: hero.label,
+      profiles: hero.profiles,
+      talents: serializeTalents(hero.talents),
+    }]),
+    ilvlSamples: [...bucket.ilvlSamples.entries()].map(([key, values]) => [key, [...values]]),
+    builds: bucket.builds.map(build => ({ ...build, talentIds: [...build.talentIds] })),
+    unknownTalentNodes: bucket.unknownTalentNodes,
+  }
+}
+
+export function deserializeProfileBucket(raw: SerializedProfileBucket | null | undefined): ProfileBucket {
+  const bucket = emptyProfileBucket()
+  if (!raw || typeof raw !== 'object') return bucket
+  bucket.profiles = typeof raw.profiles === 'number' && Number.isFinite(raw.profiles) ? raw.profiles : 0
+  bucket.talents = deserializeTalents(raw.talents)
+  bucket.loadouts = deserializeCountMap(raw.loadouts)
+  bucket.heroes = deserializeCountMap(raw.heroes)
+  bucket.gear = deserializeCountMap(raw.gear)
+  bucket.stats = new Map(Array.isArray(raw.stats) ? raw.stats : [])
+  bucket.enchants = deserializeCountMap(raw.enchants)
+  bucket.gems = deserializeCountMap(raw.gems)
+  bucket.races = deserializeCountMap(raw.races)
+  bucket.gearMods = new Map((raw.gearMods ?? []).map(([key, mods]) => [key, {
+    enchants: deserializeCountMap(mods?.enchants),
+    gems: deserializeCountMap(mods?.gems),
+  }]))
+  bucket.talentsByHero = new Map((raw.talentsByHero ?? []).map(([id, hero]) => [Number(id), {
+    label: hero.label,
+    profiles: hero.profiles,
+    talents: deserializeTalents(hero.talents),
+  }]))
+  bucket.ilvlSamples = new Map((raw.ilvlSamples ?? []).map(([key, values]) => [key, Array.isArray(values) ? [...values] : []]))
+  bucket.builds = Array.isArray(raw.builds) ? raw.builds.map(build => ({ ...build, talentIds: [...(build.talentIds ?? [])] })) : []
+  bucket.unknownTalentNodes = typeof raw.unknownTalentNodes === 'number' ? raw.unknownTalentNodes : 0
+  return bucket
+}

@@ -5,7 +5,7 @@ import {
   nextBlizzardMetaNightlyRun,
   parseBlizzardRegion,
   parseMetaNightlyFlag,
-  parseMetaSamplePerSpec,
+  parseMetaMaxConcurrentSpecs, parseMetaSamplePerSpec,
   resetBlizzardRegionWarning,
   resetMetaNightlyFlagWarning,
   shouldArmMetaSchedule,
@@ -76,6 +76,13 @@ describe('region and sample caps', () => {
     assert.equal(parseMetaSamplePerSpec(undefined), META_SAMPLE_PER_SPEC)
     assert.equal(parseMetaSamplePerSpec('150'), 150)
     assert.equal(parseMetaSamplePerSpec('nope'), META_SAMPLE_PER_SPEC)
+  })
+
+  it('defaults concurrent specs to one and caps at eight', () => {
+    assert.equal(parseMetaMaxConcurrentSpecs(undefined), 1)
+    assert.equal(parseMetaMaxConcurrentSpecs('3'), 3)
+    assert.equal(parseMetaMaxConcurrentSpecs('99'), 8)
+    assert.equal(parseMetaMaxConcurrentSpecs('0'), 1)
   })
 
   it('does not arm the scheduler in dev, CI, or e2e', () => {

@@ -19,6 +19,15 @@
 - `error.vue` Home → `/` only (never `/home`).
 - CodeQL `init` and `analyze` must share one commit pin.
 
+## 2026-11-12 Meta nightly heap
+
+- Live `blizzard:nightly` at **04:15 Europe/Berlin** on 12 Nov 2026 ran the process out of heap (~377 MB of a 384 MB limit). The container auto-restarted. No new snapshot was written (0× HTTP 429). Last-good (or empty) data stayed as it was only because the process died before promote.
+- Code fix: sample spec by spec, drop raw profile/talent/gear bodies after absorb, stage per-spec count maps in SQLite, assemble then gates + promote. Heap guard aborts at 85% of V8 `heap_size_limit` (optional `NUXT_META_HEAP_LIMIT_MB`), releases the lock, keeps last-good. `NUXT_META_MAX_CONCURRENT_SPECS` default 1.
+- Host buffer (Unraid / Server): `NODE_OPTIONS=--max-old-space-size=640` with a 768 MB cgroup-style limit. That is additional headroom, not a substitute for the lean path.
+- There is **no** protected admin/manual trigger for the Meta sync. Only the scheduled `blizzard:nightly` task. Nitro `/_nitro/tasks` is a dev-server route, not in the production image. Do not fire it against live until this ships.
+- Tests: `tests/unit/blizzardMetaSync.heap.test.ts` (40 specs × 200 padded samples, growth budget 96 MB; simulated breach keeps last-good; legacy retain-all path is expected to exceed the budget). Isolated measurement with `--expose-gc`: lean growth 62.0 MB (peak 77.4 MB) vs legacy retain-all growth 154.0 MB (peak 170.8 MB). A later full-suite run was still under budget (lean growth 80.8 MB).
+- Public H1 contrast without JavaScript in light theme shipped separately as #192. Remaining no-JS contrast work is in the 2026-11-12 follow-up note at the end of this file.
+
 ## 2026-09-10 payload / bundle
 
 - `pages/index.vue` uses `GET /api/v1/catalog-summary` (addon names + counts, no import-string blobs). `/strings` still uses fat `/api/v1/profiles`, `/layouts`, `/wowup`.
@@ -672,3 +681,14 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 ## 2026-11-12 no-JS H1 contrast
 
 - With JavaScript off (or before `useIsDark` mounts), public page H1s still got `text-white` while `html.light` or a classless document used a light background. CSS now colors `.public-shell h1` as `#0f172a` unless `html.dark` is present. Covered by `tests/nojs-h1-contrast.spec.ts` (site scripts blocked at the network, `html.light` forced, axe color-contrast on `/guide`, `/faq`, `/news`).
+
+## 2026-11-12 Code-Review follow-ups after #193 / #190 / #192 ship
+
+- Real no-JS state is still whole-page white-on-white (axe `/faq` 20 nodes to `/` 113 nodes). #192 only keeps public H1s readable under `html.light`; the rest of the unhydrated light page remains a later follow-up.
+- #190 LOWs still open: document a minimum run count for the Lighthouse median, refresh baseline doc numbers, and extend the unclipped timestamp e2e beyond only 390 px.
+- #192: dark markdown H1 is slightly brighter than before (`html.dark .public-shell h1 { color: #fff }`). Follow up if markdown heading contrast looks off.
+
+## 2026-11-12 #191 Code-Review pass (heap abort tests)
+
+- Concurrent abort test now trips the heap guard only once, then returns to a normal (safe) reading, so later workers have to honour abort checks and `Promise.allSettled`. It also counts fetcher calls after abort (must be 0) and re-reads both staging tables after 1.5 s (must stay empty). An external `abortController.abort()` mid spec-phase throws before assemble so a partial snapshot cannot be promoted as `ok`.
+- Left for later (reviewer LOWs, not this pass): a cross-process clear-all of leftover staging; convert the playable-specialization `Promise.all` to the same abort-aware pool; add a mutation that is equivalent to dropping the lock-start clear-all.

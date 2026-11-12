@@ -1,3 +1,5 @@
+import { META_SYNC_STAGING_TABLES_SQL } from './metaSyncStagingSql'
+
 export const DATABASE_BOOTSTRAP_SQL = `
   CREATE TABLE IF NOT EXISTS profiles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -479,7 +481,7 @@ export const DATABASE_BOOTSTRAP_SQL = `
     FOREIGN KEY (snapshot_id) REFERENCES meta_snapshots(snapshot_id) ON DELETE SET NULL
   );
   CREATE INDEX IF NOT EXISTS idx_meta_runs_ended_at ON meta_runs(ended_at);
-`
+` + META_SYNC_STAGING_TABLES_SQL
 
 export const SAFE_COLUMN_MIGRATIONS = [
   'ALTER TABLE profiles ADD COLUMN custom_fields TEXT',

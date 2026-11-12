@@ -10,8 +10,8 @@ describe('guide and changelog heading order', () => {
   it('renders guide steps as h2 after the page h1 (no h1→h3 skip)', () => {
     const src = page('guide.vue')
     assert.match(src, /<h1[\s>][\s\S]*Installation Guide/)
-    assert.match(src, /<h2 class="guide-step-title/)
-    assert.doesNotMatch(src, /<h3 class="guide-step-title/)
+    assert.match(src, /<h2 class="guide-step__title"/)
+    assert.doesNotMatch(src, /<h3 class="guide-step__title"/)
   })
 
   it('gives changelog a page h1 and keeps every version as h2', () => {

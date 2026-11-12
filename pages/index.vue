@@ -438,7 +438,7 @@ const features = computed(() => featureCopy.value.map((feat) => {
 
 .home-hero { padding-top: 3.5rem; text-align: center; display: flex; flex-direction: column; align-items: center; }
 @media (min-width: 768px) { .home-hero { padding-top: 6rem; } }
-.home-hero__eyebrow { text-transform: uppercase; letter-spacing: 0.14em; font-family: var(--font-mono); font-size: var(--mg-fs-micro); font-weight: 500; }
+.home-hero__eyebrow { text-transform: uppercase; letter-spacing: 0.14em; font-family: var(--font-mono); font-size: var(--mg-fs-micro); font-weight: 400; }
 .home-hero__dot { width: 0.4rem; height: 0.4rem; border-radius: 999px; background: var(--mg-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mg-accent) 28%, transparent), 0 0 12px var(--mg-accent); }
 .home-hero__title { margin-top: 1.5rem; color: var(--mg-fg); font-size: inherit; line-height: 1; letter-spacing: -0.05em; }
 .home-hero__name {
@@ -539,7 +539,7 @@ const features = computed(() => featureCopy.value.map((feat) => {
 @media (min-width: 640px) { .home-addons { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .home-addons > li { min-width: 0; border-bottom: 1px solid var(--mg-line); }
 .home-addon { display: flex; align-items: center; gap: 0.75rem; min-height: 3.25rem; padding: 0.5rem 0; }
-.home-addon__name { font-size: 0.9375rem; font-weight: 650; color: var(--mg-fg); }
+.home-addon__name { font-size: 0.9375rem; font-weight: 700; color: var(--mg-fg); }
 .home-addon:hover .home-addon__name { text-decoration: underline; text-underline-offset: 0.2em; }
 .home-addon__tag { font-size: 0.625rem; }
 .home-latest { position: relative; overflow: hidden; padding: 1.75rem; border: 1px solid var(--mg-line-strong); border-radius: var(--mg-r-xl); background: var(--mg-surface-2); box-shadow: var(--mg-shadow); }
@@ -547,7 +547,7 @@ const features = computed(() => featureCopy.value.map((feat) => {
 .home-latest > * { position: relative; }
 .home-latest__version { font-family: var(--font-mono); font-size: clamp(2rem, 1.5rem + 1.6vw, 2.75rem); font-weight: 700; letter-spacing: -0.04em; color: var(--mg-fg); }
 .group:hover .home-latest__version { color: var(--mg-accent-text); }
-.home-link { font-size: 0.9375rem; font-weight: 650; color: var(--mg-accent-text); text-underline-offset: 0.25em; }
+.home-link { font-size: 0.9375rem; font-weight: 700; color: var(--mg-accent-text); text-underline-offset: 0.25em; }
 .home-link::after { content: ' \2192'; }
 .home-link:hover { text-decoration: underline; }
 

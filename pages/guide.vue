@@ -1,54 +1,23 @@
-<!--
-  Guide Page — Installation steps with a clean, unified layout
--->
-
 <template>
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
+  <div class="setup-page mg-container pt-8 pb-20">
     <!-- Admin controls: ClientOnly always renders a div (fallback + hidden when guest) -->
     <ClientOnly>
       <div
-        class="flex items-center justify-end gap-2 mb-5 fade-in"
+        class="flex flex-wrap items-center justify-end gap-2 mb-5"
         :class="isAdmin ? '' : 'hidden'"
         :aria-hidden="isAdmin ? undefined : 'true'"
       >
         <template v-if="isAdmin && editMode">
-          <button
-            @click="saveAll"
-            :disabled="saving"
-            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all"
-            :class="saving ? 'bg-brand-400/60 cursor-wait' : 'bg-brand-400 hover:bg-brand-500'"
-          >
-            <svg v-if="saving" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-            <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-            Save
+          <button type="button" class="mg-btn mg-btn--sm mg-btn--primary" :disabled="saving" @click="saveAll">
+            {{ saving ? 'Saving…' : 'Save' }}
           </button>
-          <button
-            @click="cancelEdit"
-            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
-            :class="isDark ? 'text-silver-400 hover:text-white hover:bg-white/5 border border-brand-400/15' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-gray-200'"
-          >
-            Cancel
-          </button>
+          <button type="button" class="mg-btn mg-btn--sm mg-btn--secondary" @click="cancelEdit">Cancel</button>
         </template>
         <template v-else-if="isAdmin">
-          <button
-            @click="startEdit"
-            :disabled="editorLoading"
-            :aria-busy="editorLoading"
-            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-60 disabled:cursor-wait"
-            :class="isDark ? 'bg-brand-400/10 text-brand-400 hover:bg-brand-400/20 border border-brand-400/20' : 'bg-brand-50 text-brand-600 hover:bg-brand-100 border border-brand-200'"
-          >
-            <svg v-if="editorLoading" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-            <svg v-else aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
+          <button type="button" class="mg-btn mg-btn--sm mg-btn--secondary" :disabled="editorLoading" :aria-busy="editorLoading" @click="startEdit">
             {{ editorLoading ? 'Loading…' : 'Edit Page' }}
           </button>
-          <NuxtLink
-            to="/admin/content/guide"
-            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
-            :class="isDark ? 'bg-white/5 text-silver-400 hover:text-white hover:bg-white/10 border border-brand-400/15' : 'bg-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-200 border border-gray-200'"
-          >
-            Full Editor
-          </NuxtLink>
+          <NuxtLink to="/admin/content/guide" class="mg-btn mg-btn--sm mg-btn--ghost">Full Editor</NuxtLink>
         </template>
       </div>
       <template #fallback>
@@ -57,227 +26,149 @@
     </ClientOnly>
 
     <!-- No Transition: comment/fragment placeholders mismatch a stable div tree -->
-    <div
-      v-if="editMode"
-      class="flex items-center gap-2 mb-5 px-3 py-2 rounded-lg"
-      :class="isDark ? 'bg-brand-400/10 border border-brand-400/20' : 'bg-brand-50 border border-brand-200'"
-    >
-      <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
-      <span class="text-xs font-medium" :class="isDark ? 'text-brand-400' : 'text-brand-600'">Edit mode — change text below, then click Save</span>
+    <div v-if="editMode" class="mg-notice mb-5">
+      <span class="mg-small mg-muted">Edit mode: change the text below, then click Save.</span>
     </div>
 
-    <div
-      v-if="showSaved"
-      class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg border backdrop-blur-xl"
-      :class="isDark ? 'bg-emerald-900/80 border-emerald-400/20 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700'"
-    >
-      <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-      <span class="text-sm font-medium">Changes saved</span>
+    <div v-if="showSaved" class="mg-notice fixed bottom-6 left-1/2 z-50 -translate-x-1/2" role="status">
+      <span class="mg-small">Changes saved</span>
     </div>
 
     <PublicSetupNav />
 
-    <!-- Header -->
-    <section class="mb-10">
+    <header class="setup-head mb-12">
       <div v-if="!editMode">
-        <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Procedure</p>
-        <h1 class="mg-h1 max-w-3xl" :class="isDark ? 'text-white' : 'text-gray-950'">
+        <p class="mg-kicker setup-rise" style="--i: 0">Procedure</p>
+        <h1 class="mg-display mg-title-grad mt-3 max-w-3xl setup-rise" style="--i: 1">
           {{ visibleTitle || 'Installation Guide' }}
         </h1>
-        <p class="mt-4 max-w-2xl text-base leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+        <p class="setup-head__lead mg-lead setup-rise" style="--i: 2">
           {{ visibleSubtitle || 'Download EllesmereUI 9.0.6+ and MagguuUI from CurseForge, Wago, or WoWInterface. Open /mui and run Apply Magguu profiles. Everything except EllesmereUI is optional.' }}
         </p>
-        <DownloadButtons primary class="mt-6" />
+        <DownloadButtons primary class="setup-head__actions setup-rise" style="--i: 3" />
       </div>
 
-      <div v-else class="max-w-3xl mx-auto space-y-3">
+      <div v-else class="max-w-3xl space-y-3">
         <div>
-          <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Page Title</label>
-          <input
-            v-model="editableTitle"
-            class="w-full text-2xl sm:text-3xl font-bold rounded-2xl px-4 py-3 border-2 transition-colors outline-none"
-            :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-brand-200 focus:border-brand-500'"
-          >
+          <label for="guide-title" class="block mg-small mg-subtle mb-1.5">Page title</label>
+          <input id="guide-title" v-model="editableTitle" class="mg-input text-2xl font-bold">
         </div>
         <div>
-          <label class="block text-xs font-medium mb-1.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Subtitle</label>
-          <textarea
-            v-model="editableSubtitle"
-            rows="3"
-            class="w-full text-base rounded-2xl px-4 py-3 border-2 transition-colors outline-none resize-none"
-            :class="isDark ? 'bg-brand-800/50 text-silver-300 border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-700 border-brand-200 focus:border-brand-500'"
-          ></textarea>
+          <label for="guide-subtitle" class="block mg-small mg-subtle mb-1.5">Subtitle</label>
+          <textarea id="guide-subtitle" v-model="editableSubtitle" rows="3" class="mg-input resize-none"></textarea>
         </div>
       </div>
-    </section>
+    </header>
 
-    <div v-if="!editMode" class="mb-12 max-w-3xl">
-      <ScreenshotFrame
-        src="/screenshots/setup.jpg"
-        alt="EllesmereUI MagguuUI Setup, with Apply Magguu profiles."
-        caption="Setup, opened with /mui"
-        :width="2000"
-        :height="1125"
-      />
+    <div v-if="!editMode" class="setup-shot mb-16 max-w-4xl">
+      <div class="setup-shot__frame">
+        <ScreenshotFrame
+          src="/screenshots/setup.jpg"
+          alt="EllesmereUI MagguuUI Setup, with Apply Magguu profiles."
+          caption="Setup, opened with /mui"
+          :width="2000"
+          :height="1125"
+          eager
+        />
+      </div>
     </div>
 
-    <!-- Layout: steps + sidebar -->
-    <div v-if="visibleSteps.length" class="grid lg:grid-cols-[minmax(0,1fr)_260px] gap-8 lg:gap-12 items-start">
-      <!-- Steps -->
-      <div class="space-y-5">
-        <article
+    <!-- Steps + sidebar -->
+    <div v-if="visibleSteps.length" class="guide-layout">
+      <ol class="guide-steps">
+        <li
           v-for="(step, idx) in visibleSteps"
           :id="`step-${idx + 1}`"
           :key="step.num"
-          class="guide-step border-b py-8"
-          :class="isDark ? 'border-white/10' : 'border-gray-200'"
+          class="guide-step"
         >
-          <div class="flex items-start gap-4 sm:gap-5">
-            <!-- Step number -->
-            <div class="flex-shrink-0 flex flex-col items-center gap-2">
-              <div class="guide-step-number"
-                :class="isDark
-                  ? 'bg-brand-400/10 text-brand-300 border border-brand-400/25'
-                  : 'bg-brand-50 text-brand-600 border border-brand-200'">
-                {{ idx + 1 }}
-              </div>
-              <span v-if="idx < visibleSteps.length - 1" aria-hidden="true" class="w-px h-6"
-                :class="isDark ? 'bg-brand-400/15' : 'bg-brand-100'" />
-            </div>
+          <span class="guide-step__n" aria-hidden="true">{{ idx + 1 }}</span>
+          <div class="guide-step__body">
+            <span class="mg-kicker guide-step__stage">{{ stepStage(idx) }}</span>
+            <h2 class="guide-step__title">{{ step.editableTitle || `Step ${idx + 1}` }}</h2>
 
-            <!-- Content -->
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1.5">
-                <UIcon :name="stepIcon(idx)" class="w-4 h-4" :class="isDark ? 'text-silver-500' : 'text-gray-400'" />
-                <span class="text-[11px] font-semibold uppercase tracking-[0.18em]"
-                  :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-                  {{ stepStage(idx) }}
-                </span>
-              </div>
-              <h2 class="guide-step-title text-xl sm:text-2xl font-bold leading-tight mb-4"
-                :class="isDark ? 'text-white' : 'text-gray-900'">
-                {{ step.editableTitle || `Step ${idx + 1}` }}
-              </h2>
+            <template v-if="!editMode">
+              <SafeHtml class="guide-content guide-step__content" :html="step.editableContent" breaks />
+            </template>
 
-              <template v-if="!editMode">
-                <SafeHtml
-                  class="guide-content text-[15px] leading-relaxed"
-                  :class="isDark ? 'text-silver-300' : 'text-gray-600'"
-                  :html="step.editableContent"
-                  breaks
-                />
-              </template>
-
-              <template v-else>
-                <div class="space-y-3">
-                  <div>
-                    <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-silver-500' : 'text-gray-400'">Step {{ idx + 1 }} Title</label>
-                    <input
-                      v-model="step.editableTitle"
-                      class="w-full font-semibold rounded-xl px-3 py-2 border-2 transition-colors outline-none"
-                      :class="isDark ? 'bg-brand-800/50 text-white border-brand-400/30 focus:border-brand-400' : 'bg-white text-gray-900 border-brand-200 focus:border-brand-500'"
-                    >
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-silver-500' : 'text-gray-400'">Content</label>
-                    <ClientOnly>
-                      <component
-                        :is="TipTapEditor"
-                        v-if="TipTapEditor"
-                        v-model="step.editableContent"
-                        placeholder="Step content..."
-                        min-height="120px"
-                      />
-                      <template #fallback>
-                        <div class="min-h-[120px] rounded-xl" aria-hidden="true" />
-                      </template>
-                    </ClientOnly>
-                  </div>
+            <template v-else>
+              <div class="guide-step__content space-y-3">
+                <div>
+                  <label :for="`guide-step-title-${idx}`" class="block mg-small mg-subtle mb-1">Step {{ idx + 1 }} title</label>
+                  <input :id="`guide-step-title-${idx}`" v-model="step.editableTitle" class="mg-input font-semibold">
                 </div>
-              </template>
-            </div>
+                <div>
+                  <span class="block mg-small mg-subtle mb-1">Content</span>
+                  <ClientOnly>
+                    <component
+                      :is="TipTapEditor"
+                      v-if="TipTapEditor"
+                      v-model="step.editableContent"
+                      placeholder="Step content..."
+                      min-height="120px"
+                    />
+                    <template #fallback>
+                      <div class="min-h-[120px] rounded-xl" aria-hidden="true" />
+                    </template>
+                  </ClientOnly>
+                </div>
+              </div>
+            </template>
           </div>
-        </article>
-      </div>
+        </li>
+      </ol>
 
-      <!-- Sidebar: simple step index + help links -->
-      <aside class="space-y-4 lg:sticky lg:top-28">
-        <nav class="border-t pt-4" :class="isDark ? 'border-white/10' : 'border-gray-200'" aria-label="Guide steps">
-          <p class="guide-toc-label text-[11px] font-semibold uppercase tracking-[0.18em] mb-3"
-            :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-            On this page
-          </p>
-          <ol class="space-y-1">
+      <aside class="guide-toc space-y-8">
+        <nav aria-label="Guide steps">
+          <p class="mg-kicker guide-toc__label">On this page</p>
+          <ol>
             <li v-for="(step, idx) in visibleSteps" :key="`jump-${step.num}`">
-              <a :href="`#step-${idx + 1}`"
-                class="guide-jump flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-colors"
-                :class="isDark
-                  ? 'text-silver-300 hover:text-white hover:bg-white/5'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-brand-50'">
-                <span class="guide-jump-num inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-bold flex-shrink-0"
-                  :class="isDark
-                    ? 'bg-brand-400/10 text-brand-300'
-                    : 'bg-brand-50 text-brand-600'">
-                  {{ idx + 1 }}
-                </span>
-                <span class="truncate">{{ step.editableTitle || `Step ${idx + 1}` }}</span>
+              <a :href="`#step-${idx + 1}`" class="guide-jump">
+                <span class="guide-jump__n" aria-hidden="true">{{ String(idx + 1).padStart(2, '0') }}</span>
+                <span class="min-w-0">{{ step.editableTitle || `Step ${idx + 1}` }}</span>
               </a>
             </li>
           </ol>
         </nav>
 
-        <div class="border-t pt-4" :class="isDark ? 'border-white/10' : 'border-gray-200'">
-          <p class="guide-toc-label text-[11px] font-semibold uppercase tracking-[0.18em] mb-3"
-            :class="isDark ? 'text-silver-500' : 'text-gray-500'">
-            After setup
-          </p>
-          <div class="space-y-1">
-            <NuxtLink to="/strings" class="guide-help-link" :class="isDark ? 'guide-help-link--dark' : 'guide-help-link--light'">
-              <UIcon name="i-heroicons-bolt" class="w-4 h-4 flex-shrink-0" />
-              <span>Import strings</span>
-              <UIcon name="i-heroicons-arrow-up-right" class="w-3.5 h-3.5 ml-auto opacity-50" />
-            </NuxtLink>
-            <NuxtLink to="/strings?tab=wowup" class="guide-help-link" :class="isDark ? 'guide-help-link--dark' : 'guide-help-link--light'">
-              <UIcon name="i-heroicons-archive-box-arrow-down" class="w-4 h-4 flex-shrink-0" />
-              <span>WowUp packages</span>
-              <UIcon name="i-heroicons-arrow-up-right" class="w-3.5 h-3.5 ml-auto opacity-50" />
-            </NuxtLink>
-            <a href="#apply-one-module" class="guide-help-link" :class="isDark ? 'guide-help-link--dark' : 'guide-help-link--light'">
-              <UIcon name="i-heroicons-book-open" class="w-4 h-4 flex-shrink-0" />
-              <span>Apply only one module</span>
-            </a>
-            <NuxtLink to="/faq" class="guide-help-link" :class="isDark ? 'guide-help-link--dark' : 'guide-help-link--light'">
-              <UIcon name="i-heroicons-question-mark-circle" class="w-4 h-4 flex-shrink-0" />
-              <span>FAQ</span>
-              <UIcon name="i-heroicons-arrow-up-right" class="w-3.5 h-3.5 ml-auto opacity-50" />
-            </NuxtLink>
-          </div>
+        <div>
+          <p class="mg-kicker guide-toc__label">After setup</p>
+          <ul>
+            <li>
+              <NuxtLink to="/strings" class="guide-help"><span>Import strings</span><UIcon name="i-heroicons-arrow-up-right" class="guide-help__go w-3.5 h-3.5" aria-hidden="true" /></NuxtLink>
+            </li>
+            <li>
+              <NuxtLink to="/strings?tab=wowup" class="guide-help"><span>WowUp packages</span><UIcon name="i-heroicons-arrow-up-right" class="guide-help__go w-3.5 h-3.5" aria-hidden="true" /></NuxtLink>
+            </li>
+            <li>
+              <a href="#apply-one-module" class="guide-help"><span>Apply only one module</span></a>
+            </li>
+            <li>
+              <NuxtLink to="/faq" class="guide-help"><span>FAQ</span><UIcon name="i-heroicons-arrow-up-right" class="guide-help__go w-3.5 h-3.5" aria-hidden="true" /></NuxtLink>
+            </li>
+          </ul>
         </div>
       </aside>
     </div>
 
     <!-- Empty state -->
     <div v-else class="py-16">
-      <UIcon name="i-heroicons-book-open" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700' : 'text-gray-300'" />
-      <p :class="isDark ? 'text-silver-500' : 'text-gray-500'">No guide steps available yet.</p>
-      <NuxtLink v-if="isAdmin" to="/admin/content/guide" class="inline-flex items-center gap-1.5 mt-3 text-brand-400 hover:underline text-sm">
-        Add steps in the editor
-      </NuxtLink>
+      <p class="mg-muted">No guide steps available yet.</p>
+      <NuxtLink v-if="isAdmin" to="/admin/content/guide" class="mg-link mt-3 inline-block text-sm">Add steps in the editor</NuxtLink>
     </div>
+
     <!-- Apply only one module (static, verified against the addon: Setup.lua InstallAll, Tools.lua BuildIndividualProfileOptions) -->
-    <section v-if="!editMode" id="apply-one-module" class="mt-14 max-w-3xl scroll-mt-28" aria-labelledby="apply-one-module-title">
-      <p class="section-eyebrow mb-3">Single import</p>
-      <h2 id="apply-one-module-title" class="text-2xl font-semibold tracking-tight" :class="isDark ? 'text-white' : 'text-gray-950'">
-        Apply only one module
-      </h2>
-      <div class="mt-4 space-y-4 text-[15px] leading-relaxed" :class="isDark ? 'text-silver-300' : 'text-gray-600'">
+    <section v-if="!editMode" id="apply-one-module" class="mt-20 max-w-3xl scroll-mt-28" aria-labelledby="apply-one-module-title">
+      <p class="mg-kicker mb-3">Single import</p>
+      <h2 id="apply-one-module-title" class="mg-h2">Apply only one module</h2>
+      <div class="guide-content mt-5 space-y-4">
         <p>
-          <strong :class="isDark ? 'text-white' : 'text-gray-900'">Apply Magguu profiles</strong> is the all-in-one first install for the current character. It has no
+          <strong>Apply Magguu profiles</strong> is the all-in-one first install for the current character. It has no
           per-module selection: it imports the EllesmereUI profile, then the profiles for every supported addon you have installed, then the class layouts.
           The only switch next to it is <em>Include Magguu Settings</em>.
         </p>
         <p>To take just one part, open <code>/mui</code>, go to Setup and scroll to the <em>Required</em> and <em>Optional</em> rows. Each button there imports one thing:</p>
-        <ul class="list-disc space-y-1 pl-5">
+        <ul>
           <li><em>Import EllesmereUI profile</em> and <em>Import class layouts</em> (your current class). Always listed.</li>
           <li>
             <em>Import BigWigs profile</em>, <em>Import Northern Sky</em>, <em>Import EXBoss</em>, <em>Import Smart Reminders</em> and <em>Import Whisper Messenger</em>.
@@ -290,7 +181,7 @@
           come only with Apply Magguu profiles.
         </p>
         <p>
-          You can also import one profile by hand: copy its string on <NuxtLink to="/strings" class="underline underline-offset-4" :class="isDark ? 'text-white hover:text-brand-200' : 'text-gray-950 hover:text-brand-700'">Strings</NuxtLink>
+          You can also import one profile by hand: copy its string on <NuxtLink to="/strings">Strings</NuxtLink>
           and paste it into that addon's own import window. None of these steps download addons: install them first (see the WowUp packages).
         </p>
       </div>
@@ -303,7 +194,6 @@ import type { Component } from 'vue'
 
 const toast = useToast()
 const { apiFetch } = useApi()
-const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
 usePublicPageSeo({
   title: 'Installation Guide',
@@ -412,12 +302,12 @@ const visibleSteps = computed(() => editMode.value ? steps.value : (guidePage.va
 
 const STEP_META = [
   // One tag per default step (1 EllesmereUI, 2 MagguuUI, 3 optional raid tools, 4 Setup, 5 Skinning/QoL, 6 commands).
-  { label: 'Required', icon: 'i-heroicons-wrench-screwdriver' },
-  { label: 'Install', icon: 'i-heroicons-arrow-down-tray' },
-  { label: 'Optional', icon: 'i-heroicons-puzzle-piece' },
-  { label: 'Apply', icon: 'i-heroicons-sparkles' },
-  { label: 'Skinning & QoL', icon: 'i-heroicons-paint-brush' },
-  { label: 'Commands', icon: 'i-heroicons-command-line' },
+  { label: 'Required' },
+  { label: 'Install' },
+  { label: 'Optional' },
+  { label: 'Apply' },
+  { label: 'Skinning & QoL' },
+  { label: 'Commands' },
 ] as const
 
 watch(guidePage, (page) => {
@@ -432,10 +322,6 @@ watch(guidePage, (page) => {
 
 function stepStage(idx: number) {
   return STEP_META[idx]?.label || `Phase ${idx + 1}`
-}
-
-function stepIcon(idx: number) {
-  return STEP_META[idx]?.icon || 'i-heroicons-chevron-right'
 }
 
 function cancelEdit() {
@@ -479,90 +365,3 @@ async function saveAll() {
   }
 }
 </script>
-
-<style scoped>
-.guide-step { scroll-margin-top: 6rem; }
-
-.guide-step-number {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 0.75rem;
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.guide-help-link {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.5rem 0.625rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  transition: color 0.15s ease, background-color 0.15s ease;
-}
-.guide-help-link--dark { color: #8090A4; }
-.guide-help-link--dark:hover { color: #fff; background: rgba(255, 255, 255, 0.04); }
-.guide-help-link--light { color: #4b5563; }
-.guide-help-link--light:hover { color: #111827; background: rgb(239 246 255); }
-
-.guide-content :deep(p) { margin-bottom: 0.7em; }
-.guide-content :deep(p:last-child) { margin-bottom: 0; }
-.guide-content :deep(strong) { font-weight: 700; color: inherit; }
-.guide-content :deep(a) {
-  color: var(--brand-400, #0CD29D);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-.guide-content :deep(a:hover) { opacity: 0.82; }
-.guide-content :deep(ul), .guide-content :deep(ol) { padding-left: 1.25em; margin: 0.75em 0; }
-.guide-content :deep(li) { margin-bottom: 0.35em; }
-.guide-content :deep(li)::marker { color: rgba(59, 139, 255, 0.7); }
-.guide-content :deep(h1), .guide-content :deep(h2), .guide-content :deep(h3), .guide-content :deep(h4) {
-  font-weight: 700;
-  line-height: 1.2;
-  margin-top: 1em;
-  margin-bottom: 0.45em;
-  color: inherit;
-}
-.guide-content :deep(h1) { font-size: 1.35em; }
-.guide-content :deep(h2) { font-size: 1.18em; }
-.guide-content :deep(h3) { font-size: 1.05em; }
-.guide-content :deep(code) {
-  padding: 0.18em 0.42em;
-  border-radius: 0.45rem;
-  font-size: 0.85em;
-  font-family: 'JetBrains Mono', monospace;
-  background: rgba(59, 139, 255, 0.12);
-  color: #93bbff;
-}
-html.light .guide-content :deep(code) {
-  background: rgba(37, 99, 235, 0.08);
-  color: #1d4ed8;
-}
-.guide-content :deep(pre) {
-  margin: 0.9em 0;
-  padding: 0.9rem 1rem;
-  border-radius: 1rem;
-  overflow-x: auto;
-  background: rgba(4, 10, 20, 0.55);
-  border: 1px solid rgba(59, 139, 255, 0.1);
-}
-html.light .guide-content :deep(pre) {
-  background: rgba(241, 245, 249, 0.8);
-  border-color: rgba(37, 99, 235, 0.12);
-}
-.guide-content :deep(pre code) { padding: 0; background: transparent; }
-.guide-content :deep(blockquote) {
-  border-left: 3px solid rgba(59, 139, 255, 0.35);
-  padding-left: 1rem;
-  margin: 0.8em 0;
-  color: inherit;
-  opacity: 0.9;
-}
-.guide-content :deep(hr) { margin: 1rem 0; border-color: rgba(59, 139, 255, 0.15); }
-
-</style>

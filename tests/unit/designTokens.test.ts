@@ -212,9 +212,15 @@ describe('fonts: no layout shift from the webfont swap', () => {
     assert.match(preload, /crossorigin:\s*'anonymous'/)
   })
 
-  it('@nuxt/fonts no longer manages these families (it would emit a second, swapping face)', () => {
+  it('@nuxt/fonts is kept out entirely (it would emit a second, swapping face)', () => {
     const cfg = readFileSync(join(process.cwd(), 'nuxt.config.ts'), 'utf8')
-    assert.match(cfg, /name: 'Plus Jakarta Sans', provider: 'none'/)
-    assert.match(cfg, /name: 'JetBrains Mono', provider: 'none'/)
+    assert.match(cfg, /ui: \{[\s\S]*?\bfonts: false,/)
+    assert.doesNotMatch(cfg, /provider: 'none'/)
+    assert.doesNotMatch(cfg, /fonts\.families|fonts: \{\s*families/)
+  })
+
+  it('Android has a metric-matched fallback too (Roboto), after Segoe UI and before the generic stack', () => {
+    assert.match(fonts, /font-family:\s*'MG Sans Roboto';[^}]*local\('Roboto'\)/)
+    assert.match(main, /--font-sans:[^;]*'MG Sans Segoe UI',\s*'MG Sans Roboto'/)
   })
 })

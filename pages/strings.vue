@@ -3,67 +3,59 @@
 -->
 
 <template>
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20">
+  <div class="setup-page mg-container pt-8 pb-20">
     <PublicSetupNav />
 
-    <header class="mb-8 grid gap-3 sm:grid-cols-[minmax(0,1fr)_16rem] sm:items-end">
-      <div>
-        <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-2" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Workbench</p>
-        <h1 class="mg-h1" :class="isDark ? 'text-white' : 'text-gray-950'">Import Strings</h1>
-      </div>
-      <p class="text-sm leading-relaxed sm:text-right" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ tabSubtitle }}</p>
+    <header class="setup-head">
+      <p class="mg-kicker setup-rise" style="--i: 0">Workbench</p>
+      <h1 class="mg-display mg-title-grad mt-3 setup-rise" style="--i: 1">Import Strings</h1>
+      <p class="setup-head__lead mg-lead setup-rise" style="--i: 2">{{ tabSubtitle }}</p>
     </header>
 
-    <details class="mb-8 border-b pb-4 group" :class="isDark ? 'border-white/10' : 'border-gray-200'">
-      <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold list-none">
-        <span class="strings-accordion-title" :class="isDark ? 'text-white' : 'text-gray-950'">
-          New here? What is an import string?
-        </span>
-        <svg aria-hidden="true" class="w-4 h-4 transition-transform group-open:rotate-180" :class="isDark ? 'text-silver-400' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-        </svg>
+    <details class="strings-intro group">
+      <summary>
+        <span class="strings-accordion-title">New here? What is an import string?</span>
+        <UIcon name="i-heroicons-chevron-down" class="strings-intro__chev w-4 h-4" aria-hidden="true" />
       </summary>
-      <div class="mt-4 space-y-3 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+      <div class="strings-intro__body">
         <p>
-          An <strong :class="isDark ? 'text-white' : 'text-gray-900'">import string</strong> is a short text snippet that
+          An <strong>import string</strong> is a short text snippet that
           contains a complete addon configuration. You copy it from here, paste it into the addon's import window in
           WoW, and the addon recreates the exact setup it describes.
         </p>
         <p>
-          <strong :class="isDark ? 'text-white' : 'text-gray-900'">You usually do not need this page.</strong>
+          <strong>You usually do not need this page.</strong>
           Open <code>/mui</code> and run Apply Magguu profiles from
-          <NuxtLink to="/guide" class="text-brand-400 hover:underline">the installation guide</NuxtLink>.
+          <NuxtLink to="/guide">the installation guide</NuxtLink>.
           This page is a backup if you want to import a single profile by hand, share one, or check what is shipped.
         </p>
         <p>
-          <strong :class="isDark ? 'text-white' : 'text-gray-900'">How to use a string manually:</strong>
+          <strong>How to use a string manually:</strong>
           pick the addon below, click <em>Copy String</em>, then in WoW open the addon's settings, find its
           <em>Import Profile</em> dialog (most addons have one), paste, and confirm.
         </p>
       </div>
     </details>
 
-    <div>
+    <div class="mt-10">
       <!-- Tabs -->
-      <div class="strings-sticky-tabs sticky z-30 flex flex-wrap justify-center gap-5 mb-6 py-2 border-b backdrop-blur-md" role="tablist" aria-label="Import string categories" style="top: 6.25rem;" :class="isDark ? 'border-white/10 bg-[#0b1118]/95' : 'border-gray-200 bg-[#eef4fb]/95'">
+      <div class="strings-tabs strings-sticky-tabs" role="tablist" aria-label="Import string categories">
         <button v-for="tab in tabs" :key="tab.value"
+          type="button"
           role="tab"
           :id="`tab-${tab.value}`"
           :aria-selected="activeTab === tab.value"
           :aria-controls="`tabpanel-${tab.value}`"
-          class="flex items-center gap-2 pb-2 -mb-px border-b-2 text-sm"
-          :class="activeTab === tab.value
-            ? (isDark ? 'border-brand-300 text-white' : 'border-brand-700 text-gray-950')
-            : (isDark ? 'border-transparent text-silver-400 hover:text-white' : 'border-transparent text-gray-500 hover:text-gray-950')"
+          class="strings-tab"
           @click="pick(() => activeTab = tab.value)">
           {{ tab.label }}
-          <span v-if="tab.count > 0" class="font-mono text-[11px]" :class="isDark ? 'text-silver-500' : 'text-gray-400'">{{ tab.count }}</span>
+          <span v-if="tab.count > 0" class="strings-tab__count">{{ tab.count }}</span>
         </button>
       </div>
 
       <!-- ═══ Cooldown Layouts ═══ -->
       <div v-if="activeTab === 'layouts'" role="tabpanel" id="tabpanel-layouts" aria-labelledby="tab-layouts" tabindex="0">
-        <div v-if="layoutList.length" class="mx-auto w-full max-w-3xl space-y-5">
+        <div v-if="layoutList.length" class="strings-panel space-y-6">
           <StringsClassSpecPicker
             :classes="layoutClasses"
             :selected-class="selectedClass"
@@ -90,19 +82,19 @@
             />
           </Transition>
         </div>
-        <div v-else class="text-center py-16">
-          <svg aria-hidden="true" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <div v-else class="strings-empty">
+          <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
           </svg>
-          <p :class="isDark ? 'text-silver-600' : 'text-gray-400'">No layouts available yet.</p>
+          <p>No layouts available yet.</p>
         </div>
       </div>
 
       <!-- ═══ Addon Profiles ═══ -->
       <div v-if="activeTab === 'profiles'" role="tabpanel" id="tabpanel-profiles" aria-labelledby="tab-profiles" tabindex="0">
-        <div v-if="profileList.length" class="mx-auto w-full max-w-3xl space-y-5">
+        <div v-if="profileList.length" class="strings-panel space-y-6">
           <div>
-            <label class="block text-center text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Addon</label>
+            <span class="strings-label">Addon</span>
             <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="Addon profiles">
               <button
                 v-for="addon in profileAddons"
@@ -130,7 +122,7 @@
           </div>
           <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1" enter-to-class="opacity-100 translate-y-0">
             <div v-if="selectedAddon && addonProfiles.length > 1">
-              <label class="block text-center text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Profile</label>
+              <span class="strings-label">Profile</span>
               <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="Profiles">
                 <button
                   v-for="p in addonProfiles"
@@ -163,23 +155,22 @@
             />
           </Transition>
         </div>
-        <div v-else class="text-center py-16">
-          <svg aria-hidden="true" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <div v-else class="strings-empty">
+          <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
           </svg>
-          <p :class="isDark ? 'text-silver-600' : 'text-gray-400'">No addon profiles available yet.</p>
+          <p>No addon profiles available yet.</p>
         </div>
       </div>
 
       <!-- ═══ WowUp ═══ -->
       <div v-if="activeTab === 'wowup'" role="tabpanel" id="tabpanel-wowup" aria-labelledby="tab-wowup" tabindex="0">
-        <div class="mx-auto mb-5 w-full max-w-3xl rounded-xl border px-4 py-3 text-sm leading-relaxed"
-          :class="isDark ? 'border-brand-400/15 bg-brand-400/5 text-silver-400' : 'border-brand-100 bg-brand-50 text-gray-600'">
+        <p class="strings-note">
           Same packs Magguu Setup copies. Paste in WowUp. MagguuUI does not install addons.
-        </div>
-        <div v-if="wowupList.length" class="mx-auto w-full max-w-3xl space-y-5">
+        </p>
+        <div v-if="wowupList.length" class="strings-panel space-y-6">
           <div>
-            <label class="block text-center text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Package</label>
+            <span class="strings-label">Package</span>
             <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="WowUp packages">
               <button
                 v-for="pack in wowupPacks"
@@ -211,7 +202,7 @@
               @edit="editWowup(selectedWowup)"
             >
               <div>
-                <p class="section-eyebrow mb-2.5 text-center">Addons</p>
+                <span class="strings-label">Addons</span>
                 <div class="flex flex-wrap justify-center gap-2">
                   <span
                     v-for="raw in selectedWowupAddons"
@@ -235,11 +226,11 @@
             </StringsStringCard>
           </Transition>
         </div>
-        <div v-else class="text-center py-16">
-          <svg aria-hidden="true" class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-silver-700/50' : 'text-gray-300'" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <div v-else class="strings-empty">
+          <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
-          <p :class="isDark ? 'text-silver-600' : 'text-gray-400'">No WowUp strings available yet.</p>
+          <p>No WowUp strings available yet.</p>
         </div>
       </div>
     </div>

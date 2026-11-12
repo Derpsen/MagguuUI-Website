@@ -1,7 +1,7 @@
 <!-- Class / specialization chips for /strings Cooldown Layouts. Presentational. -->
 <template>
   <div>
-    <label class="block text-center text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Class</label>
+    <span class="strings-label">Class</span>
     <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="WoW classes">
       <button
         v-for="cls in classes"
@@ -33,7 +33,7 @@
   </div>
   <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1" enter-to-class="opacity-100 translate-y-0">
     <div v-if="selectedClass && specs.length">
-      <label class="block text-center text-xs font-semibold uppercase tracking-wider mb-2.5" :class="isDark ? 'text-silver-500' : 'text-gray-500'">Specialization</label>
+      <span class="strings-label">Specialization</span>
       <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="Specializations">
         <button
           v-for="spec in specs"
@@ -57,7 +57,7 @@
           <span>{{ spec }}</span>
         </button>
       </div>
-      <p v-if="sharesSpecs" class="mt-2.5 text-center text-xs" :class="isDark ? 'text-silver-500' : 'text-gray-500'">
+      <p v-if="sharesSpecs" class="mt-3 text-center mg-small mg-muted">
         This string imports {{ sharedSpecList }}.
       </p>
     </div>
@@ -82,5 +82,4 @@ const emit = defineEmits<{
   selectSpec: [spec: string]
 }>()
 
-const isDark = useIsDark()
 </script>

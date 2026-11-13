@@ -49,6 +49,21 @@ for (const from of ['/guide', '/news', '/meta']) {
  * Back/Forward must restore the leaving page's scroll position (Code-Review #201: the first version of the scroll reset
  * ran before vue-router saved it, so Back landed at 0). Real clicks, real history.
  */
+// The dev server compiles a route on its first visit and Vite may reload the page while it re-optimizes dependencies:
+// a reload mid-test throws the scroll position away for reasons that have nothing to do with the router. Visit each
+// route once first (CI starts cold).
+test.beforeAll(async ({ browser }) => {
+  test.setTimeout(180_000)
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  for (const path of ['/guide', '/strings', '/addons', '/meta', '/news']) {
+    await page.goto(path)
+    await hydrated(page)
+    await page.waitForLoadState('networkidle')
+  }
+  await context.close()
+})
+
 const BACK_PAIRS = [
   { from: '/guide', link: '/addons' },
   { from: '/news', link: '/addons' },

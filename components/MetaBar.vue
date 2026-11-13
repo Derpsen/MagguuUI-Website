@@ -7,7 +7,7 @@
   >
     <div
       class="h-full"
-      :class="[color ? '' : tone.fill.value, outline ? 'ring-1 ring-inset ring-gray-500/60' : '']"
+      :class="[color ? '' : tone.fill.value, outline ? 'ring-1 ring-inset ring-mg-fg-subtle/60' : '']"
       :style="{ width: `${clamped}%`, backgroundColor: color || undefined }"
     />
   </div>

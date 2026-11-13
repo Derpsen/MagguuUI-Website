@@ -26,13 +26,14 @@
       <div class="min-w-0">
         <div
           class="sticky top-14 z-30 -mx-4 mb-8 border-y px-4 py-2 backdrop-blur-md sm:-mx-6 sm:px-6 xl:hidden"
-          :class="tone.isDark.value ? 'border-white/10 bg-[#0b1118]/95' : 'border-gray-200 bg-[#eef4fb]/95'"
+          :class="tone.rule.value"
+          style="background: color-mix(in srgb, var(--mg-bg) 94%, transparent)"
         >
           <MetaToc :items="toc" />
         </div>
 
         <div id="overview" class="scroll-mt-28">
-          <p v-if="spec.lowSample" class="mb-4 text-sm font-medium" role="note" :class="tone.strong.value">
+          <p v-if="spec.lowSample" class="mb-4 text-sm font-semibold" role="note" :class="tone.strong.value">
             {{ copy.belowSample }} ({{ spec.n }}). {{ copy.lowPopularity }}
           </p>
           <MetaBuildCard

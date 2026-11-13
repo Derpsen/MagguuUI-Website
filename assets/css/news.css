@@ -1,0 +1,31 @@
+/*
+ * News article body (pages/news/[slug].vue only, imported per page so the global entry CSS does not grow).
+ * Redesign PR 4: tokens only (--mg-*, scoped to .public-shell), so Light and Dark follow the shell without html.light
+ * overrides. The body is sanitized Markdown HTML from SafeHtml.
+ */
+.news-body { font-size: var(--mg-fs-body, 1rem); line-height: 1.7; color: var(--mg-fg-muted); overflow-wrap: anywhere; }
+.news-body > *:first-child { margin-top: 0; }
+.news-body > *:last-child { margin-bottom: 0; }
+.news-body :is(h1, h2, h3, h4) { margin: 1.8em 0 0.5em; color: var(--mg-fg); font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+.news-body h1 { font-size: 1.5rem; }
+.news-body h2 { font-size: 1.25rem; }
+.news-body h3 { font-size: 1.0625rem; }
+.news-body h4 { font-size: 1rem; }
+.news-body p { margin: 0.75em 0; }
+.news-body :is(ul, ol) { margin: 0.75em 0; padding-left: 1.4em; }
+.news-body ul { list-style: disc; }
+.news-body ol { list-style: decimal; }
+.news-body li { margin: 0.3em 0; }
+.news-body li::marker { color: var(--mg-fg-subtle); }
+.news-body strong { color: var(--mg-fg); font-weight: 600; }
+.news-body em { font-style: italic; }
+.news-body a { color: var(--mg-accent-text); text-decoration: underline; text-underline-offset: 3px; }
+.news-body a:hover { color: var(--mg-fg); }
+.news-body code { padding: 0.1em 0.35em; border: 1px solid var(--mg-line); border-radius: var(--mg-r-sm); background: var(--mg-surface-2); color: var(--mg-fg); font-family: var(--font-mono); font-size: 0.875em; }
+.news-body pre { margin: 1em 0; padding: 0.75rem 1rem; overflow-x: auto; border: 1px solid var(--mg-line); border-radius: var(--mg-r-md); background: var(--mg-surface-2); }
+.news-body pre code { padding: 0; border: 0; background: transparent; }
+.news-body hr { margin: 1.5em 0; border: 0; border-top: 1px solid var(--mg-line); }
+.news-body blockquote { margin: 1em 0; padding-left: 1rem; border-left: 2px solid var(--mg-line-strong); color: var(--mg-fg-muted); }
+.news-body img { max-width: 100%; height: auto; }
+.news-body table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.news-body :is(th, td) { padding: 0.375rem 0.75rem; border-bottom: 1px solid var(--mg-line); text-align: left; }

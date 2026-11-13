@@ -1,19 +1,19 @@
 <template>
-  <section class="mt-6 border-l-2 pl-4 text-sm" :class="tone.isDark.value ? 'border-brand-400' : 'border-brand-600'" :aria-labelledby="headingId">
-    <h2 :id="headingId" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.snapshot }}</h2>
+  <section class="mt-6 border-t pt-4 text-sm" :class="tone.rule.value" :aria-labelledby="headingId">
+    <h2 :id="headingId" class="mg-kicker">{{ copy.snapshot }}</h2>
     <dl class="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-2" :class="tone.muted.value">
       <div v-for="row in rows" :key="row.label" class="flex gap-2" :class="row.wide ? 'sm:col-span-2' : ''">
-        <dt class="font-medium" :class="tone.strong.value">{{ row.label }}</dt>
+        <dt class="font-semibold" :class="tone.strong.value">{{ row.label }}</dt>
         <dd class="tabular-nums">
           <time v-if="row.datetime" :datetime="row.datetime">{{ row.value }}</time>
           <template v-else>{{ row.value }}</template>
         </dd>
       </div>
     </dl>
-    <p v-if="freshness?.partial" class="mt-2 text-xs font-medium" role="note" :class="tone.isDark.value ? 'text-amber-300' : 'text-amber-800'">
+    <p v-if="freshness?.partial" class="mt-2 text-xs font-semibold" role="note" :class="'text-mg-warn'">
       {{ copy.partialNote }}
     </p>
-    <p v-if="stale" class="mt-2 text-xs font-medium" role="note" :class="tone.isDark.value ? 'text-amber-300' : 'text-amber-800'">
+    <p v-if="stale" class="mt-2 text-xs font-semibold" role="note" :class="'text-mg-warn'">
       This snapshot is older than {{ staleAfterDays }} days and may not reflect the current patch.
     </p>
   </section>

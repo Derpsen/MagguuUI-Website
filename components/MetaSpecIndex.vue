@@ -1,7 +1,7 @@
 <template>
   <section :aria-labelledby="headingId">
     <div class="flex items-baseline justify-between gap-3">
-      <h2 :id="headingId" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.popularity }}</h2>
+      <h2 :id="headingId" class="mg-kicker">{{ copy.popularity }}</h2>
       <p class="text-xs tabular-nums" :class="tone.muted.value">{{ ui.specsShown(rows.length) }}</p>
     </div>
     <table v-if="rows.length" class="mt-3 w-full border-collapse text-sm">

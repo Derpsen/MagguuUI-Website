@@ -8,7 +8,7 @@
     </dl>
 
     <div v-for="group in groups" :key="group.id" class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm">
-      <span :id="`meta-filter-${group.id}`" class="mr-2 font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ group.label }}</span>
+      <span :id="`meta-filter-${group.id}`" class="mr-2 mg-kicker">{{ group.label }}</span>
       <ul class="flex flex-wrap gap-2" :aria-labelledby="`meta-filter-${group.id}`">
         <li v-for="option in group.options" :key="option.id">
           <NuxtLink
@@ -70,10 +70,6 @@ function queryFor(group: 'role' | 'by', value: string) {
   return query
 }
 
-const activeChip = computed(() => (tone.isDark.value
-  ? 'border-brand-400 bg-brand-400/15 text-white'
-  : 'border-brand-700 bg-brand-50 text-gray-950'))
-const idleChip = computed(() => (tone.isDark.value
-  ? 'border-white/15 text-silver-300 hover:border-white/40'
-  : 'border-gray-300 text-gray-700 hover:border-gray-500'))
+const activeChip = 'border-mg-accent-text bg-mg-surface-2 text-mg-fg'
+const idleChip = 'border-mg-line-strong text-mg-fg-muted hover:border-mg-fg-subtle hover:text-mg-fg'
 </script>

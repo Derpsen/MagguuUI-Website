@@ -5,8 +5,8 @@
     <AdSlot class="mt-12" placement="between-sections" />
 
     <section id="stats" class="mt-12 scroll-mt-28" aria-labelledby="meta-stats-h">
-      <h2 id="meta-stats-h" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.stats }}</h2>
-      <p class="mt-2 text-sm font-medium" :class="tone.strong.value">{{ copy.statPrio }}</p>
+      <h2 id="meta-stats-h" class="mg-kicker">{{ copy.stats }}</h2>
+      <p class="mt-2 text-sm font-semibold" :class="tone.strong.value">{{ copy.statPrio }}</p>
       <ul class="mt-3 border-t" :class="tone.rule.value">
         <li v-for="stat in spec.stats" :key="stat.id" class="flex items-center gap-3 border-b py-2 text-sm" :class="tone.rule.value">
           <span class="w-36 shrink-0" :class="tone.strong.value">{{ stat.label }}</span>
@@ -29,10 +29,10 @@
     />
 
     <section id="enchants" class="mt-12 scroll-mt-28" aria-labelledby="meta-ench-h">
-      <h2 id="meta-ench-h" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.enchantsGems }}</h2>
+      <h2 id="meta-ench-h" class="mg-kicker">{{ copy.enchantsGems }}</h2>
       <div class="mt-4 grid gap-6 md:grid-cols-2">
         <div v-for="list in enchantLists" :key="list.title">
-          <h3 class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ list.title }}</h3>
+          <h3 class="mg-kicker">{{ list.title }}</h3>
           <ul class="mt-2 border-t" :class="tone.rule.value">
             <li v-for="row in list.rows" :key="row.id" class="flex justify-between gap-2 border-b py-1.5 text-sm" :class="tone.rule.value">
               <span :class="tone.strong.value">{{ row.label }}</span>
@@ -44,7 +44,7 @@
     </section>
 
     <section id="races" class="mt-12 scroll-mt-28" aria-labelledby="meta-race-h">
-      <h2 id="meta-race-h" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.races }}</h2>
+      <h2 id="meta-race-h" class="mg-kicker">{{ copy.races }}</h2>
       <ul class="mt-3 border-t" :class="tone.rule.value">
         <li v-for="race in spec.races" :key="race.id" class="flex items-center gap-3 border-b py-2 text-sm" :class="tone.rule.value">
           <span class="w-36 shrink-0" :class="tone.strong.value">{{ race.label }}</span>
@@ -57,12 +57,12 @@
     <MetaClassPicker class="mt-12" :current="classSlug" />
 
     <section id="faq" class="mt-12 scroll-mt-28" aria-labelledby="meta-faq-h">
-      <h2 id="meta-faq-h" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.faq }}</h2>
+      <h2 id="meta-faq-h" class="mg-kicker">{{ copy.faq }}</h2>
       <p class="mt-3 text-sm leading-relaxed" :class="tone.muted.value">{{ copy.methodologyBody }}</p>
       <p class="mt-2 text-sm leading-relaxed" :class="tone.muted.value">{{ copy.minSample }}</p>
       <dl class="mt-4 space-y-4 text-sm">
         <div v-for="item in faq" :key="item.q">
-          <dt class="font-medium" :class="tone.strong.value">{{ item.q }}</dt>
+          <dt class="font-semibold" :class="tone.strong.value">{{ item.q }}</dt>
           <dd class="mt-1" :class="tone.muted.value">{{ item.a }}</dd>
         </div>
       </dl>

@@ -4,47 +4,42 @@
 
 <template>
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
-    <div v-if="isLoggedIn" class="flex justify-end mb-4">
+    <div v-if="isLoggedIn" class="mb-4 flex justify-end">
       <NuxtLink
         to="/admin/content/news"
-        class="text-xs font-medium underline underline-offset-4"
-        :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-950'"
+        class="text-xs font-semibold text-mg-fg-muted underline underline-offset-4 hover:text-mg-fg"
       >
         Edit news
       </NuxtLink>
     </div>
 
-    <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Notes</p>
-    <h1 class="mg-h1" :class="isDark ? 'text-white' : 'text-gray-950'">News</h1>
-    <p class="mt-3 max-w-xl text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+    <p class="mg-kicker mb-3">Notes</p>
+    <h1 class="mg-h1">News</h1>
+    <p class="mg-lead mt-3 max-w-xl">
       Short notes on World of Warcraft patches, Forever, and MagguuUI.
     </p>
     <p class="mt-3 text-sm">
-      <a
-        href="/news/feed.xml"
-        class="underline underline-offset-4"
-        :class="isDark ? 'text-white' : 'text-gray-950'"
-      >RSS feed</a>
+      <a href="/news/feed.xml" class="text-mg-fg underline underline-offset-4">RSS feed</a>
     </p>
 
-    <ul v-if="articles.length" class="mt-12 border-t divide-y" :class="isDark ? 'border-white/10 divide-white/10' : 'border-gray-200 divide-gray-200'">
+    <ul v-if="articles.length" class="mt-12 divide-y divide-mg-line border-t border-mg-line">
       <li v-for="article in articles" :key="article.slug" class="py-6">
-        <NuxtLink :to="`/news/${article.slug}`" class="block group">
-          <time class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-silver-500' : 'text-gray-500'" :datetime="toIsoDate(article.publishedAt)">
+        <NuxtLink :to="`/news/${article.slug}`" class="group block">
+          <time class="mg-kicker text-mg-fg-muted" :datetime="toIsoDate(article.publishedAt)">
             {{ formatDate(article.publishedAt) }}
           </time>
-          <h2 class="mt-2 text-xl font-semibold tracking-tight group-hover:underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">
+          <h2 class="mt-2 text-xl font-semibold tracking-tight text-mg-fg underline-offset-4 group-hover:underline">
             {{ article.title }}
           </h2>
-          <p class="mt-2 text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+          <p class="mt-2 text-sm leading-relaxed text-mg-fg-muted">
             {{ article.summary }}
           </p>
         </NuxtLink>
       </li>
     </ul>
 
-    <p v-else-if="pending" class="mt-10 text-sm" role="status" aria-live="polite" :class="isDark ? 'text-silver-400' : 'text-gray-500'">Loading news…</p>
-    <p v-else class="mt-10 text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">No published news yet.</p>
+    <p v-else-if="pending" class="mt-10 text-sm text-mg-fg-muted" role="status" aria-live="polite">Loading news…</p>
+    <p v-else class="mt-10 text-sm text-mg-fg-muted">No published news yet.</p>
 
     <NewsAlsoOnThisSite />
   </div>
@@ -54,7 +49,6 @@
 import type { NewsArticleListItem } from '~/utils/news'
 import { formatNewsDate, toIsoDate } from '~/utils/newsDates'
 
-const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
 
 usePublicPageSeo({

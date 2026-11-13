@@ -1,6 +1,6 @@
 <template>
   <section v-if="rows.length" :aria-labelledby="headingId">
-    <h2 :id="headingId" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.heroSplit }}</h2>
+    <h2 :id="headingId" class="mg-kicker">{{ copy.heroSplit }}</h2>
     <ul class="mt-3 grid gap-4 sm:grid-cols-2">
       <li v-for="row in rows" :key="row.id" class="border-t pt-3" :class="tone.rule.value">
         <div class="flex items-baseline justify-between gap-3">

@@ -24,17 +24,17 @@
     <AdSlot v-if="!noData" class="mt-8" placement="index-inline" />
 
     <section class="mt-10" aria-labelledby="meta-method">
-      <h2 id="meta-method" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.methodology }}</h2>
+      <h2 id="meta-method" class="mg-kicker">{{ copy.methodology }}</h2>
       <p class="mt-3 text-sm leading-relaxed" :class="tone.muted.value">{{ copy.methodologyBody }}</p>
       <p class="mt-2 text-sm leading-relaxed" :class="tone.muted.value">{{ copy.minSample }}</p>
-      <p class="mt-2 text-sm font-medium" :class="tone.strong.value">{{ copy.lowPopularity }}</p>
+      <p class="mt-2 text-sm font-semibold" :class="tone.strong.value">{{ copy.lowPopularity }}</p>
     </section>
 
     <section class="mt-10" aria-labelledby="meta-faq">
-      <h2 id="meta-faq" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.faqTitle }}</h2>
+      <h2 id="meta-faq" class="mg-kicker">{{ copy.faqTitle }}</h2>
       <dl class="mt-3 space-y-4 text-sm">
         <div v-for="item in faq" :key="item.q">
-          <dt class="font-medium" :class="tone.strong.value">{{ item.q }}</dt>
+          <dt class="font-semibold" :class="tone.strong.value">{{ item.q }}</dt>
           <dd class="mt-1" :class="tone.muted.value">{{ item.a }}</dd>
         </div>
       </dl>

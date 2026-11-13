@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-3">
     <nav :aria-labelledby="specLabelId" class="flex flex-wrap items-center gap-2">
-      <span :id="specLabelId" class="mr-1 font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ kl.switchSpec }}</span>
+      <span :id="specLabelId" class="mr-1 mg-kicker">{{ kl.switchSpec }}</span>
       <NuxtLink
         v-for="spec in specs"
         :key="spec.slug"
@@ -16,7 +16,7 @@
     </nav>
 
     <nav v-if="heroSplit.length > 1" :aria-labelledby="heroLabelId" class="flex flex-wrap items-center gap-2">
-      <span :id="heroLabelId" class="mr-1 font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ kl.heroToggle }}</span>
+      <span :id="heroLabelId" class="mr-1 mg-kicker">{{ kl.heroToggle }}</span>
       <NuxtLink
         v-for="opt in heroOptions"
         :key="opt.key"
@@ -77,6 +77,6 @@ const heroOptions = computed(() => {
   ]
 })
 
-const active = computed(() => (tone.isDark.value ? 'border-brand-400 bg-brand-400/15 text-white' : 'border-brand-700 bg-brand-50 text-gray-950'))
-const idle = computed(() => (tone.isDark.value ? 'border-white/15 text-silver-300 hover:border-white/40' : 'border-gray-300 text-gray-700 hover:border-gray-500'))
+const active = 'border-mg-accent-text bg-mg-surface-2 text-mg-fg'
+const idle = 'border-mg-line-strong text-mg-fg-muted hover:border-mg-fg-subtle hover:text-mg-fg'
 </script>

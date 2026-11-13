@@ -2,7 +2,7 @@
   <span class="relative inline-block max-w-full overflow-visible">
     <button
       type="button"
-      class="meta-tip-trigger max-w-full min-w-0 overflow-visible bg-transparent p-0 text-left font-[inherit] underline decoration-transparent underline-offset-4 hover:decoration-current focus-visible:decoration-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+      class="meta-tip-trigger max-w-full min-w-0 overflow-visible bg-transparent p-0 text-left font-[inherit] underline decoration-transparent underline-offset-4 hover:decoration-current focus-visible:decoration-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mg-accent-text focus-visible:ring-offset-2"
       :class="triggerClass"
       :aria-describedby="tooltipId"
       :aria-expanded="open ? 'true' : 'false'"
@@ -37,7 +37,7 @@ const tooltipId = `meta-tip-${useId()}`
 const open = ref(false)
 let hideTimer: ReturnType<typeof setTimeout> | null = null
 
-const panelClass = 'border bg-white shadow-none dark:bg-gray-950'
+const panelClass = 'border bg-mg-surface shadow-none'
 
 function onDocumentKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {

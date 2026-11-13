@@ -57,15 +57,16 @@ const BACK_PAIRS = [
 ]
 
 for (const { from, link } of BACK_PAIRS) {
-  test(`Back from ${link} to ${from} restores the scroll position (footer link), and the new page starts at the top`, async ({ page }) => {
+  test(`Back from ${link} to ${from} restores the scroll position (footer link at 1400px), and the new page starts at the top`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 })
     await page.goto(from)
     await hydrated(page)
-    const footerLink = page.locator(`footer a[href="${link}"]`).first()
-    await footerLink.scrollIntoViewIfNeeded()
+    // 1400 px down (the position from the Code-Review A/B), then the footer link is activated without scrolling to it:
+    // the full-height guide page restores only what its first layout allows, so a footer-high offset is not comparable.
+    await page.evaluate(() => window.scrollTo({ top: 1400, behavior: 'instant' }))
     const left = await page.evaluate(() => Math.round(window.scrollY))
-    expect(left, 'the footer link should need a real scroll').toBeGreaterThan(300)
-    await footerLink.click()
+    expect(left).toBeGreaterThan(1000)
+    await page.evaluate(href => (document.querySelector(`footer a[href="${href}"]`) as HTMLElement).click(), link)
     await expect(page).toHaveURL(new RegExp(`${link}$`))
     await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { message: 'new page starts at the top' }).toBe(0)
     await page.goBack()

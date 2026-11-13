@@ -6,7 +6,7 @@
         class="fixed inset-y-0 left-0 z-40 flex flex-col border-r transition-all duration-200"
         :class="[
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-          isDark ? 'bg-[#0b1118] border-white/10' : 'bg-white border-[#dbe3ec]',
+          'bg-mg-surface border-mg-line',
         ]"
         :style="{ width: `var(--admin-sidebar-width)` }"
       >
@@ -14,12 +14,11 @@
         <div class="flex items-center gap-2.5 px-3 shrink-0" :style="{ height: '50px' }">
           <NuxtLink to="/admin" class="flex min-w-0 items-center gap-2.5">
             <img src="/favicon-32.png" alt="MagguuUI" width="28" height="28" class="h-7 w-7 shrink-0">
-            <span v-if="!collapsed" class="truncate text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">MagguuUI</span>
+            <span v-if="!collapsed" class="truncate text-sm font-semibold text-mg-fg">MagguuUI</span>
           </NuxtLink>
           <button
             v-if="!collapsed"
-            class="ml-auto p-1 rounded-sm transition-colors shrink-0"
-            :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.06]' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
+            class="ml-auto p-1 rounded-sm transition-colors shrink-0 text-mg-fg-muted hover:text-mg-fg hover:bg-mg-surface-2"
             title="Collapse sidebar"
             aria-label="Collapse sidebar"
             @click="collapsed = !collapsed"
@@ -28,8 +27,7 @@
           </button>
           <button
             v-else
-            class="mx-auto p-1 rounded-sm transition-colors"
-            :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.06]' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
+            class="mx-auto p-1 rounded-sm transition-colors text-mg-fg-muted hover:text-mg-fg hover:bg-mg-surface-2"
             title="Expand sidebar"
             aria-label="Expand sidebar"
             @click="collapsed = !collapsed"
@@ -53,11 +51,10 @@
           </NuxtLink>
 
           <div v-for="section in sections" :key="section.title" class="mt-2">
-            <div v-if="collapsed" class="mx-3 my-2 h-px" :class="isDark ? 'bg-white/8' : 'bg-slate-200'" />
+            <div v-if="collapsed" class="mx-3 my-2 h-px bg-mg-line" />
             <button
               v-else
-              class="flex w-full items-center justify-between px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] transition-colors"
-              :class="isDark ? 'text-brand-300 hover:text-brand-200' : 'text-brand-700 hover:text-brand-800'"
+              class="flex w-full items-center justify-between px-3 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] transition-colors text-mg-accent-text hover:text-mg-fg"
               :aria-expanded="openSections[section.title] ? 'true' : 'false'"
               @click="toggleSection(section.title)"
             >
@@ -82,7 +79,7 @@
                     <UIcon :name="item.icon" class="h-[18px] w-[18px] shrink-0" />
                     <span class="min-w-0 flex-1 truncate text-left">{{ item.label }}</span>
                     <UIcon name="i-heroicons-chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200"
-                      :class="[isItemExpanded(item.to) ? '' : '-rotate-90', isDark ? 'text-white/30' : 'text-slate-400']" />
+                      :class="[isItemExpanded(item.to) ? '' : '-rotate-90', 'text-mg-fg-subtle']" />
                   </button>
 
                   <!-- Leaf item or collapsed: normal link -->
@@ -103,7 +100,7 @@
 
                   <!-- Children -->
                   <div v-if="item.children?.length && !collapsed" class="nav-collapse" :class="isItemExpanded(item.to) ? 'nav-collapse--open' : ''">
-                    <div class="nav-collapse__inner ml-5 space-y-0.5 border-l pl-2" :class="isDark ? 'border-white/8' : 'border-slate-200'">
+                    <div class="nav-collapse__inner ml-5 space-y-0.5 border-l pl-2 border-mg-line">
                       <NuxtLink
                         v-for="child in item.children"
                         :key="child.to"
@@ -122,19 +119,19 @@
         </nav>
 
         <!-- Sidebar Footer -->
-        <div class="shrink-0 border-t px-3 py-3" :class="isDark ? 'border-white/8' : 'border-slate-200'">
+        <div class="shrink-0 border-t px-3 py-3 border-mg-line">
           <div class="flex items-center gap-2" :class="collapsed ? 'flex-col' : ''">
             <div class="flex min-w-0 items-center gap-2" :class="collapsed ? 'justify-center' : 'flex-1'">
               <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold border border-current text-primary">
                 {{ userInitial }}
               </span>
-              <span v-if="!collapsed" class="truncate text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ user?.username || 'Admin' }}</span>
+              <span v-if="!collapsed" class="truncate text-sm font-medium text-mg-fg">{{ user?.username || 'Admin' }}</span>
             </div>
             <div class="flex items-center gap-1">
-              <button class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.06]' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" :title="isDark ? 'Light mode' : 'Dark mode'" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
+              <button class="p-1.5 rounded-md transition-colors text-mg-fg-muted hover:text-mg-fg hover:bg-mg-surface-2" :title="isDark ? 'Light mode' : 'Dark mode'" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
                 <UIcon :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'" class="h-4 w-4" />
               </button>
-              <button class="p-1.5 rounded-md transition-colors" :class="isDark ? 'text-silver-300 hover:text-white hover:bg-white/[0.06]' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'" title="Logout" aria-label="Logout" @click="handleLogout">
+              <button class="p-1.5 rounded-md transition-colors text-mg-fg-muted hover:text-mg-fg hover:bg-mg-surface-2" title="Logout" aria-label="Logout" @click="handleLogout">
                 <UIcon name="i-heroicons-arrow-right-on-rectangle" class="h-4 w-4" />
               </button>
             </div>
@@ -153,10 +150,9 @@
       <div class="min-w-0 flex-1 transition-all duration-200" :style="{ paddingLeft: lgAndUp ? `var(--admin-sidebar-width)` : '0' }">
         <!-- Header -->
         <header
-          class="sticky top-0 z-20 flex h-[50px] items-center gap-3 border-b px-4"
-          :class="isDark ? 'bg-[#0b1118] border-white/10' : 'bg-white border-[#dbe3ec]'"
+          class="sticky top-0 z-20 flex h-[50px] items-center gap-3 border-b px-4 bg-mg-surface border-mg-line"
         >
-          <button class="p-1.5 rounded-md lg:hidden" :class="isDark ? 'text-white/60 hover:text-white hover:bg-white/[0.06]' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'" :aria-label="sidebarOpen ? 'Close menu' : 'Open menu'" @click="sidebarOpen = !sidebarOpen">
+          <button class="p-1.5 rounded-md lg:hidden text-mg-fg-muted hover:text-mg-fg hover:bg-mg-surface-2" :aria-label="sidebarOpen ? 'Close menu' : 'Open menu'" @click="sidebarOpen = !sidebarOpen">
             <UIcon name="i-heroicons-bars-3" class="h-5 w-5" />
           </button>
 
@@ -168,11 +164,11 @@
             <Transition name="breadcrumb-slide" mode="out-in">
               <div :key="route.path" class="flex items-center gap-1.5 min-w-0">
                 <template v-if="currentContext.section">
-                  <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0" :class="isDark ? 'text-white/30' : 'text-slate-300'" />
-                  <span class="shrink-0" :class="isDark ? 'text-silver-400' : 'text-slate-600'">{{ currentContext.section }}</span>
+                  <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0 text-mg-fg-subtle" />
+                  <span class="shrink-0 text-mg-fg-muted">{{ currentContext.section }}</span>
                 </template>
-                <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0" :class="isDark ? 'text-white/30' : 'text-slate-300'" />
-                <span class="truncate font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ pageHeading }}</span>
+                <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0 text-mg-fg-subtle" />
+                <span class="truncate font-medium text-mg-fg">{{ pageHeading }}</span>
               </div>
             </Transition>
           </nav>
@@ -184,9 +180,8 @@
               @click="cmdPalette?.open()"
             >
               <UIcon name="i-heroicons-magnifying-glass" class="h-4 w-4" />
-              <span class="text-xs ml-1 hidden lg:inline" :class="isDark ? 'text-silver-400' : 'text-slate-600'">Search</span>
-              <kbd class="hidden lg:inline-flex ml-2 h-5 items-center rounded border px-1.5 text-[10px] font-medium"
-                :class="isDark ? 'border-white/10 text-silver-400' : 'border-slate-200 text-slate-600'">
+              <span class="text-xs ml-1 hidden lg:inline text-mg-fg-muted">Search</span>
+              <kbd class="hidden lg:inline-flex ml-2 h-5 items-center rounded border px-1.5 text-[10px] font-medium border-mg-line text-mg-fg-muted">
                 {{ searchShortcut }}
               </kbd>
             </button>
@@ -199,7 +194,7 @@
             <div ref="notifWrapRef" class="relative">
               <button ref="notifButtonRef" class="vben-header-btn relative" aria-label="Notifications" :aria-expanded="notifOpen" @click="notifOpen = !notifOpen">
                 <UIcon name="i-heroicons-bell" class="h-4 w-4" />
-                <span v-if="notifCount > 0" class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                <span v-if="notifCount > 0" class="admin-notif-badge">
                   {{ notifCount }}
                 </span>
               </button>
@@ -215,41 +210,39 @@
                 <div
                   v-if="notifOpen"
                   ref="notifPanelRef"
-                  class="absolute right-0 top-full z-[100] mt-2 w-[22rem] rounded-xl border shadow-xl"
-                  :class="isDark ? 'border-white/10 bg-[hsl(222.34,10.43%,14%)] shadow-black/40' : 'border-slate-200 bg-white shadow-slate-200/60'"
+                  class="absolute right-0 top-full z-[100] mt-2 w-[22rem] rounded-xl border shadow-xl border-mg-line bg-mg-surface-2"
                 >
-                  <div class="flex items-center justify-between px-4 py-3 border-b" :class="isDark ? 'border-white/8' : 'border-slate-100'">
-                    <h2 class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">Notifications</h2>
-                    <span v-if="notifCount > 0" class="text-xs font-medium" :class="isDark ? 'text-silver-400' : 'text-slate-600'">{{ notifCount }} active</span>
+                  <div class="flex items-center justify-between px-4 py-3 border-b border-mg-line">
+                    <h2 class="text-sm font-semibold text-mg-fg">Notifications</h2>
+                    <span v-if="notifCount > 0" class="text-xs font-medium text-mg-fg-muted">{{ notifCount }} active</span>
                   </div>
 
                   <div v-if="notifItems.length" class="max-h-72 overflow-y-auto py-1">
                     <div
                       v-for="item in notifItems"
                       :key="item.id"
-                      class="flex items-start gap-3 px-4 py-2.5 transition-colors"
-                      :class="isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-slate-50'"
+                      class="flex items-start gap-3 px-4 py-2.5 transition-colors hover:bg-mg-surface-2"
                     >
-                      <span class="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
-                        :class="item.type === 'error' ? isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-600'
-                          : item.type === 'warning' ? isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-50 text-amber-600'
-                          : isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-50 text-blue-600'">
-                        <UIcon :name="item.type === 'error' ? 'i-heroicons-x-circle' : item.type === 'warning' ? 'i-heroicons-exclamation-triangle' : 'i-heroicons-information-circle'" class="h-3.5 w-3.5" />
-                      </span>
+                      <UIcon
+                        :name="item.type === 'error' ? 'i-heroicons-x-circle' : item.type === 'warning' ? 'i-heroicons-exclamation-triangle' : 'i-heroicons-information-circle'"
+                        class="mt-0.5 h-4 w-4 shrink-0"
+                        :class="item.type === 'error' ? 'text-mg-danger' : item.type === 'warning' ? 'text-mg-warn' : 'text-mg-accent-text'"
+                        aria-hidden="true"
+                      />
                       <div class="min-w-0 flex-1">
-                        <NuxtLink v-if="item.link" :to="item.link" class="text-sm font-medium transition-colors" :class="isDark ? 'text-white hover:text-blue-300' : 'text-slate-900 hover:text-blue-600'" @click="notifOpen = false">{{ item.title }}</NuxtLink>
-                        <p v-else class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-slate-900'">{{ item.title }}</p>
-                        <p class="mt-0.5 text-xs" :class="isDark ? 'text-white/40' : 'text-slate-500'">{{ item.message }}</p>
+                        <NuxtLink v-if="item.link" :to="item.link" class="text-sm font-medium transition-colors text-mg-fg hover:underline" @click="notifOpen = false">{{ item.title }}</NuxtLink>
+                        <p v-else class="text-sm font-medium text-mg-fg">{{ item.title }}</p>
+                        <p class="mt-0.5 text-xs text-mg-fg-muted">{{ item.message }}</p>
                       </div>
-                      <button class="mt-0.5 p-1 rounded-md shrink-0 transition-colors" :class="isDark ? 'text-white/30 hover:text-white hover:bg-white/[0.06]' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'" aria-label="Dismiss notification" @click="notifDismiss(item.id)">
+                      <button class="mt-0.5 p-1 rounded-md shrink-0 transition-colors text-mg-fg-subtle hover:text-mg-fg hover:bg-mg-surface-2" aria-label="Dismiss notification" @click="notifDismiss(item.id)">
                         <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </div>
 
                   <div v-else class="py-8 text-center">
-                    <UIcon name="i-heroicons-bell-slash" class="h-6 w-6 mx-auto mb-1.5" :class="isDark ? 'text-white/20' : 'text-slate-300'" />
-                    <p class="text-xs" :class="isDark ? 'text-silver-400' : 'text-slate-600'">No notifications</p>
+                    <UIcon name="i-heroicons-bell-slash" class="h-6 w-6 mx-auto mb-1.5 text-mg-fg-subtle" />
+                    <p class="text-xs text-mg-fg-muted">No notifications</p>
                   </div>
                 </div>
               </Transition>
@@ -277,7 +270,7 @@
         <AdminTabBar />
 
         <!-- Content -->
-        <main class="admin-main min-h-[calc(100vh-88px)] px-6 py-6" :class="isDark ? 'bg-[#0b1118]' : 'bg-[#eef4fb]'">
+        <main class="admin-main min-h-[calc(100vh-88px)] px-6 py-6 bg-mg-bg">
           <div :key="route.fullPath" class="mx-auto max-w-[1600px]">
             <slot />
           </div>

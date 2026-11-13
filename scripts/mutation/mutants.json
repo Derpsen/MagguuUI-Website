@@ -1150,5 +1150,47 @@
     "file": "pages/addons.vue",
     "find": "'/api/v1/addons', { timeout: 8000 })",
     "repl": "'/api/v1/addons')"
+  },
+  {
+    "name": "admin design: .admin-shell dropped from the dark token scope",
+    "file": "assets/css/tokens.css",
+    "find": "html.dark .admin-shell,\nhtml.dark .public-shell {",
+    "repl": "html.dark .public-shell {"
+  },
+  {
+    "name": "admin design: .admin-shell dropped from the light token scope",
+    "file": "assets/css/tokens.css",
+    "find": "html:not(.dark) .admin-shell,\nhtml:not(.dark) .public-shell {",
+    "repl": "html:not(.dark) .public-shell {"
+  },
+  {
+    "name": "admin design: mini-label colour not the token accent",
+    "file": "assets/css/admin.css",
+    "find": "  --admin-label: var(--mg-accent-text);",
+    "repl": "  --admin-label: var(--color-brand-700);"
+  },
+  {
+    "name": "admin design: hairline not the token line",
+    "file": "assets/css/admin.css",
+    "find": "  --admin-border: var(--mg-line);",
+    "repl": "  --admin-border: #dbe3ec;"
+  },
+  {
+    "name": "admin design: bell badge text colour loses AA (white on danger)",
+    "file": "assets/css/admin.css",
+    "find": "  color: var(--mg-bg);\n  font-size: 10px;",
+    "repl": "  color: #ffffff;\n  font-size: 10px;"
+  },
+  {
+    "name": "admin design: sidebar goes back to a hard-coded dark colour",
+    "file": "layouts/admin.vue",
+    "find": "'bg-mg-surface border-mg-line',",
+    "repl": "'bg-[#0b1118] border-white/10',"
+  },
+  {
+    "name": "admin design: tab bar goes back to an isDark binding",
+    "file": "components/admin/TabBar.vue",
+    "find": "                ? 'text-mg-fg border-mg-line'",
+    "repl": "                ? (isDark ? 'text-white' : 'text-slate-900')"
   }
 ]

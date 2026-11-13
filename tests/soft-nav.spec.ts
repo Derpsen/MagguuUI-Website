@@ -44,3 +44,53 @@ for (const from of ['/guide', '/news', '/meta']) {
     expect(result.shift, 'layout shift during the navigation').toBeLessThan(0.001)
   })
 }
+
+/**
+ * Back/Forward must restore the leaving page's scroll position (Code-Review #201: the first version of the scroll reset
+ * ran before vue-router saved it, so Back landed at 0). Real clicks, real history.
+ */
+const BACK_PAIRS = [
+  { from: '/guide', link: '/addons' },
+  { from: '/news', link: '/addons' },
+  { from: '/guide', link: '/strings' },
+  { from: '/meta', link: '/addons' },
+]
+
+for (const { from, link } of BACK_PAIRS) {
+  test(`Back from ${link} to ${from} restores the scroll position (footer link), and the new page starts at the top`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 })
+    await page.goto(from)
+    await hydrated(page)
+    const footerLink = page.locator(`footer a[href="${link}"]`).first()
+    await footerLink.scrollIntoViewIfNeeded()
+    const left = await page.evaluate(() => Math.round(window.scrollY))
+    expect(left, 'the footer link should need a real scroll').toBeGreaterThan(300)
+    await footerLink.click()
+    await expect(page).toHaveURL(new RegExp(`${link}$`))
+    await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { message: 'new page starts at the top' }).toBe(0)
+    await page.goBack()
+    await expect(page).toHaveURL(new RegExp(`${from}$`))
+    await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { message: `Back restores ${left}`, timeout: 8000 }).toBeGreaterThan(left - 8)
+    expect(await page.evaluate(() => Math.round(window.scrollY))).toBeLessThan(left + 8)
+  })
+}
+
+test('Forward restores the position of the page left by a footer click', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 800 })
+  await page.goto('/addons')
+  await hydrated(page)
+  const footerLink = page.locator('footer a[href="/strings"]').first()
+  await footerLink.scrollIntoViewIfNeeded()
+  const left = await page.evaluate(() => Math.round(window.scrollY))
+  expect(left).toBeGreaterThan(300)
+  await footerLink.click()
+  await expect(page).toHaveURL(/\/strings$/)
+  await page.goBack()
+  await expect(page).toHaveURL(/\/addons$/)
+  await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { timeout: 8000 }).toBeGreaterThan(left - 8)
+  await page.goForward()
+  await expect(page).toHaveURL(/\/strings$/)
+  await page.goBack()
+  await expect(page).toHaveURL(/\/addons$/)
+  await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { timeout: 8000 }).toBeGreaterThan(left - 8)
+})

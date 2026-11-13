@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
 import { META_CLASSES, contrastRatio, metaClassTextColor } from '../../utils/metaCatalog'
+import { shouldResetScroll } from '../../utils/scrollReset'
 
 /**
  * Redesign PR 4: the /meta and /news pages sit on the design tokens (--mg-*), not on palette classes or `isDark`
@@ -145,16 +146,36 @@ describe('class colours on the real page backgrounds', () => {
 describe('soft-navigation CLS (/addons footer)', () => {
   it('awaits the addons fetch so the list is there when the page first appears', () => {
     const addons = read('pages/addons.vue')
-    assert.match(addons, /const \{ data \} = await useFetch<\{ data: AddonsResponse \}>\('\/api\/v1\/addons'\)/)
+    assert.match(addons, /const \{ data \} = await useFetch</)
   })
 
-  it('resets the scroll when a navigation to another page starts (instant, never smooth)', () => {
+  it('decides the scroll reset by rule: only a committed push to another page, never Back/Forward', () => {
+    const base = { firstNavigation: false, fromPath: '/guide', toPath: '/addons', scrollToTop: undefined, popped: false, failed: false, scrollY: 1400 }
+    assert.equal(shouldResetScroll(base), true)
+    assert.equal(shouldResetScroll({ ...base, popped: true }), false, 'Back/Forward keep the saved position')
+    assert.equal(shouldResetScroll({ ...base, failed: true }), false)
+    assert.equal(shouldResetScroll({ ...base, firstNavigation: true }), false)
+    assert.equal(shouldResetScroll({ ...base, toPath: '/guide' }), false, 'hash-only / same page')
+    assert.equal(shouldResetScroll({ ...base, scrollToTop: false }), false)
+    assert.equal(shouldResetScroll({ ...base, scrollY: 0 }), false)
+  })
+
+  it('wires the rule after the history save, with a capturing popstate flag, instant scroll', () => {
     const plugin = read('plugins/scroll-reset.client.ts')
-    assert.match(plugin, /router\.beforeEach\(\(to, from\) => \{/)
-    assert.match(plugin, /from === START_LOCATION \|\| to\.path === from\.path \|\| to\.meta\.scrollToTop === false/)
+    // beforeEach/beforeResolve run BEFORE vue-router stores the leaving scroll position (Code-Review #201).
+    assert.doesNotMatch(plugin, /router\.before(Each|Resolve)\(/)
+    assert.match(plugin, /router\.afterEach\(\(to, from, failure\) => \{/)
+    assert.match(plugin, /window\.addEventListener\('popstate', \(\) => \{ popped = true \}, \{ capture: true \}\)/)
+    assert.match(plugin, /popped: wasPopped/)
     assert.match(plugin, /window\.scrollTo\(\{ top: 0, left: 0, behavior: 'instant' \}\)/)
     assert.doesNotMatch(plugin, /behavior: 'smooth'/)
     // The smooth CSS default is what made the old scroll-to-top slow; anchors still rely on it.
     assert.match(read('assets/css/main.css'), /\* \{ scroll-behavior: smooth; \}/)
+  })
+
+  it('bounds the addons fetch and shows a note instead of a blank page when it fails', () => {
+    const addons = read('pages/addons.vue')
+    assert.match(addons, /useFetch<\{ data: AddonsResponse \}>\('\/api\/v1\/addons', \{ timeout: 8000 \}\)/)
+    assert.match(addons, /v-if="!groups\.length"[^>]*role="status"/)
   })
 })

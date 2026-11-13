@@ -1100,8 +1100,8 @@
   {
     "name": "addons: fetch not awaited again (soft-nav footer CLS)",
     "file": "pages/addons.vue",
-    "find": "const { data } = await useFetch<{ data: AddonsResponse }>('/api/v1/addons')",
-    "repl": "const { data } = useFetch<{ data: AddonsResponse }>('/api/v1/addons')"
+    "find": "await useFetch<{ data: AddonsResponse }>",
+    "repl": "useFetch<{ data: AddonsResponse }>"
   },
   {
     "name": "scroll reset: smooth instead of instant",
@@ -1110,15 +1110,45 @@
     "repl": "behavior: 'smooth' })"
   },
   {
-    "name": "scroll reset: guard removed (resets on hash/same-page navigation)",
-    "file": "plugins/scroll-reset.client.ts",
-    "find": "if (from === START_LOCATION || to.path === from.path || to.meta.scrollToTop === false) return",
-    "repl": "if (from === START_LOCATION) return"
+    "name": "scroll reset: back/forward resets the scroll too (history save lost)",
+    "file": "utils/scrollReset.ts",
+    "find": "if (input.failed || input.popped || input.firstNavigation) return false",
+    "repl": "if (input.failed || input.firstNavigation) return false"
   },
   {
-    "name": "scroll reset: the beforeEach guard is gone",
+    "name": "scroll reset: same-page navigation resets the scroll",
+    "file": "utils/scrollReset.ts",
+    "find": "  if (input.toPath === input.fromPath) return false\n",
+    "repl": ""
+  },
+  {
+    "name": "scroll reset: scrollToTop false ignored",
+    "file": "utils/scrollReset.ts",
+    "find": "  if (input.scrollToTop === false) return false\n",
+    "repl": ""
+  },
+  {
+    "name": "scroll reset: first navigation resets the scroll",
+    "file": "utils/scrollReset.ts",
+    "find": "input.failed || input.popped || input.firstNavigation",
+    "repl": "input.failed || input.popped"
+  },
+  {
+    "name": "scroll reset: popstate flag never set",
     "file": "plugins/scroll-reset.client.ts",
-    "find": "router.beforeEach((to, from) => {",
-    "repl": "router.afterEach((to, from) => {"
+    "find": "popped = true }, { capture: true })",
+    "repl": "popped = false }, { capture: true })"
+  },
+  {
+    "name": "scroll reset: runs in beforeEach again (before the history save)",
+    "file": "plugins/scroll-reset.client.ts",
+    "find": "router.afterEach((to, from, failure) => {",
+    "repl": "router.beforeEach((to, from, failure) => {"
+  },
+  {
+    "name": "addons: fetch has no timeout",
+    "file": "pages/addons.vue",
+    "find": "'/api/v1/addons', { timeout: 8000 })",
+    "repl": "'/api/v1/addons')"
   }
 ]

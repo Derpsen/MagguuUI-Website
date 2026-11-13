@@ -1112,8 +1112,8 @@
   {
     "name": "scroll reset: back/forward resets the scroll too (history save lost)",
     "file": "utils/scrollReset.ts",
-    "find": "if (input.failed || input.popped || input.firstNavigation) return false",
-    "repl": "if (input.failed || input.firstNavigation) return false"
+    "find": "if (input.failure || input.popped || input.firstNavigation) return false",
+    "repl": "if (input.failure || input.firstNavigation) return false"
   },
   {
     "name": "scroll reset: same-page navigation resets the scroll",
@@ -1130,14 +1130,14 @@
   {
     "name": "scroll reset: first navigation resets the scroll",
     "file": "utils/scrollReset.ts",
-    "find": "input.failed || input.popped || input.firstNavigation",
-    "repl": "input.failed || input.popped"
+    "find": "input.failure || input.popped || input.firstNavigation",
+    "repl": "input.failure || input.popped"
   },
   {
     "name": "scroll reset: popstate flag never set",
-    "file": "plugins/scroll-reset.client.ts",
-    "find": "popped = true }, { capture: true })",
-    "repl": "popped = false }, { capture: true })"
+    "file": "utils/scrollReset.ts",
+    "find": "markPopped() {\n      popped = true",
+    "repl": "markPopped() {\n      popped = false"
   },
   {
     "name": "scroll reset: runs in beforeEach again (before the history save)",
@@ -1150,6 +1150,36 @@
     "file": "pages/addons.vue",
     "find": "'/api/v1/addons', { timeout: 8000 })",
     "repl": "'/api/v1/addons')"
+  },
+  {
+    "name": "scroll reset: popstate mark never consumed (every later footer click keeps the scroll)",
+    "file": "utils/scrollReset.ts",
+    "find": "      const wasPopped = popped\n      popped = false\n",
+    "repl": "      const wasPopped = popped\n"
+  },
+  {
+    "name": "scroll reset: failed navigation still resets the scroll",
+    "file": "utils/scrollReset.ts",
+    "find": "if (input.failure || input.popped || input.firstNavigation) return false",
+    "repl": "if (input.popped || input.firstNavigation) return false"
+  },
+  {
+    "name": "scroll reset: plugin never listens to popstate",
+    "file": "plugins/scroll-reset.client.ts",
+    "find": "() => flow.markPopped()",
+    "repl": "() => void 0"
+  },
+  {
+    "name": "addons: a failed load shows the empty-catalog note (error ignored)",
+    "file": "pages/addons.vue",
+    "find": "<p v-if=\"error\"",
+    "repl": "<p v-if=\"false as boolean\""
+  },
+  {
+    "name": "addons: an empty catalog shows the failed-load note",
+    "file": "pages/addons.vue",
+    "find": "<p v-else-if=\"!groups.length\"",
+    "repl": "<p v-else-if=\"false as boolean\""
   },
   {
     "name": "admin design: .admin-shell dropped from the dark token scope",

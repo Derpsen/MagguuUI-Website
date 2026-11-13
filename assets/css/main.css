@@ -242,26 +242,6 @@ html, body, #__nuxt {
 }
 
 /* ─── Plain copy button for import strings ───────── */
-.string-copy-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.35rem 0.85rem;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  border-radius: 0.375rem;
-  background: transparent;
-  color: inherit;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.25;
-  cursor: pointer;
-}
-.string-copy-btn:hover { border-color: #0aa882; color: #0aa882; }
-.string-copy-btn:focus-visible { outline: 2px solid #0aa882; outline-offset: 2px; }
-.string-copy-btn.is-copied { border-color: #0aa882; color: #0aa882; }
-html.light .string-copy-btn { border-color: rgba(15, 23, 42, 0.25); color: #1f2937; }
-html.light .string-copy-btn:hover,
-html.light .string-copy-btn.is-copied { border-color: #0f766e; color: #0f766e; }
-html.light .string-copy-btn:focus-visible { outline-color: #0f766e; }
 
 /* ─── Primary CTA (legacy class name, design-system look) ──────────────── */
 /* Padding, radius and size stay with the page's utilities; colour and glow come from the tokens (same as .mg-btn--primary). */
@@ -269,7 +249,7 @@ html.light .string-copy-btn:focus-visible { outline-color: #0f766e; }
   background: var(--mg-accent, #0cd29d);
   color: var(--mg-on-accent, #03221a);
   box-shadow: var(--mg-cta-shadow);
-  font-weight: 650;
+  font-weight: 700;
   border-radius: var(--mg-r-md, 0.625rem);
   transition: background-color 160ms var(--mg-ease, ease), transform 160ms var(--mg-ease, ease), box-shadow 160ms var(--mg-ease, ease);
 }
@@ -337,7 +317,7 @@ html.light .string-copy-btn:focus-visible { outline-color: #0f766e; }
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-weight: 650;
+  font-weight: 700;
   font-size: 0.875rem;
   border-radius: var(--mg-r-md, 0.625rem);
   padding: 0.625rem 1rem;
@@ -418,33 +398,9 @@ html.light .string-copy-btn:focus-visible { outline-color: #0f766e; }
 
 /* ─── String Preview ─────────────────────────────── */
 
-.string-preview {
-  background: rgba(10, 14, 18, 0.65);
-  border: 1px solid rgba(12, 210, 157, 0.05);
-  position: relative;
-  overflow-y: auto;
-}
 
-.string-preview::after {
-  display: none;
-}
 
 /* Fade-out gradient at bottom of string preview */
-.string-preview-fade {
-  position: relative;
-}
-.string-preview-fade::after {
-  content: '';
-  display: block;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 40px;
-  background: linear-gradient(transparent, rgba(10, 14, 18, 0.95));
-  pointer-events: none;
-  border-radius: 0 0 12px 12px;
-}
 
 /* ─── Skeleton Loading ──────────────────────────── */
 
@@ -761,18 +717,8 @@ html.light .select-styled option {
   color: #1e293b;
 }
 
-html.light .string-preview {
-  background: rgba(241, 245, 249, 0.8);
-  border-color: rgba(12, 210, 157, 0.08);
-}
 
-html.light .string-preview::after {
-  display: none;
-}
 
-html.light .string-preview-fade::after {
-  background: linear-gradient(transparent, rgba(241, 245, 249, 0.95));
-}
 
 html.light .skeleton::after {
   background: linear-gradient(90deg, transparent 0%, rgba(12, 210, 157, 0.03) 40%, rgba(12, 210, 157, 0.05) 50%, rgba(12, 210, 157, 0.03) 60%, transparent 100%);
@@ -891,7 +837,7 @@ html.light .addon-chip-badge--required {
 .section-eyebrow {
   font-family: var(--font-mono);
   font-size: var(--mg-fs-micro, 0.6875rem);
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: var(--mg-track-kicker, 0.16em);
   text-transform: uppercase;
   color: var(--mg-accent-text, #3fe0b8);
@@ -902,50 +848,6 @@ html.light .addon-chip-badge--required {
   outline-offset: 2px;
 }
 
-.wow-class-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.55rem 0.85rem 0.55rem 0.55rem;
-  border-radius: 0.9rem;
-  border: 1px solid rgba(12, 210, 157, 0.22);
-  background: rgba(12, 16, 22, 0.75);
-  color: #d7e0ec;
-  font-size: 0.875rem;
-  font-weight: 600;
-  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease;
-}
-.wow-class-chip:hover,
-.wow-class-chip.is-active {
-  border-color: rgba(12, 210, 157, 0.5);
-  color: #fff;
-  transform: translateY(-1px);
-}
-.wow-class-chip.is-active {
-  background: rgba(12, 210, 157, 0.12);
-  box-shadow: 0 0 0 1px rgba(12, 210, 157, 0.18);
-}
-.wow-class-chip__icon {
-  width: 1.55rem;
-  height: 1.55rem;
-  border-radius: 0.45rem;
-  object-fit: cover;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
-}
-html.light .wow-class-chip {
-  background: rgba(255,255,255,0.92);
-  border-color: rgba(8, 143, 111, 0.22);
-  color: #1e293b;
-}
-html.light .wow-class-chip:hover,
-html.light .wow-class-chip.is-active {
-  border-color: rgba(8, 143, 111, 0.45);
-  color: #0f172a;
-}
-html.light .wow-class-chip.is-active {
-  background: rgba(8, 143, 111, 0.08);
-}
 
 
 

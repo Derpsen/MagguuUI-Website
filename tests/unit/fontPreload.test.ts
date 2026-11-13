@@ -25,6 +25,8 @@ describe('font preload table', () => {
   it('query and hash do not change the route, and a prefix lookalike is not admin', () => {
     assert.deepEqual(fontFacesForPath('/admin/login?next=/x'), ADMIN_FACES)
     assert.deepEqual(fontFacesForPath('/admin#top'), ADMIN_FACES)
+    assert.deepEqual(fontFacesForPath('/Admin/login'), ADMIN_FACES)
+    assert.deepEqual(fontFacesForPath('/ADMIN'), ADMIN_FACES)
     assert.deepEqual(fontFacesForPath('/administrator'), DEFAULT_FACES)
     assert.deepEqual(fontFacesForPath('/adminx/y'), DEFAULT_FACES)
     assert.deepEqual(fontFacesForPath(''), DEFAULT_FACES)

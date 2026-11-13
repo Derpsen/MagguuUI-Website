@@ -1,0 +1,70 @@
+/**
+ * Setup pages (redesign PR 3): Guide, Import Strings, Addons.
+ * Tokens only (tokens.css), no isDark bindings: no-JS and a light-mode reload render correctly. Motion is CSS only,
+ * transform only, and every animation sits inside `prefers-reduced-motion: no-preference` (tests/unit/designTokens.test.ts
+ * parses this file). Every grid that holds long text has `minmax(0, 1fr)` columns and `min-width: 0` children (a clipped
+ * overflow does not show up in scrollWidth, tests/*.spec.ts check the real boxes at 320/360/390 px).
+ * Unlayered on purpose: these replace the legacy rules that lived in main.css (chips, copy button, string preview).
+ */
+
+/* ─── Shared page frame ───────────────────────────── */
+.mg-link { color: var(--mg-accent-text); font-weight: 600; text-decoration: underline; text-underline-offset: 0.22em; text-decoration-thickness: 1px; }
+.mg-link:hover { color: var(--mg-fg); }
+
+.setup-page { overflow-x: clip; }
+.setup-head { position: relative; isolation: isolate; padding-top: 0.5rem; }
+.setup-head::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -5rem 0 auto 0;
+  height: 20rem;
+  background:
+    radial-gradient(30rem 14rem at 18% 36%, var(--mg-glow), transparent 70%),
+    radial-gradient(26rem 12rem at 82% 24%, var(--mg-glow-3), transparent 70%);
+  pointer-events: none;
+}
+.setup-head__lead { margin-top: 1.25rem; max-width: 40rem; }
+.setup-head__actions { margin-top: 1.75rem; }
+
+/* Entrance: the head copy rises in sequence (transform only, never an opacity fade: contrast checks sample real colours). */
+@media (prefers-reduced-motion: no-preference) {
+  .setup-rise { animation: setup-rise 0.65s var(--mg-ease) both; animation-delay: calc(var(--i, 0) * 70ms); }
+}
+@keyframes setup-rise { from { transform: translateY(1rem); } to { transform: none; } }
+
+/* Gradient headline: both stops are AA text colours on the page background (parsed per theme in designTokens.test.ts). */
+.mg-title-grad {
+  color: var(--mg-fg);
+  background-image: linear-gradient(100deg, var(--mg-fg) 0%, var(--mg-fg) 42%, var(--mg-accent-text) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding-bottom: 0.08em;
+}
+@media (forced-colors: active) {
+  .mg-title-grad { background: none; -webkit-text-fill-color: currentColor; color: CanvasText; }
+}
+
+/* Framed product shot: gradient edge, deep shadow, a bloom behind it. */
+.setup-shot { position: relative; isolation: isolate; margin-top: 2.5rem; }
+.setup-shot::before { content: ''; position: absolute; z-index: -1; inset: -2.5rem -1.5rem -1rem; background: radial-gradient(60% 56% at 50% 48%, var(--mg-glow), transparent 74%); pointer-events: none; }
+.setup-shot__frame {
+  padding: 1px;
+  border-radius: calc(var(--mg-r-xl) + 1px);
+  background: linear-gradient(155deg, var(--mg-accent-text), var(--mg-line-strong) 32%, var(--mg-line) 62%, var(--mg-glow-2));
+  box-shadow: 0 36px 90px -32px rgb(0 0 0 / 0.55), 0 0 70px -24px var(--mg-glow);
+}
+.setup-shot .shot-img--hero { box-shadow: none; border: 0; border-radius: var(--mg-r-xl) var(--mg-r-xl) 0 0; }
+.setup-shot figcaption { padding: 0.75rem 1rem 0.875rem; background: var(--mg-surface); border-radius: 0 0 var(--mg-r-xl) var(--mg-r-xl); margin-top: 0; }
+
+/* ─── Setup nav (Guide / Import Strings / Configurator) ─── */
+.public-setup-nav__list { display: inline-flex; max-width: 100%; align-items: center; gap: 1.125rem; overflow-x: auto; border-bottom: 1px solid var(--mg-line-strong); scrollbar-width: none; }
+.public-setup-nav__list::-webkit-scrollbar { display: none; }
+.public-setup-nav__link { flex: none; padding-bottom: 0.625rem; margin-bottom: -1px; border-bottom: 2px solid transparent; font-size: 0.875rem; font-weight: 600; color: var(--mg-fg-muted); white-space: nowrap; transition: color var(--mg-dur) var(--mg-ease), border-color var(--mg-dur) var(--mg-ease); }
+.public-setup-nav__link:hover { color: var(--mg-fg); }
+.public-setup-nav__link[aria-current='page'],
+.public-setup-nav__link.is-active { color: var(--mg-fg); border-bottom-color: var(--mg-accent-text); }
+.public-setup-nav { padding-top: 0.5rem; background: color-mix(in srgb, var(--mg-bg) 72%, transparent); backdrop-filter: blur(12px); }
+@media (min-width: 640px) { .public-setup-nav__list { gap: 1.5rem; } .public-setup-nav__link { font-size: 0.9375rem; } }
+

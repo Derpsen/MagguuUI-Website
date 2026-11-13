@@ -25,6 +25,7 @@ const ROUTE_FACES: ReadonlyArray<{ test: (path: string) => boolean, faces: reado
 ]
 
 export function fontFacesForPath(path: string): readonly FontFaceId[] {
-  const clean = path.split(/[?#]/)[0] || '/'
+  // vue-router matches case-insensitively, so /Admin/login is the admin shell too
+  const clean = (path.split(/[?#]/)[0] || '/').toLowerCase()
   return ROUTE_FACES.find(entry => entry.test(clean))?.faces ?? DEFAULT_FACES
 }

@@ -218,4 +218,10 @@ describe('fonts: no layout shift from the webfont swap', () => {
     assert.doesNotMatch(cfg, /provider: 'none'/)
     assert.doesNotMatch(cfg, /fonts\.families|fonts: \{\s*families/)
   })
+
+  it('keeps the local() fallback list short: every failed local() lookup is main-thread work in the hydration task (TBT)', () => {
+    const local = faces.filter(f => /local\(/.test(f)).length
+    assert.ok(local <= 9, `${local} local() fallback faces (6 sans + 3 mono at the time of PR 3)`)
+    assert.doesNotMatch(fonts, /MG Sans Roboto/)
+  })
 })

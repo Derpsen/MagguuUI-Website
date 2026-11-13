@@ -1,43 +1,48 @@
 <template>
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
-    <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Catalog</p>
-    <h1 class="mg-h1" :class="isDark ? 'text-white' : 'text-gray-950'">Addons</h1>
-    <div class="mt-4 space-y-3 text-sm leading-relaxed max-w-2xl" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
-      <p>
-        EllesmereUI is required. Download it and MagguuUI from CurseForge, Wago, or WoWInterface. The Starter pack addons are recommended; everything else is optional.
-      </p>
-      <p>
-        MagguuUI applies a profile when that addon is installed and skips it otherwise.
-        Copy WowUp lists from Setup, or from <NuxtLink to="/strings" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">Import Strings</NuxtLink>.
-      </p>
-    </div>
+  <div class="setup-page mg-container pt-8 pb-20">
+    <header class="setup-head">
+      <p class="mg-kicker setup-rise" style="--i: 0">Catalog</p>
+      <h1 class="mg-display mg-title-grad mt-3 setup-rise" style="--i: 1">Addons</h1>
+      <div class="setup-head__lead mg-lead space-y-3 setup-rise" style="--i: 2">
+        <p>
+          EllesmereUI is required. Download it and MagguuUI from CurseForge, Wago, or WoWInterface. The Starter pack addons are recommended; everything else is optional.
+        </p>
+        <p>
+          MagguuUI applies a profile when that addon is installed and skips it otherwise.
+          Copy WowUp lists from Setup, or from <NuxtLink to="/strings" class="mg-link">Import Strings</NuxtLink>.
+        </p>
+      </div>
+    </header>
 
-    <section v-for="group in groups" :key="group.key" class="mt-12">
-      <h2 class="font-mono text-[11px] uppercase tracking-[0.14em]" :class="isDark ? 'text-brand-300' : 'text-brand-700'">{{ group.label }}</h2>
-      <p class="mt-2 text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">{{ group.hint }}</p>
-      <ul class="mt-4 grid sm:grid-cols-2 gap-3">
+    <section v-for="(group, index) in groups" :key="group.key" class="addon-group" :aria-labelledby="`addons-${group.key}`">
+      <div class="addon-group__head">
+        <span class="addon-group__n" aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
+        <h2 :id="`addons-${group.key}`" class="addon-group__title">{{ group.label }}</h2>
+        <p class="addon-group__hint">{{ group.hint }}</p>
+      </div>
+
+      <template v-if="group.key === 'required'">
+        <ul class="addon-required-list">
+          <li v-for="addon in group.items" :key="addon.slug">
+            <a :href="addon.url ?? undefined" target="_blank" rel="noopener noreferrer" class="addon-required group">
+              <img v-if="iconFor(addon.slug)" :src="iconFor(addon.slug)" alt="" width="64" height="64" class="addon-row__icon" loading="lazy" decoding="async" />
+              <span v-else class="addon-row__emoji" aria-hidden="true">{{ addon.emoji }}</span>
+              <span class="addon-row__body">
+                <span class="addon-row__name">{{ addon.name }}<UIcon name="i-heroicons-arrow-up-right" class="addon-row__go w-4 h-4" aria-hidden="true" /></span>
+                <span class="addon-row__desc">{{ addon.description }}</span>
+              </span>
+            </a>
+          </li>
+        </ul>
+      </template>
+      <ul v-else class="addon-list">
         <li v-for="addon in group.items" :key="addon.slug">
-          <a
-            :href="addon.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex h-full gap-3 border p-4"
-            :class="isDark ? 'border-white/10 hover:border-white/25' : 'border-gray-200 hover:border-gray-400'"
-          >
-            <img
-              v-if="iconFor(addon.slug)"
-              :src="iconFor(addon.slug)"
-              :alt="''"
-              width="48"
-              height="48"
-              class="h-12 w-12 shrink-0 object-contain"
-              loading="lazy"
-              decoding="async"
-            />
-            <span v-else class="flex h-12 w-12 shrink-0 items-center justify-center text-2xl" aria-hidden="true">{{ addon.emoji }}</span>
-            <span class="min-w-0">
-              <span class="block text-sm font-semibold" :class="isDark ? 'text-white' : 'text-gray-950'">{{ addon.name }}</span>
-              <span class="mt-1 block text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">{{ addon.description }}</span>
+          <a :href="addon.url ?? undefined" target="_blank" rel="noopener noreferrer" class="addon-row group">
+            <img v-if="iconFor(addon.slug)" :src="iconFor(addon.slug)" alt="" width="44" height="44" class="addon-row__icon" loading="lazy" decoding="async" />
+            <span v-else class="addon-row__emoji" aria-hidden="true">{{ addon.emoji }}</span>
+            <span class="addon-row__body">
+              <span class="addon-row__name">{{ addon.name }}<UIcon name="i-heroicons-arrow-up-right" class="addon-row__go w-4 h-4" aria-hidden="true" /></span>
+              <span class="addon-row__desc">{{ addon.description }}</span>
             </span>
           </a>
         </li>
@@ -47,12 +52,12 @@
 </template>
 
 <script setup lang="ts">
+import '~/assets/css/setup.css'
+import '~/assets/css/setup-addons.css'
 import { ADDON_ICONS } from '~/utils/addonIcons'
 import { addonThumbPath } from '~/utils/featureCardMeta'
 import { addonGroupForSlug, addonGroupSubtitle } from '~/utils/addonChipMeta'
 import type { AddonGroupKey } from '~/utils/addonChipMeta'
-
-const isDark = useIsDark()
 
 usePublicPageSeo({
   title: 'Addons',

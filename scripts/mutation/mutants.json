@@ -914,8 +914,8 @@
   {
     "name": "fontPreload: query and hash are not stripped",
     "file": "utils/fontPreload.ts",
-    "find": "path.split(/[?#]/)[0] || '/'",
-    "repl": "path || '/'"
+    "find": "(path.split(/[?#]/)[0] || '/').toLowerCase()",
+    "repl": "(path || '/').toLowerCase()"
   },
   {
     "name": "fontPreload: admin has no mono (login draws it)",
@@ -934,5 +934,77 @@
     "file": "nuxt.config.ts",
     "find": "    fonts: false,",
     "repl": "    fonts: true,"
+  },
+  {
+    "name": "setup.css: rise animation not behind reduced-motion",
+    "file": "assets/css/setup.css",
+    "find": "@media (prefers-reduced-motion: no-preference) {\n  .setup-rise",
+    "repl": "@media all {\n  .setup-rise"
+  },
+  {
+    "name": "setup.css: rise keyframes fade opacity",
+    "file": "assets/css/setup.css",
+    "find": "from { transform: translateY(1rem); }",
+    "repl": "from { opacity: 0; transform: translateY(1rem); }"
+  },
+  {
+    "name": "setup.css: title gradient ends on a low-contrast colour",
+    "file": "assets/css/setup.css",
+    "find": "var(--mg-accent-text) 100%);\n  -webkit-background-clip",
+    "repl": "#555555 100%);\n  -webkit-background-clip"
+  },
+  {
+    "name": "setup.css: strings tabs sticky on mobile",
+    "file": "assets/css/setup-strings.css",
+    "find": ".strings-tabs { display: flex; flex-wrap: wrap;",
+    "repl": ".strings-tabs { position: sticky; display: flex; flex-wrap: wrap;"
+  },
+  {
+    "name": "setup.css: tab uses an undeclared weight",
+    "file": "assets/css/setup-strings.css",
+    "find": "font-size: 0.875rem; font-weight: 700; color: var(--mg-fg-muted); transition: color var(--mg-dur) var(--mg-ease), border-color",
+    "repl": "font-size: 0.875rem; font-weight: 500; color: var(--mg-fg-muted); transition: color var(--mg-dur) var(--mg-ease), border-color"
+  },
+  {
+    "name": "setup.css: guide layout column can't shrink",
+    "file": "assets/css/setup-guide.css",
+    "find": ".guide-layout { display: grid; grid-template-columns: minmax(0, 1fr);",
+    "repl": ".guide-layout { display: grid; grid-template-columns: 1fr;"
+  },
+  {
+    "name": "PublicSetupNav: setup.css not imported",
+    "file": "components/PublicSetupNav.vue",
+    "find": "import '~/assets/css/setup.css'\n",
+    "repl": ""
+  },
+  {
+    "name": "guide: hero shot lazy instead of eager",
+    "file": "pages/guide.vue",
+    "find": "          eager\n",
+    "repl": "          \n"
+  },
+  {
+    "name": "main.css: setup.css back in the global entry CSS",
+    "file": "assets/css/main.css",
+    "find": "@import \"./fonts.css\";",
+    "repl": "@import \"./fonts.css\";\n@import \"./setup.css\";"
+  },
+  {
+    "name": "strings: string card loses its css import",
+    "file": "components/StringsStringCard.vue",
+    "find": "import '~/assets/css/setup-strings.css'\n",
+    "repl": ""
+  },
+  {
+    "name": "fonts.css: an extra Android sans fallback face is added",
+    "file": "assets/css/fonts.css",
+    "find": "@font-face { font-family: 'MG Sans Noto Sans';",
+    "repl": "@font-face { font-family: 'MG Sans Roboto'; src: local('Roboto'); size-adjust: 105.2101%; ascent-override: 98.6597%; descent-override: 21.1006%; line-gap-override: 0%; }\n@font-face { font-family: 'MG Sans Noto Sans';"
+  },
+  {
+    "name": "fontPreload: path is not lower-cased (/Admin/login)",
+    "file": "utils/fontPreload.ts",
+    "find": "[0] || '/').toLowerCase()",
+    "repl": "[0] || '/')"
   }
 ]

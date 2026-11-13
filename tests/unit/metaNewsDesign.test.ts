@@ -141,3 +141,20 @@ describe('class colours on the real page backgrounds', () => {
     }
   })
 })
+
+describe('soft-navigation CLS (/addons footer)', () => {
+  it('awaits the addons fetch so the list is there when the page first appears', () => {
+    const addons = read('pages/addons.vue')
+    assert.match(addons, /const \{ data \} = await useFetch<\{ data: AddonsResponse \}>\('\/api\/v1\/addons'\)/)
+  })
+
+  it('resets the scroll when a navigation to another page starts (instant, never smooth)', () => {
+    const plugin = read('plugins/scroll-reset.client.ts')
+    assert.match(plugin, /router\.beforeEach\(\(to, from\) => \{/)
+    assert.match(plugin, /from === START_LOCATION \|\| to\.path === from\.path \|\| to\.meta\.scrollToTop === false/)
+    assert.match(plugin, /window\.scrollTo\(\{ top: 0, left: 0, behavior: 'instant' \}\)/)
+    assert.doesNotMatch(plugin, /behavior: 'smooth'/)
+    // The smooth CSS default is what made the old scroll-to-top slow; anchors still rely on it.
+    assert.match(read('assets/css/main.css'), /\* \{ scroll-behavior: smooth; \}/)
+  })
+})

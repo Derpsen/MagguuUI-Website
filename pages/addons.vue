@@ -81,7 +81,9 @@ interface AddonsResponse {
   total: number
 }
 
-const { data } = useFetch<{ data: AddonsResponse }>('/api/v1/addons')
+// Awaited on purpose: without it a client-side navigation to /addons renders the page with an empty list first and
+// the footer, already on screen, jumps down when the data lands (soft-navigation CLS). SSR output is unchanged.
+const { data } = await useFetch<{ data: AddonsResponse }>('/api/v1/addons')
 
 function iconFor(slug: string): string | undefined {
   return addonThumbPath(ADDON_ICONS[slug])

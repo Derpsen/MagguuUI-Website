@@ -1,5 +1,5 @@
 import { START_LOCATION } from 'vue-router'
-import { shouldResetScroll } from '~/utils/scrollReset'
+import { createScrollResetFlow } from '~/utils/scrollReset'
 
 /**
  * Reset the scroll position when a navigation to ANOTHER page has been committed, before the new page renders, not
@@ -18,19 +18,16 @@ import { shouldResetScroll } from '~/utils/scrollReset'
  */
 export default defineNuxtPlugin(() => {
   const router = useRouter()
-  let popped = false
-  window.addEventListener('popstate', () => { popped = true }, { capture: true })
+  const flow = createScrollResetFlow()
+  window.addEventListener('popstate', () => flow.markPopped(), { capture: true })
 
   router.afterEach((to, from, failure) => {
-    const wasPopped = popped
-    popped = false
-    if (!shouldResetScroll({
+    if (!flow.shouldReset({
       firstNavigation: from === START_LOCATION,
       fromPath: from.path,
       toPath: to.path,
       scrollToTop: to.meta.scrollToTop,
-      popped: wasPopped,
-      failed: !!failure,
+      failure,
       scrollY: window.scrollY,
     })) return
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })

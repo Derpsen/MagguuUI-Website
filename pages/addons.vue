@@ -14,7 +14,8 @@
       </div>
     </header>
 
-    <p v-if="!groups.length" class="mg-small text-mg-fg-muted" role="status">The addon list could not be loaded. Reload the page to try again.</p>
+    <p v-if="error" class="mg-small text-mg-fg-muted" role="status">The addon list could not be loaded. Reload the page to try again.</p>
+    <p v-else-if="!groups.length" class="mg-small text-mg-fg-muted" role="status">No addons are listed yet.</p>
 
     <section v-for="(group, index) in groups" :key="group.key" class="addon-group" :aria-labelledby="`addons-${group.key}`">
       <div class="addon-group__head">
@@ -85,8 +86,9 @@ interface AddonsResponse {
 
 // Awaited on purpose: without it a client-side navigation to /addons renders the page with an empty list first and
 // the footer, already on screen, jumps down when the data lands (soft-navigation CLS). SSR output is unchanged.
-// Bounded (8 s): a slow API ends in the empty-state note below instead of a navigation that never finishes.
-const { data } = await useFetch<{ data: AddonsResponse }>('/api/v1/addons', { timeout: 8000 })
+// Bounded (8 s): a slow API ends in the error note below instead of a navigation that never finishes. An empty list
+// that was loaded fine has its own note.
+const { data, error } = await useFetch<{ data: AddonsResponse }>('/api/v1/addons', { timeout: 8000 })
 
 function iconFor(slug: string): string | undefined {
   return addonThumbPath(ADDON_ICONS[slug])

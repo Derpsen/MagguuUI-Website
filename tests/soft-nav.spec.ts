@@ -58,13 +58,26 @@ for (const from of ['/guide', '/news', '/meta']) {
 // only after `page:loading:end` of the navigation it belongs to, so a Back inside that window lands at 0. The tests now
 // wait for the new page to be rendered and the network to be quiet before going Back, as a person would (0 of 30 failed).
 test.beforeAll(async ({ browser }) => {
-  test.setTimeout(180_000)
+  test.setTimeout(240_000)
   const context = await browser.newContext()
   const page = await context.newPage()
-  for (const path of ['/guide', '/strings', '/addons', '/meta', '/news']) {
-    await page.goto(path)
-    await hydrated(page)
-    await page.waitForLoadState('networkidle')
+  // Same rule as tests/support/warmup.ts: a navigation that Vite aborts or reloads mid-way (net::ERR_ABORTED, a
+  // detached frame) is not a failure of the warm-up, only a reason for another round; two clean rounds in a row end it.
+  const deadline = Date.now() + 200_000
+  let clean = 0
+  while (clean < 2) {
+    if (Date.now() > deadline) throw new Error('dev-server warm-up did not settle in 200 s')
+    let ok = true
+    for (const path of ['/guide', '/strings', '/addons', '/meta', '/news']) {
+      try {
+        await page.goto(path)
+        await hydrated(page)
+      }
+      catch {
+        ok = false
+      }
+    }
+    clean = ok ? clean + 1 : 0
   }
   await context.close()
 })
@@ -106,6 +119,44 @@ for (const { from, link } of BACK_PAIRS) {
     expect(await page.evaluate(() => Math.round(window.scrollY))).toBeLessThan(left + 8)
   })
 }
+
+test('after Back, the next footer click resets the scroll again (the Back mark is consumed)', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 800 })
+  await page.goto('/guide')
+  await hydrated(page)
+  await page.evaluate(() => window.scrollTo({ top: 1400, behavior: 'instant' }))
+  await page.evaluate(() => (document.querySelector('footer a[href="/addons"]') as HTMLElement).click())
+  await expect(page).toHaveURL(/\/addons$/)
+  await expect(page.locator('h1').first()).toHaveText(headingOf('/addons'))
+  await page.waitForLoadState('networkidle')
+  await page.goBack()
+  await expect(page).toHaveURL(/\/guide$/)
+  await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { timeout: 8000 }).toBeGreaterThan(1392)
+  await page.evaluate(() => (document.querySelector('footer a[href="/strings"]') as HTMLElement).click())
+  await expect(page).toHaveURL(/\/strings$/)
+  await expect(page.locator('h1').first()).toHaveText(headingOf('/strings'))
+  await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { message: 'a footer click after Back starts the new page at the top', timeout: 8000 }).toBe(0)
+})
+
+test.describe('/addons separates a failed load from an empty catalog', () => {
+  test('API error: "could not be loaded"', async ({ page }) => {
+    await page.route('**/api/v1/addons', route => route.abort())
+    await page.goto('/guide')
+    await hydrated(page)
+    await page.evaluate(() => (document.querySelector('footer a[href="/addons"]') as HTMLElement).click())
+    await expect(page.getByRole('status').filter({ hasText: 'The addon list could not be loaded.' })).toBeVisible()
+    await expect(page.getByText('No addons are listed yet.')).toHaveCount(0)
+  })
+
+  test('empty catalog: "No addons are listed yet."', async ({ page }) => {
+    await page.route('**/api/v1/addons', route => route.fulfill({ json: { data: { required: [], core: [], optional: [], total: 0 } } }))
+    await page.goto('/guide')
+    await hydrated(page)
+    await page.evaluate(() => (document.querySelector('footer a[href="/addons"]') as HTMLElement).click())
+    await expect(page.getByRole('status').filter({ hasText: 'No addons are listed yet.' })).toBeVisible()
+    await expect(page.getByText('The addon list could not be loaded.')).toHaveCount(0)
+  })
+})
 
 test('Forward restores the position of the page left by a footer click', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 })

@@ -796,3 +796,11 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
   4. Low: with a 700 ms main-thread stall, a page swap that shows the footer on screen still gives CLS (measured 0.28 on `/news` → `/addons`; 0 in the earlier run, so unconfirmed).
   5. `guide`, `strings`, `changelog`, `faq`, `index` still call `useFetch` without `await`.
   6. The `beforeAll` warm-up in `tests/soft-nav.spec.ts` needs retry tolerance like `tests/support/warmup.ts`.
+
+## 2026-11-13 PR 4 follow-ups (Step A before the Admin redesign)
+
+- Scroll reset: the flag logic moved from `plugins/scroll-reset.client.ts` into `createScrollResetFlow()` in `utils/scrollReset.ts` so it is unit-testable. `shouldResetScroll` takes the router `failure` itself (`failure: unknown`) instead of a pre-computed `failed` boolean. New mutants (3): the Back mark is never consumed, a failed navigation still resets, the plugin never listens to popstate; the old "popstate flag never set" mutant now targets `markPopped()`. Unit test: Back, then another navigation must reset. e2e: Back, then another footer click starts at the top.
+- `/addons` separates a failed load (`error` from `useFetch`: "The addon list could not be loaded. Reload the page to try again.") from an empty catalog ("No addons are listed yet."), 2 mutants + two route-mocked e2e tests.
+- `tests/soft-nav.spec.ts` warm-up now repeats rounds until two are clean (like `tests/support/warmup.ts`), so an aborted navigation during a Vite re-optimize no longer fails `beforeAll`.
+- AGENTS.md mutant count: 197 (192 + 5 new).
+- Left open on purpose: `useFetch` without `await` on `guide`, `strings`, `changelog`, `faq`, `index` (`guide` parses in `transform` and `strings` has four parallel fetches; awaiting changes hydration timing and the `/` Lighthouse budget, so it needs its own measured PR); the 700 ms-stall CLS on a page swap with a visible footer (Low, unconfirmed).

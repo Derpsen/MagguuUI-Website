@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
 import { META_CLASSES, contrastRatio, metaClassTextColor } from '../../utils/metaCatalog'
-import { shouldResetScroll } from '../../utils/scrollReset'
+import { createScrollResetFlow, shouldResetScroll } from '../../utils/scrollReset'
 
 /**
  * Redesign PR 4: the /meta and /news pages sit on the design tokens (--mg-*), not on palette classes or `isDark`
@@ -146,18 +146,30 @@ describe('class colours on the real page backgrounds', () => {
 describe('soft-navigation CLS (/addons footer)', () => {
   it('awaits the addons fetch so the list is there when the page first appears', () => {
     const addons = read('pages/addons.vue')
-    assert.match(addons, /const \{ data \} = await useFetch</)
+    assert.match(addons, /const \{ data, error \} = await useFetch</)
   })
 
   it('decides the scroll reset by rule: only a committed push to another page, never Back/Forward', () => {
-    const base = { firstNavigation: false, fromPath: '/guide', toPath: '/addons', scrollToTop: undefined, popped: false, failed: false, scrollY: 1400 }
+    const base = { firstNavigation: false, fromPath: '/guide', toPath: '/addons', scrollToTop: undefined, popped: false, failure: undefined, scrollY: 1400 }
     assert.equal(shouldResetScroll(base), true)
     assert.equal(shouldResetScroll({ ...base, popped: true }), false, 'Back/Forward keep the saved position')
-    assert.equal(shouldResetScroll({ ...base, failed: true }), false)
+    assert.equal(shouldResetScroll({ ...base, failure: new Error('cancelled') }), false, 'a failed or cancelled navigation')
     assert.equal(shouldResetScroll({ ...base, firstNavigation: true }), false)
     assert.equal(shouldResetScroll({ ...base, toPath: '/guide' }), false, 'hash-only / same page')
     assert.equal(shouldResetScroll({ ...base, scrollToTop: false }), false)
     assert.equal(shouldResetScroll({ ...base, scrollY: 0 }), false)
+  })
+
+  it('Back/Forward marks only the next navigation: a later footer click resets the scroll again', () => {
+    const flow = createScrollResetFlow()
+    const push = { firstNavigation: false, fromPath: '/guide', toPath: '/addons', scrollToTop: undefined, failure: undefined, scrollY: 1400 }
+    assert.equal(flow.shouldReset(push), true, 'a plain push resets')
+    flow.markPopped()
+    assert.equal(flow.shouldReset(push), false, 'the navigation started by Back keeps the saved position')
+    assert.equal(flow.shouldReset(push), true, 'the next footer click resets again (the mark is consumed)')
+    flow.markPopped()
+    assert.equal(flow.shouldReset({ ...push, failure: new Error('cancelled') }), false)
+    assert.equal(flow.shouldReset(push), true, 'a failed Back navigation consumes the mark too')
   })
 
   it('wires the rule after the history save, with a capturing popstate flag, instant scroll', () => {
@@ -165,17 +177,19 @@ describe('soft-navigation CLS (/addons footer)', () => {
     // beforeEach/beforeResolve run BEFORE vue-router stores the leaving scroll position (Code-Review #201).
     assert.doesNotMatch(plugin, /router\.before(Each|Resolve)\(/)
     assert.match(plugin, /router\.afterEach\(\(to, from, failure\) => \{/)
-    assert.match(plugin, /window\.addEventListener\('popstate', \(\) => \{ popped = true \}, \{ capture: true \}\)/)
-    assert.match(plugin, /popped: wasPopped/)
+    assert.match(plugin, /window\.addEventListener\('popstate', \(\) => flow\.markPopped\(\), \{ capture: true \}\)/)
+    assert.match(plugin, /flow\.shouldReset\(\{/)
+    assert.match(plugin, /^\s+failure,$/m)
     assert.match(plugin, /window\.scrollTo\(\{ top: 0, left: 0, behavior: 'instant' \}\)/)
     assert.doesNotMatch(plugin, /behavior: 'smooth'/)
     // The smooth CSS default is what made the old scroll-to-top slow; anchors still rely on it.
     assert.match(read('assets/css/main.css'), /\* \{ scroll-behavior: smooth; \}/)
   })
 
-  it('bounds the addons fetch and shows a note instead of a blank page when it fails', () => {
+  it('bounds the addons fetch and tells a failed load from an empty catalog', () => {
     const addons = read('pages/addons.vue')
-    assert.match(addons, /useFetch<\{ data: AddonsResponse \}>\('\/api\/v1\/addons', \{ timeout: 8000 \}\)/)
-    assert.match(addons, /v-if="!groups\.length"[^>]*role="status"/)
+    assert.match(addons, /const \{ data, error \} = await useFetch<\{ data: AddonsResponse \}>\('\/api\/v1\/addons', \{ timeout: 8000 \}\)/)
+    assert.match(addons, /<p v-if="error"[^>]*role="status">The addon list could not be loaded\./)
+    assert.match(addons, /<p v-else-if="!groups\.length"[^>]*role="status">No addons are listed yet\./)
   })
 })

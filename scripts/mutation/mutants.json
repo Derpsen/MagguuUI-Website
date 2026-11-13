@@ -1006,5 +1006,149 @@
     "file": "utils/fontPreload.ts",
     "find": "[0] || '/').toLowerCase()",
     "repl": "[0] || '/')"
+  },
+  {
+    "name": "meta tone: heat muted text drops back to the dimmer muted token",
+    "file": "composables/useMetaTone.ts",
+    "find": "heatMuted: computed(() => 'text-mg-fg')",
+    "repl": "heatMuted: computed(() => 'text-mg-fg-muted')"
+  },
+  {
+    "name": "meta tone: label is a palette colour again",
+    "file": "composables/useMetaTone.ts",
+    "find": "label: computed(() => 'text-mg-accent-text')",
+    "repl": "label: computed(() => 'text-brand-700 dark:text-brand-300')"
+  },
+  {
+    "name": "meta shell: eyebrow is hand-rolled again",
+    "file": "components/MetaShell.vue",
+    "find": "<p class=\"mg-kicker mb-3\">{{ copy.eyebrow }}</p>",
+    "repl": "<p class=\"font-mono text-xs uppercase tracking-[0.16em] mb-3 text-mg-accent-text\">{{ copy.eyebrow }}</p>"
+  },
+  {
+    "name": "meta hero: CTA is a flashy primary button again",
+    "file": "components/MetaHomeHero.vue",
+    "find": "class=\"mt-4 inline-flex items-center gap-2 text-sm font-semibold underline",
+    "repl": "class=\"btn-primary mt-4 inline-flex items-center gap-2 text-sm font-semibold underline"
+  },
+  {
+    "name": "meta freshness: left rail box returns",
+    "file": "components/MetaFreshness.vue",
+    "find": "<section class=\"mt-6 border-t pt-4 text-sm\"",
+    "repl": "<section class=\"mt-6 border-l-2 pl-4 text-sm\""
+  },
+  {
+    "name": "meta filter chips: brand wash returns",
+    "file": "components/MetaFilterBar.vue",
+    "find": "const activeChip = 'border-mg-accent-text bg-mg-surface-2 text-mg-fg'",
+    "repl": "const activeChip = 'border-brand-400 bg-brand-400/15 text-white'"
+  },
+  {
+    "name": "meta spec switcher: active chip loses the shared token style",
+    "file": "components/MetaSpecSwitcher.vue",
+    "find": "const active = 'border-mg-accent-text bg-mg-surface-2 text-mg-fg'",
+    "repl": "const active = 'border-brand-700 bg-brand-50 text-gray-950'"
+  },
+  {
+    "name": "meta copy field: plain border input instead of mg-input",
+    "file": "components/MetaCopyCode.vue",
+    "find": "class=\"mg-input min-w-0 flex-1 px-2",
+    "repl": "class=\"min-w-0 flex-1 border border-gray-300 px-2"
+  },
+  {
+    "name": "news index: divider is a palette colour again",
+    "file": "pages/news/index.vue",
+    "find": "divide-y divide-mg-line border-t border-mg-line",
+    "repl": "divide-y divide-gray-200 border-t border-gray-200"
+  },
+  {
+    "name": "news index: kicker label is hand-rolled again",
+    "file": "pages/news/index.vue",
+    "find": "<p class=\"mg-kicker mb-3\">Notes</p>",
+    "repl": "<p class=\"font-mono text-[11px] uppercase tracking-[0.16em] mb-3\">Notes</p>"
+  },
+  {
+    "name": "news article: per-page news.css import dropped",
+    "file": "pages/news/[slug].vue",
+    "find": "import '~/assets/css/news.css'\n",
+    "repl": ""
+  },
+  {
+    "name": "news article: back to the global prose-custom body",
+    "file": "pages/news/[slug].vue",
+    "find": "class=\"news-body mt-10 block\"",
+    "repl": "class=\"prose-custom mt-10 block\""
+  },
+  {
+    "name": "news.css: article links use a hard-coded green",
+    "file": "assets/css/news.css",
+    "find": ".news-body a { color: var(--mg-accent-text);",
+    "repl": ".news-body a { color: #0CD29D;"
+  },
+  {
+    "name": "news.css: long words can overflow the column",
+    "file": "assets/css/news.css",
+    "find": "color: var(--mg-fg-muted); overflow-wrap: anywhere; }",
+    "repl": "color: var(--mg-fg-muted); }"
+  },
+  {
+    "name": "meta contrast: class text AA checked on a bright page background",
+    "file": "utils/metaCatalog.ts",
+    "find": "export const META_TEXT_BG_DARK = '#0b1118'",
+    "repl": "export const META_TEXT_BG_DARK = '#c0c8d4'"
+  },
+  {
+    "name": "addons: fetch not awaited again (soft-nav footer CLS)",
+    "file": "pages/addons.vue",
+    "find": "await useFetch<{ data: AddonsResponse }>",
+    "repl": "useFetch<{ data: AddonsResponse }>"
+  },
+  {
+    "name": "scroll reset: smooth instead of instant",
+    "file": "plugins/scroll-reset.client.ts",
+    "find": "behavior: 'instant' })",
+    "repl": "behavior: 'smooth' })"
+  },
+  {
+    "name": "scroll reset: back/forward resets the scroll too (history save lost)",
+    "file": "utils/scrollReset.ts",
+    "find": "if (input.failed || input.popped || input.firstNavigation) return false",
+    "repl": "if (input.failed || input.firstNavigation) return false"
+  },
+  {
+    "name": "scroll reset: same-page navigation resets the scroll",
+    "file": "utils/scrollReset.ts",
+    "find": "  if (input.toPath === input.fromPath) return false\n",
+    "repl": ""
+  },
+  {
+    "name": "scroll reset: scrollToTop false ignored",
+    "file": "utils/scrollReset.ts",
+    "find": "  if (input.scrollToTop === false) return false\n",
+    "repl": ""
+  },
+  {
+    "name": "scroll reset: first navigation resets the scroll",
+    "file": "utils/scrollReset.ts",
+    "find": "input.failed || input.popped || input.firstNavigation",
+    "repl": "input.failed || input.popped"
+  },
+  {
+    "name": "scroll reset: popstate flag never set",
+    "file": "plugins/scroll-reset.client.ts",
+    "find": "popped = true }, { capture: true })",
+    "repl": "popped = false }, { capture: true })"
+  },
+  {
+    "name": "scroll reset: runs in beforeEach again (before the history save)",
+    "file": "plugins/scroll-reset.client.ts",
+    "find": "router.afterEach((to, from, failure) => {",
+    "repl": "router.beforeEach((to, from, failure) => {"
+  },
+  {
+    "name": "addons: fetch has no timeout",
+    "file": "pages/addons.vue",
+    "find": "'/api/v1/addons', { timeout: 8000 })",
+    "repl": "'/api/v1/addons')"
   }
 ]

@@ -1,6 +1,6 @@
 <template>
   <aside class="border-t pt-4 text-sm" :class="tone.rule.value" :aria-labelledby="headingId">
-    <h2 :id="headingId" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ ui.atAGlance }}</h2>
+    <h2 :id="headingId" class="mg-kicker">{{ ui.atAGlance }}</h2>
     <dl class="mt-3 space-y-2">
       <div v-if="topHero">
         <dt class="text-xs" :class="tone.muted.value">{{ ui.topHeroTree }}</dt>

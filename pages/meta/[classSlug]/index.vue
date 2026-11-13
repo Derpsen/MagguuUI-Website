@@ -13,7 +13,7 @@
     </template>
 
     <section>
-      <h2 class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.popularSpecs }}</h2>
+      <h2 class="mg-kicker">{{ copy.popularSpecs }}</h2>
       <ul class="mt-3 space-y-2 border-t pt-3 text-sm" :class="tone.rule.value">
         <li v-for="spec in found.specs" :key="spec.slug">
           <NuxtLink

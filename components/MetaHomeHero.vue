@@ -1,7 +1,7 @@
 <template>
   <section class="mt-8 border-t pt-6" :class="tone.rule.value" aria-labelledby="meta-hero-cta">
-    <p class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ kl.scope }}: {{ kl.scopeMplus }} · EU</p>
-    <a id="meta-hero-cta" :href="ctaHref" class="btn-primary mt-4 inline-flex items-center gap-2">
+    <p class="mg-kicker">{{ kl.scope }}: {{ kl.scopeMplus }} · EU</p>
+    <a id="meta-hero-cta" :href="ctaHref" class="mt-4 inline-flex items-center gap-2 text-sm font-semibold underline underline-offset-4 hover:text-mg-fg" :class="tone.label.value">
       {{ kl.heroCta }} <span aria-hidden="true">→</span>
     </a>
     <dl class="mt-6 grid grid-cols-2 gap-4">

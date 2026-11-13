@@ -1,6 +1,6 @@
 <template>
   <nav :aria-labelledby="headingId">
-    <h2 :id="headingId" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ kl.pickClass }}</h2>
+    <h2 :id="headingId" class="mg-kicker">{{ kl.pickClass }}</h2>
     <ul class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
       <li v-for="cls in pills" :key="cls.slug">
         <NuxtLink
@@ -30,7 +30,6 @@ const props = withDefaults(defineProps<{
 }>(), { current: '', hrefFor: undefined })
 
 const kl = META_UI_COPY_KL
-const tone = useMetaTone()
 const headingId = `meta-classes-${useId()}`
 
 const pills = computed(() => META_CLASSES.map(cls => ({
@@ -43,6 +42,6 @@ const pills = computed(() => META_CLASSES.map(cls => ({
   icon: cls.specs[0] ? wowSpecIcon(cls.name, cls.specs[0].name) : null,
 })))
 
-const activePill = 'bg-transparent dark:bg-white/10'
-const idlePill = 'border-gray-300 hover:border-gray-500 dark:border-white/15 dark:hover:border-white/40'
+const activePill = 'bg-mg-surface-2'
+const idlePill = 'border-mg-line-strong hover:border-mg-fg-subtle'
 </script>

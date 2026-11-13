@@ -1,6 +1,6 @@
 <template>
   <section :aria-labelledby="headingId">
-    <h2 :id="headingId" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ title || copy.gear }}</h2>
+    <h2 :id="headingId" class="mg-kicker">{{ title || copy.gear }}</h2>
     <div v-if="columns[0].length || columns[1].length" class="mt-4 grid gap-x-8 md:grid-cols-2">
       <ul v-for="(column, ci) in columns" :key="ci" class="list-none divide-y" :class="tone.rule.value">
         <li v-for="row in column" :id="row.anchor" :key="row.key" class="py-3">
@@ -19,17 +19,17 @@
               >
               <div class="min-w-0 flex-1">
                 <div class="flex items-baseline justify-between gap-3">
-                  <p class="font-mono text-xs uppercase tracking-[0.12em]" :class="tone.label.value">{{ row.label }}</p>
+                  <p class="mg-kicker">{{ row.label }}</p>
                   <p class="shrink-0 text-base font-semibold tabular-nums" :class="tone.strong.value">{{ formatShare(row.items[0]!.share) }}</p>
                 </div>
                 <MetaTooltip
-                  class="text-sm font-medium text-[var(--meta-q-light)] dark:text-[var(--meta-q-dark)]"
-                  :trigger-class="'font-medium'"
+                  class="text-sm font-semibold text-[var(--meta-q-light)] dark:text-[var(--meta-q-dark)]"
+                  :trigger-class="'font-semibold'"
                   :style="qualityStyle(row.items[0]!.quality)"
                 >
                   {{ row.items[0]!.label }}
                   <template #content>
-                    <span class="font-mono text-[0.65rem] uppercase tracking-[0.12em]" :class="tone.label.value">{{ row.label }}</span>
+                    <span class="mg-kicker">{{ row.label }}</span>
                     <span class="mt-1 block">{{ row.items[0]!.label }}</span>
                     <span class="mt-1 block tabular-nums">{{ copy.pickRate }} {{ formatShare(row.items[0]!.share) }} · {{ row.items[0]!.count }} {{ copy.parses }}</span>
                     <span v-if="metaLine(row.items[0]!).length" class="mt-1 block" :class="tone.muted.value">{{ metaLine(row.items[0]!).join(' · ') }}</span>
@@ -56,7 +56,7 @@
                 >
                   <span class="block truncate">{{ item.label }}</span>
                   <template #content>
-                    <span class="font-mono text-[0.65rem] uppercase tracking-[0.12em]" :class="tone.label.value">{{ row.label }}</span>
+                    <span class="mg-kicker">{{ row.label }}</span>
                     <span class="mt-1 block">{{ item.label }}</span>
                     <span class="mt-1 block tabular-nums">{{ copy.pickRate }} {{ formatShare(item.share) }} · {{ item.count }} {{ copy.parses }}</span>
                     <span v-if="metaLine(item).length" class="mt-1 block" :class="tone.muted.value">{{ metaLine(item).join(' · ') }}</span>

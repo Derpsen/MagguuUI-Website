@@ -80,11 +80,19 @@ describe('meta ad slot placement and heatmap contrast', () => {
   it('keeps heatmap cell muted text at least 4.5:1 on the darkest wash in dark and light', () => {
     const heatmap = readFileSync(join(process.cwd(), 'components/MetaTalentHeatmap.vue'), 'utf8')
     const tone = readFileSync(join(process.cwd(), 'composables/useMetaTone.ts'), 'utf8')
-    assert.match(tone, /heatMuted:[\s\S]*text-silver-300/)
+    assert.match(tone, /heatMuted:[\s\S]*text-mg-fg'/)
     assert.match(heatmap, /tone\.heatMuted/)
     const darkHeat = mixHex('#0AA882', META_TEXT_BG_DARK, 0.28)
     const lightHeat = mixHex('#0AA882', META_TEXT_BG_LIGHT, 0.22)
-    assert.ok(contrastRatio('#C0C8D4', darkHeat) >= META_MIN_CONTRAST_RATIO, `dark heat ${darkHeat}`)
-    assert.ok(contrastRatio('#4b5563', lightHeat) >= META_MIN_CONTRAST_RATIO, `light heat ${lightHeat}`)
+    // heatMuted is `text-mg-fg`: read the real foreground of each theme from tokens.css.
+    const tokens = readFileSync(join(process.cwd(), 'assets/css/tokens.css'), 'utf8')
+    const fg = (selector: string) => {
+      const start = tokens.indexOf(`${selector} {`)
+      assert.ok(start >= 0, `${selector} missing in tokens.css`)
+      const body = tokens.slice(tokens.indexOf('{', start) + 1, tokens.indexOf('}', start))
+      return /--mg-fg:\s*(#[0-9a-fA-F]{6})/.exec(body)![1]!
+    }
+    assert.ok(contrastRatio(fg('html.dark .public-shell'), darkHeat) >= META_MIN_CONTRAST_RATIO, `dark heat ${darkHeat}`)
+    assert.ok(contrastRatio(fg('html:not(.dark) .public-shell'), lightHeat) >= META_MIN_CONTRAST_RATIO, `light heat ${lightHeat}`)
   })
 })

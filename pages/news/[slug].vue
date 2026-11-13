@@ -4,49 +4,43 @@
 
 <template>
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
-    <div v-if="isLoggedIn" class="flex justify-end mb-4">
+    <div v-if="isLoggedIn" class="mb-4 flex justify-end">
       <NuxtLink
         to="/admin/content/news"
-        class="text-xs font-medium underline underline-offset-4"
-        :class="isDark ? 'text-silver-400 hover:text-white' : 'text-gray-500 hover:text-gray-950'"
+        class="text-xs font-semibold text-mg-fg-muted underline underline-offset-4 hover:text-mg-fg"
       >
         Edit news
       </NuxtLink>
     </div>
 
-    <p class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="isDark ? 'text-brand-300' : 'text-brand-700'">
+    <p class="mg-kicker mb-3">
       <NuxtLink to="/news" class="underline underline-offset-4">News</NuxtLink>
     </p>
 
     <template v-if="article">
-      <h1 class="mg-h1" :class="isDark ? 'text-white' : 'text-gray-950'">
+      <h1 class="mg-h1">
         {{ article.title }}
       </h1>
-      <p class="mt-3 text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+      <p class="mt-3 text-sm text-mg-fg-muted">
         <time :datetime="toIsoDate(article.publishedAt)">{{ formatNewsDate(article.publishedAt) }}</time>
         · {{ article.author }}
         <template v-if="article.sourceName && article.sourceUrl">
           ·
-          <a :href="article.sourceUrl" rel="noopener noreferrer" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'">
+          <a :href="article.sourceUrl" rel="noopener noreferrer" class="text-mg-fg underline underline-offset-4">
             {{ article.sourceName }}
           </a>
         </template>
       </p>
-      <p class="mt-4 max-w-xl text-sm leading-relaxed" :class="isDark ? 'text-silver-400' : 'text-gray-600'">
+      <p class="mg-lead mt-4 max-w-xl">
         {{ article.summary }}
       </p>
-      <ul v-if="article.tags.length" class="mt-4 flex flex-wrap gap-2">
-        <li
-          v-for="tag in article.tags"
-          :key="tag"
-          class="font-mono text-[11px] uppercase tracking-[0.12em] px-2 py-1 rounded"
-          :class="isDark ? 'bg-white/5 text-silver-400' : 'bg-gray-100 text-gray-600'"
-        >
+      <ul v-if="article.tags.length" class="mt-4 flex flex-wrap gap-x-4 gap-y-1">
+        <li v-for="tag in article.tags" :key="tag" class="mg-kicker text-mg-fg-muted">
           {{ tag }}
         </li>
       </ul>
 
-      <SafeHtml class="prose-custom text-sm mt-10 block" :html="article.body" />
+      <SafeHtml class="news-body mt-10 block" :html="article.body" />
 
       <NewsAlsoOnThisSite />
     </template>
@@ -56,8 +50,8 @@
 <script setup lang="ts">
 import type { NewsArticle } from '~/utils/news'
 import { formatNewsDate, toIsoDate } from '~/utils/newsDates'
+import '~/assets/css/news.css'
 
-const isDark = useIsDark()
 const { isLoggedIn } = useAuth()
 const route = useRoute()
 const slug = computed(() => String(route.params.slug || ''))

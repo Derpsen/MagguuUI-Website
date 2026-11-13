@@ -1,11 +1,11 @@
 <template>
   <section :aria-labelledby="headingId">
-    <h2 :id="headingId" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.talents }}</h2>
+    <h2 :id="headingId" class="mg-kicker">{{ copy.talents }}</h2>
     <p class="mt-2 text-xs" :class="tone.muted.value">{{ ui.heatmapLegend }}</p>
 
     <div v-if="hasAny" class="mt-4 grid gap-6 md:grid-cols-3">
       <div v-for="tree in trees" :key="tree.id">
-        <h3 class="border-b pb-2 font-mono text-xs uppercase tracking-[0.14em]" :class="[tone.label.value, tone.rule.value]">
+        <h3 class="mg-kicker border-b pb-2" :class="tone.rule.value">
           {{ tree.title }} <span class="tabular-nums" :class="tone.muted.value">({{ tree.talents.length }})</span>
         </h3>
         <template v-for="band in bands" :key="band.id">
@@ -22,7 +22,7 @@
                   <MetaTooltip :trigger-class="tone.strong.value">
                     {{ talent.label }}
                     <template #content>
-                      <span class="font-mono text-[0.65rem] uppercase tracking-[0.12em]" :class="tone.label.value">{{ band.label }}</span>
+                      <span class="mg-kicker">{{ band.label }}</span>
                       <span class="mt-1 block">{{ talent.label }}</span>
                       <span class="mt-1 block tabular-nums">{{ copy.pickRate }} {{ formatShare(talent.share) }} · {{ talent.count }} {{ copy.parses }}</span>
                       <span v-if="talent.unmapped" class="mt-1 block" :class="tone.muted.value">{{ ui.unmappedNode }}</span>

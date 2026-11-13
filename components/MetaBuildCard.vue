@@ -1,6 +1,6 @@
 <template>
   <section :aria-labelledby="headingId" class="border-t pt-4" :class="tone.rule.value">
-    <h2 :id="headingId" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.bestBuild }}</h2>
+    <h2 :id="headingId" class="mg-kicker">{{ copy.bestBuild }}</h2>
 
     <template v-if="top">
       <dl class="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">

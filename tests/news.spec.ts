@@ -35,12 +35,12 @@ test('a published article is SSR, uses sanitized HTML, and exposes NewsArticle J
   // SafeHtml is the audited boundary; do not scan the whole document for the
   // substring 'v-html' (it appears in the component's eslint comment).
   expect(html).not.toMatch(/\sv-html=/)
-  expect(html).toContain('prose-custom')
+  expect(html).toContain('news-body')
 
   await page.goto('/news/wow-forever-now-live')
   await hydrated(page)
   await expect(page.getByRole('heading', { level: 1, name: 'World of Warcraft: Forever Is Now Live' })).toBeVisible()
-  await expect(page.locator('.prose-custom')).toBeVisible()
+  await expect(page.locator('.news-body')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Installation Guide' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Mythic+ Meta' })).toBeVisible()
   const jsonLd = page.locator('script[type="application/ld+json"]')

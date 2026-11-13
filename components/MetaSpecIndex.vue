@@ -1,7 +1,7 @@
 <template>
   <section :aria-labelledby="headingId">
     <div class="flex items-baseline justify-between gap-3">
-      <h2 :id="headingId" class="font-mono text-xs uppercase tracking-[0.14em]" :class="tone.label.value">{{ copy.popularity }}</h2>
+      <h2 :id="headingId" class="mg-kicker">{{ copy.popularity }}</h2>
       <p class="text-xs tabular-nums" :class="tone.muted.value">{{ ui.specsShown(rows.length) }}</p>
     </div>
     <table v-if="rows.length" class="mt-3 w-full border-collapse text-sm">
@@ -15,8 +15,8 @@
       </thead>
       <tbody>
         <tr v-for="row in rows" :key="row.key" class="border-b" :class="[tone.rule.value, row.low ? tone.lowRow.value : '']">
-          <th scope="row" class="py-1.5 pr-3 text-left font-normal whitespace-nowrap">
-            <span class="inline-flex items-center gap-2">
+          <th scope="row" class="py-1.5 pr-3 text-left font-normal sm:whitespace-nowrap">
+            <span class="inline-flex flex-wrap items-center gap-x-2 gap-y-0.5">
               <img v-if="row.icon" :src="row.icon" alt="" width="20" height="20" class="h-5 w-5 shrink-0" loading="lazy" decoding="async">
               <NuxtLink :to="row.to" class="underline underline-offset-4" :style="{ color: row.textColor }">{{ row.label }}</NuxtLink>
               <span v-if="row.low" class="font-mono text-xs uppercase tracking-[0.12em]" :class="tone.muted.value">{{ ui.lowSample }}</span>

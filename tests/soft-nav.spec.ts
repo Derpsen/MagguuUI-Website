@@ -52,6 +52,11 @@ for (const from of ['/guide', '/news', '/meta']) {
 // The dev server compiles a route on its first visit and Vite may reload the page while it re-optimizes dependencies:
 // a reload mid-test throws the scroll position away for reasons that have nothing to do with the router. Visit each
 // route once first (CI starts cold).
+//
+// Flake found on the #201 merge (main CI red, 1 in 6 locally): Back was pressed in the same frames as the forward swap.
+// The footer click has already scrolled to 0 by then, so the test could not tell, and (most likely) Nuxt resolves the saved position
+// only after `page:loading:end` of the navigation it belongs to, so a Back inside that window lands at 0. The tests now
+// wait for the new page to be rendered and the network to be quiet before going Back, as a person would (0 of 30 failed).
 test.beforeAll(async ({ browser }) => {
   test.setTimeout(180_000)
   const context = await browser.newContext()
@@ -63,6 +68,13 @@ test.beforeAll(async ({ browser }) => {
   }
   await context.close()
 })
+
+const HEADINGS: Record<string, string> = { '/addons': 'Addons', '/strings': 'Import Strings' }
+function headingOf(path: string): string {
+  const heading = HEADINGS[path]
+  if (!heading) throw new Error(`no heading known for ${path}`)
+  return heading
+}
 
 const BACK_PAIRS = [
   { from: '/guide', link: '/addons' },
@@ -84,6 +96,10 @@ for (const { from, link } of BACK_PAIRS) {
     await page.evaluate(href => (document.querySelector(`footer a[href="${href}"]`) as HTMLElement).click(), link)
     await expect(page).toHaveURL(new RegExp(`${link}$`))
     await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { message: 'new page starts at the top' }).toBe(0)
+    // Back only once the new page has finished rendering: Nuxt resolves the saved position after `page:loading:end`, and
+    // pressing Back within the same frames as the forward swap (the scroll is already 0 by then) is not what a person does.
+    await expect(page.locator('h1').first()).toHaveText(headingOf(link))
+    await page.waitForLoadState('networkidle')
     await page.goBack()
     await expect(page).toHaveURL(new RegExp(`${from}$`))
     await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { message: `Back restores ${left}`, timeout: 8000 }).toBeGreaterThan(left - 8)
@@ -101,11 +117,15 @@ test('Forward restores the position of the page left by a footer click', async (
   expect(left).toBeGreaterThan(300)
   await footerLink.click()
   await expect(page).toHaveURL(/\/strings$/)
+  await expect(page.locator('h1').first()).toHaveText(headingOf('/strings'))
+  await page.waitForLoadState('networkidle')
   await page.goBack()
   await expect(page).toHaveURL(/\/addons$/)
   await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { timeout: 8000 }).toBeGreaterThan(left - 8)
   await page.goForward()
   await expect(page).toHaveURL(/\/strings$/)
+  await expect(page.locator('h1').first()).toHaveText(headingOf('/strings'))
+  await page.waitForLoadState('networkidle')
   await page.goBack()
   await expect(page).toHaveURL(/\/addons$/)
   await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { timeout: 8000 }).toBeGreaterThan(left - 8)

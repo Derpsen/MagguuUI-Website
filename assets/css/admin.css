@@ -1767,13 +1767,11 @@ html.dark .admin-shell .admin-activity-action--updated { color: #fcd34d; }
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--color-brand-700);
+  color: var(--admin-label);
 }
-.dark .admin-dash__label,
-.dark .admin-dash__type { color: var(--color-brand-300); }
 .admin-dash__label { margin-bottom: 0.4rem; }
 .admin-dash__label--sub { margin-top: 1rem; }
-.admin-dash__muted { font-size: 0.8125rem; color: var(--admin-fg-muted, inherit); opacity: 0.8; }
+.admin-dash__muted { font-size: 0.8125rem; color: var(--admin-fg-muted, inherit); }
 .admin-dash__mono { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
 .admin-dash__grid { display: grid; gap: 1.75rem 3rem; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 1024px) { .admin-dash__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -1784,10 +1782,8 @@ html.dark .admin-shell .admin-activity-action--updated { color: #fcd34d; }
 .admin-dash__name { overflow-wrap: anywhere; }
 a.admin-dash__name:hover, .admin-dash__link:hover { text-decoration: underline; }
 .admin-dash__value { font-variant-numeric: tabular-nums; text-align: right; }
-.admin-dash__link { font-size: 0.8125rem; color: var(--color-brand-700); }
-.dark .admin-dash__link { color: var(--color-brand-300); }
-.admin-dash__bad { color: #b91c1c; font-weight: 600; }
-.dark .admin-dash__bad { color: #fca5a5; }
+.admin-dash__link { font-size: 0.8125rem; color: var(--admin-label); }
+.admin-dash__bad { color: var(--mg-danger); font-weight: 600; }
 .admin-dash__type + .admin-dash__name { margin-left: 0.6rem; }
 
 /* Visitors view: plain filter form, plain tables, no cards. */
@@ -1826,3 +1822,60 @@ a.admin-dash__name:hover, .admin-dash__link:hover { text-decoration: underline; 
 .admin-vempty p + p { margin-top: 0.4rem; }
 /* Visitor log: muted text stays at full opacity so it keeps AA contrast on the light theme. */
 [data-testid='visitors-page'] .admin-dash__muted { opacity: 1; }
+
+
+/* ═══════════════════════════════════════════════════
+   ADMIN — design tokens (redesign PR 5a)
+   The admin shell now sits on the same `--mg-*` tokens as the public site (assets/css/tokens.css has `.admin-shell` in
+   its scope), so both themes, the accent and the AA text colours have one source. The `--admin-*` variables used by
+   every admin component are only aliases here. Same specificity as the blocks above, later in the file.
+   `.admin-login` keeps the plain block above (login page is part of 5b).
+   ═══════════════════════════════════════════════════ */
+html.dark .admin-shell,
+html:not(.dark) .admin-shell {
+  --admin-bg: var(--mg-surface);
+  --admin-bg-deep: var(--mg-bg);
+  --admin-fg: var(--mg-fg);
+  --admin-fg-muted: var(--mg-fg-muted);
+  --admin-fg-faint: var(--mg-fg-subtle);
+  --admin-card-fg: var(--mg-fg);
+  --admin-border: var(--mg-line);
+  --admin-border-strong: var(--mg-line-strong);
+  --admin-input-bg: var(--mg-surface-2);
+  --admin-sidebar: var(--mg-surface);
+  --admin-header: var(--mg-surface);
+  --admin-accent: var(--mg-accent-text);
+  --admin-accent-hover: var(--mg-fg);
+  --admin-muted-bg: var(--mg-surface-2);
+  --admin-accent-bg: var(--mg-surface-2);
+  --admin-accent-bg-hover: var(--mg-surface-3);
+  --admin-label: var(--mg-accent-text);
+  --admin-shadow-float: var(--mg-shadow);
+  --ui-text-dimmed: var(--mg-fg-subtle);
+  --ui-text-muted: var(--mg-fg-muted);
+  --ui-bg: var(--mg-bg);
+  --ui-bg-elevated: var(--mg-surface-2);
+  --ui-border: var(--mg-line);
+  --ui-border-accented: var(--mg-line-strong);
+  background: var(--mg-bg);
+  color: var(--mg-fg);
+}
+
+/* Unread count on the header bell: solid danger token with the page colour on top (AA in both themes). */
+.admin-notif-badge {
+  position: absolute;
+  top: -0.125rem;
+  right: -0.125rem;
+  display: flex;
+  min-width: 1rem;
+  height: 1rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.25rem;
+  border-radius: 9999px;
+  background: var(--mg-danger);
+  color: var(--mg-bg);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}

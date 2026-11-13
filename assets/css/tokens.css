@@ -1,8 +1,8 @@
 /**
  * MagguuUI design system, PR 1 — tokens.
  *
- * Scope: the public shell only (`.public-shell`, layouts/default.vue). The admin shell keeps its own tokens in
- * admin.css until PR 5. Colours follow `html.dark` / `html:not(.dark)` (set by @nuxtjs/color-mode before first paint),
+ * Scope: the public shell (`.public-shell`, layouts/default.vue) and, since redesign PR 5a, the admin shell
+ * (`.admin-shell`, layouts/admin.vue; admin.css maps its `--admin-*` variables onto these tokens). Colours follow `html.dark` / `html:not(.dark)` (set by @nuxtjs/color-mode before first paint),
  * never an `isDark` class binding, so no-JS pages and a reload in light mode render correctly.
  *
  * Every text/background pair below is AA (>= 4.5:1, large text >= 3:1). tests/unit/designTokens.test.ts parses this
@@ -29,6 +29,7 @@
 }
 
 /* ─── Theme-independent tokens ─────────────────── */
+.admin-shell,
 .public-shell {
   /* Layout */
   --mg-container: 72rem;          /* page column; also remaps Tailwind max-w-5xl inside the shell (see ui.css) */
@@ -65,6 +66,7 @@
 }
 
 /* ─── Dark (default) ───────────────────────────── */
+html.dark .admin-shell,
 html.dark .public-shell {
   color-scheme: dark;
   --mg-bg: #06090d;
@@ -95,6 +97,7 @@ html.dark .public-shell {
 }
 
 /* ─── Light ────────────────────────────────────── */
+html:not(.dark) .admin-shell,
 html:not(.dark) .public-shell {
   color-scheme: light;
   --mg-bg: #f5f7fa;

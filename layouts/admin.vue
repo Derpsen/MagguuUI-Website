@@ -176,10 +176,10 @@
           <div class="ml-auto flex items-center gap-1">
             <button
               class="vben-header-btn hidden md:inline-flex"
-              aria-label="Open command palette"
               @click="cmdPalette?.open()"
             >
               <UIcon name="i-heroicons-magnifying-glass" class="h-4 w-4" />
+              <span class="sr-only">Open command palette: </span>
               <span class="text-xs ml-1 hidden lg:inline text-mg-fg-muted">Search</span>
               <kbd class="hidden lg:inline-flex ml-2 h-5 items-center rounded border px-1.5 text-[10px] font-medium border-mg-line text-mg-fg-muted">
                 {{ searchShortcut }}
@@ -192,7 +192,7 @@
 
             <!-- Notifications -->
             <div ref="notifWrapRef" class="relative">
-              <button ref="notifButtonRef" class="vben-header-btn relative" aria-label="Notifications" :aria-expanded="notifOpen" @click="notifOpen = !notifOpen">
+              <button ref="notifButtonRef" class="vben-header-btn relative" :aria-label="notifCount > 0 ? `Notifications, ${notifCount} active` : 'Notifications'" :aria-expanded="notifOpen" @click="notifOpen = !notifOpen">
                 <UIcon name="i-heroicons-bell" class="h-4 w-4" />
                 <span v-if="notifCount > 0" class="admin-notif-badge">
                   {{ notifCount }}

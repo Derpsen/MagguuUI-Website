@@ -1771,7 +1771,7 @@ html.dark .admin-shell .admin-activity-action--updated { color: #fcd34d; }
 }
 .admin-dash__label { margin-bottom: 0.4rem; }
 .admin-dash__label--sub { margin-top: 1rem; }
-.admin-dash__muted { font-size: 0.8125rem; color: var(--admin-fg-muted, inherit); opacity: 0.8; }
+.admin-dash__muted { font-size: 0.8125rem; color: var(--admin-fg-muted, inherit); }
 .admin-dash__mono { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
 .admin-dash__grid { display: grid; gap: 1.75rem 3rem; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 1024px) { .admin-dash__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

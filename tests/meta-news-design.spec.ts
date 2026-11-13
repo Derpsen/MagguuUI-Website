@@ -29,7 +29,13 @@ for (const { path, ready } of PAGES) {
             const r = el.getBoundingClientRect()
             if (r.width === 0 && r.height === 0) continue
             if (r.width <= 1 && r.height <= 1) continue // sr-only
-            // A scroll container (table, pre) may be wider inside; it must not widen the page itself.
+            // Items of an intentional horizontal scroller (the spec page's "On this page" chips) are reached by scrolling it.
+            let scroller = false
+            for (let a = el.parentElement; a && a.tagName !== 'MAIN'; a = a.parentElement) {
+              const o = getComputedStyle(a).overflowX
+              if (o === 'auto' || o === 'scroll') { scroller = true; break }
+            }
+            if (scroller) continue
             if (r.right > vw + 0.5 || r.left < -0.5) {
               const cls = (el.getAttribute('class') || '').split(/\s+/).slice(0, 2).join('.')
               out.push(`${el.tagName.toLowerCase()}${cls ? '.' + cls : ''} ${Math.round(r.left)}..${Math.round(r.right)}`)

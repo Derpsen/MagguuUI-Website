@@ -32,7 +32,7 @@ for (const from of ['/guide', '/news', '/meta']) {
       }).observe(document.body, { childList: true, subtree: true })
     })
     await page.evaluate(() => (document.querySelector('footer a[href="/addons"]') as HTMLElement).click())
-    await expect(page.locator('.addon-list')).toBeVisible()
+    await expect(page.locator('.addon-list').first()).toBeVisible()
     await page.waitForTimeout(1500)
     const result = await page.evaluate(() => {
       const w = window as unknown as { __shift: number, __swap: { rows: number, scrollY: number } | null }

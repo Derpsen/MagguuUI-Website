@@ -131,6 +131,17 @@ describe('soft-navigation CLS (/addons footer)', () => {
     assert.match(read('assets/css/main.css'), /\* \{ scroll-behavior: smooth; \}/)
   })
 
+  it('restores Back instantly (CSS smooth would abort when /changelog entries land late)', () => {
+    const options = read('app/router.options.ts')
+    assert.match(options, /behavior: 'instant'/)
+    assert.match(options, /restoreSavedPosition\(/)
+    assert.match(options, /hookOnce\('page:loading:end'/)
+    assert.match(options, /queueMicrotask\(start\)/)
+    assert.doesNotMatch(options, /behavior: 'smooth'/)
+    const changelog = read('pages/changelog.vue')
+    assert.match(changelog, /await useFetch<\{ data: ChangelogPageEntry\[\], meta\?: \{ unreleased\?: \{ id: number, version: string, content: string \} \| null \} \}>\('\/api\/v1\/changelogs', \{ timeout: 8000 \}\)/)
+  })
+
   it('bounds the addons fetch and tells a failed load from an empty catalog', () => {
     const addons = read('pages/addons.vue')
     assert.match(addons, /const \{ data, error \} = await useFetch<\{ data: AddonsResponse \}>\('\/api\/v1\/addons', \{ timeout: 8000 \}\)/)

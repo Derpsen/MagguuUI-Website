@@ -18,6 +18,7 @@
 - Soft-nav Back assertions measure the live scroll position (both ±8 bounds) and do not `scrollTo` the saved offset afterwards. The scroll-reset plugin re-focuses without scrolling on `popstate` so a focused footer link cannot steal the history position. The soft-nav warm-up `setTimeout` is cleared when `hydrated()` wins the race.
 - `components/AdSlot.vue` is unused by any page after Meta removal but is kept: it is the reserved slot behind `NUXT_ADS` / `useNuxtAdsEnabled` for a later AdSense change. `tests/meta-ads.spec.ts` is gone.
 - Privacy default s13 (External Game Data) no longer describes Meta snapshots. Live `/privacy` text comes from the database and may still show the old wording until an admin save or a seeded-content sync.
+- Back/Forward restore is applied instantly in `app/router.options.ts` (`behavior: 'instant'`, plus a microtask fallback because `page:loading:end` may already have fired on a cached page). CSS `scroll-behavior: smooth` otherwise aborts mid-way when the next page's body lands late. `/changelog` now awaits its `useFetch` (8 s timeout), like `/addons`.
 
 ## Agent / Buddy ops
 

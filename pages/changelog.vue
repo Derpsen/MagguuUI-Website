@@ -141,7 +141,11 @@ useHead({
 })
 
 interface ChangelogPageEntry { id: number, version: string, content: string, contentEn?: string | null, publishedAt: string | number | null, [k: string]: unknown }
-const { data: changelogData } = useFetch<{ data: ChangelogPageEntry[], meta?: { unreleased?: { id: number, version: string, content: string } | null } }>('/api/v1/changelogs')
+// Awaited on purpose: a client-side Back to /changelog otherwise paints the
+// filter shell first, then the entries, and Nuxt's saved-position restore
+// (smooth, because of `* { scroll-behavior: smooth }`) is aborted mid-way.
+// Bounded (8 s) like /addons: a slow API must not leave the navigation hanging.
+const { data: changelogData } = await useFetch<{ data: ChangelogPageEntry[], meta?: { unreleased?: { id: number, version: string, content: string } | null } }>('/api/v1/changelogs', { timeout: 8000 })
 const releases = computed<ChangelogPageEntry[]>(() => changelogData.value?.data ?? [])
 // Notes for the next release; never counted as the current release.
 const unreleased = computed(() => changelogData.value?.meta?.unreleased ?? null)

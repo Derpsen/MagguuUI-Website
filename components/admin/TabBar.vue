@@ -140,48 +140,48 @@ watch(() => route.path, () => {
         :class="[canScrollLeft ? 'pl-7' : '', canScrollRight ? 'pr-7' : '']"
         @scroll="updateOverflow"
       >
-        <div class="flex h-[38px] w-max items-center gap-0" role="tablist" aria-label="Open admin pages" @keydown="onTabListKeydown">
-          <NuxtLink
+        <!-- Route tabs with close buttons cannot use role=tablist (close would be a required-child violation, and a tab must not wrap a button). A nav of links is the right pattern. -->
+        <nav class="flex h-[38px] w-max items-center gap-0" aria-label="Open admin pages" @keydown="onTabListKeydown">
+          <div
             v-for="tab in tabs"
             :key="tab.path"
-            :to="tab.path"
-            role="tab"
-            data-testid="admin-tab"
-            :data-tab-path="tab.path"
+            class="group relative flex h-full shrink-0 items-center border-r border-mg-line"
             :data-active="isActive(tab.path) ? 'true' : 'false'"
-            :aria-selected="isActive(tab.path)"
-            class="group relative flex h-full shrink-0 items-center gap-1.5 border-r px-3 text-[13px] transition-colors select-none"
-            :class="[
-              isActive(tab.path)
-                ? 'text-mg-fg border-mg-line'
-                : 'text-mg-fg-muted hover:text-mg-fg border-mg-line',
-            ]"
             @contextmenu="onContextMenu($event, tab.path)"
           >
-            <span
-              v-if="isActive(tab.path)"
-              class="absolute inset-x-0 bottom-0 h-0.5 bg-primary"
-            />
+            <NuxtLink
+              :to="tab.path"
+              data-testid="admin-tab"
+              :data-tab-path="tab.path"
+              :aria-current="isActive(tab.path) ? 'page' : undefined"
+              class="flex h-full items-center gap-1.5 px-3 text-[13px] transition-colors select-none"
+              :class="isActive(tab.path) ? 'text-mg-fg' : 'text-mg-fg-muted hover:text-mg-fg'"
+            >
+              <span
+                v-if="isActive(tab.path)"
+                class="absolute inset-x-0 bottom-0 h-0.5 bg-primary"
+              />
 
-            <UIcon v-if="tab.icon" :name="tab.icon" class="h-3.5 w-3.5 shrink-0 opacity-70" />
+              <UIcon v-if="tab.icon" :name="tab.icon" class="h-3.5 w-3.5 shrink-0 opacity-70" />
 
-            <span class="max-w-[120px] truncate">{{ tab.label }}</span>
+              <span class="max-w-[120px] truncate">{{ tab.label }}</span>
 
-            <span v-if="tab.pinned" class="ml-0.5 text-[10px] opacity-40">
-              <UIcon name="i-heroicons-map-pin" class="h-2.5 w-2.5" />
-            </span>
+              <span v-if="tab.pinned" class="ml-0.5 text-[10px] opacity-40">
+                <UIcon name="i-heroicons-map-pin" class="h-2.5 w-2.5" />
+              </span>
+            </NuxtLink>
 
             <button
               v-if="!tab.pinned"
               type="button"
-              class="ml-0.5 rounded p-0.5 opacity-0 transition-all group-hover:opacity-100 focus-visible:opacity-100 hover:bg-mg-surface-3 text-mg-fg-muted hover:text-mg-fg"
+              class="mr-2 -ml-1 rounded p-0.5 opacity-0 transition-all group-hover:opacity-100 focus-visible:opacity-100 hover:bg-mg-surface-3 text-mg-fg-muted hover:text-mg-fg"
               :aria-label="`Close tab ${tab.label}`"
               @click.prevent.stop="closeTab(tab.path)"
             >
               <UIcon name="i-heroicons-x-mark" class="h-3 w-3" />
             </button>
-          </NuxtLink>
-        </div>
+          </div>
+        </nav>
       </div>
 
       <div

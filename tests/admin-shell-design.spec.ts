@@ -20,14 +20,23 @@ test.afterAll(async () => {
   await context?.close()
 })
 
+const UNPINNED_TABS = [
+  { path: '/admin', label: 'Dashboard', icon: 'i-heroicons-squares-2x2', pinned: true },
+  { path: '/admin/system/activity', label: 'Activity', pinned: false },
+]
+
 async function openDashboard(width: number, theme: 'light' | 'dark', path = '/admin'): Promise<Page> {
   const page = await context.newPage()
   await page.setViewportSize({ width, height: width <= 400 ? 844 : 800 })
-  await page.addInitScript(mode => localStorage.setItem('nuxt-color-mode', mode), theme)
+  await page.addInitScript(([mode, tabs]) => {
+    localStorage.setItem('nuxt-color-mode', mode)
+    localStorage.setItem('admin-tabs', JSON.stringify(tabs))
+  }, [theme, UNPINNED_TABS] as const)
   await page.goto(path)
   await expect(page.getByTestId('admin-dashboard')).toBeVisible({ timeout: 30_000 })
   await expect(page.getByTestId('dash-content')).toBeVisible()
   await expect(page.locator('html')).toHaveClass(theme === 'dark' ? /dark/ : /light/)
+  await expect(page.getByTestId('admin-tab').filter({ hasText: 'Activity' })).toBeVisible()
   return page
 }
 
@@ -68,6 +77,7 @@ for (const theme of ['dark', 'light'] as const) {
 
   test(`dashboard (${theme}): axe finds no WCAG 2.x A/AA violation`, async () => {
     const page = await openDashboard(1280, theme)
+    await expect(page.getByRole('button', { name: 'Close tab Activity' })).toBeAttached()
     const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
     expect(axe.violations.map(v => `${v.id}: ${v.nodes.map(n => n.target.join(' ')).slice(0, 3).join(' | ')}`)).toEqual([])
     await page.close()
@@ -93,6 +103,11 @@ for (const theme of ['dark', 'light'] as const) {
       }, width)
       expect(offenders).toEqual([])
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
+      const nav = await page.locator('header nav').boundingBox()
+      const search = await page.locator('header button[aria-label="Open command palette"]').boundingBox()
+      expect(nav && search, 'breadcrumb and mobile search should be visible').toBeTruthy()
+      expect((nav!.x + nav!.width) - search!.x).toBeLessThanOrEqual(0.5)
+      await expect(page.locator('header button[aria-label="Settings"]')).toBeHidden()
       await page.close()
     })
   }

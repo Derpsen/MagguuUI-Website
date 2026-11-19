@@ -73,4 +73,20 @@ describe('admin shell design (PR 5a)', () => {
       assert.ok(ratio >= 4.5, `${selector}: badge text ${ratio.toFixed(2)}`)
     }
   })
+
+  it('does not nest the close button inside the tab link', () => {
+    assert.match(tabBar, /<nav class="[^"]*" aria-label="Open admin pages"/)
+    assert.match(tabBar, /aria-current="isActive\(tab.path\) \? 'page' : undefined"/)
+    assert.match(tabBar, /Close tab \$\{tab\.label\}/)
+    assert.doesNotMatch(tabBar, /role="tablist"/)
+    assert.doesNotMatch(tabBar, /role="tab"/)
+    assert.doesNotMatch(tabBar, /<NuxtLink[\s\S]*?<button[\s\S]*?<\/NuxtLink>/)
+  })
+
+  it('lets Tailwind hide desktop-only header actions on small viewports', () => {
+    assert.doesNotMatch(layout, /\.vben-header-btn \{[^}]*display:\s*inline-flex/)
+    assert.match(layout, /nav class="[^"]*flex-1[^"]*overflow-hidden[^"]*"/)
+    assert.match(layout, /vben-header-btn hidden md:inline-flex/)
+    assert.match(layout, /vben-header-btn inline-flex md:hidden/)
+  })
 })

@@ -46,7 +46,7 @@ test('hamburger: aria-expanded, aria-controls, scroll lock, Escape returns focus
   await expect(page.locator('html')).not.toHaveClass(/mg-scroll-lock/)
 })
 
-test('1100px without JavaScript: the details menu reaches Meta and News', async ({ browser }) => {
+test('1100px without JavaScript: the details menu reaches News', async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1100, height: 800 } })
   const page = await context.newPage()
   await page.goto('http://localhost:3000/')
@@ -54,11 +54,9 @@ test('1100px without JavaScript: the details menu reaches Meta and News', async 
   await expect(menu).toBeVisible()
   await expect(page.locator('header nav[aria-label="Primary"]')).toBeHidden()
   await menu.locator('summary').click()
-  const meta = menu.getByRole('link', { name: 'Meta', exact: true })
   const news = menu.getByRole('link', { name: 'News', exact: true })
-  await expect(meta).toBeVisible()
-  await expect(meta).toHaveAttribute('href', '/meta')
   await expect(news).toHaveAttribute('href', '/news')
+  await expect(menu.getByRole('link', { name: 'Meta', exact: true })).toHaveCount(0)
   await news.click()
   await expect(page).toHaveURL(/\/news$/)
   await context.close()
@@ -68,7 +66,8 @@ test('at 1280px the full navigation is in the header, the fallback menu is not',
   await page.setViewportSize({ width: 1280, height: 800 })
   await page.goto('/')
   await hydrated(page)
-  await expect(page.locator('header nav[aria-label="Primary"] a[href="/meta"]')).toBeVisible()
+  await expect(page.locator('header nav[aria-label="Primary"] a[href="/news"]')).toBeVisible()
+  await expect(page.locator('header nav[aria-label="Primary"] a[href="/meta"]')).toHaveCount(0)
   await expect(page.getByTestId('nojs-menu')).toHaveCount(0)
 })
 

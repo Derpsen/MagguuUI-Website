@@ -21,7 +21,6 @@ test('the news index lists the eight published seed articles and not the unpubli
   await expect(page.getByRole('heading', { name: 'World of Warcraft: Forever Is Now Live' })).toBeVisible()
   await expect(page.getByRole('link', { name: /Pouch of Violet Dust/i })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Installation Guide' })).toHaveAttribute('href', '/guide')
-  await expect(page.getByRole('link', { name: 'Mythic+ Meta' })).toHaveAttribute('href', '/meta')
   await expect(page.getByRole('link', { name: 'RSS feed' })).toHaveAttribute('href', '/news/feed.xml')
 })
 
@@ -42,7 +41,6 @@ test('a published article is SSR, uses sanitized HTML, and exposes NewsArticle J
   await expect(page.getByRole('heading', { level: 1, name: 'World of Warcraft: Forever Is Now Live' })).toBeVisible()
   await expect(page.locator('.news-body')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Installation Guide' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Mythic+ Meta' })).toBeVisible()
   const jsonLd = page.locator('script[type="application/ld+json"]')
   const raw = await jsonLd.first().textContent()
   const data = JSON.parse(raw || '{}') as { '@type'?: string, headline?: string, author?: { name?: string } }

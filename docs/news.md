@@ -46,7 +46,7 @@ after that cutoff.
 - RSS: `/news/feed.xml` (author is `<dc:creator>Magguu</dc:creator>`, not an email-less `<author>` tag)
 - Retail header + footer link, site search group "News", visitor tracking counts `/news` and `/news/[slug]` as `/news`
 - Edge cache for `/news` and `/news/[slug]` (not `/news/feed.xml`)
-- Internal "Also on this site" links to `/guide` and `/meta`. `/meta` lands with the Meta PRs; the link check is advisory, so a temporary 404 there does not block the build
+- Internal "Also on this site" links to `/guide` only. The link check is advisory.
 - English copy, the plain site style, dark and light, axe-covered in Playwright
 
 ## Admin

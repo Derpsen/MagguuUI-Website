@@ -7,6 +7,12 @@
 - Deployment: Docker on Unraid — image built by `.github/workflows/docker.yml` and published to GHCR; Unraid `update_container MagguuUI`. Live 2026-09-11: homepage catalog-summary + admin-only ECharts. GitHub sync reads MagguuUI_Data/AddOns + Classes.
 - Repo contains the public website, admin panel, and Nitro/API backend in one app
 
+## 2026-11-19 News seeds ship in the production image
+
+- `server/database/news-seed/*.md` is the editorial source. `scripts/embed-news-seeds.mjs` writes `server/utils/newsSeedEmbedded.ts`; boot (`loadNewsSeedArticles()` / `seedNewsArticlesIfMissing()`) reads that catalog, not `process.cwd()`. A `.dockerignore` `*.md` or a runtime image that only copies `.output` can no longer silently seed zero articles.
+- After fact-check on 2026-11-19: rewrite stale “now live” / PTR-without-a-date copy; rename `echoes-of-the-worldcore-announced` to `echoes-of-the-worldcore-december-1`; keep the violet-dust drop unpublished (ended 2026-11-13 01:30 Europe/Berlin). New notes: Talebound December 1, the 22nd Anniversary (17 Nov–8 Dec), and Taldramir. Semantics unchanged: insert once, never overwrite admin edits, respect markers.
+- `npm run verify` / `scripts/verify-build.mjs` fails if `.output/server` is missing any embedded seed slug. Regenerate with `npm run embed:news-seeds` after editing markdown.
+
 ## 2026-11-19 Nuxt 4.6.4 dev-server CLI pin
 
 - Nuxt 4.6.4 (security) is fine for `nuxt build`, but `@nuxt/cli@4.0.1` crashes `nuxt dev` with `options.hostname.toLowerCase is not a function` (`hostname` is `{}`; nuxt/nuxt#36829). Pin `@nuxt/cli` to `^4.0.3` (Daniel Roe hotfix). Do not land a lockfile that keeps `@nuxt/cli@4.0.1` under Nuxt 4.6.4.

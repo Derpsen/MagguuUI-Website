@@ -9,16 +9,19 @@ const PUBLISHED = [
   'discord-guild-chat-linking',
   'midnight-season-2-mythic-plus-pool',
   'midnight-november-hotfixes-class-tuning',
-  'echoes-of-the-worldcore-announced',
+  'echoes-of-the-worldcore-december-1',
   'november-trading-post-sweet-tooth',
+  'talebound-twisted-tales-december-1',
+  'wow-22nd-anniversary-celebration',
+  'taldramir-the-whispering-wood',
 ] as const
 const UNPUBLISHED = 'pouch-of-violet-dust-launch-celebration'
 
-test('the news index lists the eight published seed articles and not the unpublished pouch drop', async ({ page }) => {
+test('the news index lists the published seed articles and not the unpublished pouch drop', async ({ page }) => {
   await page.goto('/news')
   await hydrated(page)
   await expect(page.getByRole('heading', { level: 1, name: 'News' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'World of Warcraft: Forever Is Now Live' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'World of Warcraft: Forever Launched November 4' })).toBeVisible()
   await expect(page.getByRole('link', { name: /Pouch of Violet Dust/i })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Installation Guide' })).toHaveAttribute('href', '/guide')
   await expect(page.getByRole('link', { name: 'RSS feed' })).toHaveAttribute('href', '/news/feed.xml')
@@ -28,7 +31,7 @@ test('a published article is SSR, uses sanitized HTML, and exposes NewsArticle J
   const res = await request.get('/news/wow-forever-now-live')
   expect(res.status()).toBe(200)
   const html = await res.text()
-  expect(html).toContain('World of Warcraft: Forever Is Now Live')
+  expect(html).toContain('World of Warcraft: Forever Launched November 4')
   expect(html).toContain('application/ld+json')
   expect(html).toContain('"@type":"NewsArticle"')
   // SafeHtml is the audited boundary; do not scan the whole document for the
@@ -38,14 +41,14 @@ test('a published article is SSR, uses sanitized HTML, and exposes NewsArticle J
 
   await page.goto('/news/wow-forever-now-live')
   await hydrated(page)
-  await expect(page.getByRole('heading', { level: 1, name: 'World of Warcraft: Forever Is Now Live' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'World of Warcraft: Forever Launched November 4' })).toBeVisible()
   await expect(page.locator('.news-body')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Installation Guide' })).toBeVisible()
   const jsonLd = page.locator('script[type="application/ld+json"]')
   const raw = await jsonLd.first().textContent()
   const data = JSON.parse(raw || '{}') as { '@type'?: string, headline?: string, author?: { name?: string } }
   expect(data['@type']).toBe('NewsArticle')
-  expect(data.headline).toBe('World of Warcraft: Forever Is Now Live')
+  expect(data.headline).toBe('World of Warcraft: Forever Launched November 4')
   expect(data.author?.name).toBe('Magguu')
 })
 

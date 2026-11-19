@@ -1,8 +1,8 @@
 ---
-title: "Midnight 12.1.5 Is Live: Kith'ix, the Labyrinth, and Season 2's Mid-Season Refresh"
+title: "Midnight 12.1.5 Brought Kith'ix, the Labyrinth, and Season 2's Mid-Season Refresh"
 slug: midnight-12-1-5-mid-season
-date: 2026-11-11
-summary: "Midnight's 12.1.5 update is live, adding the Unbinding of Kith'ix, the Labyrinth of Kindo'jan, Aqir Invasions, and Season 2 catch-up."
+date: 2026-10-13
+summary: "Midnight's 12.1.5 update arrived October 13 with the Unbinding of Kith'ix, the Labyrinth of Kindo'jan, and Season 2 catch-up."
 tags:
   - midnight
   - patch-12-1-5
@@ -16,11 +16,11 @@ sources:
   - https://www.wowhead.com/news/midnight-patch-12-1-5-releases-on-october-13th-world-of-warcraft-blizzard-news-383171
 ---
 
-Midnight’s 12.1.5 content update is live. Blizzard opened it with weekly maintenance on October 13 in the Americas and October 14 in Europe. The patch continues the Quel’Thalas and Zul’Aman story, adds a single-boss raid and a large Delve-like Labyrinth, starts hourly Aqir Invasions, and rolls out mid-season catch-up for Season 2.
+Midnight’s 12.1.5 content update arrived with weekly maintenance on October 13, 2026, in the Americas and October 14 in Europe. The patch continues the Quel’Thalas and Zul’Aman story, adds a single-boss raid and a large Delve-like Labyrinth, starts hourly Aqir Invasions, and rolls out mid-season catch-up for Season 2. Those systems remain the current mid-season content on live realms.
 
 ## The Promise of Tomorrow and the Unbinding of Kith’ix
 
-The new campaign, “The Promise of Tomorrow,” follows Ula’tek’s defeat. Players work to steady an uneasy peace between Quel’Thalas and Zul’Aman, then descend the Coiled Isle to face the C’Thraxxi general Kith’ix.
+The campaign “The Promise of Tomorrow” follows Ula’tek’s defeat. Players work to steady an uneasy peace between Quel’Thalas and Zul’Aman, then descend the Coiled Isle to face the C’Thraxxi general Kith’ix.
 
 The Unbinding of Kith’ix is a focused single-boss raid beneath the Venomous Abyss, with Story Mode, Raid Finder, Normal, Heroic, and Mythic in the official notes. Lady Liadrin accompanies the encounter. Mythic is a flexible 15–25 player fight.
 
@@ -34,9 +34,9 @@ Start via the campaign quest “The Long Way Around” to Liadrin above Thresh C
 
 Aqir Invasions are zone-wide public events in Eversong or Zul’Aman. For ten minutes each hour, a sequence of public events leads into a boss fight. Each invasion has six scenario types — three combat-focused and three not — and combat scenarios can roll one of eight affixes. Rewards scale with how many objectives a group finishes before the window closes.
 
-Keystone Myth also returns in 12.1.5. The “Midnight Keystone Myth: Season 2” achievement requires a Mythic+ rating of 3,600. Blizzard also planned targeted tuning for outliers.
+Keystone Myth also returned in 12.1.5. The “Midnight Keystone Myth: Season 2” achievement requires a Mythic+ rating of 3,600. Blizzard also planned targeted tuning for outliers.
 
-## Mid-season power and recent raid tuning
+## Mid-season power and later raid tuning
 
 Orin Straylight in Silvermoon City handles the mid-season catch-up. After “Umbral Blessings of the Catalyst,” you can trade gold, Voidlight Marl, or Veteran Mistcrests to him for one extra Nebulous Voidcore each week. During the week of October 20 he offered “Ascending with Venomstones.” Ten stones, used near the Catalyst in Silvermoon City, raise the item level of a fully upgraded Season 2 Hero, Myth, or maximum-quality Tidal Crafted weapon, trinket, or necklace. They drop from Heroic and Mythic raid bosses, +10 and higher keys, Tier 11 Bountiful Delves, and Nightmare Prey Champion chests. The weekly crest cap was also lifted that week.
 

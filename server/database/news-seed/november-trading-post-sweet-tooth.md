@@ -1,7 +1,7 @@
 ---
 title: "November’s Trading Post Has a Sweet Tooth Theme and a Bunmover Mount"
 slug: november-trading-post-sweet-tooth
-date: 2026-11-11
+date: 2026-11-01
 author: Magguu
 summary: "November's official Trading Post theme is Sweet Tooth. Fill the Traveler's Log to earn the Hot Motocross Bunmover 4600."
 tags:
@@ -13,7 +13,7 @@ sources:
   - https://news.blizzard.com/en-us/article/24316094/prepare-for-forever-try-midnights-talebound-and-discover-sweet-treats-in-wow-weekly
 ---
 
-November’s Trading Post in modern World of Warcraft is built around a **Sweet Tooth** theme. In an official WoW Weekly recap, Blizzard said this month is about “indulging your sweet side” and that the post is “serving up a sugar rush” of new collection items. The only reward named in that announcement is the monthly Traveler’s Log bonus: the **Hot Motocross Bunmover 4600** mount.
+November’s Trading Post in modern World of Warcraft, still running as of November 19, is built around a **Sweet Tooth** theme. In an official WoW Weekly recap, Blizzard said this month is about “indulging your sweet side” and that the post is “serving up a sugar rush” of new collection items. The only reward named in that announcement is the monthly Traveler’s Log bonus: the **Hot Motocross Bunmover 4600** mount.
 
 Blizzard’s flavor text for the mount is: “When dessert manufacturing meets speed optimization. Intact bun delivery not guaranteed.”
 

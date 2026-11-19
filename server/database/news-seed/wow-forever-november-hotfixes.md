@@ -1,51 +1,49 @@
 ---
-title: "WoW: Forever Hotfixes Tune Classes, Buff Dungeon XP, and Tighten PvP Balance"
+title: "WoW: Forever Hotfixes Through November 17 Restore UBRS and Keep Tuning Classes"
 slug: wow-forever-november-hotfixes
-date: 2026-11-11
-summary: "Launch-week Forever hotfixes buff dungeon XP by 50%, retune Enhancement, Hunters, and Warlocks, and tighten PvP faction creation."
+date: 2026-11-17
+summary: "The official Forever hotfix list, updated through November 17, restores UBRS difficulty, adjusts camping and Priest healing, and keeps earlier class changes."
 tags:
   - wow-forever
   - hotfixes
   - class-tuning
   - pvp
 sources:
-  - https://worldofwarcraft.blizzard.com/en-us/news/24315281/wow-forever-hotfixes-november-10-2026
+  - https://news.blizzard.com/en-us/article/24315281/wow-forever-hotfixes-november-17-2026
   - https://us.forums.blizzard.com/en/wow/t/pvp-faction-balance-updates-november-10/2408781
   - https://www.wowhead.com/forever/news/warlock-and-hunter-class-tuning-now-live-in-wow-forever-383826
   - https://www.wowhead.com/forever/news/blizzard-buffs-dungeon-enemy-experience-gains-383808
 ---
 
-A week after World of Warcraft: Forever launched, Blizzard has been iterating in public. Official hotfixes dated November 9 and 10 change dungeon leveling, several classes, the Auction House, and — in a separate forum post — PvP character creation.
+Blizzard’s official World of Warcraft: Forever hotfix list is a rolling document. As of November 17, 2026, it still includes the launch-week dungeon experience and class changes, and it adds later fixes for camping, Upper Blackrock Spire, and several class and item issues.
 
-## Dungeon experience is worth a second run
+## November 16–17
 
-On November 9, experience awarded for all enemy kills in dungeons increased by 50%, so repeat runs are more worthwhile after launch tuning had left much of a dungeon’s value in the quests. The same day’s notes also fix loot and encounter issues in several dungeons.
+On November 17, Mounted players can no longer sleep in the Cozy Sleeping Bag while saddled. The bag can now be placed in specific locations, similar to hunter traps, and it provides a Resting aura when you are inside its area of effect. Might of Stormwind and Warchief's Blessing now cancel correctly on death and are no longer applied to non-players. A Shaman bug that made Flurry drop stacks when Windfury Totem attacks landed was fixed.
 
-## Class tuning before the first raid
+Upper Blackrock Spire had been running with enemy health and damage significantly lower than intended. The November 17 notes restore the intended difficulty and say a full, attentive group is required again.
 
-November 10’s class changes are the ones most likely to affect how people gear and talent as the first raid approaches.
+Item and set corrections the same day include letting Shadow Priests hold a Night Watchman's Torch, fixing range and damage on Escape Plan, and giving Whiteout Staff and Crackling Staff matching stats (25 Stamina, 25 Intellect, and 74 Spell Power from weapon damage). Soulforge Armor, the upgraded dungeon set for Paladin tanks, now has Spell Power instead of Strength. Blizzard said it wants Paladin tanks to favor Spell Power as their primary damage stat.
 
-Enhancement Shaman took the largest redesign. Stormstrike is now 100% weapon damage, down from 150%, and its cooldown is 8 seconds, up from 6. Mental Dexterity’s Intellect-to-Attack Power conversion is 33/66/100%, down from 50/100/150%. Maelstrom Weapon now grants 20% reduced cast time and mana cost per application at every rank, and its activation rate scales with talent rank at 6/7/8/9/10 times per minute instead of a flat 20. The tooltip now shows the proc chance based on main-hand weapon speed. In developer notes, Blizzard said beta changes had pushed Enhancement toward Spell Power and Intellect, and that it wants Windfury to “remain at the heart of the specialization’s fantasy and gameplay.” The team made the adjustment now so players do not spend contested raid loot on stats that would later lose value. Weapon imbues and weapon totems can also be used together, so Windfury Weapon and Windfury Totem both apply.
+The November 16 notes include a scheduled weekly-maintenance change for Priests: Vampiric Embrace healing is based on 10% of the Shadow damage done by the casting Priest, down from 20%, and the caster receives 100% increased healing from that effect. Developers said solo play is unchanged. Other November 16 fixes cover Windfury Totem attacks incorrectly ignoring armor and missing an internal cooldown, Rogue poison ranks exceeding the cap, and Druid Wild Growth cooldown and Genesis issues.
 
-Hunter pets that mistakenly had 150% of normal health are corrected to 115%. Arcane Shot and Beast Mastery’s Summon Hawk now cost a flat 11% of base mana at every rank, so the cost scales smoothly with level. Hawk melee damage is increased by about 80%.
+## Earlier in November: dungeon experience, classes, and PvP creation
 
-Affliction Warlock’s Wrack no longer boosts periodic damage by a percentage. Its own damage is reduced by 30%, and while channeled, Siphon Life, Corruption, and Bane of Agony tick 100% faster. Soul Siphon now counts only those three effects. Imp Firebolt is up at early ranks, and Imp, Voidwalker, Incubus, and Succubus base health is increased by about 15%.
+On November 9, experience awarded for all enemy kills in dungeons increased by 50%, so repeat runs are more worthwhile after launch tuning had left much of a dungeon’s value in the quests.
 
-Smaller notes include Restoration Druid’s Nature’s Swiftness also making Wild Growth instant, an Omen of Clarity fix after specialization swaps, and Cooldown Manager tracking for Maelstrom Weapon and Paladin Redoubt.
+November 10’s class changes remain on the official list. Enhancement Shaman saw the largest redesign: Stormstrike is 100% weapon damage, down from 150%, with an 8-second cooldown, up from 6. Mental Dexterity’s Intellect-to-Attack Power conversion is 33/66/100%, down from 50/100/150%. Maelstrom Weapon now grants 20% reduced cast time and mana cost per application at every rank, and its activation rate scales with talent rank. Blizzard said beta changes had pushed Enhancement toward Spell Power and Intellect, and that it wants Windfury to remain at the heart of the specialization. Weapon imbues and weapon totems can be used together, so Windfury Weapon and Windfury Totem both apply.
 
-## Auction House and PvP creation
+Hunter pets that mistakenly had 150% of normal health were corrected to 115%. Arcane Shot and Beast Mastery’s Summon Hawk now cost a flat 11% of base mana at every rank. Hawk melee damage was increased by about 80%. Affliction Warlock’s Wrack no longer boosts periodic damage by a percentage; its own damage was reduced by 30%, and while it is channeled, Siphon Life, Corruption, and Bane of Agony tick 100% faster.
 
-With realm restarts on November 10, the Auction House minimum deposit is 1 copper, down from 1 silver. Blizzard also fixed mail that arrived in about two minutes instead of the intended 60, and unread mail incorrectly labeled as coming from “Stormwind Auction House” for every player.
-
-On November 10, Community Manager Kaivax wrote that PvP rulesets need closer faction balance than the current worst-case split of roughly 55/45. Character creation will become increasingly difficult on the more populous faction — at the time, Horde on North American PvP rulesets and Alliance on EU Roleplay-PvP. Those restrictions can flip as populations shift. The goal is as close to 50/50 as possible.
+With realm restarts on November 10, the Auction House minimum deposit became 1 copper, down from 1 silver. On the same day, Community Manager Kaivax wrote that PvP rulesets need closer faction balance than a worst-case split of roughly 55/45. Character creation becomes increasingly difficult on the more populous faction — at the time, Horde on North American PvP rulesets and Alliance on EU Roleplay-PvP — and those restrictions can flip as populations shift.
 
 ## What this means for your UI / MagguuUI
 
-These hotfixes change combat math and a few default Cooldown Manager entries; they do not require a new addon version by themselves. Update rotation notes for Enhancement, Hunter mana costs, and Affliction Wrack, and check the Cooldown Manager: Maelstrom Weapon and Redoubt can now be tracked there, and several incorrect icons were corrected on November 9. Auction House, mail, and PvP creation limits are not UI settings.
+These hotfixes change combat math, a few default Cooldown Manager entries, and some world and item bugs. They do not require a new addon version by themselves. Update rotation notes for Enhancement, Hunter mana costs, Affliction Wrack, and the Vampiric Embrace change if you play those specs. Auction House, mail, camping placement, and PvP creation limits are not UI settings.
 
 ## Sources
 
-- [WoW: Forever Hotfixes - November 10, 2026](https://worldofwarcraft.blizzard.com/en-us/news/24315281/wow-forever-hotfixes-november-10-2026) — Official hotfix list (includes the November 9 dungeon experience change)
+- [WoW: Forever Hotfixes - November 17, 2026](https://news.blizzard.com/en-us/article/24315281/wow-forever-hotfixes-november-17-2026) — Official rolling hotfix list
 - [PvP Faction Balance Updates - November 10](https://us.forums.blizzard.com/en/wow/t/pvp-faction-balance-updates-november-10/2408781) — Official forum post by Kaivax
 - [Warlock and Hunter Class Tuning Now Live in WoW: Forever](https://www.wowhead.com/forever/news/warlock-and-hunter-class-tuning-now-live-in-wow-forever-383826) — Wowhead
 - [Blizzard Buffs Dungeon Enemy Experience Gains](https://www.wowhead.com/forever/news/blizzard-buffs-dungeon-enemy-experience-gains-383808) — Wowhead

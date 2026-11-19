@@ -11,6 +11,7 @@ export default withNuxt({
     'node_modules/**',
     'test-results/**',
     'uploads/**',
+    'server/utils/newsSeedEmbedded.ts',
   ],
   rules: {
     'vue/attributes-order': 'off',

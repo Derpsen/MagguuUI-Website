@@ -19,12 +19,15 @@ test('sitemap.xml lists the public pages, never admin, api, feeds or query varia
   const publishedNewsPaths = [
     '/news/midnight-season-2-mythic-plus-pool',
     '/news/midnight-november-hotfixes-class-tuning',
-    '/news/echoes-of-the-worldcore-announced',
+    '/news/echoes-of-the-worldcore-december-1',
     '/news/november-trading-post-sweet-tooth',
     '/news/wow-forever-now-live',
     '/news/midnight-12-1-5-mid-season',
     '/news/wow-forever-november-hotfixes',
     '/news/discord-guild-chat-linking',
+    '/news/talebound-twisted-tales-december-1',
+    '/news/wow-22nd-anniversary-celebration',
+    '/news/taldramir-the-whispering-wood',
   ]
   for (const path of publishedNewsPaths) {
     expect(locs.some(loc => loc.endsWith(path)), path).toBe(true)

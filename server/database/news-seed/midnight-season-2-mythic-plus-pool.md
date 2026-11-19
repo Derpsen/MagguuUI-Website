@@ -39,7 +39,7 @@ Official Season 2 Mythic+ rewards are tied to rating and end-of-season placement
 - **Midnight Keystone Conqueror: Season 2** — a Feat of Strength and the title “the Venomous,” at a Mythic+ rating of at least 1,500
 - **Midnight Keystone Master: Season 2** — the Breath of Blight mount, at a rating of at least 2,000
 - **Midnight Keystone Legend: Season 2** — the Breath of Ruin mount, at a rating of at least 3,000
-- **Midnight Keystone Myth: Season 2** — listed with the title “the Venomous Contender.” The 12.1.5 content update, now live, set this achievement’s requirement at a Mythic+ rating of 3,600
+- **Midnight Keystone Myth: Season 2** — listed with the title “the Venomous Contender.” The 12.1.5 content update set this achievement’s requirement at a Mythic+ rating of 3,600
 - **Venomous Champion: Midnight Season 2** — for finishing the season in the top 1% of Mythic+ rating in your region
 - **Venomous Hero: Midnight Season 2** — the title “the Venomous Hero,” for finishing in the top 0.1%
 

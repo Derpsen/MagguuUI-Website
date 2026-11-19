@@ -2,7 +2,7 @@
 title: "Discord Account Linking and Guild Chat Mirroring Come to WoW and Forever"
 slug: discord-guild-chat-linking
 date: 2026-11-11
-summary: "Modern WoW and WoW: Forever now support Discord account linking and two-way guild chat mirroring for players and officers."
+summary: "Modern WoW and WoW: Forever support Discord account linking and two-way guild chat mirroring for players and officers."
 tags:
   - discord
   - guilds
@@ -43,7 +43,7 @@ In World of Warcraft, a guild leader or an eligible officer then:
 
 From there, guild leaders can keep Discord traffic in regular `/guild` chat or send it to a dedicated `/discord` channel. You can also create a separate Discord chat as its own channel inside the game.
 
-Blizzard highlighted the same feature in this week’s WoW Weekly recap, alongside Forever’s launch and first-party gamepad support. Setup is identical in tone on Midnight and Forever, even though the two games use different default interfaces.
+Blizzard also covered the feature in the WoW Weekly recap that followed Forever’s launch. Setup is the same in spirit on Midnight and Forever, even though the two games use different default interfaces.
 
 ## What this means for your UI / MagguuUI
 
@@ -52,4 +52,4 @@ This is a first-party Blizzard feature. MagguuUI does not need to provide the li
 ## Sources
 
 - [Stay Connected in World of Warcraft with Discord](https://news.blizzard.com/en-us/article/24296228/stay-connected-in-world-of-warcraft-with-discord) — Blizzard News
-- [WoW Weekly: The Adventure Begins in WoW: Forever](https://news.blizzard.com/en-us/article/24316097/the-adventure-begins-in-wow-forever-stay-connected-with-discord-and-taldramir-takes-shape-in-wow-weekly) — Blizzard News
+- [The Adventure Begins in WoW: Forever, Stay Connected with Discord, and Taldramir Takes Shape in WoW Weekly](https://news.blizzard.com/en-us/article/24316097/the-adventure-begins-in-wow-forever-stay-connected-with-discord-and-taldramir-takes-shape-in-wow-weekly) — Blizzard News

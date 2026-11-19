@@ -27,15 +27,19 @@ as a `## Sources` list in the body when that heading is not already present.
 
 ## Seed
 
-Boot inserts each slug from `server/database/news-seed/*.md` (Buddy YAML
-frontmatter + body) at most once. A row in `news_seed_markers` records that
-the slug has already been offered. Admin edits are never overwritten, and a
-deleted article is not re-inserted on a later boot.
+Markdown fixtures live in `server/database/news-seed/*.md` (Buddy YAML
+frontmatter + body). `scripts/embed-news-seeds.mjs` copies them into
+`server/utils/newsSeedEmbedded.ts` at `postinstall` and before `nuxt build`,
+so the production image does not need a filesystem copy of that directory and
+the loader is not `process.cwd()`-dependent. Boot inserts each slug at most
+once. A row in `news_seed_markers` records that the slug has already been
+offered. Admin edits are never overwritten, and a deleted article is not
+re-inserted on a later boot.
 
 `pouch-of-violet-dust-launch-celebration` is always seeded **unpublished**. The
-Twitch drop it describes ends 2026-11-13 01:30 Europe/Berlin, so it must not go
-live automatically. Publish it from the admin only if you still want it public
-after that cutoff.
+Twitch drop it describes ended 2026-11-13 01:30 Europe/Berlin, so it must not
+go live automatically. Publish it from the admin only if you still want that
+historical note public.
 
 ## Public surface
 

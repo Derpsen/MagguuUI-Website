@@ -362,7 +362,7 @@ Helper work computer is the Unraid VM `Ubuntu` (machineId `3ff4cee8-7e7c-4cc9-a2
 
 - Public SSR `/news` + `/news/[slug]`, RSS at `/news/feed.xml`, sitemap entries for `/news` and published slugs, Takumi OG via `usePublicPageSeo`, `NewsArticle` JSON-LD. Copy is English; Markdown is rendered only through `SafeHtml` / `displayRichText`.
 - SQLite `news_articles` (see `docs/news.md`): slug, title, summary (<=160), body, sourceUrl/sourceName, publishedAt (unix seconds), author always `Magguu`, tags, isPublished. Admin at `/admin/content/news`.
-- Seed from `server/database/news-seed/*.md` is insert-if-slug-missing. `pouch-of-violet-dust-launch-celebration` is always unpublished (drop ends 2026-11-13 01:30 Europe/Berlin).
+- Seed markdown lives in `server/database/news-seed/*.md` and is embedded into `server/utils/newsSeedEmbedded.ts` at `postinstall` / pre-build (`scripts/embed-news-seeds.mjs`). Boot is insert-if-slug-missing and does not read a runtime cwd path. `pouch-of-violet-dust-launch-celebration` is always unpublished (the Twitch drop ended 2026-11-13 01:30 Europe/Berlin).
 - No ad slots here. Blizzard news RSS admin notice (title+link only, no auto-publish) is a TODO in `docs/news.md`.
 - Internal "Also on this site" links to `/guide` only. Link-check is advisory.
 

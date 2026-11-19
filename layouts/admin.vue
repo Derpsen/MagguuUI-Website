@@ -164,11 +164,13 @@
             <Transition name="breadcrumb-slide" mode="out-in">
               <div :key="route.path" class="flex min-w-0 items-center gap-1.5 overflow-hidden">
                 <template v-if="currentContext.section">
-                  <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0 text-mg-fg-subtle" />
-                  <span class="min-w-0 truncate text-mg-fg-muted">{{ currentContext.section }}</span>
+                  <span class="hidden min-[360px]:flex min-w-0 shrink items-center gap-1.5 overflow-hidden">
+                    <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0 text-mg-fg-subtle" />
+                    <span class="min-w-0 truncate text-mg-fg-muted">{{ currentContext.section }}</span>
+                  </span>
                 </template>
                 <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0 text-mg-fg-subtle" />
-                <span class="min-w-0 truncate font-medium text-mg-fg">{{ pageHeading }}</span>
+                <span data-testid="admin-breadcrumb-current" class="min-w-[5ch] flex-1 truncate font-medium text-mg-fg">{{ pageHeading }}</span>
               </div>
             </Transition>
           </nav>
@@ -256,27 +258,26 @@
               <UIcon :name="isFullscreen ? 'i-heroicons-arrows-pointing-in' : 'i-heroicons-arrows-pointing-out'" class="h-4 w-4" />
             </button>
 
-            <!-- Below md, Settings and Fullscreen stay reachable from this overflow menu. -->
-            <div ref="moreWrapRef" class="relative md:hidden">
+            <!-- Below md, Settings and Fullscreen stay reachable from this disclosure. -->
+            <div ref="moreWrapRef" class="relative md:hidden" @keydown.escape="onMoreEscape" @focusout="onMoreFocusOut">
               <button
+                ref="moreButtonRef"
                 type="button"
                 class="vben-header-btn inline-flex"
                 aria-label="More actions"
-                aria-haspopup="menu"
                 :aria-expanded="moreOpen"
+                aria-controls="admin-header-more-panel"
                 @click="toggleMoreMenu"
               >
                 <UIcon name="i-heroicons-ellipsis-vertical" class="h-4 w-4" />
               </button>
               <div
                 v-if="moreOpen"
-                role="menu"
-                aria-label="Header actions"
+                id="admin-header-more-panel"
                 class="absolute right-0 top-full z-[100] mt-2 min-w-[12rem] rounded-xl border py-1 shadow-xl border-mg-line bg-mg-surface-2"
               >
                 <button
                   type="button"
-                  role="menuitem"
                   class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-mg-fg hover:bg-mg-surface-3"
                   @click="openSettingsFromMenu"
                 >
@@ -285,7 +286,6 @@
                 </button>
                 <button
                   type="button"
-                  role="menuitem"
                   class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-mg-fg hover:bg-mg-surface-3"
                   @click="toggleFullscreenFromMenu"
                 >
@@ -355,11 +355,12 @@ const notifOpen = ref(false)
 const moreOpen = ref(false)
 const isMac = ref(false)
 const cmdPalette = ref<{ open: () => void } | null>(null)
-const settingsDrawer = ref<{ toggle: () => void } | null>(null)
+const settingsDrawer = ref<{ toggle: () => void, openFrom: (el?: HTMLElement | null) => void } | null>(null)
 const notifWrapRef = ref<HTMLElement | null>(null)
 const notifButtonRef = ref<HTMLElement | null>(null)
 const notifPanelRef = ref<HTMLElement | null>(null)
 const moreWrapRef = ref<HTMLElement | null>(null)
+const moreButtonRef = ref<HTMLButtonElement | null>(null)
 const expandedItems = reactive<Record<string, boolean>>({})
 
 const searchShortcut = computed(() => isMac.value ? '⌘K' : 'Ctrl K')
@@ -381,14 +382,41 @@ function toggleNotifMenu() {
   if (notifOpen.value) moreOpen.value = false
 }
 
+function closeMoreMenu(restoreFocus = false) {
+  if (!moreOpen.value) return
+  moreOpen.value = false
+  if (restoreFocus) {
+    nextTick(() => moreButtonRef.value?.focus())
+  }
+}
+
 function toggleMoreMenu() {
-  moreOpen.value = !moreOpen.value
-  if (moreOpen.value) notifOpen.value = false
+  if (moreOpen.value) {
+    closeMoreMenu()
+    return
+  }
+  moreOpen.value = true
+  notifOpen.value = false
+}
+
+function onMoreEscape(event: KeyboardEvent) {
+  if (!moreOpen.value) return
+  event.preventDefault()
+  closeMoreMenu(true)
+}
+
+function onMoreFocusOut(event: FocusEvent) {
+  if (!moreOpen.value) return
+  const next = event.relatedTarget as Node | null
+  if (next && moreWrapRef.value?.contains(next)) return
+  if (!next) return
+  moreOpen.value = false
 }
 
 function openSettingsFromMenu() {
+  const trigger = moreButtonRef.value
   moreOpen.value = false
-  settingsDrawer.value?.toggle()
+  settingsDrawer.value?.openFrom(trigger)
 }
 
 async function toggleFullscreenFromMenu() {

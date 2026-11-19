@@ -83,7 +83,7 @@ for (const theme of ['dark', 'light'] as const) {
     await page.close()
   })
 
-  for (const width of [320, 360]) {
+  for (const width of [320, 360, 390]) {
     test(`dashboard (${theme}): nothing overflows a ${width}px viewport`, async () => {
       const page = await openDashboard(width, theme)
       const offenders = await page.evaluate((vw) => {
@@ -113,11 +113,69 @@ for (const theme of ['dark', 'light'] as const) {
       const more = page.getByRole('button', { name: 'More actions' })
       await expect(more).toBeVisible()
       await more.click()
-      await expect(page.getByRole('menuitem', { name: 'Settings' })).toBeVisible()
-      await expect(page.getByRole('menuitem', { name: 'Enter fullscreen' })).toBeVisible()
-      await page.getByRole('menuitem', { name: 'Settings' }).click()
+      const panel = page.locator('#admin-header-more-panel')
+      await expect(panel.getByRole('button', { name: 'Settings' })).toBeVisible()
+      await expect(panel.getByRole('button', { name: 'Enter fullscreen' })).toBeVisible()
+      const last = page.getByTestId('admin-breadcrumb-current')
+      await expect(last).toBeVisible()
+      const crumb = await last.evaluate((el) => {
+        const s = getComputedStyle(el)
+        return { textOverflow: s.textOverflow, overflow: s.overflow, clientWidth: el.clientWidth }
+      })
+      expect(crumb.textOverflow).toBe('ellipsis')
+      expect(crumb.overflow).toMatch(/hidden/)
+      expect(crumb.clientWidth).toBeGreaterThan(0)
+      await panel.getByRole('button', { name: 'Settings' }).click()
       await expect(page.getByText('Compact sidebar')).toBeVisible()
       await page.close()
     })
   }
+
+  test(`More actions (${theme}): Escape closes the disclosure and returns focus`, async () => {
+    const page = await openDashboard(390, theme)
+    const more = page.getByRole('button', { name: 'More actions' })
+    await more.click()
+    const panel = page.locator('#admin-header-more-panel')
+    await expect(panel).toBeVisible()
+    await panel.getByRole('button', { name: 'Settings' }).focus()
+    await page.keyboard.press('Escape')
+    await expect(panel).toHaveCount(0)
+    await expect(more).toBeFocused()
+    await page.close()
+  })
+
+  test(`More actions (${theme}): focus leaving the panel closes it`, async () => {
+    const page = await openDashboard(390, theme)
+    const more = page.getByRole('button', { name: 'More actions' })
+    await more.click()
+    const panel = page.locator('#admin-header-more-panel')
+    await expect(panel).toBeVisible()
+    await panel.getByRole('button', { name: 'Enter fullscreen' }).focus()
+    await page.keyboard.press('Tab')
+    await expect(panel).toHaveCount(0)
+    await page.close()
+  })
+
+  test(`settings drawer (${theme}): Escape closes it and returns focus`, async () => {
+    const page = await openDashboard(1280, theme)
+    const settings = page.locator('header button.vben-header-btn[aria-label="Settings"]')
+    await settings.click()
+    await expect(page.getByText('Compact sidebar')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.getByText('Compact sidebar')).toHaveCount(0)
+    await expect(settings).toBeFocused()
+    await page.close()
+  })
+
+  test(`settings drawer (${theme}, mobile): Escape returns focus to More actions`, async () => {
+    const page = await openDashboard(390, theme)
+    const more = page.getByRole('button', { name: 'More actions' })
+    await more.click()
+    await page.locator('#admin-header-more-panel').getByRole('button', { name: 'Settings' }).click()
+    await expect(page.getByText('Compact sidebar')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.getByText('Compact sidebar')).toHaveCount(0)
+    await expect(more).toBeFocused()
+    await page.close()
+  })
 }

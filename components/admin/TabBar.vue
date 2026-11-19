@@ -73,6 +73,23 @@ function refreshOverflow() {
   })
 }
 
+function closeTabAndMoveFocus(path: string) {
+  const items = tabs.value
+  const idx = items.findIndex(t => t.path === path)
+  if (idx < 0) return
+  const neighbour = items[idx + 1] ?? items[idx - 1]
+  closeTab(path)
+  nextTick(() => {
+    const still = neighbour && items.some(t => t.path === neighbour.path)
+      ? neighbour.path
+      : tabs.value[Math.max(0, Math.min(idx, tabs.value.length - 1))]?.path
+    if (!still) return
+    const el = scroller.value?.querySelector(`[data-tab-path="${CSS.escape(still)}"]`) as HTMLElement | null
+    el?.focus()
+    scrollActiveIntoView()
+  })
+}
+
 function onContextMenu(event: MouseEvent, path: string) {
   event.preventDefault()
   contextTab.value = path
@@ -176,7 +193,7 @@ watch(() => route.path, () => {
               type="button"
               class="mr-2 -ml-1 rounded p-0.5 opacity-0 transition-all group-hover:opacity-100 focus-visible:opacity-100 hover:bg-mg-surface-3 text-mg-fg-muted hover:text-mg-fg"
               :aria-label="`Close tab ${tab.label}`"
-              @click.prevent.stop="closeTab(tab.path)"
+              @click.prevent.stop="closeTabAndMoveFocus(tab.path)"
             >
               <UIcon name="i-heroicons-x-mark" class="h-3 w-3" />
             </button>
@@ -229,7 +246,7 @@ watch(() => route.path, () => {
         <button
           type="button"
           class="flex w-full items-center gap-2 px-3 py-1.5 text-left transition-colors hover:bg-mg-surface-3"
-          @click="closeTab(contextTab!)"
+          @click="closeTabAndMoveFocus(contextTab!)"
         >
           <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
           Close tab

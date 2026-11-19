@@ -2,10 +2,10 @@
 
 Buddy-authored articles (YAML frontmatter + Markdown body). These files are
 the editorial source. `scripts/embed-news-seeds.mjs` embeds them into
-`server/utils/newsSeedEmbedded.ts` at `postinstall` and before `nuxt build`,
-so production boot does not depend on a copied `server/database/news-seed`
-directory or on `process.cwd()`. Run `npm run embed:news-seeds` after editing
-a fixture, and keep the generated catalog committed.
+`server/utils/newsSeedEmbedded.ts` before `nuxt build` (`prebuild`). Run
+`npm run embed:news-seeds` after editing a fixture, and keep the generated
+catalog committed. `postinstall` is only `nuxt prepare`, because the Docker
+build runs `npm ci` before the rest of the source is copied.
 
 Boot inserts a slug at most once: it never overwrites an admin edit, and a
 slug recorded in `news_seed_markers` (including after an admin delete) never

@@ -29,9 +29,10 @@ as a `## Sources` list in the body when that heading is not already present.
 
 Markdown fixtures live in `server/database/news-seed/*.md` (Buddy YAML
 frontmatter + body). `scripts/embed-news-seeds.mjs` copies them into
-`server/utils/newsSeedEmbedded.ts` at `postinstall` and before `nuxt build`,
-so the production image does not need a filesystem copy of that directory and
-the loader is not `process.cwd()`-dependent. Boot inserts each slug at most
+`server/utils/newsSeedEmbedded.ts` before `nuxt build` (`prebuild`, or
+`npm run embed:news-seeds`). The catalog is committed so Docker `npm ci` can
+run before the rest of the source is copied. `.dockerignore` keeps the seed
+markdown available to `prebuild`. The loader is not `process.cwd()`-dependent. Boot inserts each slug at most
 once. A row in `news_seed_markers` records that the slug has already been
 offered. Admin edits are never overwritten, and a deleted article is not
 re-inserted on a later boot.

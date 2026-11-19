@@ -19,7 +19,7 @@
     "verify:smoke": "node scripts/verify-build.mjs",
     "verify": "npm run build:clean && npm run postinstall && npm run build && npm run verify:smoke",
     "audit:prod": "node scripts/audit-prod.mjs",
-    "postinstall": "node scripts/embed-news-seeds.mjs && nuxt prepare",
+    "postinstall": "nuxt prepare",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",

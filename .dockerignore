@@ -39,6 +39,8 @@ playwright.config.ts
 # Archives & docs
 *.zip
 *.md
+!server/database/news-seed/*.md
+!server/database/news-seed/README.md
 
 # OS files
 .DS_Store

@@ -3,7 +3,7 @@
  * production Nitro image does not depend on process.cwd() or a copied
  * markdown directory. Runtime boot reads NEWS_SEED_EMBEDDED only.
  */
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -11,11 +11,21 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const seedDir = join(root, 'server/database/news-seed')
 const outFile = join(root, 'server/utils/newsSeedEmbedded.ts')
 
-const files = readdirSync(seedDir)
-  .filter(name => name.endsWith('.md') && name !== 'README.md')
-  .sort()
+let files = []
+try {
+  files = readdirSync(seedDir)
+    .filter(name => name.endsWith('.md') && name !== 'README.md')
+    .sort()
+}
+catch {
+  files = []
+}
 
 if (files.length === 0) {
+  if (existsSync(outFile)) {
+    console.log(`no news seed markdown in ${seedDir}; keeping existing ${outFile}`)
+    process.exit(0)
+  }
   throw new Error(`No news seed markdown files found in ${seedDir}`)
 }
 

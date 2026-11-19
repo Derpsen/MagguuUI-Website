@@ -139,3 +139,25 @@ test('arrow keys move between tabs; reduced-motion still reaches Community', asy
     await page.close()
   }
 })
+
+test('keyboard close of a tab moves focus to the neighbour tab', async () => {
+  const page = await context.newPage()
+  try {
+    await page.setViewportSize({ width: 1280, height: 800 })
+    const tabs = [
+      { path: '/admin', label: 'Dashboard', icon: 'i-heroicons-squares-2x2', pinned: true },
+      { path: '/admin/system/activity', label: 'Activity', pinned: false },
+      { path: '/admin/system/stats', label: 'Statistics', pinned: false },
+    ]
+    await page.addInitScript(list => localStorage.setItem('admin-tabs', JSON.stringify(list)), tabs)
+    await page.goto('/admin/system/activity')
+    await expect(page.getByTestId('admin-tab-bar')).toBeVisible({ timeout: 30_000 })
+    const close = page.getByRole('button', { name: 'Close tab Activity' })
+    await close.focus()
+    await page.keyboard.press('Enter')
+    await expect(page.getByTestId('admin-tab').filter({ hasText: 'Activity' })).toHaveCount(0)
+    await expect(page.getByTestId('admin-tab').filter({ hasText: 'Statistics' })).toBeFocused()
+  } finally {
+    await page.close()
+  }
+})

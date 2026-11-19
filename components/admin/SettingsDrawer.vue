@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="open" class="fixed inset-0 z-50 bg-black/40" @click="open = false" />
+      <div v-if="open" class="fixed inset-0 z-50 bg-black/40" @click="close()" />
     </Transition>
 
     <!-- Drawer -->
@@ -15,9 +15,11 @@
         <div class="flex items-center justify-between px-5 py-4 border-b" :class="isDark ? 'border-[hsl(240,3.7%,22%)]' : 'border-slate-200'">
           <span class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">Settings</span>
           <button
+            type="button"
             class="p-1 rounded-md transition-colors"
             :class="isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.06]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'"
-            @click="open = false"
+            aria-label="Close settings"
+            @click="close()"
           >
             <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
           </button>
@@ -83,12 +85,43 @@ const isDark = useIsDark()
 const colorMode = useColorMode()
 
 const open = ref(false)
+const triggerEl = ref<HTMLElement | null>(null)
 
-function toggle() {
-  open.value = !open.value
+function close() {
+  if (!open.value) return
+  open.value = false
+  const el = triggerEl.value
+  triggerEl.value = null
+  nextTick(() => el?.focus())
 }
 
-defineExpose({ toggle })
+function openFrom(el?: HTMLElement | null) {
+  triggerEl.value = el ?? (import.meta.client ? document.activeElement as HTMLElement | null : null)
+  open.value = true
+}
+
+function toggle() {
+  if (open.value) close()
+  else openFrom()
+}
+
+function onDocumentKeydown(event: KeyboardEvent) {
+  if (event.key !== 'Escape' || !open.value) return
+  event.preventDefault()
+  close()
+}
+
+watch(open, (isOpen) => {
+  if (!import.meta.client) return
+  if (isOpen) document.addEventListener('keydown', onDocumentKeydown)
+  else document.removeEventListener('keydown', onDocumentKeydown)
+})
+
+onUnmounted(() => {
+  if (import.meta.client) document.removeEventListener('keydown', onDocumentKeydown)
+})
+
+defineExpose({ toggle, openFrom, close })
 
 const selectedColor = ref('blue')
 const compactSidebar = defineModel<boolean>('compactSidebar', { default: false })

@@ -3,8 +3,8 @@
  * Missing, empty, and set-to-on must all reach /api/health without crashing.
  * Does not mutate runtimeConfig; empty is off. Supplies a dummy
  * NUXT_ADMIN_PASSWORD when the caller left it unset so a standalone run
- * can create the first admin. After each start, checks AdSlot markup on a
- * fixture-filled spec page (present only when the flag is on).
+ * can create the first admin. Slot markup lived on /meta and was removed with Mythic+ Meta;
+ * this script now only checks that each flag value reaches /api/health.
  */
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
@@ -39,22 +39,6 @@ async function reservePort() {
   })
 }
 
-function runSeed() {
-  return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, ['--import', 'tsx', 'scripts/seed-meta-fixture.ts'], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env, NUXT_ALLOW_META_FIXTURE_SEED: 'true' },
-    })
-    let output = ''
-    child.stdout.on('data', (chunk) => { output += chunk.toString() })
-    child.stderr.on('data', (chunk) => { output += chunk.toString() })
-    child.on('exit', (code) => {
-      if (code === 0) resolve()
-      else reject(new Error(`fixture seed exited ${code}: ${output.trim()}`))
-    })
-  })
-}
-
 async function waitForHealth(baseUrl, child) {
   const deadline = Date.now() + startupTimeoutMs
   let last = ''
@@ -76,16 +60,7 @@ async function waitForHealth(baseUrl, child) {
   fail(`server did not become ready within ${startupTimeoutMs / 1000}s (${last})`)
 }
 
-async function assertSlotMarkup(baseUrl, expectPresent) {
-  const response = await fetch(`${baseUrl}/meta/mage/fire`)
-  if (!response.ok) fail(`GET /meta/mage/fire HTTP ${response.status}`)
-  const html = await response.text()
-  const hasSlot = /data-ad-placement="(sidebar|after-build)"/.test(html)
-  if (expectPresent && !hasSlot) fail('expected AdSlot markup on /meta/mage/fire when NUXT_ADS is on')
-  if (!expectPresent && hasSlot) fail('AdSlot markup must be absent when NUXT_ADS is off or empty')
-}
-
-async function startOnce(label, adsEnv, expectSlot) {
+async function startOnce(label, adsEnv) {
   const port = await reservePort()
   const baseUrl = `http://127.0.0.1:${port}`
   const env = { ...process.env }
@@ -111,8 +86,7 @@ async function startOnce(label, adsEnv, expectSlot) {
   child.stderr.on('data', (chunk) => { output += chunk.toString() })
   try {
     await waitForHealth(baseUrl, child)
-    await assertSlotMarkup(baseUrl, expectSlot)
-    console.log(`[verify-ads] ${label}: /api/health 200, slot markup ${expectSlot ? 'present' : 'absent'}`)
+    console.log(`[verify-ads] ${label}: /api/health 200`)
   } catch (err) {
     if (output.trim()) console.error(`[verify-ads] ${label} output:\n${output.trim()}`)
     throw err
@@ -126,12 +100,11 @@ async function startOnce(label, adsEnv, expectSlot) {
 }
 
 export async function verifyAdsProdStarts() {
-  // Strictly one process at a time (OOM). Seed once so /meta/mage/fire is filled.
-  await runSeed()
-  await startOnce('NUXT_ADS missing', {}, false)
-  await startOnce('NUXT_ADS empty', { NUXT_ADS: '' }, false)
-  await startOnce('NUXT_ADS=on', { NUXT_ADS: 'on' }, true)
-  console.log('[verify-ads] production starts passed (missing, empty, on) with slot markup checks')
+  // Strictly one process at a time (OOM).
+  await startOnce('NUXT_ADS missing', {})
+  await startOnce('NUXT_ADS empty', { NUXT_ADS: '' })
+  await startOnce('NUXT_ADS=on', { NUXT_ADS: 'on' })
+  console.log('[verify-ads] production starts passed (missing, empty, on)')
 }
 
 const isMain = import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('verify-ads-runtime.mjs')

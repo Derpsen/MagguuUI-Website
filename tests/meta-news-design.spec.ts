@@ -3,12 +3,10 @@ import { expect, test } from '@playwright/test'
 import { hydrated } from './support/hydrated'
 
 /**
- * Redesign PR 4: /meta, a spec page, /news and an article. Real boxes at 320/360/390 (overflow-x: clip hides overflow
+ * Redesign PR 4: /news and an article. Real boxes at 320/360/390 (overflow-x: clip hides overflow
  * from scrollWidth), axe in both themes, and no heading/lead movement while the late woff2 files arrive.
  */
 const PAGES = [
-  { path: '/meta', ready: 'nav[aria-label] ul' },
-  { path: '/meta/mage/fire', ready: '#overview' },
   { path: '/news', ready: 'ul.divide-y' },
   { path: '/news/midnight-season-2-mythic-plus-pool', ready: '.news-body' },
 ]
@@ -90,8 +88,8 @@ test('the news article body takes its colours from the tokens in both themes', a
   expect(lum(seen.light![0]!)).toBeLessThan(140)
 })
 
-test('the news index and /meta headings do not move when the late woff2 files arrive (320px)', async ({ browser }) => {
-  for (const path of ['/news', '/meta']) {
+test('the news index headings do not move when the late woff2 files arrive (320px)', async ({ browser }) => {
+  for (const path of ['/news']) {
     const context = await browser.newContext({ viewport: { width: 320, height: 800 } })
     const page = await context.newPage()
     await page.route(/\.woff2$/, async (route) => {

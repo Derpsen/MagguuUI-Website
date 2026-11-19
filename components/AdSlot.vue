@@ -12,7 +12,7 @@
     aria-label="Advertisement"
     :data-ad-placement="placement"
   >
-    <p class="ad-slot__label" :class="tone.muted.value">Advertisement</p>
+    <p class="ad-slot__label text-mg-fg-muted">Advertisement</p>
   </aside>
 </template>
 
@@ -24,7 +24,6 @@ const props = withDefaults(defineProps<{
   reserve?: number
 }>(), { reserve: 0 })
 
-const tone = useMetaTone()
 const flagOn = useNuxtAdsEnabled()
 const variant = computed(() => (props.placement === 'sidebar' ? 'sidebar' : 'inline'))
 const height = computed(() => props.reserve || (props.placement === 'sidebar' ? 250 : 100))

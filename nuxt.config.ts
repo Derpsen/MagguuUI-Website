@@ -1,8 +1,6 @@
-import { join } from 'node:path'
 import { PUBLIC_SITE_ORIGIN, PUBLIC_SITE_SETTINGS_DEFAULTS } from './utils/siteSettingsDefaults'
 import { isGithubNightlyEnabled } from './utils/githubSchedule'
 import { applyAdminManifestPolicy } from './utils/adminManifest'
-import { isMetaNightlyEnabled } from './utils/metaSchedule'
 
 const defaultSiteName = PUBLIC_SITE_SETTINGS_DEFAULTS.site_name
 const defaultMetaTitle = PUBLIC_SITE_SETTINGS_DEFAULTS.meta_title
@@ -219,21 +217,6 @@ export default defineNuxtConfig({
     // Read back at runtime via githubNightlyFromRuntimeConfig(useRuntimeConfig())
     // so a string "false" is not treated as on. Unknown values warn once and use the default.
     githubNightly: isGithubNightlyEnabled(),
-    // Meta snapshot (EU Mythic+). Default off; also skipped without credentials.
-    // Override with NUXT_META_NIGHTLY=on|true|1|yes or off|false|0|no.
-    // Credentials: NUXT_BLIZZARD_CLIENT_ID / NUXT_BLIZZARD_CLIENT_SECRET (server-only, never logged).
-    // Further env: NUXT_BLIZZARD_REGION (phase 1: eu only), NUXT_META_KUMA_PUSH_URL,
-    // NUXT_META_SAMPLE_PER_SPEC (default 200), NUXT_META_MAX_ATTEMPTS_PER_SPEC (default 400),
-    // NUXT_META_MAX_CONCURRENT_SPECS (default 1), NUXT_META_HEAP_LIMIT_MB (heap-guard cap).
-    blizzardClientId: process.env.NUXT_BLIZZARD_CLIENT_ID || '',
-    blizzardClientSecret: process.env.NUXT_BLIZZARD_CLIENT_SECRET || '',
-    blizzardRegion: process.env.NUXT_BLIZZARD_REGION || 'eu',
-    metaNightly: isMetaNightlyEnabled(),
-    metaKumaPushUrl: process.env.NUXT_META_KUMA_PUSH_URL || '',
-    metaSamplePerSpec: process.env.NUXT_META_SAMPLE_PER_SPEC || '',
-    metaMaxAttemptsPerSpec: process.env.NUXT_META_MAX_ATTEMPTS_PER_SPEC || '',
-    metaMaxConcurrentSpecs: process.env.NUXT_META_MAX_CONCURRENT_SPECS || '',
-
     webauthnRpName: 'MagguuUI Admin',
     webauthnRpId: process.env.NUXT_WEBAUTHN_RP_ID || '',
     webauthnOrigin: process.env.NUXT_WEBAUTHN_ORIGIN || '',
@@ -269,7 +252,7 @@ export default defineNuxtConfig({
       ? {
           prerender: {
             failOnError: false,
-            routes: ['/', '/guide', '/faq', '/news', '/changelog', '/about', '/addons', '/configurator', '/imprint', '/privacy', '/strings', '/forever', '/forever/guide', '/forever/download', '/forever/strings', '/meta'],
+            routes: ['/', '/guide', '/faq', '/news', '/changelog', '/about', '/addons', '/configurator', '/imprint', '/privacy', '/strings', '/forever', '/forever/guide', '/forever/download', '/forever/strings'],
           },
         }
       : {}),
@@ -280,14 +263,6 @@ export default defineNuxtConfig({
     // import of the Nitro server chunk. Prepend the polyfill so it evaluates
     // before tsyringe, even if plugin import order is sorted later.
     hooks: {
-      async compiled(nitro) {
-        const { buildMetaSyncCli } = await import('./tools/build-meta-sync-cli.mjs')
-        const serverDir = nitro.options.output.serverDir || join(nitro.options.output.dir, 'server')
-        await buildMetaSyncCli({
-          repoRoot: nitro.options.rootDir,
-          outFile: join(serverDir, 'meta-sync-cli.mjs'),
-        })
-      },
       'rollup:before'(nitro, config) {
         if (!nitro.options) return
         const polyfill = "import 'reflect-metadata';"
@@ -427,12 +402,9 @@ export default defineNuxtConfig({
     '/configurator': { headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' } },
     '/imprint': { swr: 120 },
     '/privacy': { swr: 120 },
-    // No page-level swr for /meta: filters (?role=, ?hero=) and tracking
-    // query strings would otherwise each get their own route-cache entry
-    // (Nitro keys on the full URL). The pages read /api/v1/meta (bare path,
-    // swr 120 below). See the /changelog note above (DoD 2.07).
-    '/api/v1/meta': { swr: 120 },
-    '/api/v1/meta/**': { swr: 120 },
+    // Mythic+ Meta was removed: keep old URLs working.
+    '/meta': { redirect: { to: '/', statusCode: 301 } },
+    '/meta/**': { redirect: { to: '/', statusCode: 301 } },
     '/forever': { swr: 120 },
     '/forever/**': { swr: 120 },
     '/api/v1/forever/release': { swr: 120 },

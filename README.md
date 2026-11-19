@@ -20,7 +20,6 @@ This repository contains the public website for MagguuUI, the internal admin are
   - site settings
 - REST API for website content and admin operations
 - SQLite-backed storage for content, analytics, sessions, and activity logs
-- Public `/meta` pages for an EU Mythic+ aggregate (snapshot schema in `docs/meta-snapshot.md`; live pages never serve the test fixture). Empty state: "Collecting data." After a snapshot expires (30 days): "Data unavailable."
 
 ## Stack
 
@@ -38,7 +37,7 @@ This repository contains the public website for MagguuUI, the internal admin are
 ## Main Areas
 
 - `pages/`
-  - public pages such as `index`, `strings`, `guide`, `faq`, `news`, `changelog`, and `/meta` (EU Mythic+ meta; empty until a snapshot exists)
+  - public pages such as `index`, `strings`, `guide`, `faq`, `news`, and `changelog`
   - admin pages under `pages/admin/`
 - `components/admin/` and `composables/useAdminNavigation.ts`
   - shared admin primitives for headers, panels, metrics, empty states, sticky save bars, and navigation context
@@ -125,14 +124,7 @@ Important values include:
 - `NUXT_ADMIN_PASSWORD`
 - `API_BEARER_TOKEN`
 - `NUXT_GITHUB_TOKEN`
-- `NUXT_BLIZZARD_CLIENT_ID` / `NUXT_BLIZZARD_CLIENT_SECRET` (optional, server-only: Meta snapshot; leave empty until configured)
-- `NUXT_BLIZZARD_REGION` (optional, phase 1: `eu` only)
-- `NUXT_META_NIGHTLY` (optional, default off; `on`/`true`/`1`/`yes` to arm the 03:15 UTC job once credentials exist)
-- `NUXT_ADS` (optional, default off: no reserved AdSlot markup on /meta; `on`/`true`/`1`/`yes` to enable the reserved boxes. AdSense itself is a later PR.)
-- `NUXT_META_KUMA_PUSH_URL` (optional Kuma push URL; never logged)
-- `NUXT_META_SAMPLE_PER_SPEC` / `NUXT_META_MAX_ATTEMPTS_PER_SPEC` (optional; defaults 200 / 400)
-- `NUXT_META_MAX_CONCURRENT_SPECS` (optional; default 1) and `NUXT_META_HEAP_LIMIT_MB` (optional heap-guard cap)
-- Manual Meta snapshot (Unraid & Server, after this image is live): `docker exec -it MagguuUI node .output/server/meta-sync-cli.mjs` (`-it` so Ctrl-C reaches the CLI). The entry replaces itself (`process.execve`) with a 256 MB heap (`NUXT_META_CLI_HEAP_MB`, clamped 64–512) so it does not inherit the website `NODE_OPTIONS` 640 MB cap and does not leave a wrapper process resident. The Unraid template sets `--memory=1g --memory-swap=-1` (matching live) and `NODE_OPTIONS` 640. Typical website RSS 150–200 MB plus CLI 200–240 MB fits in 1 GB; worst case a website already at its 640 MB cap (RSS often 700–800 MB) plus the CLI is about 0.90–1.04 GB, so do not fire the CLI when the website is already near the cap. Shares the SQLite lock with the nightly (exit 2 if a run is already in progress; lock TTL is the 45-minute job deadline plus 5 minutes of grace). SIGINT/SIGTERM abort the run, release the lock, and exit non-zero. A `docker stop` of the container does not SIGTERM an exec process, so the lock can stay held for up to 50 minutes. Same lean path and heap guard. It is a second Node process next to the website; it strips the inherited 640 MB cap. Peak memory is server plus CLI. `--memory-swap=-1` is intentional (matches live). Never prints secrets. Do not fire it until the image that contains the CLI has been pulled.
+- `NUXT_ADS` (optional, default off: no reserved AdSlot markup; `on`/`true`/`1`/`yes` to enable the reserved boxes. AdSense itself is a later PR.)
 - `NUXT_GITHUB_REPO`
 - `NUXT_GITHUB_WEBHOOK_SECRET`
 - `NUXT_SYNC_SEEDED_CONTENT`

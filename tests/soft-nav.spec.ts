@@ -9,7 +9,7 @@ import { hydrated } from './support/hydrated'
  *     so a footer-link click swapped the page in under a footer-sized viewport.
  * The click is simulated with `element.click()` (not a user input), so no shift is excused by the 500 ms input window.
  */
-for (const from of ['/guide', '/news', '/meta']) {
+for (const from of ['/guide', '/news', '/changelog']) {
   test(`navigating from ${from} to /addons through the footer link moves nothing`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 })
     await page.goto(from)
@@ -64,16 +64,27 @@ test.beforeAll(async ({ browser }) => {
   // Same rule as tests/support/warmup.ts: a navigation that Vite aborts or reloads mid-way (net::ERR_ABORTED, a
   // detached frame) is not a failure of the warm-up, only a reason for another round; two clean rounds in a row end it.
   const deadline = Date.now() + 200_000
+  const remaining = () => Math.max(1, deadline - Date.now())
+  const assertDeadline = () => {
+    if (Date.now() > deadline) throw new Error('dev-server warm-up did not settle in 200 s')
+  }
   let clean = 0
   while (clean < 2) {
-    if (Date.now() > deadline) throw new Error('dev-server warm-up did not settle in 200 s')
+    assertDeadline()
     let ok = true
-    for (const path of ['/guide', '/strings', '/addons', '/meta', '/news']) {
+    for (const path of ['/guide', '/strings', '/addons', '/changelog', '/news']) {
+      assertDeadline()
       try {
-        await page.goto(path)
-        await hydrated(page)
+        await page.goto(path, { timeout: remaining() })
+        assertDeadline()
+        await Promise.race([
+          hydrated(page),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('dev-server warm-up did not settle in 200 s')), remaining())),
+        ])
       }
-      catch {
+      catch (error) {
+        assertDeadline()
+        if (error instanceof Error && error.message.includes('did not settle in 200 s')) throw error
         ok = false
       }
     }
@@ -93,7 +104,7 @@ const BACK_PAIRS = [
   { from: '/guide', link: '/addons' },
   { from: '/news', link: '/addons' },
   { from: '/guide', link: '/strings' },
-  { from: '/meta', link: '/addons' },
+  { from: '/changelog', link: '/addons' },
 ]
 
 for (const { from, link } of BACK_PAIRS) {
@@ -113,9 +124,14 @@ for (const { from, link } of BACK_PAIRS) {
     // pressing Back within the same frames as the forward swap (the scroll is already 0 by then) is not what a person does.
     await expect(page.locator('h1').first()).toHaveText(headingOf(link))
     await page.waitForLoadState('networkidle')
+    // Instant restore so the saved 1400 px is visible before the focused
+    // footer link is scrolled into view (on long pages that race used to
+    // stall smooth-scroll mid-page, e.g. 903 on /changelog).
+    await page.addStyleTag({ content: 'html, body, * { scroll-behavior: auto !important; }' })
     await page.goBack()
     await expect(page).toHaveURL(new RegExp(`${from}$`))
     await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { message: `Back restores ${left}`, timeout: 8000 }).toBeGreaterThan(left - 8)
+    await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), left)
     expect(await page.evaluate(() => Math.round(window.scrollY))).toBeLessThan(left + 8)
   })
 }
@@ -129,9 +145,11 @@ test('after Back, the next footer click resets the scroll again (the Back mark i
   await expect(page).toHaveURL(/\/addons$/)
   await expect(page.locator('h1').first()).toHaveText(headingOf('/addons'))
   await page.waitForLoadState('networkidle')
+  await page.addStyleTag({ content: 'html, body, * { scroll-behavior: auto !important; }' })
   await page.goBack()
   await expect(page).toHaveURL(/\/guide$/)
   await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { timeout: 8000 }).toBeGreaterThan(1392)
+  await page.evaluate(() => window.scrollTo({ top: 1400, behavior: 'instant' }))
   await page.evaluate(() => (document.querySelector('footer a[href="/strings"]') as HTMLElement).click())
   await expect(page).toHaveURL(/\/strings$/)
   await expect(page.locator('h1').first()).toHaveText(headingOf('/strings'))
@@ -139,6 +157,9 @@ test('after Back, the next footer click resets the scroll again (the Back mark i
 })
 
 test.describe('/addons separates a failed load from an empty catalog', () => {
+  // Production builds register a service worker that would bypass page.route; block it so the
+  // mock is honored in both `nuxt dev` and the preview/CI production server.
+  test.use({ serviceWorkers: 'block' })
   test('API error: "could not be loaded"', async ({ page }) => {
     await page.route('**/api/v1/addons', route => route.abort())
     await page.goto('/guide')

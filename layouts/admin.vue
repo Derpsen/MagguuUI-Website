@@ -147,7 +147,7 @@
       />
 
       <!-- Main -->
-      <div class="min-w-0 flex-1 transition-all duration-200" :style="{ paddingLeft: lgAndUp ? `var(--admin-sidebar-width)` : '0' }">
+      <div class="admin-shell-main min-w-0 flex-1">
         <!-- Header -->
         <header
           class="sticky top-0 z-20 flex h-[50px] items-center gap-3 border-b px-4 bg-mg-surface border-mg-line"
@@ -162,13 +162,13 @@
               <UIcon name="i-heroicons-squares-2x2" class="h-4 w-4" />
             </NuxtLink>
             <Transition name="breadcrumb-slide" mode="out-in">
-              <div :key="route.path" class="flex items-center gap-1.5 min-w-0">
+              <div :key="route.path" class="flex min-w-0 items-center gap-1.5 overflow-hidden">
                 <template v-if="currentContext.section">
                   <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0 text-mg-fg-subtle" />
-                  <span class="shrink-0 text-mg-fg-muted">{{ currentContext.section }}</span>
+                  <span class="min-w-0 truncate text-mg-fg-muted">{{ currentContext.section }}</span>
                 </template>
                 <UIcon name="i-heroicons-chevron-right" class="h-3.5 w-3.5 shrink-0 text-mg-fg-subtle" />
-                <span class="truncate font-medium text-mg-fg">{{ pageHeading }}</span>
+                <span class="min-w-0 truncate font-medium text-mg-fg">{{ pageHeading }}</span>
               </div>
             </Transition>
           </nav>
@@ -192,7 +192,7 @@
 
             <!-- Notifications -->
             <div ref="notifWrapRef" class="relative">
-              <button ref="notifButtonRef" class="vben-header-btn relative inline-flex" :aria-label="notifCount > 0 ? `Notifications, ${notifCount} active` : 'Notifications'" :aria-expanded="notifOpen" @click="notifOpen = !notifOpen">
+              <button ref="notifButtonRef" class="vben-header-btn relative inline-flex" :aria-label="notifCount > 0 ? `Notifications, ${notifCount} active` : 'Notifications'" :aria-expanded="notifOpen" @click="toggleNotifMenu">
                 <UIcon name="i-heroicons-bell" class="h-4 w-4" />
                 <span v-if="notifCount > 0" class="admin-notif-badge">
                   {{ notifCount }}
@@ -256,6 +256,45 @@
               <UIcon :name="isFullscreen ? 'i-heroicons-arrows-pointing-in' : 'i-heroicons-arrows-pointing-out'" class="h-4 w-4" />
             </button>
 
+            <!-- Below md, Settings and Fullscreen stay reachable from this overflow menu. -->
+            <div ref="moreWrapRef" class="relative md:hidden">
+              <button
+                type="button"
+                class="vben-header-btn inline-flex"
+                aria-label="More actions"
+                aria-haspopup="menu"
+                :aria-expanded="moreOpen"
+                @click="toggleMoreMenu"
+              >
+                <UIcon name="i-heroicons-ellipsis-vertical" class="h-4 w-4" />
+              </button>
+              <div
+                v-if="moreOpen"
+                role="menu"
+                aria-label="Header actions"
+                class="absolute right-0 top-full z-[100] mt-2 min-w-[12rem] rounded-xl border py-1 shadow-xl border-mg-line bg-mg-surface-2"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-mg-fg hover:bg-mg-surface-3"
+                  @click="openSettingsFromMenu"
+                >
+                  <UIcon name="i-heroicons-cog-6-tooth" class="h-4 w-4 shrink-0" />
+                  Settings
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-mg-fg hover:bg-mg-surface-3"
+                  @click="toggleFullscreenFromMenu"
+                >
+                  <UIcon :name="isFullscreen ? 'i-heroicons-arrows-pointing-in' : 'i-heroicons-arrows-pointing-out'" class="h-4 w-4 shrink-0" />
+                  {{ isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen' }}
+                </button>
+              </div>
+            </div>
+
             <button class="vben-header-btn inline-flex" :title="isDark ? 'Light mode' : 'Dark mode'" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
               <UIcon :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'" class="h-4 w-4" />
             </button>
@@ -313,13 +352,14 @@ const isFullscreen = ref(false)
 const sidebarOpen = ref(false)
 const collapsed = ref(false)
 const notifOpen = ref(false)
+const moreOpen = ref(false)
 const isMac = ref(false)
-const lgAndUp = ref(true)
 const cmdPalette = ref<{ open: () => void } | null>(null)
 const settingsDrawer = ref<{ toggle: () => void } | null>(null)
 const notifWrapRef = ref<HTMLElement | null>(null)
 const notifButtonRef = ref<HTMLElement | null>(null)
 const notifPanelRef = ref<HTMLElement | null>(null)
+const moreWrapRef = ref<HTMLElement | null>(null)
 const expandedItems = reactive<Record<string, boolean>>({})
 
 const searchShortcut = computed(() => isMac.value ? '⌘K' : 'Ctrl K')
@@ -334,6 +374,26 @@ const openSections = reactive(
 
 function toggleTheme() {
   colorMode.preference = isDark.value ? 'light' : 'dark'
+}
+
+function toggleNotifMenu() {
+  notifOpen.value = !notifOpen.value
+  if (notifOpen.value) moreOpen.value = false
+}
+
+function toggleMoreMenu() {
+  moreOpen.value = !moreOpen.value
+  if (moreOpen.value) notifOpen.value = false
+}
+
+function openSettingsFromMenu() {
+  moreOpen.value = false
+  settingsDrawer.value?.toggle()
+}
+
+async function toggleFullscreenFromMenu() {
+  moreOpen.value = false
+  await toggleFullscreen()
 }
 
 async function toggleFullscreen() {
@@ -392,17 +452,17 @@ function handleLogout() {
 
 function onDocumentClick(event: Event) {
   const target = event.target as Node | null
-  if (!target || !notifOpen.value) return
-  if (
+  if (!target) return
+  if (notifOpen.value && !(
     notifWrapRef.value?.contains(target)
     || notifButtonRef.value?.contains(target)
     || notifPanelRef.value?.contains(target)
-  ) return
-  notifOpen.value = false
-}
-
-function updateLgBreakpoint() {
-  lgAndUp.value = window.innerWidth >= 1024
+  )) {
+    notifOpen.value = false
+  }
+  if (moreOpen.value && !moreWrapRef.value?.contains(target)) {
+    moreOpen.value = false
+  }
 }
 
 onMounted(() => {
@@ -422,14 +482,11 @@ onMounted(() => {
   const savedColor = window.localStorage.getItem('admin-primary-color')
   if (savedColor) appConfig.ui.colors.primary = savedColor
   document.addEventListener('click', onDocumentClick)
-  updateLgBreakpoint()
-  window.addEventListener('resize', updateLgBreakpoint)
 })
 
 onUnmounted(() => {
   if (import.meta.client) {
     document.removeEventListener('click', onDocumentClick)
-    window.removeEventListener('resize', updateLgBreakpoint)
   }
 })
 
@@ -439,12 +496,22 @@ watch(collapsed, value => {
 
 watch(() => route.fullPath, () => {
   notifOpen.value = false
+  moreOpen.value = false
   sidebarOpen.value = false
   trackCurrentRoute()
 })
 </script>
 
 <style scoped>
+.admin-shell-main {
+  padding-left: 0;
+  transition: padding-left 0.2s ease;
+}
+@media (min-width: 1024px) {
+  .admin-shell-main {
+    padding-left: var(--admin-sidebar-width);
+  }
+}
 .vben-nav-item {
   display: flex;
   align-items: center;

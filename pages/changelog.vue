@@ -116,8 +116,9 @@
       </article>
     </div>
 
+    <p v-else-if="changelogError" class="mt-8 text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-500'" role="status">The changelog could not be loaded. Reload the page to try again.</p>
     <div v-else-if="!releases.length" class="mt-8">
-      <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-500'">No entries yet.</p>
+      <p class="text-sm" :class="isDark ? 'text-silver-400' : 'text-gray-500'" role="status">No entries yet.</p>
     </div>
   </div>
 </template>
@@ -145,7 +146,7 @@ interface ChangelogPageEntry { id: number, version: string, content: string, con
 // filter shell first, then the entries, and Nuxt's saved-position restore
 // (smooth, because of `* { scroll-behavior: smooth }`) is aborted mid-way.
 // Bounded (8 s) like /addons: a slow API must not leave the navigation hanging.
-const { data: changelogData } = await useFetch<{ data: ChangelogPageEntry[], meta?: { unreleased?: { id: number, version: string, content: string } | null } }>('/api/v1/changelogs', { timeout: 8000 })
+const { data: changelogData, error: changelogError } = await useFetch<{ data: ChangelogPageEntry[], meta?: { unreleased?: { id: number, version: string, content: string } | null } }>('/api/v1/changelogs', { timeout: 8000 })
 const releases = computed<ChangelogPageEntry[]>(() => changelogData.value?.data ?? [])
 // Notes for the next release; never counted as the current release.
 const unreleased = computed(() => changelogData.value?.meta?.unreleased ?? null)

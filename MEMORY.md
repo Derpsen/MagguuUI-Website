@@ -19,6 +19,7 @@
 - `components/AdSlot.vue` is unused by any page after Meta removal but is kept: it is the reserved slot behind `NUXT_ADS` / `useNuxtAdsEnabled` for a later AdSense change. `tests/meta-ads.spec.ts` is gone.
 - Privacy default s13 (External Game Data) no longer describes Meta snapshots. Live `/privacy` text comes from the database and may still show the old wording until an admin save or a seeded-content sync.
 - Back/Forward restore is applied instantly in `app/router.options.ts` (`behavior: 'instant'`, plus a microtask fallback because `page:loading:end` may already have fired on a cached page). CSS `scroll-behavior: smooth` otherwise aborts mid-way when the next page's body lands late. `/changelog` now awaits its `useFetch` (8 s timeout), like `/addons`.
+- Hash targets on a first load and on a push to another page use `{ el: to.hash, top: hashScrollMargin(to.hash) }` in `app/router.options.ts` (Code-Review #211: `/changelog#release-…` and `/about#contact` used to land at 0). e2e: `tests/hash-scroll.spec.ts`. `/changelog` now distinguishes a failed fetch from an empty catalog, like `/addons`.
 
 ## Agent / Buddy ops
 

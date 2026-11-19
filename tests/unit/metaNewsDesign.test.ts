@@ -139,7 +139,21 @@ describe('soft-navigation CLS (/addons footer)', () => {
     assert.match(options, /queueMicrotask\(start\)/)
     assert.doesNotMatch(options, /behavior: 'smooth'/)
     const changelog = read('pages/changelog.vue')
-    assert.match(changelog, /await useFetch<\{ data: ChangelogPageEntry\[\], meta\?: \{ unreleased\?: \{ id: number, version: string, content: string \} \| null \} \}>\('\/api\/v1\/changelogs', \{ timeout: 8000 \}\)/)
+    assert.match(changelog, /const \{ data: changelogData, error: changelogError \} = await useFetch<\{ data: ChangelogPageEntry\[\], meta\?: \{ unreleased\?: \{ id: number, version: string, content: string \} \| null \} \}>\('\/api\/v1\/changelogs', \{ timeout: 8000 \}\)/)
+  })
+
+  it('scrolls to to.hash on a first load and on a cross-page navigation, not to 0', () => {
+    const options = read('app/router.options.ts')
+    assert.match(options, /const positionFor = \(\) => to\.hash/)
+    assert.match(options, /el: to\.hash, top: hashScrollMargin\(to\.hash\)/)
+    assert.match(options, /if \(from === START_LOCATION\) return positionFor\(\)/)
+    assert.match(options, /resolve\(positionFor\(\)\)/)
+  })
+
+  it('bounds the changelog fetch and tells a failed load from an empty catalog', () => {
+    const changelog = read('pages/changelog.vue')
+    assert.match(changelog, /<p v-else-if="changelogError"[^>]*role="status">The changelog could not be loaded\./)
+    assert.match(changelog, /<p[^>]*role="status">No entries yet\./)
   })
 
   it('bounds the addons fetch and tells a failed load from an empty catalog', () => {

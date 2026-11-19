@@ -46,8 +46,15 @@ export default {
       return false
     }
 
-    const position = { left: 0, top: 0, behavior: 'instant' as const }
-    if (from === START_LOCATION) return position
+    // Hash targets must win over the default top-of-page reset. Building the
+    // position inside the callback means hashScrollMargin sees the element
+    // after the new page has painted (Code-Review #211: a first load of
+    // /changelog#release-… or a footer/FAQ link to /about#contact used to
+    // land at 0).
+    const positionFor = () => to.hash
+      ? { el: to.hash, top: hashScrollMargin(to.hash), behavior: 'auto' as const }
+      : { left: 0, top: 0, behavior: 'instant' as const }
+    if (from === START_LOCATION) return positionFor()
 
     return new Promise((resolve) => {
       let settled = false
@@ -59,7 +66,7 @@ export default {
             resolve(false)
             return
           }
-          resolve(position)
+          resolve(positionFor())
         })
       }
       nuxtApp.hooks.hookOnce('page:loading:end', doScroll)

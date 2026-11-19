@@ -29,21 +29,24 @@ test('Guide, Addons, FAQ, Changelog, About and News share the same heading left 
   }
 })
 
-test('guide steps and string cards keep a sticky-nav scroll-margin', async ({ page }) => {
+const e2eStringCardsRequired = Boolean(process.env.CI) || process.env.NUXT_E2E_SEED === 'true'
+const E2E_WOWUP_PACK = 'E2E Test Pack'
+
+test('guide steps keep a sticky-nav scroll-margin', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/guide')
   await hydrated(page)
   const guideMargin = await page.locator('.guide-step').first().evaluate((el) => Number.parseFloat(getComputedStyle(el).scrollMarginTop))
   expect(guideMargin).toBeGreaterThanOrEqual(120)
-  await page.goto('/strings')
+})
+
+test('string cards keep a sticky-nav scroll-margin', async ({ page }) => {
+  test.skip(!e2eStringCardsRequired, 'string cards are only asserted when CI or NUXT_E2E_SEED is set')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto(`/strings?pack=${encodeURIComponent(E2E_WOWUP_PACK)}`)
   await hydrated(page)
   const cards = page.locator('.string-card')
-  // Prod / unseeded builds may have no string cards; keep the guide assertion
-  // and skip the card check rather than failing the whole visual-qa file.
-  if (await cards.count() === 0) {
-    test.info().annotations.push({ type: 'note', description: 'no string cards in this environment' })
-    return
-  }
+  await expect(cards.first(), 'e2e seed string card should be visible').toBeVisible()
   const cardMargin = await cards.first().evaluate((el) => Number.parseFloat(getComputedStyle(el).scrollMarginTop))
   expect(cardMargin).toBeGreaterThanOrEqual(120)
 })

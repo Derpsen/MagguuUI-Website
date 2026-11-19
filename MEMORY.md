@@ -7,6 +7,10 @@
 - Deployment: Docker on Unraid — image built by `.github/workflows/docker.yml` and published to GHCR; Unraid `update_container MagguuUI`. Live 2026-09-11: homepage catalog-summary + admin-only ECharts. GitHub sync reads MagguuUI_Data/AddOns + Classes.
 - Repo contains the public website, admin panel, and Nitro/API backend in one app
 
+## 2026-11-19 Nuxt 4.6.4 dev-server CLI pin
+
+- Nuxt 4.6.4 (security) is fine for `nuxt build`, but `@nuxt/cli@4.0.1` crashes `nuxt dev` with `options.hostname.toLowerCase is not a function` (`hostname` is `{}`; nuxt/nuxt#36829). Pin `@nuxt/cli` to `^4.0.3` (Daniel Roe hotfix). Do not land a lockfile that keeps `@nuxt/cli@4.0.1` under Nuxt 4.6.4.
+
 ## 2026-11-19 Mythic+ Meta removal
 
 - Product surface `/meta` is gone. Redirect `/meta` and `/meta/**` to `/` (301). Migration `server/database/migrations/0000_drop_meta_tables.sql` plus matching `bootstrap.ts` drops: `meta_sync_spec_staging`, `meta_sync_run_staging`, `meta_sync_lock`, `meta_runs`, `meta_snapshot_active`, `meta_snapshots`. Unraid backup (do not delete): `/mnt/user/NAS/Backup/homelab/20261113-meta-remove/db/magguuui-website.db`. Do not fire a Meta sync; do not print credentials.

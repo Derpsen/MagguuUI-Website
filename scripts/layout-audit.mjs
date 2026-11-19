@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
- * Repeatable visual layout audit (Playwright).
+ * Repeatable visual layout audit (Playwright). Manual runs only — this is
+ * not a required GitHub check, and it must not be pointed at the live host
+ * from CI. Pass a local preview (or another non-production URL) as --base.
  *
- *   npm run audit:layout -- --base https://ui.magguu.xyz --out ./layout-audit-out
  *   npm run audit:layout -- --base http://127.0.0.1:3202 --out ./layout-audit-out
  *
  * Coverage: all public routes, every published news article from /api/v1/news,

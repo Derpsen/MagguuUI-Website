@@ -53,7 +53,17 @@ describe('visual QA 2026-11-19 source guards', () => {
     assert.doesNotMatch(src, /<h2 class="font-mono[^"]*"[\s\S]{0,80}Unreleased/)
   })
 
-  it('ships a repeatable layout audit script', () => {
+  it('caps the news article reading column at about 72ch, left-aligned on the container', () => {
+    const css = read('assets/css/news.css')
+    assert.match(css, /\.news-measure \{[^}]*max-width:\s*min\(72ch,\s*47\.5rem\)/)
+    const page = read('pages/news/[slug].vue')
+    assert.match(page, /class="news-measure"/)
+    assert.match(page, /class="mg-lead news-lead /)
+    assert.match(page, /class="news-body /)
+    assert.doesNotMatch(page, /mg-lead mt-4 max-w-xl/)
+  })
+
+  it('ships a repeatable layout audit script for manual local runs', () => {
     const pkg = read('package.json')
     assert.match(pkg, /"audit:layout": "node scripts\/layout-audit.mjs"/)
     const src = read('scripts/layout-audit.mjs')
@@ -61,6 +71,9 @@ describe('visual QA 2026-11-19 source guards', () => {
     assert.match(src, /color-contrast/)
     assert.match(src, /Range/)
     assert.match(src, /\/api\/v1\/news/)
+    assert.match(src, /Manual runs only/)
+    assert.match(src, /--base http:\/\/127\.0\.0\.1:3202/)
+    assert.doesNotMatch(src, /--base https:\/\/ui\.magguu\.xyz/)
   })
 
   it('keeps a sticky scroll-margin on guide steps and string cards', () => {

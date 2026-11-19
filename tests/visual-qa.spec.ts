@@ -37,8 +37,50 @@ test('guide steps and string cards keep a sticky-nav scroll-margin', async ({ pa
   expect(guideMargin).toBeGreaterThanOrEqual(120)
   await page.goto('/strings')
   await hydrated(page)
-  const cardMargin = await page.locator('.string-card').first().evaluate((el) => Number.parseFloat(getComputedStyle(el).scrollMarginTop))
+  const cards = page.locator('.string-card')
+  // Prod / unseeded builds may have no string cards; keep the guide assertion
+  // and skip the card check rather than failing the whole visual-qa file.
+  if (await cards.count() === 0) {
+    test.info().annotations.push({ type: 'note', description: 'no string cards in this environment' })
+    return
+  }
+  const cardMargin = await cards.first().evaluate((el) => Number.parseFloat(getComputedStyle(el).scrollMarginTop))
   expect(cardMargin).toBeGreaterThanOrEqual(120)
+})
+
+test('news article body stays within a reading measure at 1280', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 })
+  const res = await page.goto('/news/wow-forever-now-live')
+  if (!res || res.status() !== 200) {
+    test.skip(true, 'seed article not available in this environment')
+  }
+  await hydrated(page)
+  const body = page.locator('.news-body')
+  await expect(body).toBeVisible()
+  const metrics = await body.evaluate((el) => {
+    const width = el.getBoundingClientRect().width
+    const container = el.closest('.mg-container')
+    const measure = el.closest('.news-measure')
+    const left = el.getBoundingClientRect().left
+    const cs = container ? getComputedStyle(container) : null
+    const contentLeft = container && cs
+      ? container.getBoundingClientRect().left + Number.parseFloat(cs.paddingLeft || '0')
+      : left
+    return {
+      width,
+      left,
+      contentLeft,
+      measureWidth: measure ? measure.getBoundingClientRect().width : width,
+    }
+  })
+  expect(metrics.width, `body width ${metrics.width}px`).toBeLessThanOrEqual(760)
+  expect(metrics.measureWidth, `measure ${metrics.measureWidth}px`).toBeLessThanOrEqual(760)
+  expect(Math.abs(metrics.left - metrics.contentLeft), 'body left edge should stay on the container').toBeLessThanOrEqual(2)
+  const lead = page.locator('.news-lead')
+  if (await lead.count()) {
+    const leadWidth = await lead.evaluate(el => el.getBoundingClientRect().width)
+    expect(leadWidth, `lead width ${leadWidth}px`).toBeLessThanOrEqual(760)
+  }
 })
 
 test('404 Home and Go back are the same kind of button', async ({ page }) => {

@@ -99,6 +99,7 @@ describe('admin shell design (PR 5a)', () => {
     assert.doesNotMatch(layout, /role="menuitem"/)
     assert.match(layout, /openSettingsFromMenu/)
     assert.match(layout, /toggleFullscreenFromMenu/)
+    assert.match(layout, /async function toggleFullscreenFromMenu\(\) \{[\s\S]*?closeMoreMenu\(\)[\s\S]*?restoreFullscreenFocus\(moreButtonRef\.value\)/)
     assert.match(layout, /data-testid="admin-settings-trigger"/)
     assert.match(layout, /data-testid="admin-fullscreen-trigger"/)
     assert.match(layout, /restoreFullscreenFocus/)

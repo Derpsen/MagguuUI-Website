@@ -227,4 +227,16 @@ for (const theme of ['dark', 'light'] as const) {
     await expect(toggle).toBeFocused()
     await page.close()
   })
+
+  test(`fullscreen (${theme}, mobile): More actions panel closes and focus returns to More`, async () => {
+    const page = await openDashboard(390, theme)
+    const more = page.getByRole('button', { name: 'More actions' })
+    await more.click()
+    const panel = page.locator('#admin-header-more-panel')
+    await expect(panel).toBeVisible()
+    await panel.getByRole('button', { name: 'Enter fullscreen' }).click()
+    await expect(panel).toHaveCount(0)
+    await expect(more).toBeFocused()
+    await page.close()
+  })
 }

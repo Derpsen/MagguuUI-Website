@@ -18,29 +18,31 @@
     </p>
 
     <template v-if="article">
-      <h1 class="mg-h1 news-title">
-        {{ articleTitle }}
-      </h1>
-      <p class="mt-3 text-sm text-mg-fg-muted">
-        <time :datetime="toIsoDate(article.publishedAt)">{{ formatNewsDate(article.publishedAt) }}</time>
-        · {{ article.author }}
-        <template v-if="article.sourceName && article.sourceUrl">
-          ·
-          <a :href="article.sourceUrl" rel="noopener noreferrer" class="text-mg-fg underline underline-offset-4">
-            {{ article.sourceName }}
-          </a>
-        </template>
-      </p>
-      <p class="mg-lead mt-4 max-w-xl">
-        {{ article.summary }}
-      </p>
-      <ul v-if="article.tags.length" class="mt-4 flex flex-wrap gap-x-4 gap-y-1">
-        <li v-for="tag in article.tags" :key="tag" class="mg-kicker text-mg-fg-muted">
-          {{ tag }}
-        </li>
-      </ul>
+      <div class="news-measure">
+        <h1 class="mg-h1 news-title">
+          {{ articleTitle }}
+        </h1>
+        <p class="mt-3 text-sm text-mg-fg-muted">
+          <time :datetime="toIsoDate(article.publishedAt)">{{ formatNewsDate(article.publishedAt) }}</time>
+          · {{ article.author }}
+          <template v-if="article.sourceName && article.sourceUrl">
+            ·
+            <a :href="article.sourceUrl" rel="noopener noreferrer" class="text-mg-fg underline underline-offset-4">
+              {{ article.sourceName }}
+            </a>
+          </template>
+        </p>
+        <p class="mg-lead news-lead mt-4">
+          {{ article.summary }}
+        </p>
+        <ul v-if="article.tags.length" class="mt-4 flex flex-wrap gap-x-4 gap-y-1">
+          <li v-for="tag in article.tags" :key="tag" class="mg-kicker text-mg-fg-muted">
+            {{ tag }}
+          </li>
+        </ul>
 
-      <SafeHtml class="news-body mt-10 block" :html="article.body" />
+        <SafeHtml class="news-body mt-10 block" :html="article.body" />
+      </div>
 
       <NewsAlsoOnThisSite />
     </template>

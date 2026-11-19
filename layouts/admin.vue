@@ -436,10 +436,10 @@ function restoreFullscreenFocus(trigger: HTMLElement | null) {
 }
 
 async function toggleFullscreenFromMenu() {
-  const trigger = import.meta.client ? document.activeElement as HTMLElement | null : null
+  closeMoreMenu()
   await toggleFullscreen()
   await nextTick()
-  restoreFullscreenFocus(trigger)
+  restoreFullscreenFocus(moreButtonRef.value)
 }
 
 async function toggleFullscreen() {

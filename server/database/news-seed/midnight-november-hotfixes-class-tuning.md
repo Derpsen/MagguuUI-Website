@@ -1,7 +1,7 @@
 ---
 title: "Midnight Hotfixes Buff Several Specs and Ease the Venomous Abyss"
 slug: midnight-november-hotfixes-class-tuning
-date: 2026-11-11
+date: 2026-11-06
 author: Magguu
 summary: "Official Oct 27 class tuning and Nov 5–6 raid hotfixes buff several Midnight specs and ease Ula'tek and the Venomous Abyss."
 tags:
@@ -13,7 +13,7 @@ sources:
   - https://news.blizzard.com/en-us/article/24307310/hotfixes-november-6-2026
 ---
 
-Blizzard’s live hotfix list for modern World of Warcraft, last headed November 6, 2026, covers a late-October class pass and a further easing of The Venomous Abyss. The notes apply to Midnight alongside other versions of the game. Some changes go live immediately; others wait for a realm restart.
+Blizzard’s live hotfix list for modern World of Warcraft was still headed November 6, 2026 as of November 19. It covers a late-October class pass and a further easing of The Venomous Abyss. The notes apply to Midnight alongside other versions of the game. Some changes go live immediately; others wait for a realm restart.
 
 ## October 27 class tuning
 

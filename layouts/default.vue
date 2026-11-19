@@ -353,7 +353,6 @@ const footerGroups = computed<{ title: string, links: FooterLink[] }[]>(() => [
   {
     title: 'Explore',
     links: [
-      { label: 'Meta', to: '/meta' },
       { label: 'News', to: '/news' },
       { label: 'Changelog', to: '/changelog' },
       { label: 'FAQ', to: '/faq' },

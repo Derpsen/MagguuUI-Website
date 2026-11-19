@@ -3,8 +3,9 @@
 // Usage: node tools/lighthouse-budget.mjs <budgets.json> mobile=<lhci-dir> desktop=<lhci-dir>
 // Each <lhci-dir> is a Lighthouse CI results folder (manifest.json + lhr-*.json).
 // Writes a markdown table to $GITHUB_STEP_SUMMARY (or stdout) and prints one
-// annotation per exceeded budget. /meta and /meta/* are a hard gate (::error,
-// exit 1). Other pages stay advisory (::warning, do not fail the process).
+// annotation per exceeded budget. Every bound page is advisory (::warning, do
+// not fail the process). This job is not a required branch-protection check.
+// Do not loosen budgets. The URL list below is the hard route bound.
 import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -72,9 +73,12 @@ export function compare(measured, budget) {
 
 const escapeData = (s) => s.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')
 
-/** /meta and every spec page under it are a hard CI gate (DoD 6.01). */
-export function isHardBudgetPage(page) {
-  return page === '/meta' || page.startsWith('/meta/')
+/** Pages the Lighthouse workflow must audit (hard route bound). Budgets stay advisory. */
+export const LIGHTHOUSE_PAGES = Object.freeze(['/', '/changelog', '/guide'])
+
+/** Budget misses stay advisory; this job is not a required check. */
+export function isHardBudgetPage() {
+  return false
 }
 
 /** @param {string} page @param {string} mode @param {ReturnType<typeof compare>} rows */
@@ -84,7 +88,7 @@ export function annotations(page, mode, rows) {
     .filter((r) => r.ok === false)
     .map((r) => {
       const op = r.kind === 'min' ? 'below the minimum of' : 'above the budget of'
-      const tail = hard ? 'This fails the Lighthouse job.' : 'Advisory only, the job stays green unless a /meta budget also missed.'
+      const tail = hard ? 'This fails the Lighthouse job.' : 'Advisory only, the job stays green on an advisory page.'
       const msg = `${page} (${mode}): ${r.label} ${r.value}${r.unit} is ${op} ${r.limit}${r.unit}. ${tail}`
       const kind = hard ? 'error' : 'warning'
       return `::${kind} title=Lighthouse budget::${escapeData(msg)}`
@@ -125,7 +129,7 @@ export function summaryMarkdown(results) {
     '## Lighthouse budgets (advisory)',
     '',
     'Production build served locally on a shared runner, per-metric median of all Lighthouse CI runs per URL (typically 3). ' +
-      'Budgets live in `.github/lighthouse-budgets.json`. `/meta` pages are a hard gate; other pages are advisory.',
+      'Budgets live in `.github/lighthouse-budgets.json`. Bound pages (`/`, `/changelog`, `/guide`) are advisory warnings; do not loosen those budgets, and do not make this job required.',
     '',
     `| Page | Mode | ${METRICS.map((m) => m.label).join(' | ')} |`,
     `|---|---|${METRICS.map(() => '---').join('|')}|`,
@@ -197,7 +201,7 @@ export function main(argv) {
   else process.stdout.write(md)
   const missing = missingHardCoverage(results, budgets)
   for (const pageMode of missing) {
-    warnings.push(`::error title=Lighthouse budget::No Lighthouse results for ${pageMode}. /meta budgets are a hard gate.`)
+    warnings.push(`::error title=Lighthouse budget::No Lighthouse results for ${pageMode}.`)
   }
   for (const w of warnings) console.log(w)
   const failed = hardBudgetFailed(results) || missing.length > 0

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
-import { aggregateRuns, annotations, compare, extractMetrics, hardBudgetFailed, isHardBudgetPage, median, medianMetrics, missingHardCoverage, readRuns, summaryMarkdown } from './lighthouse-budget.mjs'
+import { aggregateRuns, annotations, compare, extractMetrics, hardBudgetFailed, isHardBudgetPage, LIGHTHOUSE_PAGES, median, medianMetrics, missingHardCoverage, readRuns, summaryMarkdown } from './lighthouse-budget.mjs'
 
 const lhr = {
   categories: { performance: { score: 0.83 } },
@@ -47,26 +47,36 @@ test('summary renders a table and the outside-budget count', () => {
   assert.match(md, /1 value\(s\) outside budget/)
 })
 
-test(' /meta pages are a hard gate; other pages stay advisory', () => {
-  assert.equal(isHardBudgetPage('/meta'), true)
-  assert.equal(isHardBudgetPage('/meta/mage/fire'), true)
+test('the Lighthouse route bound is explicit, and budgets stay advisory warnings', () => {
+  assert.deepEqual([...LIGHTHOUSE_PAGES], ['/', '/changelog', '/guide'])
+  const budgets = JSON.parse(readFileSync(new URL('../.github/lighthouse-budgets.json', import.meta.url), 'utf8'))
+  assert.deepEqual(Object.keys(budgets.pages), [...LIGHTHOUSE_PAGES])
+  const yml = readFileSync(new URL('../.github/workflows/lighthouse.yml', import.meta.url), 'utf8')
+  const blocks = [...yml.matchAll(/urls:\s*\|\n((?:\s+http:\/\/localhost:3124\S*\n)+)/g)]
+  assert.equal(blocks.length, 2, 'mobile and desktop URL lists')
+  for (const block of blocks) {
+    const paths = [...block[1].matchAll(/localhost:3124(\S*)/g)].map((m) => {
+      const rest = m[1] || ''
+      return rest === '' || rest === '/' ? '/' : rest
+    })
+    assert.deepEqual(paths, [...LIGHTHOUSE_PAGES])
+  }
+  assert.equal(isHardBudgetPage('/meta'), false)
+  assert.equal(isHardBudgetPage('/meta/mage/fire'), false)
   assert.equal(isHardBudgetPage('/'), false)
   assert.equal(isHardBudgetPage('/guide'), false)
-  const metaRows = compare(extractMetrics(lhr), { performance: 90 })
-  const metaLines = annotations('/meta', 'mobile', metaRows)
-  assert.equal(metaLines.length, 1)
-  assert.match(metaLines[0], /^::error title=Lighthouse budget::/)
-  assert.match(metaLines[0], /This fails the Lighthouse job/)
-  const homeLines = annotations('/', 'mobile', metaRows)
+  const rows = compare(extractMetrics(lhr), { performance: 90 })
+  const homeLines = annotations('/', 'mobile', rows)
+  assert.equal(homeLines.length, 1)
   assert.match(homeLines[0], /^::warning title=Lighthouse budget::/)
-  assert.equal(hardBudgetFailed([{ page: '/', mode: 'mobile', rows: metaRows }]), false)
-  assert.equal(hardBudgetFailed([{ page: '/meta', mode: 'mobile', rows: metaRows }]), true)
+  assert.equal(hardBudgetFailed([{ page: '/', mode: 'mobile', rows }]), false)
+  assert.equal(hardBudgetFailed([{ page: '/guide', mode: 'desktop', rows }]), false)
 })
 
-test('missing /meta coverage is reported', () => {
-  const budgets = { '/': { mobile: {} }, '/meta': { mobile: {}, desktop: {} }, '/meta/mage/fire': { mobile: {}, desktop: {} } }
-  const missing = missingHardCoverage([{ page: '/meta', mode: 'mobile' }], budgets)
-  assert.deepEqual(missing, ['/meta (desktop)', '/meta/mage/fire (mobile)', '/meta/mage/fire (desktop)'])
+test('missing hard coverage is empty when no page is a hard gate', () => {
+  const budgets = { '/': { mobile: {}, desktop: {} }, '/guide': { mobile: {}, desktop: {} } }
+  const missing = missingHardCoverage([{ page: '/', mode: 'mobile' }], budgets)
+  assert.deepEqual(missing, [])
 })
 
 test('median is the middle value, or the average of the two middle values', () => {
@@ -97,11 +107,11 @@ test('aggregateRuns medians every LHR for a path, including folders without a ma
       'resource-summary': { details: { items: [{ resourceType: 'script', transferSize: 175 * 1024 }] } },
     },
   }))
-  write('lhr-1.json', 'http://localhost/meta', 242)
-  write('lhr-2.json', 'http://localhost/meta', 165)
-  write('lhr-3.json', 'http://localhost/meta', 178)
+  write('lhr-1.json', 'http://localhost/guide', 242)
+  write('lhr-2.json', 'http://localhost/guide', 165)
+  write('lhr-3.json', 'http://localhost/guide', 178)
   const [page] = aggregateRuns(readRuns(dir))
-  assert.equal(page.path, '/meta')
+  assert.equal(page.path, '/guide')
   assert.equal(page.samples, 3)
   assert.equal(page.metrics.tbt, 178)
   rmSync(dir, { recursive: true, force: true })

@@ -3,14 +3,14 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
 import { ADMIN_FACES, ALL_FONT_FACES, DEFAULT_FACES, fontFacesForPath } from '../../utils/fontPreload'
-import { contrastRatio } from '../../utils/metaCatalog'
+import { contrastRatio } from '../../utils/contrast'
 
 const read = (file: string) => readFileSync(join(process.cwd(), file), 'utf8')
 
 /** Per-route font preloads (utils/fontPreload.ts, plugins/font-preload.ts). */
 describe('font preload table', () => {
   it('public routes preload every face the first screen draws (measured: sans 400/600/700/800 + mono 400)', () => {
-    for (const path of ['/', '/guide', '/strings', '/addons', '/meta', '/news', '/faq', '/changelog', '/forever', '/some/unknown']) {
+    for (const path of ['/', '/guide', '/strings', '/addons', '/news', '/faq', '/changelog', '/forever', '/some/unknown']) {
       assert.deepEqual([...fontFacesForPath(path)].sort(), ['mono-400', 'sans-400', 'sans-600', 'sans-700', 'sans-800'], path)
     }
     assert.deepEqual(DEFAULT_FACES, ALL_FONT_FACES)
@@ -67,7 +67,7 @@ function themeBlock(css: string, selector: string): Record<string, string> {
 
 const SETUP_CSS = ['assets/css/setup.css', 'assets/css/setup-addons.css', 'assets/css/setup-guide.css', 'assets/css/setup-strings.css']
 
-/** Guide / Strings / Addons styles (assets/css/setup*.css, split per owner so /meta and the other pages do not ship them). */
+/** Guide / Strings / Addons styles (assets/css/setup*.css, split per owner so /news and the other pages do not ship them). */
 describe('setup pages: setup.css', () => {
   const setup = SETUP_CSS.map(read).join('\n')
   const tokens = read('assets/css/tokens.css')
@@ -87,7 +87,7 @@ describe('setup pages: setup.css', () => {
     for (const [file, css] of Object.entries(owners)) {
       for (const name of css) assert.match(read(file), new RegExp(`import '~/assets/css/${name.replace('.', '\\.')}'`), `${file} imports ${name}`)
     }
-    for (const file of ['pages/meta/index.vue', 'pages/news/index.vue', 'pages/index.vue']) {
+    for (const file of ['pages/news/index.vue', 'pages/index.vue']) {
       try { assert.doesNotMatch(read(file), /setup[\w-]*\.css/, file) } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e }
     }
   })

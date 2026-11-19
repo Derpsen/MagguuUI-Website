@@ -50,7 +50,7 @@ export default defineNuxtPlugin(() => {
   }
   // Only the library import is deferred. A short rIC timeout forced this work
   // while Lighthouse was still in the TBT window (the 4 s deadline became a
-  // 400 ms+ long task on /meta).
+  // 400 ms+ long task on a heavy page).
   if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 15000 })
   else setTimeout(start, 10000)
 })

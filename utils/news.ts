@@ -6,7 +6,7 @@
 export const NEWS_AUTHOR = 'Magguu'
 export const NEWS_SUMMARY_MAX = 160
 export const NEWS_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-/** Time-sensitive seed that must not go live after 2026-11-13 01:30 Europe/Berlin. */
+/** Time-sensitive seed that must stay unpublished; the Twitch drop ended 2026-11-13 01:30 Europe/Berlin. */
 export const NEWS_UNPUBLISHED_SEED_SLUG = 'pouch-of-violet-dust-launch-celebration'
 
 export type NewsArticle = {

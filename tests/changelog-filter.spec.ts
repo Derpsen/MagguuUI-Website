@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { hydrated } from './support/hydrated'
 
 /**
  * Changelog filter, "since my version" and feeds. Rows v0.9.1 to v0.9.3 come
@@ -97,3 +98,27 @@ for (const [path, type, root] of [
     expect(again.status()).toBe(304)
   })
 }
+
+test.describe('changelog separates a failed load from an empty catalog', () => {
+  // Same reason as tests/soft-nav.spec.ts: a full goto would be SSR and bypass page.route.
+  test.use({ serviceWorkers: 'block' })
+  test('API error: "could not be loaded"', async ({ page }) => {
+    await page.route('**/api/v1/changelogs', route => route.abort())
+    await page.goto('/guide')
+    await hydrated(page)
+    await page.evaluate(() => (document.querySelector('footer a[href="/changelog"]') as HTMLElement).click())
+    await expect(page).toHaveURL(/\/changelog$/)
+    await expect(page.getByRole('status').filter({ hasText: 'The changelog could not be loaded.' })).toBeVisible()
+    await expect(page.getByText('No entries yet.')).toHaveCount(0)
+  })
+
+  test('empty catalog: "No entries yet."', async ({ page }) => {
+    await page.route('**/api/v1/changelogs', route => route.fulfill({ json: { data: [] } }))
+    await page.goto('/guide')
+    await hydrated(page)
+    await page.evaluate(() => (document.querySelector('footer a[href="/changelog"]') as HTMLElement).click())
+    await expect(page).toHaveURL(/\/changelog$/)
+    await expect(page.getByRole('status').filter({ hasText: 'No entries yet.' })).toBeVisible()
+    await expect(page.getByText('The changelog could not be loaded.')).toHaveCount(0)
+  })
+})

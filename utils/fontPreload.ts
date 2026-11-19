@@ -4,7 +4,7 @@
  * wasted bytes (the first version preloaded all five everywhere: three of them unused on /admin/login).
  * The table below comes from measuring the faces actually used above the fold (computed font-family and weight of every
  * visible text node at 390 and 1440 px, resolved to the declared weights, ~/web-redesign/fontsused.mjs). Result of
- * the PR 3 measurement: `/`, /guide, /strings, /addons, /meta, /news, /faq, /changelog and /forever all draw sans 400,
+ * the PR 3 measurement: `/`, /guide, /strings, /addons, /news, /faq, /changelog and /forever all draw sans 400,
  * 600, 700, 800 and mono 400 on the first screen (sans 600 is the nav and small labels, so it belongs in the default;
  * mono 700 only appears below the fold on /strings and /changelog and is deliberately not preloaded); /admin/login draws
  * sans 400 and 600 and mono 400 only. A route not listed gets DEFAULT_FACES.

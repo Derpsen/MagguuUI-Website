@@ -27,15 +27,20 @@ as a `## Sources` list in the body when that heading is not already present.
 
 ## Seed
 
-Boot inserts each slug from `server/database/news-seed/*.md` (Buddy YAML
-frontmatter + body) at most once. A row in `news_seed_markers` records that
-the slug has already been offered. Admin edits are never overwritten, and a
-deleted article is not re-inserted on a later boot.
+Markdown fixtures live in `server/database/news-seed/*.md` (Buddy YAML
+frontmatter + body). `scripts/embed-news-seeds.mjs` copies them into
+`server/utils/newsSeedEmbedded.ts` before `nuxt build` (`prebuild`, or
+`npm run embed:news-seeds`). The catalog is committed so Docker `npm ci` can
+run before the rest of the source is copied. `.dockerignore` keeps the seed
+markdown available to `prebuild`. The loader is not `process.cwd()`-dependent. Boot inserts each slug at most
+once. A row in `news_seed_markers` records that the slug has already been
+offered. Admin edits are never overwritten, and a deleted article is not
+re-inserted on a later boot.
 
 `pouch-of-violet-dust-launch-celebration` is always seeded **unpublished**. The
-Twitch drop it describes ends 2026-11-13 01:30 Europe/Berlin, so it must not go
-live automatically. Publish it from the admin only if you still want it public
-after that cutoff.
+Twitch drop it describes ended 2026-11-13 01:30 Europe/Berlin, so it must not
+go live automatically. Publish it from the admin only if you still want that
+historical note public.
 
 ## Public surface
 
@@ -46,7 +51,7 @@ after that cutoff.
 - RSS: `/news/feed.xml` (author is `<dc:creator>Magguu</dc:creator>`, not an email-less `<author>` tag)
 - Retail header + footer link, site search group "News", visitor tracking counts `/news` and `/news/[slug]` as `/news`
 - Edge cache for `/news` and `/news/[slug]` (not `/news/feed.xml`)
-- Internal "Also on this site" links to `/guide` and `/meta`. `/meta` lands with the Meta PRs; the link check is advisory, so a temporary 404 there does not block the build
+- Internal "Also on this site" links to `/guide` only. The link check is advisory.
 - English copy, the plain site style, dark and light, axe-covered in Playwright
 
 ## Admin

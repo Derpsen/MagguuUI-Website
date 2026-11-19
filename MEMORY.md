@@ -7,6 +7,30 @@
 - Deployment: Docker on Unraid — image built by `.github/workflows/docker.yml` and published to GHCR; Unraid `update_container MagguuUI`. Live 2026-09-11: homepage catalog-summary + admin-only ECharts. GitHub sync reads MagguuUI_Data/AddOns + Classes.
 - Repo contains the public website, admin panel, and Nitro/API backend in one app
 
+## 2026-11-19 News seeds ship in the production image
+
+- `server/database/news-seed/*.md` is the editorial source. `scripts/embed-news-seeds.mjs` writes `server/utils/newsSeedEmbedded.ts` on `prebuild`; boot (`loadNewsSeedArticles()` / `seedNewsArticlesIfMissing()`) reads that catalog, not `process.cwd()`. Do not hook the embed script into `postinstall`: Docker runs `npm ci` after copying only `package*.json`. `.dockerignore` has an exception for `server/database/news-seed/*.md` so `prebuild` can refresh the catalog. A runtime image that only copies `.output` still contains the seeds.
+- After fact-check on 2026-11-19: rewrite stale “now live” / PTR-without-a-date copy; rename `echoes-of-the-worldcore-announced` to `echoes-of-the-worldcore-december-1`; keep the violet-dust drop unpublished (ended 2026-11-13 01:30 Europe/Berlin). New notes: Talebound December 1, the 22nd Anniversary (17 Nov–8 Dec), and Taldramir. Semantics unchanged: insert once, never overwrite admin edits, respect markers.
+- `npm run verify` / `scripts/verify-build.mjs` fails if `.output/server` is missing any embedded seed slug. Regenerate with `npm run embed:news-seeds` after editing markdown.
+
+## 2026-11-19 Nuxt 4.6.4 dev-server CLI pin
+
+- Nuxt 4.6.4 (security) is fine for `nuxt build`, but `@nuxt/cli@4.0.1` crashes `nuxt dev` with `options.hostname.toLowerCase is not a function` (`hostname` is `{}`; nuxt/nuxt#36829). Pin `@nuxt/cli` to `^4.0.3` (Daniel Roe hotfix). Do not land a lockfile that keeps `@nuxt/cli@4.0.1` under Nuxt 4.6.4.
+
+## 2026-11-19 Mythic+ Meta removal
+
+- Product surface `/meta` is gone. Redirect `/meta` and `/meta/**` to `/` (301). Migration `server/database/migrations/0000_drop_meta_tables.sql` plus matching `bootstrap.ts` drops: `meta_sync_spec_staging`, `meta_sync_run_staging`, `meta_sync_lock`, `meta_runs`, `meta_snapshot_active`, `meta_snapshots`. Unraid backup (do not delete): `/mnt/user/NAS/Backup/homelab/20261113-meta-remove/db/magguuui-website.db`. Do not fire a Meta sync; do not print credentials.
+
+## 2026-11-19 Code-Review lows after #210
+
+- Drizzle kit now has `server/database/migrations/meta/0000_snapshot.json` for the current schema (no meta tables). `npm run db:generate` must stay a no-op; do not check in a full baseline migration. Runtime still applies drops via `bootstrap.ts` (the project does not run `drizzle-kit migrate` on Unraid).
+- Lighthouse bound pages are `/`, `/changelog`, `/guide` (`LIGHTHOUSE_PAGES`, tested against the workflow and budgets file). Budget misses stay advisory warnings. Do not loosen budgets. Do not make the Lighthouse job a required check.
+- Soft-nav Back assertions measure the live scroll position (both ±8 bounds) and do not `scrollTo` the saved offset afterwards. The scroll-reset plugin re-focuses without scrolling on `popstate` so a focused footer link cannot steal the history position. The soft-nav warm-up `setTimeout` is cleared when `hydrated()` wins the race.
+- `components/AdSlot.vue` is unused by any page after Meta removal but is kept: it is the reserved slot behind `NUXT_ADS` / `useNuxtAdsEnabled` for a later AdSense change. `tests/meta-ads.spec.ts` is gone.
+- Privacy default s13 (External Game Data) no longer describes Meta snapshots. Live `/privacy` text comes from the database and may still show the old wording until an admin save or a seeded-content sync.
+- Back/Forward restore is applied instantly in `app/router.options.ts` (`behavior: 'instant'`, plus a microtask fallback because `page:loading:end` may already have fired on a cached page). CSS `scroll-behavior: smooth` otherwise aborts mid-way when the next page's body lands late. `/changelog` now awaits its `useFetch` (8 s timeout), like `/addons`.
+- Hash targets on a first load and on a push to another page use `{ el: to.hash, top: hashScrollMargin(to.hash) }` in `app/router.options.ts` (Code-Review #211: `/changelog#release-…` and `/about#contact` used to land at 0). e2e: `tests/hash-scroll.spec.ts`. `/changelog` now distinguishes a failed fetch from an empty catalog, like `/addons`.
+
 ## Agent / Buddy ops
 
 - Entrypoint: `AGENTS.md` → this file (ops history).
@@ -121,7 +145,7 @@
 - `requireAuth(event)` accepts legacy bearer tokens and HttpOnly cookie sessions. Session validation is bound to browser + OS family (`server/utils/session.ts`). Keep the softer `/api/v1/auth/session` endpoint aligned with `requireAuth`.
 - OG images: templates need a renderer suffix; we use `.takumi.vue` (`components/OgImage/MagguuOg.takumi.vue`). `satori` ^0.47.1 (nuxt-og-image 7 peer; no active `.satori.vue`); >=0.48 blocked.
 - GitHub webhook `server/api/v1/webhooks/github.post.ts` accepts signed events only from the configured repository, imports main pushes from the immutable after SHA, and handles `CHANGELOG.md`, `MagguuUI.toc`, and `MagguuUI_Data/AddOns|Classes/*.lua` independently. Manual pulls resolve main once and fetch the MagguuUI_Data snapshot at that SHA.
-- Required production env: `NUXT_JWT_SECRET`, `NUXT_ADMIN_PASSWORD`. Optional: `NUXT_GITHUB_TOKEN`, `NUXT_WEBAUTHN_*`, `API_BEARER_TOKEN`, `NUXT_OG_IMAGE_SECRET`, `NUXT_BLIZZARD_CLIENT_ID`, `NUXT_BLIZZARD_CLIENT_SECRET`, `NUXT_BLIZZARD_REGION`, `NUXT_META_NIGHTLY`, `NUXT_META_KUMA_PUSH_URL`. See `.env.example` and `docs/env-vars.md`.
+- Required production env: `NUXT_JWT_SECRET`, `NUXT_ADMIN_PASSWORD`. Optional: `NUXT_GITHUB_TOKEN`, `NUXT_WEBAUTHN_*`, `API_BEARER_TOKEN`, `NUXT_OG_IMAGE_SECRET`. See `.env.example` and `docs/env-vars.md`. Meta/Blizzard env names were retired 2026-11-19 (see removal note).
 
 ## Current Hardening State
 
@@ -289,19 +313,7 @@
   runs if the release check fails (`partial` / `error` with both results).
   Shared lock with Check/Resync; rate-limit skip on remaining=0 / 429 /
   rate-limit 403.
-- Meta prototype (`/meta`): EU Mythic+ routes, snapshot schema
-  (`utils/metaTypes.ts`, `docs/meta-snapshot.md`, fixture
-  `tests/fixtures/blizzard-meta/snapshot.json`). English centralized copy
-  (`utils/metaCopy.ts`). No "World of Warcraft"/"WoW" in our titles or URLs.
-  Empty pages show "Collecting data." Expired snapshots (over 30 days) show "Data unavailable." /meta changes go through a PR, Code-Review Ship, and green CI (docs-only may still go direct). Privacy s13
-  (server-side retrieval, no visitor data passed on). The nightly Blizzard
-  job is `blizzard:nightly` at 03:15 UTC, default off
-  (`NUXT_META_NIGHTLY`), also off without `NUXT_BLIZZARD_CLIENT_ID` /
-  `NUXT_BLIZZARD_CLIENT_SECRET` (runtimeConfig `blizzardClientId` /
-  `blizzardClientSecret`, never logged). Optional `NUXT_BLIZZARD_REGION=eu`,
-  `NUXT_META_KUMA_PUSH_URL`, sample caps. Creds are not on Unraid until they
-  are added there; the job stays off until then. The full spec layout follows
-  in a later PR.
+- Mythic+ Meta was removed 2026-11-19 (PR #210, branch `chore/remove-meta`, priority over #204). `/meta` and `/meta/**` 301 to `/`. Boot drops leftover meta tables (see `0000_drop_meta_tables.sql`). Retired env **names** only: `NUXT_BLIZZARD_CLIENT_ID`, `NUXT_BLIZZARD_CLIENT_SECRET`, `NUXT_BLIZZARD_REGION`, `NUXT_META_NIGHTLY`, `NUXT_META_KUMA_PUSH_URL`, `NUXT_META_SAMPLE_PER_SPEC`, `NUXT_META_MAX_ATTEMPTS_PER_SPEC`, `NUXT_META_MAX_CONCURRENT_SPECS`, `NUXT_META_HEAP_LIMIT_MB`, `NUXT_META_CLI_HEAP_MB`, `NUXT_ALLOW_META_FIXTURE_SEED`. Do not run a Meta sync on Unraid. News and auth are unchanged.
 - Build info: Dockerfile `GIT_SHA`/`BUILD_TIME` args -> env; admin dashboard
   shows `Live: <sha7> · built <UTC>` (fallback `dev`) via
   `/api/v1/admin/system/build`.
@@ -737,7 +749,7 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 
 ## 2026-11-12 manual Meta CLI (this PR)
 
-- Protected manual trigger is a CLI in the image (`.output/server/meta-sync-cli.mjs`), not an admin API and not `/_nitro/tasks`. Unraid & Server: `docker exec -it MagguuUI node .output/server/meta-sync-cli.mjs` (`-it` so Ctrl-C reaches the CLI). A `docker stop` of the container does not SIGTERM an exec process, so the lock can stay held for up to 50 minutes. Do not fire until this PR is merged and autoupdate has pulled the image. CI smokes the binary in the PR image build (`docker-scan.yml`, `docker run --rm scan-target:latest node .output/server/meta-sync-cli.mjs`) and in the main `docker.yml` smoke (`docker exec smoke …`), with no Blizzard credentials, expecting exit 4 and `status: "skipped"`.
+- SUPERSEDED 2026-11-19 (Mythic+ Meta removed; do not run). Historical: protected manual trigger was a CLI in the image (`.output/server/meta-sync-cli.mjs`), not an admin API and not `/_nitro/tasks`. Unraid & Server: `docker exec -it MagguuUI node .output/server/meta-sync-cli.mjs` (`-it` so Ctrl-C reaches the CLI). A `docker stop` of the container does not SIGTERM an exec process, so the lock can stay held for up to 50 minutes. Do not fire until this PR is merged and autoupdate has pulled the image. CI smokes the binary in the PR image build (`docker-scan.yml`, `docker run --rm scan-target:latest node .output/server/meta-sync-cli.mjs`) and in the main `docker.yml` smoke (`docker exec smoke …`), with no Blizzard credentials, expecting exit 4 and `status: "skipped"`.
 - The nightly lock is now a SQLite row (`meta_sync_lock`, owner token + TTL / deadline, atomic `BEGIN IMMEDIATE` acquire, release in `finally`). TTL is the 45-minute job deadline plus a 5-minute grace so a winding-down run cannot be overlapped at the deadline. Nightly and CLI share it; a second process exits 2 with "A Meta update is already running". `kumaStatusForMetaRun('locked')` is `down`. Staging clear at run start only drops tokens older than the lock TTL (and orphan spec rows); this is the earlier Code-Review cross-process clear-all LOW.
 - CLI reuses `runScheduledBlizzardMetaSync` (force=true so it can run when `NUXT_META_NIGHTLY` is off; credentials still required). JSON summary + exit codes 0/1/2/3/4. SIGINT/SIGTERM abort the in-flight sync, release the lock in `finally`, and exit non-zero. Separate process next to the server; strips inherited `NODE_OPTIONS` 640 and re-execs at 256 MB; peak memory is server plus CLI.
 - Cheap LOW taken here: throw `Meta nightly aborted` after the item/spell icon pools so an external abort mid icon-phase cannot promote a partial snapshot (`tests/unit/blizzardMetaSync.heap.test.ts`).

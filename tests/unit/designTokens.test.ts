@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
-import { contrastRatio } from '../../utils/metaCatalog'
+import { contrastRatio } from '../../utils/contrast'
 
 /**
  * Design system tokens (assets/css/tokens.css): every text colour must clear WCAG AA on every surface it can sit on,

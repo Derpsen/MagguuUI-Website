@@ -1,7 +1,7 @@
 ---
-title: "World of Warcraft: Forever Is Now Live"
+title: "World of Warcraft: Forever Launched November 4"
 slug: wow-forever-now-live
-date: 2026-11-11
+date: 2026-11-04
 summary: "WoW: Forever launched worldwide on November 4, 2026, with new zones, the Skyborne, rulesets, and a first-login interface preset."
 tags:
   - wow-forever
@@ -14,7 +14,7 @@ sources:
   - https://news.blizzard.com/en-us/article/24316097/the-adventure-begins-in-wow-forever-stay-connected-with-discord-and-taldramir-takes-shape-in-wow-weekly
 ---
 
-World of Warcraft: Forever went live worldwide on November 4, 2026, at 3:00 p.m. PST (midnight, November 5, in Europe/Berlin). Blizzard positions it as a permanent game alongside modern World of Warcraft and existing Classic versions. Access is included with an active World of Warcraft subscription or Game Time.
+World of Warcraft: Forever launched worldwide on November 4, 2026, at 3:00 p.m. PST (midnight, November 5, in Europe/Berlin). Blizzard positions it as a permanent game alongside modern World of Warcraft and existing Classic versions. Access is included with an active World of Warcraft subscription or Game Time.
 
 The setting sits after *Warcraft III Reforged: Forsaken Kingdom* and before Molten Core. Players level to 60 across the original continents, then continue through new stories and ongoing updates.
 

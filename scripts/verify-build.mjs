@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { join } from 'node:path'
 import { verifyAdsProdStarts } from './verify-ads-runtime.mjs'
 import { createServer } from 'node:net'
 import { setTimeout as delay } from 'node:timers/promises'
@@ -34,6 +35,42 @@ function fail(message, cause) {
   error.message = message + (cause ? `\n${error.message}` : '')
   throw error
 }
+
+
+function collectOutputTextFiles(dir, acc = []) {
+  if (!existsSync(dir)) return acc
+  for (const name of readdirSync(dir)) {
+    const full = join(dir, name)
+    const st = statSync(full)
+    if (st.isDirectory()) {
+      collectOutputTextFiles(full, acc)
+      continue
+    }
+    if (/\.(mjs|js|cjs|map|json)$/.test(name)) acc.push(full)
+  }
+  return acc
+}
+
+function assertNewsSeedsEmbeddedInOutput() {
+  const catalogPath = 'server/utils/newsSeedEmbedded.ts'
+  if (!existsSync(catalogPath)) {
+    fail(`Missing ${catalogPath}. Run "npm run embed:news-seeds" or "npm run postinstall" first.`)
+  }
+  const catalog = readFileSync(catalogPath, 'utf8')
+  const slugs = [...catalog.matchAll(/^ {2}"([a-z0-9-]+)\.md":/gm)].map(match => match[1])
+  if (slugs.length === 0) {
+    fail('Embedded news catalog does not list any seed markdown files')
+  }
+  const files = collectOutputTextFiles('.output/server')
+  const haystack = files.map(file => readFileSync(file, 'utf8')).join('\n')
+  const missing = slugs.filter(slug => !haystack.includes(slug))
+  if (missing.length) {
+    fail(`Production build is missing embedded news seed slug(s): ${missing.join(', ')}`)
+  }
+  console.log(`[verify] production output includes ${slugs.length} embedded news seed slug(s)`)
+}
+
+assertNewsSeedsEmbeddedInOutput()
 
 function headerIncludes(response, name, expectedValue) {
   const actual = response.headers.get(name) || ''

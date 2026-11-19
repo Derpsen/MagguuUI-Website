@@ -21,6 +21,7 @@ import { DEFAULT_CONTENT_LOCALE } from '../../server/utils/contentLocales'
 import { BOOT_INDEX_STATEMENTS } from '../../server/utils/bootMigrations'
 import { LEGACY_CONTENT_MARKERS, LEGACY_FAQ_MARKERS } from '../../server/utils/bootContentMarkers'
 import { runWebsiteBoot } from '../../server/utils/websiteBoot'
+import { loadNewsSeedArticles } from '../../server/utils/bootNews'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const repoRoot = join(here, '../..')
@@ -105,9 +106,10 @@ describe('website boot characterization', () => {
     assert.equal(n('SELECT count(*) AS n FROM site_content'), DEFAULT_SITE_CONTENT.length)
     assert.equal(n('SELECT count(*) AS n FROM faqs'), DEFAULT_FAQS.length)
     assert.equal(n('SELECT count(*) AS n FROM changelogs'), 1 + PREVIOUS_ADDON_CHANGELOGS.length)
-    assert.equal(n('SELECT count(*) AS n FROM news_articles'), 9)
+    const newsSeeds = loadNewsSeedArticles()
+    assert.equal(n('SELECT count(*) AS n FROM news_articles'), newsSeeds.length)
     assert.equal(n("SELECT count(*) AS n FROM news_articles WHERE slug = 'pouch-of-violet-dust-launch-celebration' AND is_published = 0"), 1)
-    assert.equal(n('SELECT count(*) AS n FROM news_articles WHERE is_published = 1'), 8)
+    assert.equal(n('SELECT count(*) AS n FROM news_articles WHERE is_published = 1'), newsSeeds.filter(article => article.isPublished).length)
     const settingKeys = (sqlite.prepare('SELECT key FROM settings').all() as Array<{ key: string }>).map(row => row.key).sort()
     assert.deepEqual(settingKeys, Object.keys(SITE_SETTINGS_DEFAULTS).sort())
 
@@ -151,7 +153,7 @@ describe('website boot characterization', () => {
     assert.ok(!second.some(line => line.includes('default FAQ entries seeded')))
     assert.ok(!second.some(line => line.startsWith('[Init] Added current addon changelog')))
     assert.ok(!second.some(line => line.startsWith('[Init] Added addon changelog')))
-    assert.ok(first.some(line => line.startsWith('[Init] Seeded 9 news articles')))
+    assert.ok(first.some(line => line === `[Init] Seeded ${loadNewsSeedArticles().length} news articles`))
     assert.ok(!second.some(line => line.startsWith('[Init] Seeded ')))
     // Today's changelog repair may still match a stale-text predicate on the
     // current default body, so a second start can log an update while writing

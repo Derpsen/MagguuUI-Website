@@ -1,17 +1,21 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { readdirSync, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, it } from 'node:test'
 import Database from 'better-sqlite3'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { initializeDatabase } from '../../server/database/bootstrap'
 import * as schema from '../../server/database/schema'
-import { recordNewsSeedMarker, seedNewsArticlesIfMissing } from '../../server/utils/bootNews'
+import { listEmbeddedNewsSeedSources, loadNewsSeedArticles, recordNewsSeedMarker, seedNewsArticlesIfMissing } from '../../server/utils/bootNews'
+import { NEWS_SEED_EMBEDDED } from '../../server/utils/newsSeedEmbedded'
 import { buildNewsRss, newsEntryUrl } from '../../server/utils/newsFeed'
 import { NEWS_AUTHOR, NEWS_SUMMARY_MAX, NEWS_UNPUBLISHED_SEED_SLUG, hostnameMatches, isHttpUrl, isNewsSlug, sourceNameFromUrl } from '../../utils/news'
 import { appendSourcesToBody, parseNewsMarkdown } from '../../utils/newsMarkdown'
 
-const FIXTURES = join(process.cwd(), 'server/database/news-seed')
+const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), '../../server/database/news-seed')
+const SEED_ARTICLES = loadNewsSeedArticles()
+const PUBLISHED_SEED_COUNT = SEED_ARTICLES.filter(article => article.isPublished).length
 
 describe('news markdown and sources', () => {
   it('parses Buddy frontmatter, uses the first source, and keeps an existing Sources list', () => {
@@ -109,26 +113,26 @@ describe('news seed and RSS', () => {
     const sqlite = new Database(':memory:')
     initializeDatabase(sqlite)
     const db = drizzle(sqlite, { schema })
-    assert.equal(seedNewsArticlesIfMissing(db, FIXTURES), 9)
-    assert.equal(seedNewsArticlesIfMissing(db, FIXTURES), 0)
+    assert.equal(seedNewsArticlesIfMissing(db), SEED_ARTICLES.length)
+    assert.equal(seedNewsArticlesIfMissing(db), 0)
     sqlite.prepare("UPDATE news_articles SET title = 'Edited' WHERE slug = 'wow-forever-now-live'").run()
-    assert.equal(seedNewsArticlesIfMissing(db, FIXTURES), 0)
+    assert.equal(seedNewsArticlesIfMissing(db), 0)
     const row = sqlite.prepare("SELECT title, is_published AS isPublished FROM news_articles WHERE slug = 'wow-forever-now-live'").get() as { title: string, isPublished: number }
     assert.equal(row.title, 'Edited')
     const pouch = sqlite.prepare("SELECT is_published AS isPublished FROM news_articles WHERE slug = ?").get(NEWS_UNPUBLISHED_SEED_SLUG) as { isPublished: number }
     assert.equal(pouch.isPublished, 0)
     const published = sqlite.prepare('SELECT count(*) AS n FROM news_articles WHERE is_published = 1').get() as { n: number }
-    assert.equal(published.n, 8)
+    assert.equal(published.n, PUBLISHED_SEED_COUNT)
   })
 
   it('does not re-insert a slug after it has been deleted', () => {
     const sqlite = new Database(':memory:')
     initializeDatabase(sqlite)
     const db = drizzle(sqlite, { schema })
-    assert.equal(seedNewsArticlesIfMissing(db, FIXTURES), 9)
+    assert.equal(seedNewsArticlesIfMissing(db), SEED_ARTICLES.length)
     sqlite.prepare("DELETE FROM news_articles WHERE slug = 'wow-forever-now-live'").run()
     recordNewsSeedMarker(db, 'wow-forever-now-live')
-    assert.equal(seedNewsArticlesIfMissing(db, FIXTURES), 0)
+    assert.equal(seedNewsArticlesIfMissing(db), 0)
     const gone = sqlite.prepare("SELECT count(*) AS n FROM news_articles WHERE slug = 'wow-forever-now-live'").get() as { n: number }
     assert.equal(gone.n, 0)
   })
@@ -137,7 +141,7 @@ describe('news seed and RSS', () => {
     const xml = buildNewsRss([
       {
         slug: 'wow-forever-now-live',
-        title: 'World of Warcraft: Forever Is Now Live',
+        title: 'World of Warcraft: Forever Launched November 4',
         summary: 'Launch.',
         body: 'Hello **there**.',
         publishedAt: 1794355200,
@@ -153,7 +157,7 @@ describe('news seed and RSS', () => {
       },
     ].filter(entry => entry.slug !== NEWS_UNPUBLISHED_SEED_SLUG))
     assert.match(xml, /<title>MagguuUI news<\/title>/)
-    assert.match(xml, /World of Warcraft: Forever Is Now Live/)
+    assert.match(xml, /World of Warcraft: Forever Launched November 4/)
     assert.match(xml, /<guid isPermaLink="true">https:\/\/ui\.magguu\.xyz\/news\/wow-forever-now-live<\/guid>/)
     assert.equal(newsEntryUrl({ slug: 'wow-forever-now-live', title: '', summary: '', body: '', publishedAt: 0, author: NEWS_AUTHOR }), 'https://ui.magguu.xyz/news/wow-forever-now-live')
     assert.doesNotMatch(xml, /Should not appear/)
@@ -161,5 +165,42 @@ describe('news seed and RSS', () => {
     assert.match(xml, /xmlns:dc="http:\/\/purl\.org\/dc\/elements\/1\.1\/"/)
     assert.match(xml, /<dc:creator>Magguu<\/dc:creator>/)
     assert.doesNotMatch(xml, /<author>/)
+  })
+})
+
+describe('embedded news seed catalog', () => {
+  it('loads every committed markdown fixture from the build-time catalog, not from process.cwd()', () => {
+    const fromDisk = readdirSync(FIXTURES).filter(name => name.endsWith('.md') && name !== 'README.md').sort()
+    const embedded = Object.keys(NEWS_SEED_EMBEDDED).sort()
+    assert.deepEqual(embedded, fromDisk)
+    for (const name of fromDisk) {
+      assert.equal(NEWS_SEED_EMBEDDED[name], readFileSync(join(FIXTURES, name), 'utf8'), name)
+    }
+    const articles = loadNewsSeedArticles()
+    assert.equal(articles.length, fromDisk.length)
+    assert.equal(listEmbeddedNewsSeedSources().length, fromDisk.length)
+    assert.ok(articles.length >= 12)
+    assert.equal(articles.filter(article => article.slug === NEWS_UNPUBLISHED_SEED_SLUG).length, 1)
+    assert.equal(articles.every(article => article.author === NEWS_AUTHOR), true)
+    assert.equal(articles.every(article => article.summary.length <= NEWS_SUMMARY_MAX), true)
+    assert.equal(articles.every(article => article.sources.length >= 1), true)
+    assert.equal(articles.every(article => article.sourceUrl !== null), true)
+    const unpublished = articles.find(article => article.slug === NEWS_UNPUBLISHED_SEED_SLUG)
+    assert.ok(unpublished)
+    assert.equal(unpublished.isPublished, false)
+    assert.equal(articles.filter(article => article.isPublished).length, articles.length - 1)
+  })
+
+  it('uses the embedded catalog when no directory is passed, even if cwd has no seed tree', () => {
+    const previous = process.cwd()
+    process.chdir('/tmp')
+    try {
+      const articles = loadNewsSeedArticles()
+      assert.equal(articles.length, SEED_ARTICLES.length)
+      assert.equal(articles.map(article => article.slug).sort().join(','), SEED_ARTICLES.map(article => article.slug).sort().join(','))
+    }
+    finally {
+      process.chdir(previous)
+    }
   })
 })

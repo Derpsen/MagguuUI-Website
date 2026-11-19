@@ -11,15 +11,18 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const seedDir = join(root, 'server/database/news-seed')
 const outFile = join(root, 'server/utils/newsSeedEmbedded.ts')
 
-let files = []
-try {
-  files = readdirSync(seedDir)
-    .filter(name => name.endsWith('.md') && name !== 'README.md')
-    .sort()
+function listSeedMarkdown(dir) {
+  try {
+    return readdirSync(dir)
+      .filter(name => name.endsWith('.md') && name !== 'README.md')
+      .sort()
+  }
+  catch {
+    return []
+  }
 }
-catch {
-  files = []
-}
+
+const files = listSeedMarkdown(seedDir)
 
 if (files.length === 0) {
   if (existsSync(outFile)) {

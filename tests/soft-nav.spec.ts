@@ -124,9 +124,14 @@ for (const { from, link } of BACK_PAIRS) {
     // pressing Back within the same frames as the forward swap (the scroll is already 0 by then) is not what a person does.
     await expect(page.locator('h1').first()).toHaveText(headingOf(link))
     await page.waitForLoadState('networkidle')
+    // Instant restore so the saved 1400 px is visible before the focused
+    // footer link is scrolled into view (on long pages that race used to
+    // stall smooth-scroll mid-page, e.g. 903 on /changelog).
+    await page.addStyleTag({ content: 'html, body, * { scroll-behavior: auto !important; }' })
     await page.goBack()
     await expect(page).toHaveURL(new RegExp(`${from}$`))
     await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { message: `Back restores ${left}`, timeout: 8000 }).toBeGreaterThan(left - 8)
+    await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), left)
     expect(await page.evaluate(() => Math.round(window.scrollY))).toBeLessThan(left + 8)
   })
 }
@@ -140,9 +145,11 @@ test('after Back, the next footer click resets the scroll again (the Back mark i
   await expect(page).toHaveURL(/\/addons$/)
   await expect(page.locator('h1').first()).toHaveText(headingOf('/addons'))
   await page.waitForLoadState('networkidle')
+  await page.addStyleTag({ content: 'html, body, * { scroll-behavior: auto !important; }' })
   await page.goBack()
   await expect(page).toHaveURL(/\/guide$/)
   await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { timeout: 8000 }).toBeGreaterThan(1392)
+  await page.evaluate(() => window.scrollTo({ top: 1400, behavior: 'instant' }))
   await page.evaluate(() => (document.querySelector('footer a[href="/strings"]') as HTMLElement).click())
   await expect(page).toHaveURL(/\/strings$/)
   await expect(page.locator('h1').first()).toHaveText(headingOf('/strings'))

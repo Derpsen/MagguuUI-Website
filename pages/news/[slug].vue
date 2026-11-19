@@ -58,7 +58,8 @@ const slug = computed(() => String(route.params.slug || ''))
 
 const { data, error } = await useFetch<{ data: NewsArticle }>(() => `/api/v1/news/${slug.value}`)
 if (error.value || !data.value?.data) {
-  throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
+  // Expected 404 for unpublished or unknown slugs. A fatal error would log [request error] [fatal].
+  throw createError({ statusCode: 404, statusMessage: 'Page not found' })
 }
 
 const article = computed(() => data.value?.data ?? null)

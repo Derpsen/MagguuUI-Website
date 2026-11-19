@@ -7,10 +7,10 @@ import Database from 'better-sqlite3'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { initializeDatabase } from '../../server/database/bootstrap'
 import * as schema from '../../server/database/schema'
-import { listEmbeddedNewsSeedSources, loadNewsSeedArticles, recordNewsSeedMarker, seedNewsArticlesIfMissing } from '../../server/utils/bootNews'
+import { listEmbeddedNewsSeedSources, loadNewsSeedArticles, newsSeedUnpublishMarker, recordNewsSeedMarker, seedNewsArticlesIfMissing } from '../../server/utils/bootNews'
 import { NEWS_SEED_EMBEDDED } from '../../server/utils/newsSeedEmbedded'
 import { buildNewsRss, newsEntryUrl } from '../../server/utils/newsFeed'
-import { NEWS_AUTHOR, NEWS_SUMMARY_MAX, NEWS_UNPUBLISHED_SEED_SLUG, hostnameMatches, isHttpUrl, isNewsSlug, sourceNameFromUrl } from '../../utils/news'
+import { NEWS_AUTHOR, NEWS_REPLACED_SEED_SLUGS, NEWS_SUMMARY_MAX, NEWS_UNPUBLISHED_SEED_SLUG, hostnameMatches, isHttpUrl, isNewsSlug, sourceNameFromUrl } from '../../utils/news'
 import { appendSourcesToBody, parseNewsMarkdown } from '../../utils/newsMarkdown'
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), '../../server/database/news-seed')
@@ -135,6 +135,39 @@ describe('news seed and RSS', () => {
     assert.equal(seedNewsArticlesIfMissing(db), 0)
     const gone = sqlite.prepare("SELECT count(*) AS n FROM news_articles WHERE slug = 'wow-forever-now-live'").get() as { n: number }
     assert.equal(gone.n, 0)
+  })
+
+  it('unpublishes a leftover published row after a seed slug is renamed, once', () => {
+    const sqlite = new Database(':memory:')
+    initializeDatabase(sqlite)
+    const db = drizzle(sqlite, { schema })
+    const replaced = Object.entries(NEWS_REPLACED_SEED_SLUGS)[0]
+    assert.ok(replaced)
+    const [oldSlug, newSlug] = replaced
+    sqlite.prepare(`
+      INSERT INTO news_articles (slug, title, summary, body, published_at, author, tags, is_published)
+      VALUES (?, 'Old Worldcore', 'Old summary.', 'Old body.', 1764547200, 'Magguu', '[]', 1)
+    `).run(oldSlug)
+    assert.equal(seedNewsArticlesIfMissing(db), SEED_ARTICLES.length)
+    const oldRow = sqlite.prepare('SELECT title, body, is_published AS isPublished FROM news_articles WHERE slug = ?').get(oldSlug) as { title: string, body: string, isPublished: number }
+    assert.equal(oldRow.title, 'Old Worldcore')
+    assert.equal(oldRow.body, 'Old body.')
+    assert.equal(oldRow.isPublished, 0)
+    const fresh = sqlite.prepare('SELECT is_published AS isPublished FROM news_articles WHERE slug = ?').get(newSlug) as { isPublished: number }
+    assert.equal(fresh.isPublished, 1)
+    sqlite.prepare('UPDATE news_articles SET is_published = 1 WHERE slug = ?').run(oldSlug)
+    assert.equal(seedNewsArticlesIfMissing(db), 0)
+    const again = sqlite.prepare('SELECT is_published AS isPublished FROM news_articles WHERE slug = ?').get(oldSlug) as { isPublished: number }
+    assert.equal(again.isPublished, 1)
+    const marker = sqlite.prepare('SELECT count(*) AS n FROM news_seed_markers WHERE slug = ?').get(newsSeedUnpublishMarker(oldSlug)) as { n: number }
+    assert.equal(marker.n, 1)
+  })
+
+  it('does not treat an unpublished or missing article page as a fatal request error', () => {
+    const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../pages/news/[slug].vue'), 'utf8')
+    const call = source.match(/throw createError\(\{[^}]+\}/)?.[0] ?? ''
+    assert.match(call, /statusCode: 404/)
+    assert.doesNotMatch(call, /fatal:/)
   })
 
   it('builds an RSS feed of published articles only', () => {

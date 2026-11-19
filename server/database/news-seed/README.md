@@ -5,7 +5,10 @@ the editorial source. `scripts/embed-news-seeds.mjs` embeds them into
 `server/utils/newsSeedEmbedded.ts` before `nuxt build` (`prebuild`). Run
 `npm run embed:news-seeds` after editing a fixture, and keep the generated
 catalog committed. `postinstall` is only `nuxt prepare`, because the Docker
-build runs `npm ci` before the rest of the source is copied.
+build runs `npm ci` before the rest of the source is copied. The runtime
+image copies only `.output`, so production boot reads the embedded catalog,
+not this folder. `.dockerignore`'s `*.md` matches only at the context root
+and never excluded these fixtures from the build.
 
 Boot inserts a slug at most once: it never overwrites an admin edit, and a
 slug recorded in `news_seed_markers` (including after an admin delete) never

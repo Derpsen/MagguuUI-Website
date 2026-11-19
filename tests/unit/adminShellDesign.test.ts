@@ -99,15 +99,33 @@ describe('admin shell design (PR 5a)', () => {
     assert.doesNotMatch(layout, /role="menuitem"/)
     assert.match(layout, /openSettingsFromMenu/)
     assert.match(layout, /toggleFullscreenFromMenu/)
+    assert.match(layout, /async function toggleFullscreenFromMenu\(\) \{[\s\S]*?closeMoreMenu\(\)[\s\S]*?restoreFullscreenFocus\(moreButtonRef\.value\)/)
+    assert.match(layout, /data-testid="admin-settings-trigger"/)
+    assert.match(layout, /data-testid="admin-fullscreen-trigger"/)
+    assert.match(layout, /restoreFullscreenFocus/)
     assert.match(layout, /data-testid="admin-breadcrumb-current"/)
     assert.match(layout, /admin-breadcrumb-current" class="[^"]*flex-1[^"]*truncate/)
   })
 
-  it('the settings drawer closes on Escape and restores focus', () => {
+  it('the settings drawer uses --mg tokens and has no faint legacy palette classes', () => {
+    assert.doesNotMatch(drawer, /isDark \?/)
+    assert.doesNotMatch(drawer, /text-white\/\d|text-slate-\d|bg-primary\/|\[hsl\(/)
+    assert.match(drawer, /text-mg-accent-text/)
+    assert.match(drawer, /bg-mg-surface/)
+    assert.match(drawer, /text-mg-fg-muted/)
+    assert.match(drawer, /border-mg-line/)
+  })
+
+  it('the settings drawer is a dialog that moves and restores focus', () => {
+    assert.match(drawer, /role="dialog"/)
+    assert.match(drawer, /aria-modal="true"/)
+    assert.match(drawer, /aria-labelledby="admin-settings-title"/)
     assert.match(drawer, /function close\(\)/)
     assert.match(drawer, /function openFrom\(/)
-    assert.match(drawer, /event\.key !== 'Escape'/)
-    assert.match(drawer, /el\?\.focus\(\)/)
+    assert.match(drawer, /event\.key === 'Escape'/)
+    assert.match(drawer, /focusAfterClose/)
+    assert.match(drawer, /focusDrawer/)
+    assert.match(drawer, /admin-settings-trigger/)
     assert.match(drawer, /aria-label="Close settings"/)
   })
 

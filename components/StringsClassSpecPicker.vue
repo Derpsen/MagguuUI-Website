@@ -2,7 +2,7 @@
 <template>
   <div>
     <span class="strings-label">Class</span>
-    <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="WoW classes">
+    <div class="wow-class-chip-list" role="listbox" aria-label="WoW classes">
       <button
         v-for="cls in classes"
         :key="cls"
@@ -34,7 +34,7 @@
   <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1" enter-to-class="opacity-100 translate-y-0">
     <div v-if="selectedClass && specs.length">
       <span class="strings-label">Specialization</span>
-      <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="Specializations">
+      <div class="wow-class-chip-list" role="listbox" aria-label="Specializations">
         <button
           v-for="spec in specs"
           :key="spec"

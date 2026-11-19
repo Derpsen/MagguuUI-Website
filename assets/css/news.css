@@ -29,3 +29,7 @@
 .news-body img { max-width: 100%; height: auto; }
 .news-body table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
 .news-body :is(th, td) { padding: 0.375rem 0.75rem; border-bottom: 1px solid var(--mg-line); text-align: left; }
+
+/* Left edge stays on .mg-container; cap the reading column at ~72ch / ~760px. */
+.news-measure { max-width: min(72ch, 47.5rem); }
+.news-title { text-wrap: balance; }

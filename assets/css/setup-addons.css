@@ -15,7 +15,7 @@
 .addon-list > li { min-width: 0; border-bottom: 1px solid var(--mg-line); }
 .addon-row { display: flex; align-items: flex-start; gap: 1rem; min-width: 0; padding: 1.125rem 0.25rem; border-radius: var(--mg-r-md); transition: background-color var(--mg-dur) var(--mg-ease); }
 .addon-row:hover { background: color-mix(in srgb, var(--mg-surface-2) 70%, transparent); }
-.addon-row__icon { flex: none; width: 2.75rem; height: 2.75rem; border-radius: var(--mg-r-md); object-fit: contain; box-shadow: 0 0 0 1px var(--mg-line); background: var(--mg-surface-2); }
+.addon-row__icon { flex: none; width: 2.75rem; height: 2.75rem; aspect-ratio: 1; border-radius: var(--mg-r-md); object-fit: cover; box-shadow: 0 0 0 1px var(--mg-line); background: var(--mg-surface-2); }
 .addon-row__emoji { flex: none; width: 2.75rem; height: 2.75rem; display: grid; place-items: center; font-size: 1.5rem; }
 .addon-row__body { min-width: 0; flex: 1; }
 .addon-row__name { display: flex; align-items: center; gap: 0.5rem; font-size: 1.0625rem; font-weight: 700; letter-spacing: -0.01em; color: var(--mg-fg); }

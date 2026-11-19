@@ -3,7 +3,7 @@
 -->
 
 <template>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
+  <div class="mg-container pt-10 pb-20">
     <div v-if="isLoggedIn" class="mb-4 flex justify-end">
       <NuxtLink
         to="/admin/content/news"
@@ -18,29 +18,31 @@
     </p>
 
     <template v-if="article">
-      <h1 class="mg-h1">
-        {{ article.title }}
-      </h1>
-      <p class="mt-3 text-sm text-mg-fg-muted">
-        <time :datetime="toIsoDate(article.publishedAt)">{{ formatNewsDate(article.publishedAt) }}</time>
-        · {{ article.author }}
-        <template v-if="article.sourceName && article.sourceUrl">
-          ·
-          <a :href="article.sourceUrl" rel="noopener noreferrer" class="text-mg-fg underline underline-offset-4">
-            {{ article.sourceName }}
-          </a>
-        </template>
-      </p>
-      <p class="mg-lead mt-4 max-w-xl">
-        {{ article.summary }}
-      </p>
-      <ul v-if="article.tags.length" class="mt-4 flex flex-wrap gap-x-4 gap-y-1">
-        <li v-for="tag in article.tags" :key="tag" class="mg-kicker text-mg-fg-muted">
-          {{ tag }}
-        </li>
-      </ul>
+      <div class="news-measure">
+        <h1 class="mg-h1 news-title">
+          {{ articleTitle }}
+        </h1>
+        <p class="mt-3 text-sm text-mg-fg-muted">
+          <time :datetime="toIsoDate(article.publishedAt)">{{ formatNewsDate(article.publishedAt) }}</time>
+          · {{ article.author }}
+          <template v-if="article.sourceName && article.sourceUrl">
+            ·
+            <a :href="article.sourceUrl" rel="noopener noreferrer" class="text-mg-fg underline underline-offset-4">
+              {{ article.sourceName }}
+            </a>
+          </template>
+        </p>
+        <p class="mg-lead news-lead mt-4">
+          {{ article.summary }}
+        </p>
+        <ul v-if="article.tags.length" class="mt-4 flex flex-wrap gap-x-4 gap-y-1">
+          <li v-for="tag in article.tags" :key="tag" class="mg-kicker text-mg-fg-muted">
+            {{ tag }}
+          </li>
+        </ul>
 
-      <SafeHtml class="news-body mt-10 block" :html="article.body" />
+        <SafeHtml class="news-body mt-10 block" :html="article.body" />
+      </div>
 
       <NewsAlsoOnThisSite />
     </template>
@@ -50,6 +52,7 @@
 <script setup lang="ts">
 import type { NewsArticle } from '~/utils/news'
 import { formatNewsDate, toIsoDate } from '~/utils/newsDates'
+import { formatPublicHeading } from '~/utils/formatPublicHeading'
 import '~/assets/css/news.css'
 
 const { isLoggedIn } = useAuth()
@@ -64,6 +67,7 @@ if (error.value || !data.value?.data) {
 }
 
 const article = computed(() => data.value?.data ?? null)
+const articleTitle = computed(() => formatPublicHeading(article.value?.title || ''))
 
 usePublicPageSeo({
   title: article.value?.title || 'News',

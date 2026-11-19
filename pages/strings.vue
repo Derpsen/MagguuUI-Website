@@ -95,7 +95,7 @@
         <div v-if="profileList.length" class="strings-panel space-y-6">
           <div>
             <span class="strings-label">Addon</span>
-            <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="Addon profiles">
+            <div class="wow-class-chip-list" role="listbox" aria-label="Addon profiles">
               <button
                 v-for="addon in profileAddons"
                 :key="addon"
@@ -123,7 +123,7 @@
           <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 translate-y-1" enter-to-class="opacity-100 translate-y-0">
             <div v-if="selectedAddon && addonProfiles.length > 1">
               <span class="strings-label">Profile</span>
-              <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="Profiles">
+              <div class="wow-class-chip-list" role="listbox" aria-label="Profiles">
                 <button
                   v-for="p in addonProfiles"
                   :key="p.id"
@@ -171,7 +171,7 @@
         <div v-if="wowupList.length" class="strings-panel space-y-6">
           <div>
             <span class="strings-label">Package</span>
-            <div class="flex flex-wrap justify-center gap-2" role="listbox" aria-label="WowUp packages">
+            <div class="wow-class-chip-list" role="listbox" aria-label="WowUp packages">
               <button
                 v-for="pack in wowupPacks"
                 :key="pack.name"
@@ -203,7 +203,7 @@
             >
               <div>
                 <span class="strings-label">Addons</span>
-                <div class="flex flex-wrap justify-center gap-2">
+                <div class="wow-class-chip-list">
                   <span
                     v-for="raw in selectedWowupAddons"
                     :key="raw"

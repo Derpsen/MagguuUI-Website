@@ -1,23 +1,24 @@
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="open" class="fixed inset-0 z-50 bg-black/40" @click="close()" />
+      <div v-if="open" class="admin-settings-backdrop fixed inset-0 z-50" @click="close()" />
     </Transition>
 
-    <!-- Drawer -->
     <Transition name="slide">
       <div
         v-if="open"
-        class="fixed inset-y-0 right-0 z-50 flex w-[300px] flex-col border-l"
-        :class="isDark ? 'bg-[hsl(222.34,10.43%,12.27%)] border-[hsl(240,3.7%,22%)]' : 'bg-white border-slate-200'"
+        ref="panelRef"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="admin-settings-title"
+        data-testid="admin-settings-drawer"
+        class="admin-settings-drawer fixed inset-y-0 right-0 z-50 flex w-[300px] flex-col border-l border-mg-line bg-mg-surface"
       >
-        <!-- Header -->
-        <div class="flex items-center justify-between px-5 py-4 border-b" :class="isDark ? 'border-[hsl(240,3.7%,22%)]' : 'border-slate-200'">
-          <span class="text-sm font-semibold" :class="isDark ? 'text-white' : 'text-slate-900'">Settings</span>
+        <div class="flex items-center justify-between px-5 py-4 border-b border-mg-line">
+          <h2 id="admin-settings-title" class="text-sm font-semibold text-mg-fg" tabindex="-1">Settings</h2>
           <button
             type="button"
-            class="p-1 rounded-md transition-colors"
-            :class="isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.06]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'"
+            class="p-1 rounded-md transition-colors text-mg-fg-muted hover:text-mg-fg hover:bg-mg-surface-2"
             aria-label="Close settings"
             @click="close()"
           >
@@ -25,19 +26,16 @@
           </button>
         </div>
 
-        <!-- Content -->
         <div class="flex-1 overflow-y-auto px-5 py-5 space-y-6">
-          <!-- Theme -->
           <section>
-            <h3 class="text-xs font-semibold uppercase tracking-wider mb-3" :class="isDark ? 'text-white/40' : 'text-slate-400'">Theme</h3>
+            <h3 class="text-xs font-semibold uppercase tracking-wider mb-3 text-mg-accent-text">Theme</h3>
             <div class="flex gap-2">
               <button
                 v-for="mode in themes"
                 :key="mode.value"
-                class="flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium border transition-colors"
-                :class="colorMode.preference === mode.value
-                  ? 'bg-primary/15 border-primary/30 text-primary'
-                  : (isDark ? 'border-white/8 text-white/50 hover:text-white hover:bg-white/[0.04]' : 'border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50')"
+                type="button"
+                class="admin-settings-theme flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold"
+                :class="colorMode.preference === mode.value ? 'is-on' : ''"
                 @click="colorMode.preference = mode.value"
               >
                 <UIcon :name="mode.icon" class="h-3.5 w-3.5" />
@@ -46,31 +44,28 @@
             </div>
           </section>
 
-          <!-- Primary Color -->
           <section>
-            <h3 class="text-xs font-semibold uppercase tracking-wider mb-3" :class="isDark ? 'text-white/40' : 'text-slate-400'">Primary Color</h3>
+            <h3 class="text-xs font-semibold uppercase tracking-wider mb-3 text-mg-accent-text">Primary Color</h3>
             <div class="flex gap-2.5">
               <button
                 v-for="color in colors"
                 :key="color.name"
-                class="h-7 w-7 rounded-full ring-2 ring-offset-2 transition-all"
-                :class="[
-                  selectedColor === color.name ? 'ring-current scale-110' : 'ring-transparent hover:scale-105',
-                  isDark ? 'ring-offset-[hsl(222.34,10.43%,12.27%)]' : 'ring-offset-white',
-                ]"
-                :style="{ backgroundColor: color.hex, color: color.hex }"
+                type="button"
+                class="admin-settings-swatch h-7 w-7 rounded-full ring-2 ring-offset-2 transition-all"
+                :class="selectedColor === color.name ? 'is-on' : ''"
+                :style="{ backgroundColor: color.hex }"
                 :title="color.name"
+                :aria-label="`Primary colour ${color.name}`"
                 @click="applyColor(color.name)"
               />
             </div>
-            <p class="mt-2 text-[11px]" :class="isDark ? 'text-white/30' : 'text-slate-400'">Changes the accent color across all admin UI.</p>
+            <p class="mt-2 text-[11px] text-mg-fg-muted">Changes the accent color across all admin UI.</p>
           </section>
 
-          <!-- Layout -->
           <section>
-            <h3 class="text-xs font-semibold uppercase tracking-wider mb-3" :class="isDark ? 'text-white/40' : 'text-slate-400'">Layout</h3>
+            <h3 class="text-xs font-semibold uppercase tracking-wider mb-3 text-mg-accent-text">Layout</h3>
             <label class="flex items-center justify-between cursor-pointer">
-              <span class="text-sm" :class="isDark ? 'text-white/70' : 'text-slate-600'">Compact sidebar</span>
+              <span class="text-sm text-mg-fg">Compact sidebar</span>
               <USwitch v-model="compactSidebar" />
             </label>
           </section>
@@ -81,23 +76,55 @@
 </template>
 
 <script setup lang="ts">
-const isDark = useIsDark()
 const colorMode = useColorMode()
 
 const open = ref(false)
 const triggerEl = ref<HTMLElement | null>(null)
+const panelRef = ref<HTMLElement | null>(null)
+
+function isVisible(el: HTMLElement | null): boolean {
+  if (!el?.isConnected) return false
+  const style = getComputedStyle(el)
+  if (style.display === 'none' || style.visibility === 'hidden') return false
+  return el.getClientRects().length > 0
+}
+
+function focusables(root: HTMLElement): HTMLElement[] {
+  return [...root.querySelectorAll<HTMLElement>(
+    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  )].filter(el => isVisible(el))
+}
+
+function focusAfterClose(el: HTMLElement | null) {
+  if (isVisible(el)) {
+    el.focus()
+    return
+  }
+  // After a resize to md+, the mobile More-actions trigger is hidden — use the desktop gear.
+  const desktop = document.querySelector<HTMLElement>('[data-testid="admin-settings-trigger"]')
+  if (isVisible(desktop)) desktop.focus()
+}
 
 function close() {
   if (!open.value) return
   open.value = false
   const el = triggerEl.value
   triggerEl.value = null
-  nextTick(() => el?.focus())
+  nextTick(() => focusAfterClose(el))
+}
+
+function focusDrawer() {
+  const root = panelRef.value
+  if (!root) return
+  const first = focusables(root)[0]
+  if (first) first.focus()
+  else root.querySelector<HTMLElement>('#admin-settings-title')?.focus()
 }
 
 function openFrom(el?: HTMLElement | null) {
   triggerEl.value = el ?? (import.meta.client ? document.activeElement as HTMLElement | null : null)
   open.value = true
+  nextTick(() => focusDrawer())
 }
 
 function toggle() {
@@ -106,9 +133,25 @@ function toggle() {
 }
 
 function onDocumentKeydown(event: KeyboardEvent) {
-  if (event.key !== 'Escape' || !open.value) return
-  event.preventDefault()
-  close()
+  if (!open.value) return
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    close()
+    return
+  }
+  if (event.key !== 'Tab' || !panelRef.value) return
+  const list = focusables(panelRef.value)
+  if (!list.length) return
+  const first = list[0]!
+  const last = list[list.length - 1]!
+  const active = document.activeElement
+  if (event.shiftKey && (active === first || !panelRef.value.contains(active))) {
+    event.preventDefault()
+    last.focus()
+  } else if (!event.shiftKey && (active === last || !panelRef.value.contains(active))) {
+    event.preventDefault()
+    first.focus()
+  }
 }
 
 watch(open, (isOpen) => {
@@ -185,4 +228,31 @@ onMounted(() => {
 
 .slide-enter-active, .slide-leave-active { transition: transform 0.25s ease; }
 .slide-enter-from, .slide-leave-to { transform: translateX(100%); }
+
+.admin-settings-backdrop {
+  background: color-mix(in srgb, var(--mg-bg) 45%, #000 55%);
+}
+
+.admin-settings-theme {
+  border: 1px solid var(--mg-line);
+  color: var(--mg-fg-muted);
+  background: transparent;
+  transition: background-color var(--mg-dur, 0.15s) var(--mg-ease, ease), color var(--mg-dur, 0.15s) var(--mg-ease, ease), border-color var(--mg-dur, 0.15s) var(--mg-ease, ease);
+}
+.admin-settings-theme:hover {
+  color: var(--mg-fg);
+  background: var(--mg-surface-2);
+}
+.admin-settings-theme.is-on {
+  border-color: var(--mg-accent-text);
+  color: var(--mg-accent-text);
+  background: color-mix(in srgb, var(--mg-accent) 14%, var(--mg-surface));
+}
+
+.admin-settings-swatch {
+  box-shadow: 0 0 0 2px transparent, 0 0 0 4px var(--mg-surface);
+}
+.admin-settings-swatch.is-on {
+  box-shadow: 0 0 0 2px var(--mg-accent-text), 0 0 0 4px var(--mg-surface);
+}
 </style>

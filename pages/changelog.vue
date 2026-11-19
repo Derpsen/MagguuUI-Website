@@ -3,7 +3,7 @@
 -->
 
 <template>
-  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
+  <div class="mg-container pt-10 pb-20">
     <div v-if="isLoggedIn" class="flex justify-end mb-4">
       <NuxtLink to="/admin/content/changelog"
         class="text-xs font-medium underline underline-offset-4"
@@ -64,7 +64,7 @@
     <p v-if="statusText" role="status" aria-live="polite" class="mt-6 text-sm" :class="isDark ? 'text-silver-300' : 'text-gray-700'" data-testid="changelog-status">{{ statusText }}</p>
 
     <article v-if="unreleased && !filtering" id="unreleased" class="mt-6 border-b pb-10" :class="isDark ? 'border-white/10' : 'border-gray-200'">
-      <h2 class="font-mono text-2xl font-semibold tracking-tight leading-none" :class="isDark ? 'text-white' : 'text-gray-950'">
+      <h2 class="text-2xl font-semibold tracking-tight leading-none" :class="isDark ? 'text-white' : 'text-gray-950'">
         Unreleased
       </h2>
       <p class="mt-3 text-sm" :class="isDark ? 'text-silver-500' : 'text-gray-500'">

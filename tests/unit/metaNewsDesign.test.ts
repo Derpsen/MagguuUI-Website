@@ -119,7 +119,10 @@ describe('soft-navigation CLS (/addons footer)', () => {
     // beforeEach/beforeResolve run BEFORE vue-router stores the leaving scroll position (Code-Review #201).
     assert.doesNotMatch(plugin, /router\.before(Each|Resolve)\(/)
     assert.match(plugin, /router\.afterEach\(\(to, from, failure\) => \{/)
-    assert.match(plugin, /window\.addEventListener\('popstate', \(\) => flow\.markPopped\(\), \{ capture: true \}\)/)
+    assert.match(plugin, /window\.addEventListener\('popstate', \(\) => \{/)
+    assert.match(plugin, /flow\.markPopped\(\)/)
+    assert.match(plugin, /el\.focus\(\{ preventScroll: true \}\)/)
+    assert.match(plugin, /\}, \{ capture: true \}\)/)
     assert.match(plugin, /flow\.shouldReset\(\{/)
     assert.match(plugin, /^\s+failure,$/m)
     assert.match(plugin, /window\.scrollTo\(\{ top: 0, left: 0, behavior: 'instant' \}\)/)

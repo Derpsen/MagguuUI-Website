@@ -15,7 +15,6 @@ export const RETAIL_NAV: readonly NavLink[] = [
   { to: '/strings', label: 'Import Strings' },
   { to: '/addons', label: 'Addons' },
   { to: '/guide', label: 'Guides' },
-  { to: '/meta', label: 'Meta' },
   { to: '/news', label: 'News' },
   { to: '/changelog', label: 'Changelog' },
   { to: '/faq', label: 'FAQ' },

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
 import { ADMIN_FACES, ALL_FONT_FACES, DEFAULT_FACES, fontFacesForPath } from '../../utils/fontPreload'
-import { contrastRatio } from '../../utils/metaCatalog'
+import { contrastRatio } from '../../utils/contrast'
 
 const read = (file: string) => readFileSync(join(process.cwd(), file), 'utf8')
 

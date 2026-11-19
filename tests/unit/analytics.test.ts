@@ -87,12 +87,9 @@ describe('request rules', () => {
     assert.equal(normalizeTrackedPath('/news/wow-forever-now-live'), '/news')
     assert.equal(normalizeTrackedPath('/news/feed.xml'), null)
     assert.equal(normalizeTrackedPath('/'), '/')
-    assert.equal(normalizeTrackedPath('/meta'), '/meta')
-    assert.equal(normalizeTrackedPath('/meta/mage'), '/meta')
-    assert.equal(normalizeTrackedPath('/meta/mage/fire/'), '/meta')
-    assert.equal(normalizeTrackedPath('/meta/foo/bar'), null)
-    assert.equal(normalizeTrackedPath('/meta/mage/holy'), null)
-    assert.equal(normalizeTrackedPath('/meta/mage/fire/extra'), null)
+    assert.equal(normalizeTrackedPath('/meta'), null)
+    assert.equal(normalizeTrackedPath('/meta/mage'), null)
+    assert.equal(normalizeTrackedPath('/meta/mage/fire/'), null)
     for (const bad of ['/admin', '/admin/login', '/api/v1/x', '/nope', 'strings', '', '/strings/extra', `/${'a'.repeat(400)}`, 5, null, undefined]) {
       assert.equal(normalizeTrackedPath(bad), null, String(bad))
     }

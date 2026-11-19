@@ -1,6 +1,3 @@
-import { META_SYNC_LOCK_TABLE_SQL } from './metaSyncLockSql'
-import { META_SYNC_STAGING_TABLES_SQL } from './metaSyncStagingSql'
-
 export const DATABASE_BOOTSTRAP_SQL = `
   CREATE TABLE IF NOT EXISTS profiles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -448,41 +445,7 @@ export const DATABASE_BOOTSTRAP_SQL = `
   );
   CREATE INDEX IF NOT EXISTS idx_addons_category_sort ON addons(category, sort_order);
 
-  CREATE TABLE IF NOT EXISTS meta_snapshots (
-    snapshot_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    region TEXT NOT NULL,
-    season TEXT,
-    period TEXT,
-    fetched_at INTEGER NOT NULL,
-    expires_at INTEGER NOT NULL,
-    status TEXT NOT NULL,
-    payload TEXT NOT NULL,
-    source TEXT NOT NULL DEFAULT 'blizzard'
-  );
-  CREATE TABLE IF NOT EXISTS meta_snapshot_active (
-    region TEXT PRIMARY KEY,
-    snapshot_id INTEGER NOT NULL,
-    FOREIGN KEY (snapshot_id) REFERENCES meta_snapshots(snapshot_id) ON DELETE CASCADE
-  );
-  CREATE INDEX IF NOT EXISTS idx_meta_snapshots_expires_at ON meta_snapshots(expires_at);
-  CREATE INDEX IF NOT EXISTS idx_meta_snapshots_region_fetched ON meta_snapshots(region, fetched_at);
-  CREATE TABLE IF NOT EXISTS meta_runs (
-    run_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    started_at INTEGER NOT NULL,
-    ended_at INTEGER NOT NULL,
-    status TEXT NOT NULL,
-    reason TEXT,
-    calls INTEGER NOT NULL DEFAULT 0,
-    http_429 INTEGER NOT NULL DEFAULT 0,
-    http_404 INTEGER NOT NULL DEFAULT 0,
-    spec_mismatch INTEGER NOT NULL DEFAULT 0,
-    duration_ms INTEGER NOT NULL DEFAULT 0,
-    snapshot_id INTEGER,
-    n_per_spec TEXT,
-    FOREIGN KEY (snapshot_id) REFERENCES meta_snapshots(snapshot_id) ON DELETE SET NULL
-  );
-  CREATE INDEX IF NOT EXISTS idx_meta_runs_ended_at ON meta_runs(ended_at);
-` + META_SYNC_STAGING_TABLES_SQL + META_SYNC_LOCK_TABLE_SQL
+`
 
 export const SAFE_COLUMN_MIGRATIONS = [
   'ALTER TABLE profiles ADD COLUMN custom_fields TEXT',
@@ -529,14 +492,23 @@ export const SAFE_COLUMN_MIGRATIONS = [
   'CREATE INDEX IF NOT EXISTS idx_wowup_strings_visible_sort ON wowup_strings(is_visible, sort_order)',
   'CREATE INDEX IF NOT EXISTS idx_character_layouts_visible_sort ON character_layouts(is_visible, sort_order)',
   'CREATE INDEX IF NOT EXISTS idx_faqs_visible_sort ON faqs(is_visible, sort_order)',
-  // Early local/dev meta_snapshots used `id`; the store reads and writes snapshot_id.
-  // CREATE TABLE IF NOT EXISTS cannot rename an existing primary key.
-  'ALTER TABLE meta_snapshots RENAME COLUMN id TO snapshot_id',
 ] as const
 
 type SqliteBootstrapConnection = {
   exec: (statement: string) => unknown
 }
+
+/** Drop leftover Mythic+ Meta tables. Run after a backup of data/magguuui.db (and WAL). */
+export const DROP_META_TABLES_SQL = `
+  PRAGMA foreign_keys = OFF;
+  DROP TABLE IF EXISTS meta_sync_spec_staging;
+  DROP TABLE IF EXISTS meta_sync_run_staging;
+  DROP TABLE IF EXISTS meta_sync_lock;
+  DROP TABLE IF EXISTS meta_runs;
+  DROP TABLE IF EXISTS meta_snapshot_active;
+  DROP TABLE IF EXISTS meta_snapshots;
+  PRAGMA foreign_keys = ON;
+`
 
 export function initializeDatabase(sqlite: SqliteBootstrapConnection) {
   sqlite.exec(DATABASE_BOOTSTRAP_SQL)
@@ -550,5 +522,6 @@ export function initializeDatabase(sqlite: SqliteBootstrapConnection) {
     }
   }
 
-  console.log('[DB] ✓ Column migrations checked')
+  sqlite.exec(DROP_META_TABLES_SQL)
+  console.log('[DB] ✓ Meta tables dropped')
 }

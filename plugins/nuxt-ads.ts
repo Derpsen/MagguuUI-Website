@@ -4,7 +4,7 @@
  * production, and assigning it crashes process start when Unraid sets NUXT_ADS
  * (even empty).
  */
-import { isNuxtAdsEnabled, resolveNuxtAdsFlag } from '~/utils/metaUiCopy'
+import { isNuxtAdsEnabled, resolveNuxtAdsFlag } from '~/utils/nuxtAds'
 
 export default defineNuxtPlugin(() => {
   const enabled = useState('nuxt-ads-enabled', () => (

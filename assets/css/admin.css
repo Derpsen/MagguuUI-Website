@@ -1768,6 +1768,9 @@ html.dark .admin-shell .admin-activity-action--updated { color: #fcd34d; }
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: var(--admin-label);
+  overflow-wrap: anywhere;
+  min-width: 0;
+  max-width: 100%;
 }
 .admin-dash__label { margin-bottom: 0.4rem; }
 .admin-dash__label--sub { margin-top: 1rem; }
@@ -1777,7 +1780,7 @@ html.dark .admin-shell .admin-activity-action--updated { color: #fcd34d; }
 @media (min-width: 1024px) { .admin-dash__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .admin-dash__sectionhead { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
 .admin-dash__rows { list-style: none; margin: 0; padding: 0; }
-.admin-dash__row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 1rem; padding: 0.4rem 0; border-top: 1px solid var(--admin-border, rgba(128, 128, 128, 0.2)); font-size: 0.875rem; }
+.admin-dash__row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 1rem; padding: 0.4rem 0; border-top: 1px solid var(--admin-border, rgba(128, 128, 128, 0.2)); font-size: 0.875rem; min-width: 0; }
 .admin-dash__row--sub { padding-left: 0.85rem; font-size: 0.8125rem; }
 .admin-dash__name { overflow-wrap: anywhere; }
 a.admin-dash__name:hover, .admin-dash__link:hover { text-decoration: underline; }

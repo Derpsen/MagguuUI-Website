@@ -61,6 +61,8 @@ describe('admin shell design (PR 5a)', () => {
     assert.doesNotMatch(labels, /color-brand/)
     assert.match(dash, /\.admin-dash__link \{[^}]*color: var\(--admin-label\)/)
     assert.match(dash, /\.admin-dash__bad \{ color: var\(--mg-danger\)/)
+    assert.match(dash, /\.admin-dash__type \{[^}]*overflow-wrap: anywhere/)
+    assert.match(dash, /\.admin-dash__row \{[^}]*min-width: 0/)
   })
 
   it('the bell badge (danger fill, page colour on top) is AA in both themes', () => {

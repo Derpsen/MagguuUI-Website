@@ -817,6 +817,12 @@ Shipped 2026-11-09: addon chip thumbs (22ac182), configurator API swr (4474533),
 - AGENTS.md mutant count: 197 (192 + 5 new).
 - Left open on purpose: `useFetch` without `await` on `guide`, `strings`, `changelog`, `faq`, `index` (`guide` parses in `transform` and `strings` has four parallel fetches; awaiting changes hydration timing and the `/` Lighthouse budget, so it needs its own measured PR); the 700 ms-stall CLS on a page swap with a visible footer (Low, unconfirmed).
 
+## 2026-11-19 Redesign PR 5a resumed on current main
+
+- Branch `feat/redesign-pr5a-admin-shell` (#204) merged `origin/main` after the Meta removal, Nuxt 4.6.4, and news seeds. Meta mutants are gone; `scripts/mutation/mutants.json` has 151 entries (144 from main + 7 admin design). AGENTS.md count updated. `adminShellDesign.test.ts` imports `contrastRatio` from `utils/contrast`.
+- Axe dashboard dark/light is green, including the search-button label-in-name (`Open command palette: ` sr-only prefix). 320 px light overflow on `.admin-dash__type` (1 px) is fixed with `overflow-wrap: anywhere` and `min-width: 0`.
+- After screens: `/home/Magguu/web-redesign/admin-after/` (20 files, same names as `admin-before/`). 5b (CommandPalette / KeyboardShortcuts / SettingsDrawer / login on tokens, content editors) is still later, not 5a.
+
 ## 2026-11-13 Code-Review lows from #203 and Redesign PR 5a (WIP, paused)
 
 - #203 lows: (1) the route-mocked `/addons` e2e tests in `tests/soft-nav.spec.ts` (from line ~142) are only valid against `nuxt dev`; in a production build the service worker bypasses `page.route`, so they need `serviceWorkers: 'block'` or `context.route`. (2) The warm-up `beforeAll` in `tests/soft-nav.spec.ts` checks its deadline only between rounds (a single hung round can overrun it). (3) In the reviewer sandbox the warm-up did not settle in 200 s; mutants 195/196 (`/addons` error vs empty) were proven only via CI and a production probe there.

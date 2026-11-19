@@ -157,7 +157,7 @@
           </button>
 
           <!-- Breadcrumbs -->
-          <nav class="flex items-center gap-1.5 text-sm min-w-0">
+          <nav class="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-sm" aria-label="Breadcrumb">
             <NuxtLink to="/admin" class="shrink-0 transition-colors text-primary hover:opacity-80" aria-label="Dashboard">
               <UIcon name="i-heroicons-squares-2x2" class="h-4 w-4" />
             </NuxtLink>
@@ -173,7 +173,7 @@
             </Transition>
           </nav>
 
-          <div class="ml-auto flex items-center gap-1">
+          <div class="ml-auto flex shrink-0 items-center gap-1">
             <button
               class="vben-header-btn hidden md:inline-flex"
               @click="cmdPalette?.open()"
@@ -186,13 +186,13 @@
               </kbd>
             </button>
 
-            <button class="vben-header-btn md:hidden" aria-label="Open command palette" @click="cmdPalette?.open()">
+            <button class="vben-header-btn inline-flex md:hidden" aria-label="Open command palette" @click="cmdPalette?.open()">
               <UIcon name="i-heroicons-magnifying-glass" class="h-4 w-4" />
             </button>
 
             <!-- Notifications -->
             <div ref="notifWrapRef" class="relative">
-              <button ref="notifButtonRef" class="vben-header-btn relative" :aria-label="notifCount > 0 ? `Notifications, ${notifCount} active` : 'Notifications'" :aria-expanded="notifOpen" @click="notifOpen = !notifOpen">
+              <button ref="notifButtonRef" class="vben-header-btn relative inline-flex" :aria-label="notifCount > 0 ? `Notifications, ${notifCount} active` : 'Notifications'" :aria-expanded="notifOpen" @click="notifOpen = !notifOpen">
                 <UIcon name="i-heroicons-bell" class="h-4 w-4" />
                 <span v-if="notifCount > 0" class="admin-notif-badge">
                   {{ notifCount }}
@@ -256,11 +256,11 @@
               <UIcon :name="isFullscreen ? 'i-heroicons-arrows-pointing-in' : 'i-heroicons-arrows-pointing-out'" class="h-4 w-4" />
             </button>
 
-            <button class="vben-header-btn" :title="isDark ? 'Light mode' : 'Dark mode'" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
+            <button class="vben-header-btn inline-flex" :title="isDark ? 'Light mode' : 'Dark mode'" :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
               <UIcon :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'" class="h-4 w-4" />
             </button>
 
-            <NuxtLink to="/" class="vben-header-btn" title="View site" aria-label="View site">
+            <NuxtLink to="/" class="vben-header-btn inline-flex" title="View site" aria-label="View site">
               <UIcon name="i-heroicons-arrow-top-right-on-square" class="h-4 w-4" />
             </NuxtLink>
           </div>
@@ -469,7 +469,8 @@ watch(() => route.fullPath, () => {
 .vben-nav-item--active :deep(.iconify) { color: var(--admin-label); }
 
 .vben-header-btn {
-  display: inline-flex;
+  /* No display: here — Tailwind hidden/md:inline-flex must keep desktop-only
+     actions (search, settings, fullscreen) off the mobile header. */
   align-items: center;
   justify-content: center;
   padding: 0.375rem;

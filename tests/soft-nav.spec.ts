@@ -77,10 +77,18 @@ test.beforeAll(async ({ browser }) => {
       try {
         await page.goto(path, { timeout: remaining() })
         assertDeadline()
-        await Promise.race([
-          hydrated(page),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('dev-server warm-up did not settle in 200 s')), remaining())),
-        ])
+        let raceTimer: ReturnType<typeof setTimeout> | undefined
+        try {
+          await Promise.race([
+            hydrated(page),
+            new Promise((_, reject) => {
+              raceTimer = setTimeout(() => reject(new Error('dev-server warm-up did not settle in 200 s')), remaining())
+            }),
+          ])
+        }
+        finally {
+          if (raceTimer !== undefined) clearTimeout(raceTimer)
+        }
       }
       catch (error) {
         assertDeadline()
@@ -124,15 +132,18 @@ for (const { from, link } of BACK_PAIRS) {
     // pressing Back within the same frames as the forward swap (the scroll is already 0 by then) is not what a person does.
     await expect(page.locator('h1').first()).toHaveText(headingOf(link))
     await page.waitForLoadState('networkidle')
-    // Instant restore so the saved 1400 px is visible before the focused
-    // footer link is scrolled into view (on long pages that race used to
-    // stall smooth-scroll mid-page, e.g. 903 on /changelog).
-    await page.addStyleTag({ content: 'html, body, * { scroll-behavior: auto !important; }' })
     await page.goBack()
     await expect(page).toHaveURL(new RegExp(`${from}$`))
-    await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { message: `Back restores ${left}`, timeout: 8000 }).toBeGreaterThan(left - 8)
-    await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), left)
-    expect(await page.evaluate(() => Math.round(window.scrollY))).toBeLessThan(left + 8)
+    // Both bounds are measured on the live position (no test-side scrollTo).
+    // A late footer-into-view would miss the upper bound.
+    await expect.poll(async () => {
+      const y = await page.evaluate(() => Math.round(window.scrollY))
+      return y > left - 8 && y < left + 8 ? y : null
+    }, { message: `Back restores ${left} (±8)`, timeout: 8000 }).not.toBeNull()
+    await page.waitForTimeout(250)
+    const restored = await page.evaluate(() => Math.round(window.scrollY))
+    expect(restored, `Back holds ${left} (±8)`).toBeGreaterThan(left - 8)
+    expect(restored).toBeLessThan(left + 8)
   })
 }
 
@@ -145,11 +156,16 @@ test('after Back, the next footer click resets the scroll again (the Back mark i
   await expect(page).toHaveURL(/\/addons$/)
   await expect(page.locator('h1').first()).toHaveText(headingOf('/addons'))
   await page.waitForLoadState('networkidle')
-  await page.addStyleTag({ content: 'html, body, * { scroll-behavior: auto !important; }' })
   await page.goBack()
   await expect(page).toHaveURL(/\/guide$/)
-  await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { timeout: 8000 }).toBeGreaterThan(1392)
-  await page.evaluate(() => window.scrollTo({ top: 1400, behavior: 'instant' }))
+  await expect.poll(async () => {
+    const y = await page.evaluate(() => Math.round(window.scrollY))
+    return y > 1392 && y < 1408 ? y : null
+  }, { timeout: 8000 }).not.toBeNull()
+  await page.waitForTimeout(250)
+  const held = await page.evaluate(() => Math.round(window.scrollY))
+  expect(held).toBeGreaterThan(1392)
+  expect(held).toBeLessThan(1408)
   await page.evaluate(() => (document.querySelector('footer a[href="/strings"]') as HTMLElement).click())
   await expect(page).toHaveURL(/\/strings$/)
   await expect(page.locator('h1').first()).toHaveText(headingOf('/strings'))

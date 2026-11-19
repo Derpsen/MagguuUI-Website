@@ -118,7 +118,7 @@ export const PRIVACY_DEFAULTS: PageCopyDefaults = {
   },
   s13: {
     title: '13. External Game Data',
-    body: '<p>The Meta pages show aggregated popular specializations, talents and equipment for EU Mythic+ from the Blizzard Game Data and Profile APIs. The operator retrieves this information on the server and stores a snapshot for at most 30 days. Character names are not stored. No Wowhead or other third-party tooltip or analytics scripts are loaded on these pages. No information about visitors is sent to Blizzard Entertainment by this site. Outbound links to independent sites (for example murlok.io, Archon, Icy Veins and Wowhead) are ordinary links; those sites receive data only if you choose to open them. Icons on Meta pages are first-party files already hosted on this site.</p>'
+    body: '<p>This site no longer provides Mythic+ Meta pages and no longer retrieves data from the Blizzard Game Data or Profile APIs or stores those snapshots. Outbound links to independent sites (for example murlok.io, Archon, Icy Veins and Wowhead) are ordinary links; those sites receive data only if you choose to open them.</p>'
   },
 }
 

@@ -67,7 +67,7 @@ function themeBlock(css: string, selector: string): Record<string, string> {
 
 const SETUP_CSS = ['assets/css/setup.css', 'assets/css/setup-addons.css', 'assets/css/setup-guide.css', 'assets/css/setup-strings.css']
 
-/** Guide / Strings / Addons styles (assets/css/setup*.css, split per owner so /meta and the other pages do not ship them). */
+/** Guide / Strings / Addons styles (assets/css/setup*.css, split per owner so /news and the other pages do not ship them). */
 describe('setup pages: setup.css', () => {
   const setup = SETUP_CSS.map(read).join('\n')
   const tokens = read('assets/css/tokens.css')

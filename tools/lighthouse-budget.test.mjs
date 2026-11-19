@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
-import { aggregateRuns, annotations, compare, extractMetrics, hardBudgetFailed, isHardBudgetPage, median, medianMetrics, missingHardCoverage, readRuns, summaryMarkdown } from './lighthouse-budget.mjs'
+import { aggregateRuns, annotations, compare, extractMetrics, hardBudgetFailed, isHardBudgetPage, LIGHTHOUSE_PAGES, median, medianMetrics, missingHardCoverage, readRuns, summaryMarkdown } from './lighthouse-budget.mjs'
 
 const lhr = {
   categories: { performance: { score: 0.83 } },
@@ -47,7 +47,20 @@ test('summary renders a table and the outside-budget count', () => {
   assert.match(md, /1 value\(s\) outside budget/)
 })
 
-test('after Meta removal no page is a hard gate; remaining pages stay advisory', () => {
+test('the Lighthouse route bound is explicit, and budgets stay advisory warnings', () => {
+  assert.deepEqual([...LIGHTHOUSE_PAGES], ['/', '/changelog', '/guide'])
+  const budgets = JSON.parse(readFileSync(new URL('../.github/lighthouse-budgets.json', import.meta.url), 'utf8'))
+  assert.deepEqual(Object.keys(budgets.pages), [...LIGHTHOUSE_PAGES])
+  const yml = readFileSync(new URL('../.github/workflows/lighthouse.yml', import.meta.url), 'utf8')
+  const blocks = [...yml.matchAll(/urls:\s*\|\n((?:\s+http:\/\/localhost:3124\S*\n)+)/g)]
+  assert.equal(blocks.length, 2, 'mobile and desktop URL lists')
+  for (const block of blocks) {
+    const paths = [...block[1].matchAll(/localhost:3124(\S*)/g)].map((m) => {
+      const rest = m[1] || ''
+      return rest === '' || rest === '/' ? '/' : rest
+    })
+    assert.deepEqual(paths, [...LIGHTHOUSE_PAGES])
+  }
   assert.equal(isHardBudgetPage('/meta'), false)
   assert.equal(isHardBudgetPage('/meta/mage/fire'), false)
   assert.equal(isHardBudgetPage('/'), false)

@@ -19,7 +19,19 @@ import { createScrollResetFlow } from '~/utils/scrollReset'
 export default defineNuxtPlugin(() => {
   const router = useRouter()
   const flow = createScrollResetFlow()
-  window.addEventListener('popstate', () => flow.markPopped(), { capture: true })
+  window.addEventListener('popstate', () => {
+    flow.markPopped()
+    // Footer clicks leave the link focused. On Back, the browser would
+    // scroll that control into view and fight the saved history position
+    // (Code-Review #210 low: the test must not re-apply scrollTo to make
+    // the upper bound pass). Re-focus without scrolling.
+    const preventFocusScroll = () => {
+      const el = document.activeElement
+      if (el instanceof HTMLElement) el.focus({ preventScroll: true })
+    }
+    preventFocusScroll()
+    requestAnimationFrame(preventFocusScroll)
+  }, { capture: true })
 
   router.afterEach((to, from, failure) => {
     if (!flow.shouldReset({

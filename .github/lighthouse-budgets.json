@@ -1,5 +1,5 @@
 {
-  "_comment": "Lighthouse budgets (see .github/workflows/lighthouse.yml). performance = minimum score, lcp/tbt in ms (max), cls (max), scriptKb = max transferred JavaScript in KB. /, /changelog and /guide stay advisory (a miss is a warning; the job stays green). After Mythic+ Meta removal there is no hard page gate; do not loosen these remaining budgets. Shared runners are noisy; re-run before acting on a lone miss.",
+  "_comment": "Lighthouse budgets (see .github/workflows/lighthouse.yml). performance = minimum score, lcp/tbt in ms (max), cls (max), scriptKb = max transferred JavaScript in KB. The bound pages /, /changelog and /guide stay advisory (a miss is a warning; the job stays green). Do not loosen these budgets, and do not make the Lighthouse job a required check. Shared runners are noisy; re-run before acting on a lone miss.",
   "pages": {
     "/": {
       "mobile": {

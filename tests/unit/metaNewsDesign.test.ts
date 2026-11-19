@@ -119,13 +119,41 @@ describe('soft-navigation CLS (/addons footer)', () => {
     // beforeEach/beforeResolve run BEFORE vue-router stores the leaving scroll position (Code-Review #201).
     assert.doesNotMatch(plugin, /router\.before(Each|Resolve)\(/)
     assert.match(plugin, /router\.afterEach\(\(to, from, failure\) => \{/)
-    assert.match(plugin, /window\.addEventListener\('popstate', \(\) => flow\.markPopped\(\), \{ capture: true \}\)/)
+    assert.match(plugin, /window\.addEventListener\('popstate', \(\) => \{/)
+    assert.match(plugin, /flow\.markPopped\(\)/)
+    assert.match(plugin, /el\.focus\(\{ preventScroll: true \}\)/)
+    assert.match(plugin, /\}, \{ capture: true \}\)/)
     assert.match(plugin, /flow\.shouldReset\(\{/)
     assert.match(plugin, /^\s+failure,$/m)
     assert.match(plugin, /window\.scrollTo\(\{ top: 0, left: 0, behavior: 'instant' \}\)/)
     assert.doesNotMatch(plugin, /behavior: 'smooth'/)
     // The smooth CSS default is what made the old scroll-to-top slow; anchors still rely on it.
     assert.match(read('assets/css/main.css'), /\* \{ scroll-behavior: smooth; \}/)
+  })
+
+  it('restores Back instantly (CSS smooth would abort when /changelog entries land late)', () => {
+    const options = read('app/router.options.ts')
+    assert.match(options, /behavior: 'instant'/)
+    assert.match(options, /restoreSavedPosition\(/)
+    assert.match(options, /hookOnce\('page:loading:end'/)
+    assert.match(options, /queueMicrotask\(start\)/)
+    assert.doesNotMatch(options, /behavior: 'smooth'/)
+    const changelog = read('pages/changelog.vue')
+    assert.match(changelog, /const \{ data: changelogData, error: changelogError \} = await useFetch<\{ data: ChangelogPageEntry\[\], meta\?: \{ unreleased\?: \{ id: number, version: string, content: string \} \| null \} \}>\('\/api\/v1\/changelogs', \{ timeout: 8000 \}\)/)
+  })
+
+  it('scrolls to to.hash on a first load and on a cross-page navigation, not to 0', () => {
+    const options = read('app/router.options.ts')
+    assert.match(options, /const positionFor = \(\) => to\.hash/)
+    assert.match(options, /el: to\.hash, top: hashScrollMargin\(to\.hash\)/)
+    assert.match(options, /if \(from === START_LOCATION\) return positionFor\(\)/)
+    assert.match(options, /resolve\(positionFor\(\)\)/)
+  })
+
+  it('bounds the changelog fetch and tells a failed load from an empty catalog', () => {
+    const changelog = read('pages/changelog.vue')
+    assert.match(changelog, /<p v-else-if="changelogError"[^>]*role="status">The changelog could not be loaded\./)
+    assert.match(changelog, /<p[^>]*role="status">No entries yet\./)
   })
 
   it('bounds the addons fetch and tells a failed load from an empty catalog', () => {

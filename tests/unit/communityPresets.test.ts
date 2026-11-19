@@ -354,9 +354,9 @@ describe('privacy text', () => {
     // A stored edit of s9 itself is kept as well.
     assert.equal(mergePageCopy(PRIVACY_DEFAULTS, { s9: { body: '<p>mine</p>' } }).s9!.body, '<p>mine</p>')
   })
-  it('s13 describes server-side game data and does not overwrite stored edits', () => {
+  it('s13 describes that Meta and Blizzard game-data snapshots are gone and does not overwrite stored edits', () => {
     const body = PRIVACY_DEFAULTS.s13!.body!.toLowerCase()
-    for (const needle of ['blizzard', 'server', '30 days', 'no information about visitors', 'murlok.io', 'archon']) {
+    for (const needle of ['no longer provides mythic+ meta', 'blizzard game data', 'profile apis', 'stores those snapshots', 'ordinary links', 'murlok.io', 'archon']) {
       assert.ok(body.includes(needle), needle)
     }
     assert.ok(!PRIVACY_DEFAULTS.s13!.title!.includes('WoW'))

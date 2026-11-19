@@ -15,6 +15,16 @@
 
 - Product surface `/meta` is gone. Redirect `/meta` and `/meta/**` to `/` (301). Migration `server/database/migrations/0000_drop_meta_tables.sql` plus matching `bootstrap.ts` drops: `meta_sync_spec_staging`, `meta_sync_run_staging`, `meta_sync_lock`, `meta_runs`, `meta_snapshot_active`, `meta_snapshots`. Unraid backup (do not delete): `/mnt/user/NAS/Backup/homelab/20261113-meta-remove/db/magguuui-website.db`. Do not fire a Meta sync; do not print credentials.
 
+## 2026-11-19 Code-Review lows after #210
+
+- Drizzle kit now has `server/database/migrations/meta/0000_snapshot.json` for the current schema (no meta tables). `npm run db:generate` must stay a no-op; do not check in a full baseline migration. Runtime still applies drops via `bootstrap.ts` (the project does not run `drizzle-kit migrate` on Unraid).
+- Lighthouse bound pages are `/`, `/changelog`, `/guide` (`LIGHTHOUSE_PAGES`, tested against the workflow and budgets file). Budget misses stay advisory warnings. Do not loosen budgets. Do not make the Lighthouse job a required check.
+- Soft-nav Back assertions measure the live scroll position (both ±8 bounds) and do not `scrollTo` the saved offset afterwards. The scroll-reset plugin re-focuses without scrolling on `popstate` so a focused footer link cannot steal the history position. The soft-nav warm-up `setTimeout` is cleared when `hydrated()` wins the race.
+- `components/AdSlot.vue` is unused by any page after Meta removal but is kept: it is the reserved slot behind `NUXT_ADS` / `useNuxtAdsEnabled` for a later AdSense change. `tests/meta-ads.spec.ts` is gone.
+- Privacy default s13 (External Game Data) no longer describes Meta snapshots. Live `/privacy` text comes from the database and may still show the old wording until an admin save or a seeded-content sync.
+- Back/Forward restore is applied instantly in `app/router.options.ts` (`behavior: 'instant'`, plus a microtask fallback because `page:loading:end` may already have fired on a cached page). CSS `scroll-behavior: smooth` otherwise aborts mid-way when the next page's body lands late. `/changelog` now awaits its `useFetch` (8 s timeout), like `/addons`.
+- Hash targets on a first load and on a push to another page use `{ el: to.hash, top: hashScrollMargin(to.hash) }` in `app/router.options.ts` (Code-Review #211: `/changelog#release-…` and `/about#contact` used to land at 0). e2e: `tests/hash-scroll.spec.ts`. `/changelog` now distinguishes a failed fetch from an empty catalog, like `/addons`.
+
 ## Agent / Buddy ops
 
 - Entrypoint: `AGENTS.md` → this file (ops history).

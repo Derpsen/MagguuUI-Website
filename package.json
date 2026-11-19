@@ -55,7 +55,7 @@
     "h3": "^1.13.0",
     "jsonwebtoken": "^9.0.3",
     "marked": "^18.1.1",
-    "nuxt": "^4.6.3",
+    "nuxt": "^4.6.4",
     "nuxt-link-checker": "^6.0.1",
     "nuxt-og-image": "^7.0.7",
     "reflect-metadata": "^0.2.2",
@@ -67,6 +67,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@nuxt/cli": "^4.0.3",
     "@nuxt/eslint": "^1.17.0",
     "@playwright/test": "^1.64.1",
     "@types/bcrypt": "^6.0.0",

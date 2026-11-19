@@ -87,7 +87,7 @@
 
           <div v-if="output.packs.length" class="space-y-5">
             <div v-for="entry in output.packs" :key="entry.pack.key" :data-testid="`cfg-pack-${entry.pack.key}`">
-              <div class="flex flex-wrap items-center gap-3">
+              <div class="cfg-copy-row">
                 <p class="text-sm font-medium" :class="strong">WowUp collection: {{ entry.pack.label }}</p>
                 <StringCopyButton
                   :copied="copiedKey === `pack-${entry.pack.id}`"
@@ -107,7 +107,7 @@
           <p v-else class="text-sm" :class="muted" data-testid="cfg-no-packs">No WowUp collection is published for your picks right now. Use the list below.</p>
 
           <div class="mt-5">
-            <div class="flex flex-wrap items-center gap-3">
+            <div class="cfg-copy-row">
               <p class="text-sm font-medium" :class="strong">Addon list ({{ output.addonList.length }})</p>
               <StringCopyButton text="Copy list" label="Copy list: addons to install" :copied="copiedKey === 'list'" @copy="copyText('list', output.addonList.join('\n'))" />
             </div>
@@ -132,7 +132,7 @@
                 <span class="ml-2 font-mono text-[11px] uppercase tracking-[0.12em]" :class="faint">{{ entry.addon.singleImport ? 'Single import in Setup' : 'No single import button' }}</span>
               </p>
               <ul class="mt-1.5 space-y-1.5">
-                <li v-for="p in entry.profiles" :key="p.id" class="flex flex-wrap items-center gap-3">
+                <li v-for="p in entry.profiles" :key="p.id" class="cfg-copy-row">
                   <span class="text-sm" :class="muted">{{ p.name }}</span>
                   <StringCopyButton
                     :copied="copiedKey === `profile-${p.id}`"
@@ -169,7 +169,7 @@
 
         <section aria-labelledby="cfg-share">
           <h3 id="cfg-share" class="font-mono text-[11px] uppercase tracking-[0.16em] mb-3" :class="isDark ? 'text-brand-300' : 'text-brand-700'">Share</h3>
-          <div class="flex flex-wrap items-center gap-3">
+          <div class="cfg-copy-row">
             <StringCopyButton text="Copy link" label="Copy link to this selection" :copied="copiedKey === 'link'" @copy="copyLink" />
             <p class="text-xs" :class="faint">The link contains only your selection.</p>
           </div>
@@ -257,4 +257,19 @@ onBeforeUnmount(() => clearTimeout(timer))
 <style scoped>
 .cfg-link { background: none; border: 0; padding: 0; font: inherit; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
 .cfg-link:focus-visible { outline: 2px solid #0aa882; outline-offset: 2px; }
+
+.cfg-copy-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+@media (min-width: 640px) {
+  .cfg-copy-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.75rem 1rem;
+  }
+}
 </style>

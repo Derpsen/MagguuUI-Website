@@ -216,7 +216,7 @@
               </a>
               <a v-if="socialLinks.curseforge" :href="socialLinks.curseforge" target="_blank" rel="noopener noreferrer"
                 class="mg-icon-btn" title="CurseForge" aria-label="CurseForge">
-                <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.326 9.2025h-2.6408l-.6327-1.0023H5.6723v-1.5H18.326v2.5023zm-3.3735 0L11.2 15.8h-4.5l3.752-6.5975h4.5z" /></svg>
+                <svg aria-hidden="true" class="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24"><path d="M18.326 9.215s4.9-.773 5.674-3.027h-7.507V4.4H0l2.032 2.358v2.415s5.127-.266 7.11 1.237c2.714 2.516-3.053 5.917-3.053 5.917l-.99 3.273c1.547-1.473 4.494-3.377 9.899-3.286c-2.057.65-4.125 1.665-5.735 3.286h10.925l-1.029-3.273s-7.918-4.668-.833-7.112"/></svg>
               </a>
             </div>
           </div>
@@ -262,7 +262,7 @@
 
     <Transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-4" enter-to-class="opacity-100 translate-y-0"
       leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-4">
-        <button v-if="showBackToTop" class="mg-icon-btn fixed bottom-6 right-6 z-40 border" style="width: 2.75rem; height: 2.75rem; background: var(--mg-surface); border-color: var(--mg-line-strong); color: var(--mg-fg)" aria-label="Back to top" @click="scrollToTop">
+        <button v-if="showBackToTop" class="mg-icon-btn mg-back-to-top z-40 border" style="width: 2.75rem; height: 2.75rem; background: var(--mg-surface); border-color: var(--mg-line-strong); color: var(--mg-fg)" aria-label="Back to top" @click="scrollToTop">
           <UIcon name="i-heroicons-arrow-up" class="w-5 h-5" />
         </button>
     </Transition>

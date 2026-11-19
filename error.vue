@@ -16,11 +16,11 @@
         <p class="mt-3 leading-relaxed" :class="isDark ? 'text-silver-300' : 'text-gray-600'">
           {{ errorDesc }}
         </p>
-        <div class="mt-6 flex items-center justify-center gap-5 text-sm font-semibold">
-          <button type="button" class="underline underline-offset-4" :class="isDark ? 'text-white' : 'text-gray-950'" @click="goHome">
+        <div class="mt-6 flex items-center justify-center gap-3">
+          <button type="button" class="mg-btn mg-btn--secondary mg-btn--sm" @click="goHome">
             Home
           </button>
-          <button type="button" class="underline underline-offset-4" :class="isDark ? 'text-silver-400' : 'text-gray-500'" @click="handleError">
+          <button type="button" class="mg-btn mg-btn--secondary mg-btn--sm" @click="handleError">
             Go back
           </button>
         </div>

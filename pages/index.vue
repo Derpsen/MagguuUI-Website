@@ -80,7 +80,7 @@
     <section aria-label="Screenshots" class="mg-container home-section reveal">
       <p class="mg-kicker">Screenshots</p>
       <h2 class="home-h2 mt-2">In game</h2>
-      <div class="home-bento">
+      <div class="home-bento" data-testid="home-ingame-cards">
         <div class="home-bento__item">
           <ScreenshotFrame
             src="/screenshots/edit-mode.jpg"
@@ -118,11 +118,11 @@
                 <img v-if="item.icon" :src="item.icon" alt="" width="28" height="28" loading="lazy" decoding="async" class="w-7 h-7 rounded shrink-0" />
                 <span v-else class="w-7 h-7 shrink-0 grid place-items-center text-base" aria-hidden="true">{{ item.emoji }}</span>
                 <span class="min-w-0 flex-1">
-                  <span class="flex items-center gap-2">
-                    <span class="home-addon__name truncate">{{ item.name }}</span>
+                  <span class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                    <span class="home-addon__name">{{ item.name }}</span>
                     <span class="mg-kicker shrink-0 home-addon__tag">{{ item.subtitle }}</span>
                   </span>
-                  <span v-if="item.line" class="block mg-small mg-muted truncate">{{ item.line }}</span>
+                  <span v-if="item.line" class="block mg-small mg-muted home-addon__line">{{ item.line }}</span>
                 </span>
               </NuxtLink>
             </li>
@@ -163,9 +163,9 @@
           </div>
           <div v-if="feat.addons.length" class="mt-5">
             <p class="mg-kicker mb-1.5">Optional profiles</p>
-            <ul class="mg-small leading-7 mg-muted" aria-label="Optional Magguu profiles">
-              <li v-for="(addon, aIndex) in feat.addons" :key="addon.name" class="inline">
-                <span v-if="aIndex > 0" class="px-1.5 mg-subtle" aria-hidden="true">·</span><wbr><span class="whitespace-nowrap">{{ addon.name }}</span>
+            <ul class="mg-small leading-7 mg-muted home-optional" aria-label="Optional Magguu profiles">
+              <li v-for="(addon, aIndex) in feat.addons" :key="addon.name" class="home-optional__item">
+                <span v-if="aIndex > 0" class="home-optional__sep" aria-hidden="true">·</span>{{ addon.name }}
               </li>
             </ul>
           </div>
@@ -440,12 +440,12 @@ const features = computed(() => featureCopy.value.map((feat) => {
 @media (min-width: 768px) { .home-hero { padding-top: 6rem; } }
 .home-hero__eyebrow { text-transform: uppercase; letter-spacing: 0.14em; font-family: var(--font-mono); font-size: var(--mg-fs-micro); font-weight: 400; }
 .home-hero__dot { width: 0.4rem; height: 0.4rem; border-radius: 999px; background: var(--mg-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mg-accent) 28%, transparent), 0 0 12px var(--mg-accent); }
-.home-hero__title { margin-top: 1.5rem; color: var(--mg-fg); font-size: inherit; line-height: 1; letter-spacing: -0.05em; }
+.home-hero__title { margin-top: 1.5rem; color: var(--mg-fg); font-size: inherit; line-height: 1.15; letter-spacing: -0.05em; }
 .home-hero__name {
   display: block;
   font-size: var(--mg-fs-hero);
   font-weight: 800;
-  line-height: 0.98;
+  line-height: 1.15;
   letter-spacing: -0.055em;
   color: var(--mg-fg);
   /* Gradient fill: every stop must be an AA text colour on the page background; the stops are parsed and checked per
@@ -454,13 +454,14 @@ const features = computed(() => featureCopy.value.map((feat) => {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  padding-bottom: 0.06em;
+  padding-top: 0.1em;
+  padding-bottom: 0.32em;
 }
 .home-hero__sub {
   display: block;
   margin-top: 0.6rem;
   font-size: clamp(1.375rem, 0.9rem + 2.6vw, 2.5rem);
-  line-height: 1.12;
+  line-height: 1.15;
   letter-spacing: -0.035em;
   font-weight: 700;
   color: var(--mg-fg-muted);
@@ -510,7 +511,7 @@ const features = computed(() => featureCopy.value.map((feat) => {
 .home-facts > li { padding: 1.5rem 0.25rem 1.5rem 1rem; border-left: 1px solid var(--mg-line); display: flex; flex-direction: column; gap: 0.35rem; }
 .home-facts > li:nth-child(odd) { border-left: 0; padding-left: 0; }
 @media (min-width: 768px) { .home-facts > li:nth-child(odd) { border-left: 1px solid var(--mg-line); padding-left: 1.5rem; } .home-facts > li:first-child { border-left: 0; padding-left: 0; } }
-.home-facts__v { font-size: clamp(1.75rem, 1.2rem + 2vw, 2.75rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; color: var(--mg-accent-text); }
+.home-facts__v { font-size: clamp(1.75rem, 1.2rem + 2vw, 2.75rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.15; color: var(--mg-accent-text); }
 .home-facts__l { font-size: var(--mg-fs-small); color: var(--mg-fg-muted); line-height: 1.4; }
 
 /* ── Steps ────────────────────────────────── */
@@ -521,12 +522,14 @@ const features = computed(() => featureCopy.value.map((feat) => {
 .home-step__n { display: block; margin-bottom: 1rem; font-size: clamp(3rem, 2rem + 4vw, 4.75rem); font-weight: 800; line-height: 0.9; letter-spacing: -0.06em; color: var(--mg-accent-text); }
 
 /* ── In game bento ────────────────────────── */
-.home-bento { margin-top: 2.5rem; display: grid; gap: 1.5rem; }
+.home-bento { margin-top: 2.5rem; display: grid; gap: 1.5rem; align-items: stretch; }
 @media (min-width: 768px) { .home-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; margin-top: 3.5rem; } }
-.home-bento__item { position: relative; isolation: isolate; }
+.home-bento__item { position: relative; isolation: isolate; display: flex; flex-direction: column; height: 100%; min-width: 0; }
+.home-bento__item :deep(figure) { display: flex; flex-direction: column; flex: 1 1 auto; height: 100%; min-width: 0; margin: 0; }
+.home-bento__item :deep(img) { aspect-ratio: 16 / 9; width: 100%; height: auto; object-fit: cover; display: block; }
+.home-bento__item :deep(figcaption) { flex: 1 1 auto; }
 .home-bento__item::before { content: ''; position: absolute; z-index: -1; inset: -1.5rem; background: radial-gradient(60% 55% at 50% 50%, var(--mg-glow-2), transparent 72%); pointer-events: none; }
 .home-bento__item:nth-child(2)::before { background: radial-gradient(60% 55% at 50% 50%, var(--mg-glow-3), transparent 72%); }
-@media (min-width: 768px) { .home-bento__item:nth-child(2) { margin-top: 3.5rem; } }
 
 /* ── Tinted band: addons + latest ─────────── */
 .home-tint { margin-top: 5rem; padding-bottom: 5rem; background: linear-gradient(180deg, transparent, var(--mg-surface) 14rem, var(--mg-surface)); border-top: 1px solid var(--mg-line); }
@@ -538,10 +541,14 @@ const features = computed(() => featureCopy.value.map((feat) => {
 .home-addons { margin-top: 1.5rem; display: grid; grid-template-columns: minmax(0, 1fr); column-gap: 2rem; }
 @media (min-width: 640px) { .home-addons { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .home-addons > li { min-width: 0; border-bottom: 1px solid var(--mg-line); }
-.home-addon { display: flex; align-items: center; gap: 0.75rem; min-height: 3.25rem; padding: 0.5rem 0; }
-.home-addon__name { font-size: 0.9375rem; font-weight: 700; color: var(--mg-fg); }
+.home-addon { display: flex; align-items: flex-start; gap: 0.75rem; min-height: 3.25rem; padding: 0.5rem 0; }
+.home-addon__name { font-size: 0.9375rem; font-weight: 700; color: var(--mg-fg); overflow-wrap: anywhere; }
+.home-addon__line { overflow-wrap: anywhere; white-space: normal; }
 .home-addon:hover .home-addon__name { text-decoration: underline; text-underline-offset: 0.2em; }
 .home-addon__tag { font-size: 0.625rem; }
+.home-optional { display: flex; flex-wrap: wrap; column-gap: 0; row-gap: 0.15rem; }
+.home-optional__item { white-space: nowrap; }
+.home-optional__sep { padding: 0 0.4em; color: var(--mg-fg-subtle); }
 .home-latest { position: relative; overflow: hidden; padding: 1.75rem; border: 1px solid var(--mg-line-strong); border-radius: var(--mg-r-xl); background: var(--mg-surface-2); box-shadow: var(--mg-shadow); }
 .home-latest::before { content: ''; position: absolute; inset: -40% -30% auto auto; width: 18rem; height: 14rem; background: radial-gradient(closest-side, var(--mg-glow), transparent); pointer-events: none; }
 .home-latest > * { position: relative; }
@@ -563,7 +570,7 @@ const features = computed(() => featureCopy.value.map((feat) => {
 .home-band { position: relative; isolation: isolate; overflow: hidden; padding: 3rem 1.5rem; text-align: center; border: 1px solid var(--mg-line-strong); border-radius: calc(var(--mg-r-xl) * 1.4); background: var(--mg-surface); }
 @media (min-width: 768px) { .home-band { padding: 5.5rem 3rem; } }
 .home-band::before { content: ''; position: absolute; z-index: -1; inset: 0; background: radial-gradient(40rem 20rem at 15% 0, var(--mg-glow), transparent 70%), radial-gradient(40rem 22rem at 90% 100%, var(--mg-glow-3), transparent 70%), radial-gradient(30rem 16rem at 60% 110%, var(--mg-glow-2), transparent 70%); pointer-events: none; }
-.home-band__title { margin-top: 0.75rem; font-size: clamp(2.5rem, 1.4rem + 5.2vw, 4.75rem); font-weight: 800; line-height: 1; letter-spacing: -0.05em; color: var(--mg-fg); }
+.home-band__title { margin-top: 0.75rem; font-size: clamp(2.5rem, 1.4rem + 5.2vw, 4.75rem); font-weight: 800; line-height: 1.15; letter-spacing: -0.05em; color: var(--mg-fg); padding-bottom: 0.12em; }
 
 /* ── Rich text from the CMS ───────────────── */
 .home-hero-copy :deep(p),

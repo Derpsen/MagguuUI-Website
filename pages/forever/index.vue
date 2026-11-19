@@ -10,35 +10,35 @@
     </p>
 
     <div class="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-14 items-start">
-    <dl class="divide-y text-sm" :class="divider">
-      <div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-3">
+    <dl class="forever-specs divide-y text-sm" :class="divider">
+      <div class="forever-spec py-3">
         <dt :class="faint">Game</dt>
-        <dd class="text-right" :class="strong">
+        <dd :class="strong">
           World of Warcraft: Forever, live from 5 November 2026, 00:00 CET
           (<a href="https://news.blizzard.com/en-us/article/24315820/world-of-warcraft-forever-goes-live-globally-november-4" class="underline underline-offset-2" :class="link" rel="noopener" target="_blank">Blizzard</a>)
         </dd>
       </div>
-      <div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-3">
+      <div class="forever-spec py-3">
         <dt :class="faint">Package</dt>
-        <dd class="text-right" :class="strong">Same MagguuUI zip as Retail (Camelot flavor)</dd>
+        <dd :class="strong">Same MagguuUI zip as Retail (Camelot flavor)</dd>
       </div>
-      <div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-3">
+      <div class="forever-spec py-3">
         <dt :class="faint">Based on</dt>
         <dd :class="strong">EllesmereUI</dd>
       </div>
-      <div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-3">
+      <div class="forever-spec py-3">
         <dt :class="faint">Client interface</dt>
         <dd :class="strong">16001</dd>
       </div>
-      <div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-3">
+      <div class="forever-spec py-3">
         <dt :class="faint">In game</dt>
         <dd :class="strong"><code>/mui</code> or <code>/muif</code></dd>
       </div>
-      <div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-3">
+      <div class="forever-spec py-3">
         <dt :class="faint">Distribution</dt>
-        <dd class="text-right" :class="strong">CurseForge, Wago, WoWInterface</dd>
+        <dd :class="strong">CurseForge, Wago, WoWInterface</dd>
       </div>
-      <div class="flex flex-wrap justify-between gap-x-4 gap-y-1 py-3" data-testid="forever-release-state">
+      <div class="forever-spec py-3" data-testid="forever-release-state">
         <dt :class="faint">Release</dt>
         <dd :class="strong">Ships with MagguuUI {{ currentAddonVersion }}</dd>
       </div>
@@ -95,3 +95,18 @@ const faint = computed(() => isDark.value ? 'text-silver-400' : 'text-gray-600')
 const strong = computed(() => isDark.value ? 'text-white' : 'text-gray-950')
 const divider = computed(() => isDark.value ? 'divide-white/10 border-y border-white/10' : 'divide-gray-200 border-y border-gray-200')
 </script>
+
+<style scoped>
+.forever-spec {
+  display: grid;
+  gap: 0.25rem;
+}
+.forever-spec dd { margin: 0; text-align: left; overflow-wrap: anywhere; }
+@media (min-width: 640px) {
+  .forever-spec {
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+    column-gap: 1.25rem;
+    align-items: start;
+  }
+}
+</style>

@@ -1093,6 +1093,8 @@ html.dark .admin-command__group {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1.15;
+  padding-bottom: 0.15em;
 }
 
 .admin-shell .tab-active {
@@ -1881,4 +1883,14 @@ html:not(.dark) .admin-shell {
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
+}
+
+/* Brand label: ellipsis on the horizontal axis without clipping descenders (g). */
+.admin-brand-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.15;
+  padding-bottom: 0.15em;
 }

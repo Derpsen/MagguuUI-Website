@@ -3,11 +3,12 @@
 -->
 
 <template>
-  <div class="admin-login min-h-screen flex items-center px-4 py-8"
+  <div class="admin-login min-h-screen flex items-start"
     :class="isDark ? 'bg-[#0b1118] text-silver-200' : 'bg-[#eef4fb] text-gray-800'">
 
-    <div class="relative z-10 w-full max-w-6xl mx-auto grid gap-6 lg:grid-cols-[1.05fr_0.95fr] items-center">
-      <section class="hidden lg:block pr-6">
+    <div class="admin-login__wrap relative z-10 w-full">
+      <div class="admin-login__grid">
+      <section class="admin-login__copy hidden lg:block">
         <div class="mb-6">
           <img src="/favicon-32.png" alt="MagguuUI" class="h-10 w-10 mb-5">
         </div>
@@ -28,7 +29,7 @@
         </div>
       </section>
 
-      <section class="py-2 lg:pl-12 lg:border-l max-w-md lg:max-w-none mx-auto w-full"
+      <section class="admin-login__card max-w-md lg:max-w-none mx-auto w-full"
         :class="isDark ? 'border-white/10' : 'border-gray-200'">
         <div class="flex items-center justify-between gap-3 mb-8">
           <div class="flex items-start gap-3 min-w-0">
@@ -90,6 +91,7 @@
           </NuxtLink>
         </div>
       </section>
+      </div>
     </div>
   </div>
 </template>
@@ -224,3 +226,33 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+/* Same column as the public header (.mg-container): 72rem max, 1rem / 1.5rem gutters.
+   Columns start from a shared top edge (no vertical centering of the shorter card). */
+.admin-login__wrap {
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: 4.5rem 1rem 3rem;
+}
+@media (min-width: 640px) {
+  .admin-login__wrap { padding-inline: 1.5rem; }
+}
+@media (min-width: 1024px) {
+  .admin-login__wrap { padding-top: 5rem; }
+}
+.admin-login__grid {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .admin-login__grid { grid-template-columns: 1.05fr 0.95fr; gap: 0; }
+  .admin-login__copy { padding-right: 1.5rem; }
+  .admin-login__card {
+    padding-left: 3rem;
+    border-left-width: 1px;
+    border-left-style: solid;
+  }
+}
+</style>

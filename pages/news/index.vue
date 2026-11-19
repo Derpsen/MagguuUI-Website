@@ -3,7 +3,7 @@
 -->
 
 <template>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
+  <div class="mg-container pt-10 pb-20">
     <div v-if="isLoggedIn" class="mb-4 flex justify-end">
       <NuxtLink
         to="/admin/content/news"
@@ -28,8 +28,8 @@
           <time class="mg-kicker text-mg-fg-muted" :datetime="toIsoDate(article.publishedAt)">
             {{ formatDate(article.publishedAt) }}
           </time>
-          <h2 class="mt-2 text-xl font-semibold tracking-tight text-mg-fg underline-offset-4 group-hover:underline">
-            {{ article.title }}
+          <h2 class="news-title mt-2 text-xl font-semibold tracking-tight text-mg-fg underline-offset-4 group-hover:underline">
+            {{ formatPublicHeading(article.title) }}
           </h2>
           <p class="mt-2 text-sm leading-relaxed text-mg-fg-muted">
             {{ article.summary }}
@@ -48,6 +48,7 @@
 <script setup lang="ts">
 import type { NewsArticleListItem } from '~/utils/news'
 import { formatNewsDate, toIsoDate } from '~/utils/newsDates'
+import { formatPublicHeading } from '~/utils/formatPublicHeading'
 
 const { isLoggedIn } = useAuth()
 

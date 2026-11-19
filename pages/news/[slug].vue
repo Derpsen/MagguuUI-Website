@@ -3,7 +3,7 @@
 -->
 
 <template>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
+  <div class="mg-container pt-10 pb-20">
     <div v-if="isLoggedIn" class="mb-4 flex justify-end">
       <NuxtLink
         to="/admin/content/news"
@@ -18,8 +18,8 @@
     </p>
 
     <template v-if="article">
-      <h1 class="mg-h1">
-        {{ article.title }}
+      <h1 class="mg-h1 news-title">
+        {{ articleTitle }}
       </h1>
       <p class="mt-3 text-sm text-mg-fg-muted">
         <time :datetime="toIsoDate(article.publishedAt)">{{ formatNewsDate(article.publishedAt) }}</time>
@@ -50,6 +50,7 @@
 <script setup lang="ts">
 import type { NewsArticle } from '~/utils/news'
 import { formatNewsDate, toIsoDate } from '~/utils/newsDates'
+import { formatPublicHeading } from '~/utils/formatPublicHeading'
 import '~/assets/css/news.css'
 
 const { isLoggedIn } = useAuth()
@@ -64,6 +65,7 @@ if (error.value || !data.value?.data) {
 }
 
 const article = computed(() => data.value?.data ?? null)
+const articleTitle = computed(() => formatPublicHeading(article.value?.title || ''))
 
 usePublicPageSeo({
   title: article.value?.title || 'News',

@@ -14,7 +14,7 @@
         <div class="flex items-center gap-2.5 px-3 shrink-0" :style="{ height: '50px' }">
           <NuxtLink to="/admin" class="flex min-w-0 items-center gap-2.5">
             <img src="/favicon-32.png" alt="MagguuUI" width="28" height="28" class="h-7 w-7 shrink-0">
-            <span v-if="!collapsed" class="truncate text-sm font-semibold text-mg-fg">MagguuUI</span>
+            <span v-if="!collapsed" class="admin-brand-name text-sm font-semibold text-mg-fg">MagguuUI</span>
           </NuxtLink>
           <button
             v-if="!collapsed"
@@ -250,11 +250,11 @@
               </Transition>
             </div>
 
-            <button class="vben-header-btn hidden md:inline-flex" title="Settings" aria-label="Settings" @click="settingsDrawer?.toggle()">
+            <button class="vben-header-btn hidden md:inline-flex" title="Settings" aria-label="Settings" data-testid="admin-settings-trigger" @click="settingsDrawer?.toggle()">
               <UIcon name="i-heroicons-cog-6-tooth" class="h-4 w-4" />
             </button>
 
-            <button class="vben-header-btn hidden md:inline-flex" title="Fullscreen" :aria-label="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'" @click="toggleFullscreen">
+            <button class="vben-header-btn hidden md:inline-flex" title="Fullscreen" data-testid="admin-fullscreen-trigger" :aria-label="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'" @click="toggleFullscreen">
               <UIcon :name="isFullscreen ? 'i-heroicons-arrows-pointing-in' : 'i-heroicons-arrows-pointing-out'" class="h-4 w-4" />
             </button>
 
@@ -419,12 +419,31 @@ function openSettingsFromMenu() {
   settingsDrawer.value?.openFrom(trigger)
 }
 
+function isVisibleControl(el: HTMLElement | null): boolean {
+  if (!el?.isConnected) return false
+  const style = getComputedStyle(el)
+  if (style.display === 'none' || style.visibility === 'hidden') return false
+  return el.getClientRects().length > 0
+}
+
+function restoreFullscreenFocus(trigger: HTMLElement | null) {
+  if (isVisibleControl(trigger)) {
+    trigger.focus()
+    return
+  }
+  const desktop = document.querySelector<HTMLElement>('[data-testid="admin-fullscreen-trigger"]')
+  if (isVisibleControl(desktop)) desktop.focus()
+}
+
 async function toggleFullscreenFromMenu() {
-  moreOpen.value = false
+  const trigger = import.meta.client ? document.activeElement as HTMLElement | null : null
   await toggleFullscreen()
+  await nextTick()
+  restoreFullscreenFocus(trigger)
 }
 
 async function toggleFullscreen() {
+  const trigger = import.meta.client ? document.activeElement as HTMLElement | null : null
   try {
     if (!document.fullscreenElement) {
       await document.documentElement.requestFullscreen()
@@ -436,6 +455,8 @@ async function toggleFullscreen() {
   } catch {
     // Fullscreen may be denied by browser policy
   }
+  await nextTick()
+  restoreFullscreenFocus(trigger)
 }
 
 function toggleSection(title: string) {

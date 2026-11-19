@@ -53,7 +53,7 @@
   --mg-fs-body: 1rem;
   --mg-fs-small: 0.875rem;
   --mg-fs-micro: 0.6875rem;
-  --mg-lh-tight: 1.04;
+  --mg-lh-tight: 1.15; /* descenders (g/y/p/q/j) must stay inside the line box */
   --mg-lh-heading: 1.15;
   --mg-lh-body: 1.65;
   --mg-track-display: -0.045em;

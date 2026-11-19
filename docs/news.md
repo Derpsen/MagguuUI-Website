@@ -31,11 +31,18 @@ Markdown fixtures live in `server/database/news-seed/*.md` (Buddy YAML
 frontmatter + body). `scripts/embed-news-seeds.mjs` copies them into
 `server/utils/newsSeedEmbedded.ts` before `nuxt build` (`prebuild`, or
 `npm run embed:news-seeds`). The catalog is committed so Docker `npm ci` can
-run before the rest of the source is copied. `.dockerignore` keeps the seed
-markdown available to `prebuild`. The loader is not `process.cwd()`-dependent. Boot inserts each slug at most
-once. A row in `news_seed_markers` records that the slug has already been
-offered. Admin edits are never overwritten, and a deleted article is not
-re-inserted on a later boot.
+run before the rest of the source is copied. The loader is not
+`process.cwd()`-dependent. Production boot must use that catalog because the
+runtime image copies only Nitro's `.output` (the markdown tree is not in the
+running container). `.dockerignore`'s `*.md` pattern matches only at the
+context root, so the seed markdown was never excluded from the build context.
+
+Boot inserts each slug at most once. A row in `news_seed_markers` records
+that the slug has already been offered. Admin edits are never overwritten,
+and a deleted article is not re-inserted on a later boot. If a renamed seed
+leaves a published row under the old slug (for example
+`echoes-of-the-worldcore-announced` after the December 1 rename), boot
+unpublishes that leftover once and does not fight a later admin publish.
 
 `pouch-of-violet-dust-launch-celebration` is always seeded **unpublished**. The
 Twitch drop it describes ended 2026-11-13 01:30 Europe/Berlin, so it must not

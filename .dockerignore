@@ -36,11 +36,11 @@ playwright.config.ts
 .vscode
 .idea
 
-# Archives & docs
+# Archives & docs. `*.md` matches only at the context root, so nested
+# seed markdown stays in the build context. The runtime image still
+# copies only .output; production boot uses the embedded catalog there.
 *.zip
 *.md
-!server/database/news-seed/*.md
-!server/database/news-seed/README.md
 
 # OS files
 .DS_Store

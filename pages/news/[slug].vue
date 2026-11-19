@@ -58,7 +58,9 @@ const slug = computed(() => String(route.params.slug || ''))
 
 const { data, error } = await useFetch<{ data: NewsArticle }>(() => `/api/v1/news/${slug.value}`)
 if (error.value || !data.value?.data) {
-  throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
+  // SSR 404 is a normal response (no fatal log). Client navigation needs fatal
+  // so Nuxt shows error.vue instead of leaving the page empty.
+  throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: import.meta.client })
 }
 
 const article = computed(() => data.value?.data ?? null)

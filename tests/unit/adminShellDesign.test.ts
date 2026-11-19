@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
-import { contrastRatio } from '../../utils/metaCatalog'
+import { contrastRatio } from '../../utils/contrast'
 
 /** Redesign PR 5a: the admin shell sits on the `--mg-*` tokens (visual only; no auth, session or routing code). */
 const read = (p: string) => readFileSync(join(process.cwd(), p), 'utf8')

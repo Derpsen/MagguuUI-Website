@@ -83,6 +83,9 @@ export function unpublishReplacedNewsSeedSlugs(db: WebsiteBootDb): string[] {
     if (row) unpublished.push(row.slug)
     recordNewsSeedMarker(db, marker)
   }
+  if (unpublished.length > 0) {
+    console.log(`[Init] Unpublished replaced news seed slug${unpublished.length === 1 ? '' : 's'}: ${unpublished.join(', ')}`)
+  }
   return unpublished
 }
 

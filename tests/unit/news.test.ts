@@ -148,7 +148,15 @@ describe('news seed and RSS', () => {
       INSERT INTO news_articles (slug, title, summary, body, published_at, author, tags, is_published)
       VALUES (?, 'Old Worldcore', 'Old summary.', 'Old body.', 1764547200, 'Magguu', '[]', 1)
     `).run(oldSlug)
-    assert.equal(seedNewsArticlesIfMissing(db), SEED_ARTICLES.length)
+    const logs: string[] = []
+    const log = console.log
+    console.log = (...args: unknown[]) => { logs.push(args.map(String).join(' ')) }
+    try {
+      assert.equal(seedNewsArticlesIfMissing(db), SEED_ARTICLES.length)
+    } finally {
+      console.log = log
+    }
+    assert.ok(logs.some(line => line.includes('[Init] Unpublished replaced news seed slug') && line.includes(oldSlug)), logs.join('\n'))
     const oldRow = sqlite.prepare('SELECT title, body, is_published AS isPublished FROM news_articles WHERE slug = ?').get(oldSlug) as { title: string, body: string, isPublished: number }
     assert.equal(oldRow.title, 'Old Worldcore')
     assert.equal(oldRow.body, 'Old body.')
@@ -163,11 +171,12 @@ describe('news seed and RSS', () => {
     assert.equal(marker.n, 1)
   })
 
-  it('does not treat an unpublished or missing article page as a fatal request error', () => {
+  it('marks a missing article page as fatal only on the client', () => {
     const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../pages/news/[slug].vue'), 'utf8')
     const call = source.match(/throw createError\(\{[^}]+\}/)?.[0] ?? ''
     assert.match(call, /statusCode: 404/)
-    assert.doesNotMatch(call, /fatal:/)
+    assert.match(call, /fatal:\s*import\.meta\.client/)
+    assert.doesNotMatch(call, /fatal:\s*true/)
   })
 
   it('builds an RSS feed of published articles only', () => {

@@ -58,6 +58,16 @@ test('unpublished and unknown slugs are 404', async ({ request }) => {
   expect((await request.get('/news/does-not-exist')).status()).toBe(404)
 })
 
+test('client navigation to a missing slug shows the 404 page', async ({ page }) => {
+  await page.goto('/news')
+  await hydrated(page)
+  await expect(page.getByRole('heading', { level: 1, name: 'News' })).toBeVisible()
+  await page.evaluate(() => (window as unknown as { useNuxtApp: () => { $router: { push: (path: string) => Promise<unknown> } } }).useNuxtApp().$router.push('/news/does-not-exist'))
+  await expect(page).toHaveURL(/\/news\/does-not-exist/)
+  await expect(page.getByTestId('error-page')).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible()
+})
+
 test('the public news API omits unpublished articles and article bodies on the list', async ({ request }) => {
   const res = await request.get('/api/v1/news')
   expect(res.status()).toBe(200)

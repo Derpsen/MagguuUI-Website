@@ -1,7 +1,7 @@
 /**
  * Import Strings, string cards, chips, copy button and community presets (redesign PR 3).
  * Tokens only (tokens.css), unlayered on purpose (it replaces legacy rules). Split per owner so the pages that do not use it
- * (/meta, /news, ...) do not pay for it: each page or component imports what it draws (see AGENTS.md "Setup pages").
+ * (/news and the other public pages) do not pay for it: each page or component imports what it draws (see AGENTS.md "Setup pages").
  */
 
 /* ─── Import Strings ──────────────────────────────── */

@@ -3,8 +3,9 @@
 // Usage: node tools/lighthouse-budget.mjs <budgets.json> mobile=<lhci-dir> desktop=<lhci-dir>
 // Each <lhci-dir> is a Lighthouse CI results folder (manifest.json + lhr-*.json).
 // Writes a markdown table to $GITHUB_STEP_SUMMARY (or stdout) and prints one
-// annotation per exceeded budget. After Mythic+ Meta removal every remaining
-// page is advisory (::warning, do not fail the process). Do not loosen budgets.
+// annotation per exceeded budget. Every bound page is advisory (::warning, do
+// not fail the process). This job is not a required branch-protection check.
+// Do not loosen budgets. The URL list below is the hard route bound.
 import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -72,9 +73,11 @@ export function compare(measured, budget) {
 
 const escapeData = (s) => s.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')
 
-/** After Mythic+ Meta removal no page is a hard CI gate. */
+/** Pages the Lighthouse workflow must audit (hard route bound). Budgets stay advisory. */
+export const LIGHTHOUSE_PAGES = Object.freeze(['/', '/changelog', '/guide'])
+
+/** Budget misses stay advisory; this job is not a required check. */
 export function isHardBudgetPage() {
-  // After Mythic+ Meta removal there is no hard page. Remaining budgets stay advisory and unchanged.
   return false
 }
 
@@ -126,7 +129,7 @@ export function summaryMarkdown(results) {
     '## Lighthouse budgets (advisory)',
     '',
     'Production build served locally on a shared runner, per-metric median of all Lighthouse CI runs per URL (typically 3). ' +
-      'Budgets live in `.github/lighthouse-budgets.json`. After Mythic+ Meta removal every remaining page is advisory; do not loosen those budgets.',
+      'Budgets live in `.github/lighthouse-budgets.json`. Bound pages (`/`, `/changelog`, `/guide`) are advisory warnings; do not loosen those budgets, and do not make this job required.',
     '',
     `| Page | Mode | ${METRICS.map((m) => m.label).join(' | ')} |`,
     `|---|---|${METRICS.map(() => '---').join('|')}|`,
